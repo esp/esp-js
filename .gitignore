@@ -1,0 +1,12 @@
+#  components 
+node_modules/*
+devshop/**/node_modules/*
+!node_modules/app
+.gitignore~
+
+# other 
+**/.idea
+**/.bower-*/
+**/.tscache
+**/*-debug.log
+www/app/*

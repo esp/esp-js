@@ -1,0 +1,18 @@
+title Event Processing Flow
+EventPublisher->Router: publishEvent(modelId, eventType, event)
+	Router-> PreEventProcessor: process(model, event, eventContext)
+	PreEventProcessor->PreEventProcessor: update model
+	PreEventProcessor-->Router:
+	loop for each EventProcessor subscribed to the event
+		Router->EventProcessor: onNext(model, event, eventContext)
+		EventProcessor->EventProcessor: update model
+		EventProcessor-->Router:
+	end
+	Router-> PostEventProcessor: process(model, event, eventContext)
+	PostEventProcessor->PostEventProcessor: update model
+	PostEventProcessor--> Router:
+	loop for each ModelObserver
+		Router -> ModelObserver : onNext(model)
+		ModelObserver --> Router :
+	end
+Router --> EventPublisher: Execution flow returns to initial publisher

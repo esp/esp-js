@@ -1,0 +1,33 @@
+{
+  "name": "esp-js",
+  "version": "0.0.2",
+  "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
+  "main": "index.js",
+  "author": "Keith Woods",
+  "license": "ISC",
+  "repository": "https://github.com/sonic78/esp-js",
+  "devDependencies": {
+    "babel": "^4.7.16",
+    "babel-core": "^4.7.16",
+    "babel-loader": "^4.3.0",
+    "grunt": "^0.4.5",
+    "grunt-babel": "^4.0.0",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-jsdoc": "^0.5.7",
+    "grunt-karma": "^0.9.0",
+    "grunt-webpack": "^1.0.8",
+    "inject-loader": "^1.0.0",
+    "karma": "^0.12.32",
+    "karma-chrome-launcher": "^0.1.8",
+    "karma-jasmine": "^0.3.2",
+    "karma-webpack": "^1.3.1",
+    "load-grunt-tasks": "^1.0.0",
+    "source-map-loader": "^0.1.5",
+    "webpack": "^1.8.11",
+    "webpack-dev-server": "^1.8.2"
+  },
+  "dependencies": {
+    "node-uuid": "^1.4.3"
+  }
+}

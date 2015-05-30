@@ -1,0 +1,63 @@
+title Staged Event Processing Flow
+
+EventPublisher->Router: publishEvent(modelId, eventType, event)
+Router -> Router : enqueue event
+
+loop purge event queues
+	Router-> PreEventProcessor: process(model, event, eventContext)
+	PreEventProcessor->PreEventProcessor: update model
+	PreEventProcessor-->Router:
+	loop purge event queues
+		opt if there are preview stage EventProcessors
+			loop for each 'preview stage' EventProcessor
+				Router->EventProcessor: onNext(model, event, eventContext)
+				EventProcessor->EventProcessor: update model
+				opt
+					EventProcessor->Router: publishEvent(modelId, eventType, event)
+					Router -> Router : enqueue event
+					Router --> EventProcessor :
+				end
+				EventProcessor-->Router:
+			end
+		end
+		opt if not canceled by a preview stage EventProcessor and there are normal stage EventProcessors
+			loop for each 'normal stage' EventProcessor
+				Router->EventProcessor: onNext(model, event, eventContext)
+				EventProcessor->EventProcessor: update model
+				opt
+					EventProcessor->Router: publishEvent(modelId, eventType, event)
+					Router -> Router : enqueue event
+					Router --> EventProcessor :
+				end
+				EventProcessor-->Router:
+			end
+		end
+		opt if committed by a normal stage EventProcessor and there are committed stage EventProcessors
+			loop for each 'committed stage' EventProcessor
+				Router->EventProcessor: onNext(model, event, eventContext)
+				EventProcessor->EventProcessor: update model
+				opt
+					EventProcessor->Router: publishEvent(modelId, eventType, event)
+					Router -> Router : enqueue event
+					Router --> EventProcessor :
+				end
+				EventProcessor-->Router:
+			end
+		end
+	end
+	Router-> PostEventProcessor: process(model, event, eventContext)
+	PostEventProcessor->PostEventProcessor: update model
+	PostEventProcessor--> Router:
+	opt if the event was passed to any subscriber above the model was deemed changed
+		loop for each ModelObserver
+			Router -> ModelObserver : onNext(new model)
+			opt
+				ModelObserver->Router: publishEvent(modelId, eventType, event)
+				Router -> Router : enqueue event
+				Router --> ModelObserver :
+			end
+			ModelObserver --> Router :
+		end
+	end
+end
+Router --> EventPublisher: Execution flow returns to publisher

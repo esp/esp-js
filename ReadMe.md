@@ -777,7 +777,7 @@ GUIs idle, static data: false
 
 A work item is simply an object that manages the lifetime of one or many async operations that together could be thought of as a single unit of work. 
 There is no object named `workItem` in the ESP codebase, it's simply a related pattern for dealing with async operations. 
-They work in much the same was as `Observable.prototype.beginWork()` whereby results are posted back to the router. 
+They work in much the same was as `Observable.prototype.beginWork()` whereby results are posted back to the router.
 Usually, but not always, the results would get processed by the event processor that started the work item.
 
 Typically you'd find that work items fall under one of the following categories:

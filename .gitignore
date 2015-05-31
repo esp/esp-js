@@ -1,0 +1,9 @@
+#  components 
+node_modules/*
+.gitignore~
+
+# other 
+**/.idea
+**/.bower-*/
+**/.tscache
+**/*-debug.log

@@ -300,7 +300,7 @@ var runEventWorkflowExample = function () {
 
         router.getEventObservable("model1", "buyFruitEvent", esp.EventStage.preview).observe(function (model, event, eventContext) {
             if (model.hasExpired) {
-                console.log("Canceling buyFruitEvent event as all fruit has expired");
+                console.log("Cancelling buyFruitEvent event as all fruit has expired");
                 eventContext.cancel();
             }
         });

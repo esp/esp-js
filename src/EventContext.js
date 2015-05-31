@@ -32,7 +32,7 @@ class EventContext {
         if(!this._isCanceled) {
             this._isCanceled = true;
         } else {
-            throw 'event is already canceled';
+            throw new Error('event is already cancelled');
         }
     }
     commit() {

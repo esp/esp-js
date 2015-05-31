@@ -10,7 +10,7 @@ class DisposableBase {
         } else if(disposable.dispose) {
             d1 = disposable;
         } else {
-            throw new Error('Item to dispose was neither a function or had a dispose method.');
+            throw new Error('Item to dispose was neither a function nor had a dispose method.');
         }
         if(this._isDisposed) {
             d1.dispose();

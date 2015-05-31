@@ -4,6 +4,8 @@ import Guard from './Guard';
 import EventContext from './EventContext';
 import EventStage from './EventStage';
 import ModelRecord from './ModelRecord';
+import State from './State.js';
+import Status from './Status.js';
 import { Subject, Observable } from './reactive/index';
 import { SubModelChangedEvent } from './model/events/index';
 import * as Logger from './Logger';
@@ -25,6 +27,8 @@ class Router {
         Guard.isDefined(model, 'THe model argument must be defined');
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
+
+
         this._models[modelId] = new ModelRecord(undefined, modelId, model, options);
     }
     addChildModel(parentModelId, childModelId, model, options) {
@@ -33,6 +37,7 @@ class Router {
         Guard.isString(childModelId, 'The childModelId argument should be a string');
         Guard.isDefined(model, 'The model argument should be defined');
         if(options) Guard.isObject(options, 'The options argument should be an object');
+
         var parentModelRecord = this._models[parentModelId];
         if(!parentModelRecord) {
             throw new Error('Parent model with id [' + parentModelId + '] is not registered');
@@ -42,6 +47,7 @@ class Router {
     }
     removeModel(modelId){
         Guard.isString(modelId, 'The modelId argument should be a string');
+
         let modelRecord = this._models[modelId];
         if(modelRecord){
             modelRecord.wasRemoved = true;
@@ -86,13 +92,14 @@ class Router {
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument must be defined');
+
         this._throwIfHalted();
         if (this._state.currentStatus === Status.EventExecution) {
             throw new Error('You can not publish further events when performing an event execution. modelId1: [' + modelId + '], eventType:[' + eventType + ']');
         }
         let modelRecord = this._models[modelId];
         if (typeof modelRecord === 'undefined') {
-            throw 'Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered';
+            throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
         } else {
             try {
                 modelRecord.eventQueue.push({eventType: eventType, event: event});
@@ -117,6 +124,7 @@ class Router {
         this._throwIfHalted();
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument should be defined');
+
         this._state.executeEvent(() => {
             let eventContext = new EventContext(
                 this._state.currentModelId,
@@ -138,6 +146,7 @@ class Router {
             Guard.isString(modelId, 'The modelId argument should be a string');
             Guard.isDefined(modelId, 'The modelId argument should be defined');
             Guard.isDefined(eventType, 'The eventType argument should be defined');
+
             if(stage) {
                 Guard.isString(stage, 'The stage argument should be a string');
                 Guard.isTrue(stage === EventStage.preview || stage === EventStage.normal || stage === EventStage.committed, 'The stage argument value of [' + stage + '] is incorrect. It should be preview, normal or committed.');
@@ -153,6 +162,7 @@ class Router {
         return Observable.create(o => {
             this._throwIfHalted();
             Guard.isString(modelId, 'The modelId should be a string');
+
             let updateSubject = this._modelUpdateSubjects[modelId];
             if (typeof updateSubject === 'undefined') {
                 updateSubject = new Subject(this);
@@ -182,6 +192,8 @@ class Router {
         if (this._state.currentStatus === Status.Idle) {
             let modelRecord = this._getNextModelRecordWithQueuedEvents();
             let hasEvents = true;
+
+            // TODO -> Explanation of why we have the two while loops
             while (hasEvents) {
                 while (hasEvents) {
                     this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);
@@ -247,6 +259,7 @@ class Router {
             }
             return wasDispatched;
         };
+
         let eventSubjects = this._getModelsEventSubjects(modelId, eventType);
         let wasDispatched = dispatch(model, event, eventContext, eventSubjects.preview);
         if (eventContext.isCommitted) {
@@ -313,67 +326,4 @@ class Router {
         throw err;
     }
 }
-
-// note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
-class State {
-    constructor() {
-        this._currentStatus = Status.Idle;
-    }
-    get currentStatus() {
-        return this._currentStatus;
-    }
-    get currentModelId() {
-        return this._currentModelId;
-    }
-    get currentModel() {
-        return this._currentModel;
-    }
-    moveToIdle() {
-        this._currentStatus = Status.Idle;
-        this._clear();
-    }
-    moveToPreProcessing(modelId, model) {
-        Guard.isString(modelId, 'The modelId should be a string');
-        Guard.isDefined(model, 'The model should be defined');
-        this._currentModelId = modelId;
-        this._currentModel = model;
-        this._currentStatus = Status.PreEventProcessing;
-    }
-    moveToEventDispatch() {
-        this._currentStatus = Status.EventDispatch;
-    }
-    moveToPostProcessing() {
-        this._currentStatus = Status.PostProcessing;
-    }
-    executeEvent(executeAction) {
-        var canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventDispatch || this._currentStatus === Status.PostProcessing;
-        Guard.isTrue(canMove, 'Can\'t move to executing as the current state ' + this._currentStatus + ' doesn\'t allow it');
-        var previousStatus = this._currentStatus;
-        this._currentStatus = Status.EventExecution;
-        executeAction();
-        this._currentStatus = previousStatus;
-    }
-    moveToUpdateDispatch() {
-        this._currentStatus = Status.UpdateDispatch;
-    }
-    moveToHalted() {
-        this._currentStatus = Status.Halted;
-        this._clear();
-    }
-    _clear() {
-        this._currentModelId = undefined;
-        this._currentModel = undefined;
-    }
-}
-
-class Status {
-    static get Idle() { return 'idle'; }
-    static get PreEventProcessing() { return 'preEventProcessorDispatch'; }
-    static get EventDispatch() { return 'eventProcessorDispatch'; }
-    static get EventExecution() { return 'eventProcessorExecution'; }
-    static get PostProcessing () { return 'postEventProcessorDispatch'; }
-    static get UpdateDispatch() { return 'updateDispatch'; }
-    static get Halted() { return 'halted'; }
-}
-
 export default Router;

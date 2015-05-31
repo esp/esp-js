@@ -2,7 +2,7 @@
 
 ESP adds specific processing workflow around changes to a model's state. It takes ownership of a [single root model](#SingleRootModel), those interested in observing the model's state
 observe a stream of events from a `Router`, those wanting to change a model's state can publish events to the `Router`. The `Router` routes events to [`EventProcessors`](#EventProcessors)
-responsible for applying the new state using a [state processing workflow](#StateProcessingWorkflow). Once the workflow is done the `Router` dispatches the most recent model
+responsible for applying the new state using a [state processing workflow](#StateProcessingWorkflow). Once the workflow is done, the `Router` dispatches the most recent model
 version to all model observers.
 
 The [single root model](#SingleRootModel) allows a developer to focus on modeling the problem domain without worrying about infrastructural clutter. The router's [observable](#Observable)
@@ -10,8 +10,8 @@ event dispatch and [state processing workflow](#StateProcessingWorkflow) allows 
 
 ## Symptoms that you might be looking for a state management pattern
 
-* You're dealing with a large amount of state, perhaps a very complex screens with 20-200+ inputs, various workflows, maybe different views or representations of the same data.
-* Your state shifts in real time, and the real time changes trigger complex logic that needs processing.
+* You're dealing with a large amount of state, perhaps a very complex screen with 20-200+ inputs, various workflows, maybe different views or representations of the same data.
+* Your state shifts in real time, with the real time changes triggering complex logic that needs processing.
 * You pass objects to other objects, observe these dependent objects for changes and you sync state amongst them.
 * You have a deep inheritance strategy amongst your objects, you may even mix in some strategies to further augment behaviour, it's hard
 to deterministically tell where the state is and which code changes it.
@@ -22,10 +22,12 @@ ESP aims to solve these problems by providing a model-centric view of all state,
 
 ## Where can it be used?
 
-ESP can be used on both client and servers, anywhere you have pushed based real time state that requires modeling. Within your application you may have several independent areas that manage
-complex state, each of these could be candidates for ESP. Typically you'd scope a model to a sub-system that has related state. On the client it can be used to process state for a complex screen
-or a set of related complex screens. It complements the MV* range of patterns by providing a deterministic method to modify and observe state. On the server you might use it to model push based
-user state and general internal server state, again it provides a deterministic method to modify and observe such state.
+ESP can be used on both client and servers, anywhere you have push-based real time state that requires modeling. Within your application you may have several independent areas that manage
+complex state, each of these could be candidates for ESP. 
+* On the client it can be used to process state for a complex screen
+or a set of related complex screens. 
+* It complements the MV* range of patterns by providing a deterministic method to modify and observe state. 
+* On the server you might use it to model push-based user state and general internal server state, again it provides a deterministic method to modify and observe such state.
 
 # Basic usage
 
@@ -155,7 +157,7 @@ class CarPostEventProcessor {
 **Create an event raiser and publish some events**
 
 Many different things could impact the state of your model, perhaps a button click on the GUI, the results from an async operation, or a timeout of some sort. On the server
-it might be a requess from the network or new static data pushed from upstream services.
+it might be a request from the network or new data pushed to the server from upstream services.
 
 In this example we'll use a controller that (pretends to) receives data from a view and raise an event to the router. Publishing the event kicks off the router's
 [state processing workflow](#StateProcessingWorkflow).
@@ -234,22 +236,22 @@ This broader definition encompasses the business domain and additional state rel
 
 + model version information, perhaps of the entire model or of specific nodes
 + model alert notifications that should be processed by consumers/users
-+ model the holding of events that require user confirmation ('are you sure you want to cancel')
++ model the holding of events that require user confirmation ('Are you sure you want to cancel?')
 + model async operations that may be in flight
 + model validation, either at a specific node or model it for the entire model
-+ model the type of change the model has underwent
++ model the type of change the model has undergone
 + model static data that used to interpret the meaning of the model (services would feed static into the model via events)
 + model exception/error conditions
 
 Some business logic can exist within your model objects, however (and perhaps deviating from other modeling patterns) model objects should contain little business logic.
 If your model objects contains lots of business logic they soon becomes inflexible as they have to account for all possible permutations or configurations. Rather put the
-logic in [event processors](#EventProcessors). This allow for the model to remain purely descriptive and allows for event processors to be swapped in and out altering how state
-is applied to the model. The 'model' in the traditional sense now really comprises of the model objects, plus event processors, and these together model the sub system
+logic in [event processors](#EventProcessors). This allows for the model to remain purely descriptive and allows for event processors to be swapped in and out altering how state
+is applied to the model. The 'model' in the traditional sense now really comprises of the model objects, plus event processors, and these together model the sub-system
 in addition to the business domain.
 
 > Initialise as much as possible up front - Redundant conditional logic can be avoided by initialising as much of the model up front. If the various parts of the model
-aren't used just model them as 'disabled'. Of course if the model grows and contracts you'd not initialise default values in arrays (i.e. 5 default products in shopping basket)
-however you would initialise other items such as the cart, the users details, input fields specifics etc.
+aren't used just model them as 'disabled'. Of course if the model grows and contracts you'd not initialise default values in arrays. (i.e. 5 default products in shopping basket)
+However you would initialise other items such as the cart, the users details, input fields specifics etc.
 
 ## <a name="EventProcessors"></a> Event Processors
 
@@ -402,7 +404,7 @@ router
     .getEventObservable('model1', 'buyFruitEvent', esp.EventStage.preview)
     .observe((model, event, eventContext) => {
         if(model.hasExpired) {
-            console.log("Canceling buyFruitEvent event as all fruit has expired");
+            console.log("Cancelling buyFruitEvent event as all fruit has expired");
             eventContext.cancel();
         }
     });
@@ -446,7 +448,7 @@ Stock count: 8
 
 #### 2.2 Normal stage
 
-The normal stage is where **most of your processing will take place**. Subscribing to an event without providing a stage is the same as subscribing at `EventStage.normal`.
+The normal stage is where **most of your processing will take place**. Subscribing to an event without providing a stage is defaulted to the `EventStage.normal` stage.
 
 ``` javascript
 var router = new esp.Router();
@@ -543,7 +545,7 @@ Stock count: 1, shouldRefreshFromStore: true, shouldRecalculateInventory: true
 ### <a name="PostEventProcessing"></a> 3 Post event processing
 
 The post processing stage always runs. This stage is similar to the pre event processing except it runs last. It's advised you don't change the shape of the model
-at this point, it's pretty much done and dusted (for this [event loop](#EventLoop)), however you can perform cross cutting validation, aggregate operations or
+at this point, it's pretty much done and dusted (for this cycle of the [event loop](#EventLoop)), however you can perform cross cutting validation, aggregate operations or
 perhaps model the nature of the change that occurred (useful for model observers to filter as appropriate). There is an example of a post process [above](#PostProcessorExample).
 
 > Note the `eventContext` this stage receives will contain the last event published to the router for the model in question. For example, event 'A' may have been
@@ -600,7 +602,7 @@ check for any new events and finally when all are processed control flow will re
 There are edge cases when you want an event to be processed immediately rather than going onto the backing queue. Typically this is the exception rather than the rule
 because you want all processors to first respond to the current event before moving to the next.
 
-Calling `router.executeEvent(eventType, event)` will immediately execute the events processors for the model currently being processed. Note that processors responding to executed
+Calling `router.executeEvent(eventType, event)` will immediately execute the event processors for the model currently being processed. Note that processors responding to executed
 events are not allowed to publish further events. Doing so could move the router too far forward so upon resumption of the prior event, the state isn't that which the
 processors would expect.
 

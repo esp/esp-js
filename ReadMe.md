@@ -13,7 +13,7 @@ The router's [observable](#observable-api) event dispatch and [state processing 
 ## Symptoms that you might be looking for a state management pattern
 
 * You are dealing with a large amount of state, complex screens with 20-200+ inputs, various workflows or maybe different representations of the same data.
-* Your state shifts in real time, and the real time changes trigger complex logic that needs processing.
+* Your state shifts in real time, with the real time changes triggering complex logic that needs processing.
 * You pass objects to other objects, observe these dependent objects for changes and you sync state amongst them.
 * You have a deep inheritance strategy amongst your objects.
 You may even mix in some strategies to further augment behaviour.
@@ -163,7 +163,7 @@ class CarPostEventProcessor {
 ### Create an event raiser and publish some events
 
 Many different things could impact the state of your model: perhaps a button click on the GUI, the results from an async operation or a timeout. 
-On the server it might be a request from the network or new static data pushed from upstream services.
+On the server it might be a request from the network or new data pushed to the server from upstream services.
 
 In this example we'll use a controller that (pretends to) receives data from a view and raise an event to the router. 
 Publishing the event kicks off the router's [state processing workflow](#state-processing-workflow).
@@ -575,7 +575,7 @@ Stock count: 1, shouldRefreshFromStore: true, shouldRecalculateInventory: true
 
 The post processing stage always runs. 
 This stage is similar to the pre event processing except it runs last. 
-It is advised you do not change the shape of the model at this point, it is pretty much done and dusted (for this [event loop](#the-event-loop)).
+It is advised you do not change the shape of the model at this point, it is pretty much done and dusted (for this cycle of the [event loop](#the-event-loop)).
 However you can perform cross cutting validation, aggregate operations or perhaps model the nature of the change that occurred.
 This can be useful for model observers to filter as appropriate. 
 There is an example of a post process [above](#create-an-event-post-processor).

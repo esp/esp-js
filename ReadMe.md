@@ -29,7 +29,7 @@ Within your application you may have several independent areas that manage compl
 
 # Basic usage
 
-The complete code for this basic example can be found with the source: [app.js](lib/examples/readme/app.js).
+The complete code for this basic example can be found with the source: [app.js](blob/master/dist/examples/readme/app.js).
 
 ###Create a simple model
 
@@ -290,7 +290,7 @@ to EventProcessors, subsequent event publication nor the purging of the event qu
 
 ![](docs/EventProcessingFlow.png?raw=true)
 
-Below we discuss the various stages, the example code uses this simple model (the complete code for these examples below can be found [with the source](lib/examples/readme/app.js)):
+Below we discuss the various stages, the example code uses this simple model (the complete code for these examples below can be found [with the source](blob/master/dist/examples/readme/app.js)):
 
 ``` javascript
 class FruitStore {

@@ -448,7 +448,7 @@ Stock count: 8
 
 #### 2.2 Normal stage
 
-The normal stage is where **most of your processing will take place**. Subscribing to an event without providing a stage is defaulted to the `EventStage.normal` stage.
+The normal stage is where **most of your processing will take place**. If you subscribe without a stage the router will defaulted the stage to `EventStage.normal`.
 
 ``` javascript
 var router = new esp.Router();

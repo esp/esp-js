@@ -380,7 +380,7 @@ return /******/ (function(modules) { // webpackBootstrap
                                     hasEvents = typeof modelRecord !== "undefined";
                                 }
                             } // keep looping until any events raised during post event processing OR event that have come in for other models are processed
-                            this._state.moveToUpdateDispatch();
+                            this._state.moveToDispatchModelUpdates();
                             this._dispatchModelUpdates();
                             modelRecord = this._getNextModelRecordWithQueuedEvents();
                             hasEvents = typeof modelRecord !== "undefined";
@@ -391,7 +391,7 @@ return /******/ (function(modules) { // webpackBootstrap
             },
             _dispatchEventToEventProcessors: {
                 value: function _dispatchEventToEventProcessors(modelId, model, event, eventType, eventContext) {
-                    var dispatch = function (model1, event1, context, subject) {
+                    var dispatchEvent = function (model1, event1, context, subject) {
                         var wasDispatched = false;
                         if (subject.getObserverCount() > 0) {
                             // note: if the model was removed by an observer the subject will be completed so subsequent observers won't get the event
@@ -405,17 +405,17 @@ return /******/ (function(modules) { // webpackBootstrap
                     };
     
                     var eventSubjects = this._getModelsEventSubjects(modelId, eventType);
-                    var wasDispatched = dispatch(model, event, eventContext, eventSubjects.preview);
+                    var wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.preview);
                     if (eventContext.isCommitted) {
                         throw new Error("You can't commit an event at the preview stage. Event: [" + eventContext.eventType + "], ModelId: [" + modelId + "]");
                     }
                     if (!eventContext.isCanceled) {
-                        wasDispatched = dispatch(model, event, eventContext, eventSubjects.normal);
+                        wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.normal);
                         if (eventContext.isCanceled) {
                             throw new Error("You can't cancel an event at the normal stage. Event: [" + eventContext.eventType + "], ModelId: [" + modelId + "]");
                         }
                         if (wasDispatched && eventContext.isCommitted) {
-                            dispatch(model, event, eventContext, eventSubjects.committed);
+                            dispatchEvent(model, event, eventContext, eventSubjects.committed);
                             if (eventContext.isCanceled) {
                                 throw new Error("You can't cancel an event at the committed stage. Event: [" + eventContext.eventType + "], ModelId: [" + modelId + "]");
                             }
@@ -512,7 +512,7 @@ return /******/ (function(modules) { // webpackBootstrap
                     return "preEventProcessorDispatch";
                 }
             },
-            EventDispatch: {
+            EventProcessorDispatch: {
                 get: function () {
                     return "eventProcessorDispatch";
                 }
@@ -527,9 +527,9 @@ return /******/ (function(modules) { // webpackBootstrap
                     return "postEventProcessorDispatch";
                 }
             },
-            UpdateDispatch: {
+            DispatchModelUpdates: {
                 get: function () {
-                    return "updateDispatch";
+                    return "dispatchModelUpdates";
                 }
             },
             Halted: {
@@ -929,7 +929,7 @@ return /******/ (function(modules) { // webpackBootstrap
             },
             moveToEventDispatch: {
                 value: function moveToEventDispatch() {
-                    this._currentStatus = Status.EventDispatch;
+                    this._currentStatus = Status.EventProcessorDispatch;
                 }
             },
             moveToPostProcessing: {
@@ -939,7 +939,7 @@ return /******/ (function(modules) { // webpackBootstrap
             },
             executeEvent: {
                 value: function executeEvent(executeAction) {
-                    var canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventDispatch || this._currentStatus === Status.PostProcessing;
+                    var canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventProcessorDispatch || this._currentStatus === Status.PostProcessing;
                     Guard.isTrue(canMove, "Can't move to executing as the current state " + this._currentStatus + " doesn't allow it");
                     var previousStatus = this._currentStatus;
                     this._currentStatus = Status.EventExecution;
@@ -947,9 +947,9 @@ return /******/ (function(modules) { // webpackBootstrap
                     this._currentStatus = previousStatus;
                 }
             },
-            moveToUpdateDispatch: {
-                value: function moveToUpdateDispatch() {
-                    this._currentStatus = Status.UpdateDispatch;
+            moveToDispatchModelUpdates: {
+                value: function moveToDispatchModelUpdates() {
+                    this._currentStatus = Status.DispatchModelUpdates;
                 }
             },
             moveToHalted: {

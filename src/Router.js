@@ -13,7 +13,7 @@ import * as utils from './utils';
 
 var _log = Logger.create('Router');
 
-class Router {
+export default class Router {
     constructor() {
         this._models = {};
         this._modelUpdateSubjects = {};
@@ -238,7 +238,7 @@ class Router {
                         hasEvents = typeof modelRecord !== 'undefined';
                     }
                 }  // keep looping until any events raised during post event processing OR event that have come in for other models are processed
-                this._state.moveToUpdateDispatch();
+                this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
                 modelRecord = this._getNextModelRecordWithQueuedEvents();
                 hasEvents = typeof modelRecord !== 'undefined';
@@ -247,7 +247,7 @@ class Router {
         }
     }
     _dispatchEventToEventProcessors(modelId, model, event, eventType, eventContext) {
-        let dispatch = (model1, event1, context, subject) => {
+        let dispatchEvent = (model1, event1, context, subject) => {
             let wasDispatched = false;
             if (subject.getObserverCount() > 0) {
                 // note: if the model was removed by an observer the subject will be completed so subsequent observers won't get the event
@@ -261,17 +261,17 @@ class Router {
         };
 
         let eventSubjects = this._getModelsEventSubjects(modelId, eventType);
-        let wasDispatched = dispatch(model, event, eventContext, eventSubjects.preview);
+        let wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.preview);
         if (eventContext.isCommitted) {
             throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
         }
         if (!eventContext.isCanceled) {
-            wasDispatched = dispatch(model, event, eventContext, eventSubjects.normal);
+            wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
             }
             if (wasDispatched && eventContext.isCommitted) {
-                dispatch(model, event, eventContext, eventSubjects.committed);
+                dispatchEvent(model, event, eventContext, eventSubjects.committed);
                 if (eventContext.isCanceled) {
                     throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
                 }
@@ -326,4 +326,3 @@ class Router {
         throw err;
     }
 }
-export default Router;

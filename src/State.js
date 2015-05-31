@@ -27,21 +27,21 @@ export default class State {
         this._currentStatus = Status.PreEventProcessing;
     }
     moveToEventDispatch() {
-        this._currentStatus = Status.EventDispatch;
+        this._currentStatus = Status.EventProcessorDispatch;
     }
     moveToPostProcessing() {
         this._currentStatus = Status.PostProcessing;
     }
     executeEvent(executeAction) {
-        var canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventDispatch || this._currentStatus === Status.PostProcessing;
+        var canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventProcessorDispatch || this._currentStatus === Status.PostProcessing;
         Guard.isTrue(canMove, 'Can\'t move to executing as the current state ' + this._currentStatus + ' doesn\'t allow it');
         var previousStatus = this._currentStatus;
         this._currentStatus = Status.EventExecution;
         executeAction();
         this._currentStatus = previousStatus;
     }
-    moveToUpdateDispatch() {
-        this._currentStatus = Status.UpdateDispatch;
+    moveToDispatchModelUpdates() {
+        this._currentStatus = Status.DispatchModelUpdates;
     }
     moveToHalted() {
         this._currentStatus = Status.Halted;

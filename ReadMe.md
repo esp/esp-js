@@ -1,14 +1,12 @@
 # Evented State Processor (ESP)
 
 ESP adds specific processing workflow around changes to a model's state. 
-It takes ownership of a [single root model](#SingleRootModel), those interested in observing the model's state observe a stream of events from a `Router`, those wanting to change a model's state can publish events to the `Router`. 
-The `Router` routes events to [`EventProcessors`](#EventProcessors)
-responsible for applying the new state using a [state processing workflow](#StateProcessingWorkflow). 
-Once the workflow is done the `Router` dispatches the most recent model
-version to all model observers.
+It takes ownership of a [single root model](#Single-root-model), those interested in observing the model's state observe a stream of events from a `Router`, those wanting to change a model's state can publish events to the `Router`. 
+The `Router` routes events to [`EventProcessors`](#Event-Processors) responsible for applying the new state using a [state processing workflow](#State-processing-workflow). 
+Once the workflow is done the `Router` dispatches the most recent model version to all model observers.
 
-The [single root model](#SingleRootModel) allows a developer to focus on modeling the problem domain without worrying about infrastructural clutter. 
-The router's [observable](#Observable) event dispatch and [state processing workflow](#StateProcessingWorkflow) allows a developer to compose complex state manipulation logic of smaller units which are executed in a deterministic manner.
+The [single root model](#Single-root-model) allows a developer to focus on modeling the problem domain without worrying about infrastructural clutter. 
+The router's [observable](#Observable) event dispatch and [state processing workflow](#State-processing-workflow) allows a developer to compose complex state manipulation logic of smaller units which are executed in a deterministic manner.
 
 ## Symptoms that you might be looking for a state management pattern
 
@@ -35,7 +33,7 @@ On the server you might use it to model push based user state and general intern
 
 The complete code for this basic example can be found with the source: [app.js](lib/examples/readme/app.js).
 
-**Create a simple model**
+###Create a simple model
 
 Below is a simplistic example of a model (1 entity). 
 In reality you might reach hundreds of entities with the object graph many levels deep.
@@ -82,9 +80,9 @@ class Car {
 }
 ```
 
-**Create an event processor and observe events**
+### Create an event processor and observe events
 
-Below is a basic [event processor](#EventProcessors) with a few event subscriptions. 
+Below is a basic [event processor](#Event-Processors) with a few event subscriptions. 
 An event processor is simply something that observes events from the router and modifies the model when an event is delivered.
 
 ``` javascript
@@ -126,9 +124,9 @@ class CarEventProcessor {
 }
 ```
 
-**<a name="PostProcessorExample"></a>Create an event post processor**
+### Create an event post processor
 
-[Post processors](#PostEventProcessing) are a unit of work that always runs regardless of the event that were raised. Being the last stage in the [state processing workflow](#StateProcessingWorkflow) dramatic changes to the model shouldn't be done here. 
+[Post processors](#PostEventProcessing) are a unit of work that always runs regardless of the event that were raised. Being the last stage in the [state processing workflow](#State-processing-workflow) dramatic changes to the model shouldn't be done here. 
 This makes it ideal for aggregate operations. 
 You could put the below logic into the above event processor. 
 However if many event processors were touching the model it's best to put such logic at the end of the workflow as it avoids the need for countless other previous steps to try figure out aggregate computation when the model is still a shifting target.
@@ -158,12 +156,12 @@ class CarPostEventProcessor {
 }
 ```
 
-**Create an event raiser and publish some events**
+### Create an event raiser and publish some events
 
 Many different things could impact the state of your model, perhaps a button click on the GUI, the results from an async operation, or a timeout of some sort. 
 On the server it might be a requess from the network or new static data pushed from upstream services.
 
-In this example we'll use a controller that (pretends to) receives data from a view and raise an event to the router. Publishing the event kicks off the router's [state processing workflow](#StateProcessingWorkflow).
+In this example we'll use a controller that (pretends to) receives data from a view and raise an event to the router. Publishing the event kicks off the router's [state processing workflow](#State-processing-workflow).
 
 ``` javascript
 class CarScreenController {
@@ -199,7 +197,7 @@ Note how the controller also listens for model changes as often the event raiser
 For example a user may select an option from a drop down, raise the event to process it, then await a refreshed model with further data to display. 
 In fact several other unrelated controllers may also be interested in this new data and they too would get it by observing the model.
 
-**Kick it all off**
+###Kick it all off
 
 Finally we wire everything up, start by creating the router, add the model using a `modelId`, the `model` and optionally an `options` object. 
 `options` can contain a [`preEventprocessor`](#PreEventProcessing) and/or a [`postEventProcessor`](#PostEventProcessing).
@@ -225,11 +223,11 @@ Your new sporty edition BMW (blue) will cost £40000
 This basic example completes the event processing round trip. 
 Control flows into the router via an event, the router owns routing the event to the processors, then owns dispatching the modified model to observers. 
 In a real world example there would be a much larger model, many event raisers, many event processors and many model observers.
-Additionally full usage of the [state processing workflow](#StateProcessingWorkflow) would allow for fine grained control of state against the model.
+Additionally full usage of the [state processing workflow](#State-processing-workflow) would allow for fine grained control of state against the model.
 
 # Key concepts
 
-## <a name="SingleRootModel"></a> Single root model
+## Single root model
 
 A single root model is simply a single instance object hierarchy that models your system. 
 The object contains little business logic as event processors own this. 
@@ -253,7 +251,7 @@ This allows you to:
 
 Some business logic can exist within your model objects, however (and perhaps deviating from other modeling patterns) model objects should contain little business logic.
 If your model objects contains lots of business logic they soon becomes inflexible as they have to account for all possible permutations or configurations. 
-Rather put the logic in [event processors](#EventProcessors). 
+Rather put the logic in [event processors](#Event-Processors). 
 This allow for the model to remain purely descriptive and allows for event processors to be swapped in and out altering how state is applied to the model. 
 The 'model' in the traditional sense now really comprises of the model objects, plus event processors, and these together model the sub system in addition to the business domain.
 
@@ -261,7 +259,7 @@ The 'model' in the traditional sense now really comprises of the model objects, 
 > If the various parts of the model aren't used just model them as 'disabled'. 
 > Of course if the model grows and contracts you'd not initialise default values in arrays (i.e. 5 default products in shopping basket) however you would initialise other items such as the cart, the users details, input fields specifics etc.
 
-## <a name="EventProcessors"></a> Event Processors
+## Event Processors
 
 Event processors are objects that observe the `Router` for events and apply event state to the model. 
 There is no object named `EventProcessor` in the ESP code base, it's simply a naming convention.
@@ -271,7 +269,7 @@ For example, you may have an object model to describe a financial product `MyPro
 There may be enough functionality for each leg to warrant it's own event processor, therefore you'd instantiate a `LegEventProcessor` object that would own a particular leg on the model, i.e. `myProduct.legs[0]`. 
 You can always start with a single Event Processor for your root entity then and break it down using good old fashioned OO composition principles.
 
-## <a name="StateProcessingWorkflow"></a> State processing workflow
+## State processing workflow
 
 When an event is published to the router it starts the state processing workflow. 
 The workflow has 3 ordered stages, the model can be modified at each, with each stage offering different benefits
@@ -283,13 +281,13 @@ Stage 2 can be further split into 3 sub stages that are progressive, i.e. the ev
 
 At each stage user code will get a function of signature `(model, event, eventContext) => { }` to interact with, the first two are self explanatory, the `eventContext` has some methods that can affect how the event proceeds.
 
-Any component that receives and event during the event workflow can publish subsequent events, they will be enqueued and processed in turn by the [Event Loop](#EventLoop).
+Any component that receives and event during the event workflow can publish subsequent events, they will be enqueued and processed in turn by the [Event Loop](#The-event-loop).
 
 The below image depicts a simplistic view of this process. 
 Note that `EventPublisher` and `ModelObserver` are often the same component/class. 
 
 > This diagram doesn't cover many of the aspects covered below, i.e. the 3 event subscription sub stages available 
-to EventProcessors, subsequent event publication nor the purging of the event queues by the [Event Loop](#EventLoop).
+to EventProcessors, subsequent event publication nor the purging of the event queues by the [Event Loop](#The-event-loop).
 > An expanded representation of the flow can be found [here](docs/FullEventProcessingFlow.png). 
 
 ![](docs/EventProcessingFlow.png?raw=true)
@@ -344,7 +342,7 @@ class FruitStore {
 ### <a name="PreEventProcessing"></a>  1 Pre event processing
 
 When registering a model with the router you can optionally provide an `options` object with a `preEventProcessor` property, this property can either be an object with a `process(model, event, eventContext)` method or a function with signature `(model, event, eventContext) => { }`. 
-The processor will be the first thing called. It's an ideal place to change state that moves with each tick of model (i.e. the version) or to reset any state that was applied specifically for the last [Event Loop](#EventLoop) (for example clear a user alert, or perhaps clear a collection of messages that were dispatched on the network).
+The processor will be the first thing called. It's an ideal place to change state that moves with each tick of model (i.e. the version) or to reset any state that was applied specifically for the last [Event Loop](#The-event-loop) (for example clear a user alert, or perhaps clear a collection of messages that were dispatched on the network).
 
 ``` javascript
 var router = new esp.Router();
@@ -559,8 +557,8 @@ Stock count: 1, shouldRefreshFromStore: true, shouldRecalculateInventory: true
 
 The post processing stage always runs. 
 This stage is similar to the pre event processing except it runs last. 
-It's advised you don't change the shape of the model at this point, it's pretty much done and dusted (for this [event loop](#EventLoop)), however you can perform cross cutting validation, aggregate operations or perhaps model the nature of the change that occurred (useful for model observers to filter as appropriate). 
-There is an example of a post process [above](#PostProcessorExample).
+It's advised you don't change the shape of the model at this point, it's pretty much done and dusted (for this [event loop](#The-event-loop)), however you can perform cross cutting validation, aggregate operations or perhaps model the nature of the change that occurred (useful for model observers to filter as appropriate). 
+There is an example of a post process [above](#Create-an-event-post-processor).
 
 > Note the `eventContext` this stage receives will contain the last event published to the router for the model in question. 
 > For example, event 'A' may have been the event that started the workflow, however a processor responding to event 'A' may have published event 'B', if 'B' was the last event published during the event loop then 'B' will be last event set against the `eventContext`.
@@ -594,7 +592,7 @@ output
 Foo is 2
 ```
 
-## <a name="EventLoop"></a> The event loop
+## The event loop
 
 The event loop kicks off once an event is published to the router via `router.publishEvent(...)`. 
 Any time control flow leaves the router (before the initial call to `publishEvent(...)` returns), it's possible that further events could be raised, any subsequent events go onto a backing queue for their respective model.
@@ -603,7 +601,7 @@ Any time control flow leaves the router (before the initial call to `publishEven
 
 Each model added to the router has it's own event queue. 
 Every time a call to `publishEvent(...)` occurs the event is placed on the queue for the model in question. 
-During the event workflow any subsequent events raised (by a [`preEventProcessor`](#PreEventProcessing), an [event processors](#EventProcessors) and/or a [`postEventProcessor`](#PostEventProcessing))
+During the event workflow any subsequent events raised (by a [`preEventProcessor`](#PreEventProcessing), an [event processors](#Event-Processors) and/or a [`postEventProcessor`](#PostEventProcessing))
 get placed on the back of the models event queue. 
 This means published events are not processed immediately, they're processed in turn. 
 This allows the router to finish dealing with the current event, and allows for processors to assume the model is in a state fit for the event currently being processed, they don't need to worry about what's in the backing queue, their business logic need only be concerned with the current event and the current state, this makes the whole process deterministic.
@@ -612,12 +610,12 @@ It must again check for any new events and finally when all are processed contro
 
 ### Bypassing the event queue with `router.executeEvent(eventType, event)`
 
-There are edge cases when you want an event to be processed immediately rather than going onto the backing queue. Typically this is the exception rather than the rule because you want all processors to first respond to the current event before moving to the next.
+There are edge cases when you want an event to be processed immediately rather than going onto the backing queue. 
+Typically this is the exception rather than the rule because you want all processors to first respond to the current event before moving to the next.
 
 Calling `router.executeEvent(eventType, event)` will immediately execute the events processors for the model currently being processed. 
 Note that processors responding to executed events are not allowed to publish further events. 
-Doing so could move the router too far forward so upon resumption of the prior event, the state isn't that which the
-processors would expect.
+Doing so could move the router too far forward so upon resumption of the prior event, the state isn't that which the processors would expect.
 
 > If you find yourself relying on this method it's usually a smell that you're not modeling your problem correctly. 
 > Nearly all issues can be address with further modeling.
@@ -719,7 +717,7 @@ Price with margin was set to 112
 If an asynchronous operation has to be performed it's relating state should be stored on the model. 
 For example you'd model that you're about to perform the request, you'd then carry out the request async. 
 The router would dispatch an intermittent update so model observers know the model is busy.
-Then when results are received you post the results via an event to the router and the [`EventProcessor`](#EventProcessors) would update the model with the results and denote the async operation has finished.
+Then when results are received you post the results via an event to the router and the [`EventProcessor`](#Event-Processors) would update the model with the results and denote the async operation has finished.
 
 There is a long and a short way to do this, the long involves multiple differing events and 'work items', the short involves using `beginWork()` which exists on `Observable.prototype` and does the work for you.
 
@@ -862,13 +860,12 @@ Sending results event for StaticDataB
 Adding static data [StaticDataB] to model
 ```
 
-## <a name="ErrorFlow"></a> Error Flows
+## Error Flows
 
 If an exception is unhandled during the event processing workflow the router will halt. 
 Any further usage result in the initial error being wrapped and rethrow.
 
-If an observable stream (returned from `router.getEventObservable(...)` or `router.getModelObservable(...)`) has an exception, it's `onError` handler will be called, this allows the developer to log a more detailed exception based on the streams details, it also allows for errors in observable methods to propagate to the error handler provided to the
-`.observe()` call. 
+If an observable stream (returned from `router.getEventObservable(...)` or `router.getModelObservable(...)`) has an exception, it's `onError` handler will be called, this allows the developer to log a more detailed exception based on the streams details, it also allows for errors in observable methods to propagate to the error handler provided to the `.observe()` call. 
 Any error will halt the router, no further observers will receive the current or subsequent events/model updates.
 
 ``` javascript
@@ -907,7 +904,7 @@ Error caught: Boom
 Error caught 2: Event router halted due to previous error [Error: Boom]
 ```
 
-## <a name="Immutability"></a>Immutability
+## Immutability
 
 If you're subscribing to events via `router.getEventObservable(...)`, or listening to model changes via `router.getModelObservable(...)`, misbehaving code could store a copy of the model. 
 As the model is single instance the misbehaving code could modify it outside of the event workflow. 
@@ -915,8 +912,7 @@ To protect against this you can implement `lock()/unlock()` on your model to get
 It requires you make your setters throw if a change happens when in the locked state (of course being Javascript you can change anything anytime so do your best to protect against this). 
 There are 2 objects in the source, `esp.model.ModelBaseRoot` and `esp.model.ModelBase` that implement the `lock()/unlock()` pattern. 
 This would be a reasonable place to start. 
-Another option would be to look into cloning the model, however it may have performance issues
-depending on the size of the model and the frequency of model ticks.
+Another option would be to look into cloning the model, however it may have performance issues depending on the size of the model and the frequency of model ticks.
 
 ``` javascript
 class NumericalInput extends esp.model.ModelBase {
@@ -995,34 +991,34 @@ Notional is 4
 
 # Anti patterns
 
-**Holding state outside the model**
+## Holding state outside the model
 
 If your event processors are holding state, that state should be on the model. 
 They may decide to hold instance of work items that are long lived, perhaps these get disposed with the processor, however information relating to the progress state of the work items should be on the model, it's something others may want to react to (i.e. display a 'busy gui').
 
-**Having dependent event processors**
+## Having dependent event processors
 
 If you find that you've publish an event in once processor targeted at another, then in the other need to publish a response, perhaps these 2 processors are really dealing with the same concern and need to be merged.
 
 Sometimes you may have a complex sub system within the model, this sub system might be better managed behind a facade that receives all events and calls methods on the facade to manipulate model state.
 
-**Storing a local copy of the model**
+## Storing a local copy of the model
 
 If you're subscribing to events via `router.getEventObservable(...)` or listening to model changes via `router.getModelObservable(...)`, you shouldn't hold a local copy of the model.
 You should only react to change when the stream yields. 
 More information on this in the [immutability section](#Immutability).
 
-**Event processors subscribing to model changes**
+## Event processors subscribing to model changes
 
 Event processors receive the model along with events by subscribing to `router.getEventObservable(...)`, they should not listen to model changes via `router.getModelObservable(...)`, they are on different sides of the model boundary. 
 There is nothing physically stopping this, it's just an anti pattern and should be avoided.
 
-**Having circular dependencies between models**
+## Having circular dependencies between models
 
 If you register 2 models and publish events from one to the other that's fine, however if you then find your self publishing back the other you may see some issues. 
 It depends on what you do, you just need to be careful to avoid event reentrancy.
 
-# <a name="Examples"></a> Examples
+# Examples
 
 There is already a a basic example in the src in addition to all the examples in this readme. 
 On the road map is a example that covers each of the below areas in details.
@@ -1062,7 +1058,7 @@ The example will model a complex GUI screen and cover these topic's:
 
 v0.0.2
 
-+ Better async support with pipelines: i.e. a chaining API that can delegate to 3rd part async libraries and handles marshaling async results back through the [state processing workflow](#StateProcessingWorkflow).
++ Better async support with pipelines: i.e. a chaining API that can delegate to 3rd part async libraries and handles marshaling async results back through the [state processing workflow](#State-processing-workflow).
 + Event reentrancy detection.
 + Memory leak and performance analysis/improvements.
-+ Better model composition and reusability by allowing [`EventProcessors`](#EventProcessors) to subscribe to a node of a greater model.
++ Better model composition and reusability by allowing [`EventProcessors`](#Event-Processors) to subscribe to a node of a greater model.

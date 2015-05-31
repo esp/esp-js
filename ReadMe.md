@@ -33,7 +33,7 @@ Within your application you may have several independent areas that manage compl
 
 # Basic usage
 
-The complete code for this basic example can be found with the source: [app.js](blob/master/dist/examples/readme/app.js).
+The complete code for this basic example can be found with the source: [app.js](src/examples/readme/app.js).
 
 ###Create a simple model
 
@@ -350,7 +350,7 @@ class FruitStore {
 }
 ```
 
-The complete code for these examples below can be found [with the source](blob/master/dist/examples/readme/app.js).
+The complete code for these examples below can be found [with the source](src/examples/readme/app.js).
 
 ### <a name="PreEventProcessing"></a>  1 Pre event processing
 

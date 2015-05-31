@@ -1,19 +1,23 @@
 # Evented State Processor (ESP)
 
 ESP adds specific processing workflow around changes to a model's state. 
-It takes ownership of a [single root model](#single-root-model), those interested in observing the model's state observe a stream of events from a `Router`, those wanting to change a model's state can publish events to the `Router`. 
+It takes ownership of a [single root model](#single-root-model).
+Those interested in observing the model's state observe a stream of events from a `Router`.
+Those wanting to change a model's state can publish events to the `Router`. 
 The `Router` routes events to [`EventProcessors`](#event-processors) responsible for applying the new state using a [state processing workflow](#state-processing-workflow). 
-Once the workflow is done the `Router` dispatches the most recent model version to all model observers.
+Once the workflow is done, the `Router` dispatches the most recent model version to all model observers.
 
 The [single root model](#single-root-model) allows a developer to focus on modeling the problem domain without worrying about infrastructural clutter. 
 The router's [observable](#observable-api) event dispatch and [state processing workflow](#state-processing-workflow) allows a developer to compose complex state manipulation logic of smaller units which are executed in a deterministic manner.
 
 ## Symptoms that you might be looking for a state management pattern
 
-* You're dealing with a large amount of state, perhaps a very complex screen with 20-200+ inputs, various workflows, maybe different views or representations of the same data.
-* Your state shifts in real time, with the real time changes triggering complex logic that needs processing.
+* You are dealing with a large amount of state, complex screens with 20-200+ inputs, various workflows or maybe different representations of the same data.
+* Your state shifts in real time, and the real time changes trigger complex logic that needs processing.
 * You pass objects to other objects, observe these dependent objects for changes and you sync state amongst them.
-* You have a deep inheritance strategy amongst your objects, you may even mix in some strategies to further augment behaviour, it's hard to deterministically tell where the state is and which code changes it.
+* You have a deep inheritance strategy amongst your objects.
+You may even mix in some strategies to further augment behaviour.
+It is hard to deterministically tell where the state is and which code changes it.
 * You use some form of event aggregation to send state between objects but do not have central representation of this state.
 * On the GUI you've used the MV* range of patterns (MVC, MVVM, MVVMC) and have had issues managing complex state.
 
@@ -33,7 +37,7 @@ The complete code for this basic example can be found with the source: [app.js](
 
 ###Create a simple model
 
-Below is a simplistic example of a model (1 entity). 
+Below is a simple example of a single entity model. 
 In reality you might reach hundreds of entities with the object graph many levels deep.
 
 ``` javascript
@@ -124,10 +128,12 @@ class CarEventProcessor {
 
 ### Create an event post processor
 
-[Post processors](#PostEventProcessing) are a unit of work that always runs regardless of the event that were raised. Being the last stage in the [state processing workflow](#state-processing-workflow) dramatic changes to the model shouldn't be done here. 
+[Post processors](#PostEventProcessing) are a unit of work that always runs regardless of the event that were raised. 
+Being the last stage in the [state processing workflow](#state-processing-workflow) dramatic changes to the model shouldn't be done here. 
 This makes it ideal for aggregate operations. 
 You could put the below logic into the above event processor. 
-However if many event processors were touching the model it's best to put such logic at the end of the workflow as it avoids the need for countless other previous steps to try figure out aggregate computation when the model is still a shifting target.
+However if many event processors were touching the model, it is best to put such logic at the end of the workflow.
+This avoids the need for previous steps to try figure out aggregate computation when the model is still a shifting target.
 
 ``` javascript
 class CarPostEventProcessor {
@@ -156,10 +162,11 @@ class CarPostEventProcessor {
 
 ### Create an event raiser and publish some events
 
-Many different things could impact the state of your model, perhaps a button click on the GUI, the results from an async operation, or a timeout of some sort. 
-On the server it might be a request from the network or new data pushed to the server from upstream services.
+Many different things could impact the state of your model: perhaps a button click on the GUI, the results from an async operation or a timeout. 
+On the server it might be a request from the network or new static data pushed from upstream services.
 
-In this example we'll use a controller that (pretends to) receives data from a view and raise an event to the router. Publishing the event kicks off the router's [state processing workflow](#state-processing-workflow).
+In this example we'll use a controller that (pretends to) receives data from a view and raise an event to the router. 
+Publishing the event kicks off the router's [state processing workflow](#state-processing-workflow).
 
 ``` javascript
 class CarScreenController {
@@ -230,7 +237,8 @@ Additionally full usage of the [state processing workflow](#state-processing-wor
 A single root model is simply a single instance object hierarchy that models your system. 
 The object contains little business logic as event processors own this. 
 Additionally they own how the model state shifts/grows/contracts over time (more on this below). 
-The root of the model obviously knows about objects below it, however it's focus is really on interacting with it's direct children, and those children with their own children. 
+The root of the model obviously knows about objects below it.
+However its focus is really on interacting with its direct children, and those children with their own children. 
 This interaction is usually quite simplistic (i.e. indexers, look-ups etc).
 
 A model purist may say only *model what's specific to your business domain*. 
@@ -261,36 +269,41 @@ The 'model' in the traditional sense now really comprises of the model objects, 
 ## Event Processors
 
 Event processors are objects that observe the `Router` for events and apply event state to the model. 
-There is no object named `EventProcessor` in the ESP code base, it's simply a naming convention.
+There is no object named `EventProcessor` in the ESP code base, it is simply a naming convention.
 
 An processor is typically scoped to align with a node in the graph of the object model. 
-For example, you may have an object model to describe a financial product `MyProduct`, MyProduct may have a collection of legs, i.e. `MyProduct.legs`. 
-There may be enough functionality for each leg to warrant it's own event processor, therefore you'd instantiate a `LegEventProcessor` object that would own a particular leg on the model, i.e. `myProduct.legs[0]`. 
+For example, you may have an object model to describe a financial product `MyProduct`.
+`MyProduct` may have a collection of legs, i.e. `MyProduct.legs`. 
+There may be enough functionality for each leg to warrant its own event processor.
+In this case you would instantiate a `LegEventProcessor` object that would own a particular leg on the model, i.e. `myProduct.legs[0]`. 
 You can always start with a single Event Processor for your root entity then and break it down using good old fashioned OO composition principles.
 
 ## State processing workflow
 
 When an event is published to the router it starts the state processing workflow. 
-The workflow has 3 ordered stages, the model can be modified at each, with each stage offering different benefits depending on what state you want to modify. 
-Stage 2 can be further split into 3 sub stages that are progressive, i.e. the event may not progress thought these 3 stages depending upon how event processors decide to process the event.
+The workflow has 3 ordered stages, with each stage offering different benefits depending on what state you want to modify. 
+The model can be modified at each stage.
+Stage 2 can be further split into 3 sub stages that are progressive, i.e. the event may not progress though these 3 stages depending upon how event processors decide to process the event.
 
 > If there were no stages, processors could simply apply the change to the model then raise a new event for 'reacting' processors to observe, similar for events that need to be verified before proceeding. 
 > To avoid `eventType` explosion the preview and committed stages are provided around the normal stage.
 
-At each stage user code will get a function of signature `(model, event, eventContext) => { }` to interact with, the first two are self explanatory, the `eventContext` has some methods that can affect how the event proceeds.
+At each stage user code will get a function of signature `(model, event, eventContext) => { }` to interact with.
+The first two parameters are self explanatory. The `eventContext` has some methods that can affect how the event proceeds.
 
-Any component that receives and event during the event workflow can publish subsequent events, they will be enqueued and processed in turn by the [Event Loop](#the-event-loop).
+Any component that receives an event during the event workflow can publish subsequent events.
+These subsequent events will be enqueued and processed in turn by the [Event Loop](#the-event-loop).
 
 The below image depicts a simplistic view of this process. 
 Note that `EventPublisher` and `ModelObserver` are often the same component/class. 
 
-> This diagram doesn't cover many of the aspects covered below, i.e. the 3 event subscription sub stages available 
-to EventProcessors, subsequent event publication nor the purging of the event queues by the [Event Loop](#the-event-loop).
+> This diagram doesn't cover many of the aspects covered below, i.e. the 3 event subscription sub stages available to EventProcessors, subsequent event publication nor the purging of the event queues by the [Event Loop](#the-event-loop).
 > An expanded representation of the flow can be found [here](docs/FullEventProcessingFlow.png). 
 
 ![](docs/EventProcessingFlow.png?raw=true)
 
-Below we discuss the various stages, the example code uses this simple model (the complete code for these examples below can be found [with the source](blob/master/dist/examples/readme/app.js)):
+Below we discuss the various stages.
+The example code uses this simple model:
 
 ``` javascript
 class FruitStore {
@@ -337,11 +350,15 @@ class FruitStore {
 }
 ```
 
+The complete code for these examples below can be found [with the source](blob/master/dist/examples/readme/app.js).
+
 ### <a name="PreEventProcessing"></a>  1 Pre event processing
 
-When registering a model with the router you can optionally provide an `options` object with a `preEventProcessor` property, this property can either be an object with a `process(model, event, eventContext)` method or a function with signature `(model, event, eventContext) => { }`. 
+When registering a model with the router you can optionally provide an `options` object with a `preEventProcessor` property.
+This property can either be an object with a `process(model, event, eventContext)` method or a function with signature `(model, event, eventContext) => { }`. 
 The processor will be the first thing called. 
-It's an ideal place to change state that moves with each tick of model (i.e. the version) or to reset any state that was applied specifically for the last [Event Loop](#the-event-loop) (for example clear a user alert, or perhaps clear a collection of messages that were dispatched on the network).
+It's an ideal place to change state that moves with each tick of model (i.e. the version) or to reset any state that was applied specifically for the last [Event Loop](#the-event-loop). 
+For example to clear a user alert, or perhaps clear a collection of messages that were dispatched on the network.
 
 ``` javascript
 var router = new esp.Router();
@@ -385,7 +402,8 @@ The possible values for `stage` are 'preview', 'normal' and 'committed'.
 All handlers registered with `EventStage.preview` receive the event first, then (if not canceled) all handlers at `EventStage.normal`.
 Finally if the event was 'committed', all handlers at `EventStage.committed` will receive it.
 
-The call returns an [observable](#observable-api), it's observe method takes an observer and returns an object with a `dispose()` method, calling `dispose()` will remove the event subscription from the router.
+The call returns an [observable](#observable-api).
+Its `observe` method takes an observer and returns an object with a `dispose()` method, calling `dispose()` will remove the event subscription from the router.
 
 Upon event dispatch the router passes the `model` the `event` and an `eventContext` to the given observer. 
 It's likely you'll always take the `model` and `event`, and only take the `eventContext` if you want to alter the default event workflow. 
@@ -393,7 +411,8 @@ Typically you chain calls on the `observable` together (see examples below).
 
 #### 2.1 Preview stage
 
-The event can be canceled at this stage by calling `eventContext.cancel()`, other `EventStage.preview` observers will still receive the event however it won't be delivered to observers at `EventStage.normal` or `EventStage.committed`.
+The event can be canceled at this stage by calling `eventContext.cancel()`.
+Other `EventStage.preview` observers will still receive the event, however it won't be delivered to observers at `EventStage.normal` or `EventStage.committed`.
 
 ``` javascript
 var router = new esp.Router();
@@ -556,17 +575,21 @@ Stock count: 1, shouldRefreshFromStore: true, shouldRecalculateInventory: true
 
 The post processing stage always runs. 
 This stage is similar to the pre event processing except it runs last. 
-It's advised you don't change the shape of the model at this point, it's pretty much done and dusted (for this [event loop](#the-event-loop)), however you can perform cross cutting validation, aggregate operations or perhaps model the nature of the change that occurred (useful for model observers to filter as appropriate). 
+It is advised you do not change the shape of the model at this point, it is pretty much done and dusted (for this [event loop](#the-event-loop)).
+However you can perform cross cutting validation, aggregate operations or perhaps model the nature of the change that occurred.
+This can be useful for model observers to filter as appropriate. 
 There is an example of a post process [above](#create-an-event-post-processor).
 
 > Note the `eventContext` this stage receives will contain the last event published to the router for the model in question. 
-For example, event 'A' may have been the event that started the workflow, however a processor responding to event 'A' may have published event 'B', if 'B' was the last event published during the event loop then 'B' will be last event set against the `eventContext`.
+> For example, event 'A' may have been the event that started the workflow, however a processor responding to event 'A' may have published event 'B'.
+> If 'B' was the last event published during the event loop then 'B' will be last event set against the `eventContext`.
 
-Event publication in this stage is allowed, however it will get processed in a new iteration of the event loop, i.e. the router will treat it as if it is a 'first' event and re-run the workflow for the model in question.
+Event publication in this stage is allowed, however it will get processed in a new iteration of the event loop.
+Thus router will treat this new event as if it is a 'first' event and re-run the workflow for the model in question.
 
 ## Model observation and sync
 
-An object can listen for model updates by subscribing to changes for that models id via `router.getModelObservable(modelId)`. 
+An object can listen for model updates by subscribing to changes for that model id via `router.getModelObservable(modelId)`. 
 Similar to `router.getEventObservable(...)`, this call returns an [observable](#observable-api) which will yield changes to the observer.
 
 ``` javascript
@@ -594,17 +617,19 @@ Foo is 2
 ## The event loop
 
 The event loop kicks off once an event is published to the router via `router.publishEvent(...)`. 
-Any time control flow leaves the router (before the initial call to `publishEvent(...)` returns), it's possible that further events could be raised, any subsequent events go onto a backing queue for their respective model.
+Any time control flow leaves the router (before the initial call to `publishEvent(...)` returns), it is possible that further events could be raised.
+Any subsequent events go onto a backing queue for their respective model.
 
 ### Event queues
 
-Each model added to the router has it's own event queue. 
+Each model added to the router has its own event queue. 
 Every time a call to `publishEvent(...)` occurs the event is placed on the queue for the model in question. 
-During the event workflow any subsequent events raised (by a [`preEventProcessor`](#PreEventProcessing), an [event processors](#event-processors) and/or a [`postEventProcessor`](#PostEventProcessing))
-get placed on the back of the models event queue. 
+During the event workflow any subsequent events raised get placed on the back of the model's event queue.
+Events could be raised by a [`preEventProcessor`](#PreEventProcessing), an [event processors](#event-processors) and/or a [`postEventProcessor`](#PostEventProcessing). 
 This means published events are not processed immediately, they're processed in turn. 
-This allows the router to finish dealing with the current event, and allows for processors to assume the model is in a state fit for the event currently being processed, they don't need to worry about what's in the backing queue, their business logic need only be concerned with the current event and the current state, this makes the whole process deterministic.
-When the current models event queue is empty, the router will check other models queues and continue until all are empty, it then dispatches model updates. 
+This allows the router to finish dealing with the current event, and allows for processors to assume the model is in a state fit for the event currently being processed.
+Processors are not concerned with what is in the backing queue, only with the current event and the current state, making execution deterministic.
+When the current model's event queue is empty, the router will check the queues for other models and continue until all are empty, it then dispatches the model updates. 
 It must again check for any new events and finally when all are processed control flow will return to the initial event publisher.
 
 ### Bypassing the event queue with `router.executeEvent(eventType, event)`
@@ -616,7 +641,7 @@ Calling `router.executeEvent(eventType, event)` will immediately execute the eve
 Note that processors responding to executed events are not allowed to publish further events. 
 Doing so could move the router too far forward so upon resumption of the prior event, the state isn't that which the processors would expect.
 
-> If you find yourself relying on this method it's usually a smell that you're not modeling your problem correctly. 
+> If you find yourself relying on this method, it is usually a smell that you're not modeling your problem correctly. 
 > Nearly all issues can be address with further modeling.
 
 ## Observable API
@@ -626,9 +651,11 @@ This is modeled on [RxJs's](https://github.com/Reactive-Extensions/RxJS) observa
 
 > Why not use Rx?
 >
-> The push based model of Rx is ideal for pub/sub scenarios where state needs to be combined from many differing streams, however the full Rx API isn't suitable as introduction of asynchronicity and other methods that would result in state being held in observable streams would break the deterministic staged workflow that the router owns. 
-> For example, a deferred model change by way of an asynchronous operation would happen outside of the state processing workflow, there's no guarantee the model would be still in a state suitable once the deferred event arrives. 
-> Similarly relational operations that combine event streams use state held in observable objects/closures, when a final result yields the underlying model may not be in a state suitable for the target result.
+> The push based model of Rx is ideal for pub/sub scenarios where state needs to be combined from many differing streams.
+> However the full Rx API isn't suitable as introduction of asynchronicity and other methods that would result in state being held in observable streams would break the deterministic staged workflow that the router owns. 
+> For example, a deferred model change by way of an asynchronous operation would happen outside of the state processing workflow.
+> Then there is no guarantee the model would be still in a state suitable once the deferred event arrives. 
+> Similarly, for relational operations that combine event streams into state held in observable objects/closures, when a final result yields the underlying model may not be in a state suitable for the target result.
 
 The methods on `Observable.prototype` are:
 
@@ -641,7 +668,8 @@ The methods on `Observable.prototype` are:
 If you wish you can extend the API by adding your own methods to `Observable.prototype`, see the existing code for an example.
 
 The below code demonstrates some similarities of use between the APIs. 
-Note the function delegate signature on `router.getEventObservable(...)`, it's observe function takes 3 parameters, the `model`, an `event` and optionally the `eventContext`, this differs from the single object with the Rx implementation. 
+Note the function delegate signature on `router.getEventObservable(...)`, its `observe` function takes 3 parameters, the `model`, an `event` and optionally the `eventContext`.
+This differs from the single object with the Rx implementation. 
 The `subscribe` method is called `observe` to avoid confusion with existing code.
 
 ``` javascript
@@ -713,12 +741,14 @@ Price with margin was set to 112
 
 ## Asynchronous operations
 
-If an asynchronous operation has to be performed it's relating state should be stored on the model. 
+If an asynchronous operation has to be performed, its relating state should be stored on the model. 
 For example you'd model that you're about to perform the request, you'd then carry out the request async. 
 The router would dispatch an intermittent update so model observers know the model is busy.
-Then when results are received you post the results via an event to the router and the [`EventProcessor`](#event-processors) would update the model with the results and denote the async operation has finished.
+Then when results are received you post the results via an event to the router.
+The [`EventProcessor`](#event-processors) would then update the model with the results and denote the async operation has finished.
 
-There is a long and a short way to do this, the long involves multiple differing events and 'work items', the short involves using `beginWork()` which exists on `Observable.prototype` and does the work for you.
+There is a long and a short way to do this, the long involves multiple differing events and 'work items'.
+The short way involves using `beginWork()` which exists on `Observable.prototype` and does the work for you.
 
 Note: there will be future improvements in this area and hopefully some tie in with external libraries that provide async APIs (i.e. [Rx](https://github.com/Reactive-Extensions/RxJS), [async](https://github.com/caolan/async)).
 
@@ -776,14 +806,16 @@ GUIs idle, static data: false
 ### Work items
 
 A work item is simply an object that manages the lifetime of one or many async operations that together could be thought of as a single unit of work. 
-There is no object named `workItem` in the ESP code base, it's simply a related pattern for dealing with async operations. 
+There is no object named `workItem` in the ESP code base, it is simply a related pattern for dealing with async operations. 
 They work in much the same was as `Observable.prototype.beginWork()` whereby results are posted back to the router.
 Usually, but not always, the results would get processed by the event processor that started the work item.
 
 Typically you'd find that work items fall under one of the following categories:
 
-* transient : something you create for a short lived operation, perhaps to request a price from the server, once the result is received it's done it's job.
-* long lived : something that posts multiple results (via events) back into the router, it could potentially share it's lifetime with the model root (i.e. common static data feed from downstream) or part of the model (i.e. user specific trade filter subscription).
+* transient : something you create for a short lived operation, perhaps to request a price from the server.
+Once the result is received it has done its job.
+* long lived : something that posts multiple results (via events) back into the router.
+It could potentially share its lifetime with the model root (i.e. common static data feed from downstream) or part of the model (i.e. user specific trade filter subscription).
 
 This example demonstrate a transient work item:
 
@@ -829,7 +861,7 @@ class StaticDataEventProcessor extends esp.model.DisposableBase {
     _listenForStaticDataReceivedEvent() {
         // note you could wire up more advanced disposal of this stream (i.e. use
         // a .takeUntil(), you could also leave it open if you were to later
-        // expect events matching it's eventType
+        // expect events matching its eventType
         this.addDisposable(this._router
             .getEventObservable('modelId', 'userStaticReceivedEvent')
             .observe((model, event, eventContext) => {
@@ -862,9 +894,11 @@ Adding static data [StaticDataB] to model
 ## Error Flows
 
 If an exception is unhandled during the event processing workflow the router will halt. 
-Any further usage result in the initial error being wrapped and rethrow.
+Any further usage results in the initial error being wrapped and re-thrown.
 
-If an observable stream (returned from `router.getEventObservable(...)` or `router.getModelObservable(...)`) has an exception, it's `onError` handler will be called, this allows the developer to log a more detailed exception based on the streams details, it also allows for errors in observable methods to propagate to the error handler provided to the `.observe()` call. 
+If an observable stream (returned from `router.getEventObservable(...)` or `router.getModelObservable(...)`) has an exception, its `onError` handler will be called.
+This allows the developer to log a more detailed exception based on the streams details.
+It also allows for errors in observable methods to propagate to the error handler provided to the `.observe()` call. 
 Any error will halt the router, no further observers will receive the current or subsequent events/model updates.
 
 ``` javascript
@@ -993,13 +1027,22 @@ Notional is 4
 ## Holding state outside the model
 
 If your event processors are holding state, that state should be on the model. 
-They may decide to hold instance of work items that are long lived, perhaps these get disposed with the processor, however information relating to the progress state of the work items should be on the model, it's something others may want to react to (i.e. display a 'busy gui').
+They may decide to hold instances of work items that are long lived.
+Perhaps these instances get disposed with the processor.
+However information relating to the progress state of the work items should be on the model, it is something others may want to react to (i.e. display a 'busy gui').
 
 ## Having dependent event processors
 
-If you find that you've publish an event in once processor targeted at another, then in the other need to publish a response, perhaps these 2 processors are really dealing with the same concern and need to be merged.
+If you publish an event that requires a response from another processor, then perhaps these 2 processors are really dealing with the same concern and need to be merged.
 
-Sometimes you may have a complex sub system within the model, this sub system might be better managed behind a façade that receives all events and calls methods on the façade to manipulate model state.
+You may have a complex sub system within the model.
+This sub system might be better managed behind a façade that receives all events and calls methods on the façade to manipulate model state.
+
+## Having circular dependencies between models
+
+If you register 2 models and publish events from one to the other that's fine, however if you then find your self publishing back the other you may see some issues.
+
+It depends on what you do, you just need to be careful to avoid event reentrancy.
 
 ## Storing a local copy of the model
 
@@ -1009,20 +1052,17 @@ More information on this in the [immutability section](#immutability).
 
 ## Event processors subscribing to model changes
 
-Event processors receive the model along with events by subscribing to `router.getEventObservable(...)`, they should not listen to model changes via `router.getModelObservable(...)`, they are on different sides of the model boundary. 
-There is nothing physically stopping this, it's just an anti pattern and should be avoided.
-
-## Having circular dependencies between models
-
-If you register 2 models and publish events from one to the other that's fine, however if you then find your self publishing back the other you may see some issues. 
-It depends on what you do, you just need to be careful to avoid event reentrancy.
+Event processors receive the model along with events by subscribing to `router.getEventObservable(...)`.
+They should not listen to model changes via `router.getModelObservable(...)`.
+These two concerns are on different sides of the model boundary. 
+There is nothing physically stopping this, it is just an anti pattern and should be avoided.
 
 # Examples
 
-There is already a a basic example in the src in addition to all the examples in this readme. 
+There is already a a basic example in the _src_ in addition to all the examples in this _readme_. 
 On the road map is a example that covers each of the below areas in details.
 It will give an idea how you can lay out a complex systems model. 
-The example will model a complex GUI screen and cover these topic's:
+The example will model a complex GUI screen and cover these topics:
 
 + Creating a model
     + Immutability

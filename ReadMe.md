@@ -39,7 +39,7 @@ In reality you might reach hundreds of entities with the object graph many level
 ``` javascript
 class Car {
     constructor() {
-        this._make = 'Unknoan';
+        this._make = 'Unknown';
         this._color = 'White';
         this._isSportModel = false;
         this._description = '';
@@ -340,7 +340,8 @@ class FruitStore {
 ### <a name="PreEventProcessing"></a>  1 Pre event processing
 
 When registering a model with the router you can optionally provide an `options` object with a `preEventProcessor` property, this property can either be an object with a `process(model, event, eventContext)` method or a function with signature `(model, event, eventContext) => { }`. 
-The processor will be the first thing called. It's an ideal place to change state that moves with each tick of model (i.e. the version) or to reset any state that was applied specifically for the last [Event Loop](#the-event-loop) (for example clear a user alert, or perhaps clear a collection of messages that were dispatched on the network).
+The processor will be the first thing called. 
+It's an ideal place to change state that moves with each tick of model (i.e. the version) or to reset any state that was applied specifically for the last [Event Loop](#the-event-loop) (for example clear a user alert, or perhaps clear a collection of messages that were dispatched on the network).
 
 ``` javascript
 var router = new esp.Router();
@@ -623,9 +624,9 @@ Doing so could move the router too far forward so upon resumption of the prior e
 As discussed previously both `router.getEventObservable(...)` and `router.getModelObservable(...)` return an observable object. 
 This is modeled on [RxJs's](https://github.com/Reactive-Extensions/RxJS) observable API but with only a few methods included.
 
-> Why not use RX?
+> Why not use Rx?
 >
-> The push based model of RX is ideal for pub/sub scenarios where state needs to be combined from many differing streams, however the full RX API isn't suitable as introduction of asynchronicity and other methods that would result in state being held in observable streams would break the deterministic staged workflow that the router owns. 
+> The push based model of Rx is ideal for pub/sub scenarios where state needs to be combined from many differing streams, however the full Rx API isn't suitable as introduction of asynchronicity and other methods that would result in state being held in observable streams would break the deterministic staged workflow that the router owns. 
 > For example, a deferred model change by way of an asynchronous operation would happen outside of the state processing workflow, there's no guarantee the model would be still in a state suitable once the deferred event arrives. 
 > Similarly relational operations that combine event streams use state held in observable objects/closures, when a final result yields the underlying model may not be in a state suitable for the target result.
 
@@ -719,7 +720,7 @@ Then when results are received you post the results via an event to the router a
 
 There is a long and a short way to do this, the long involves multiple differing events and 'work items', the short involves using `beginWork()` which exists on `Observable.prototype` and does the work for you.
 
-Note: there will be future improvements in this area and hopefully some tie in with external libraries that provide async APIs (i.e. [RX](https://github.com/Reactive-Extensions/RxJS), [async](https://github.com/caolan/async)).
+Note: there will be future improvements in this area and hopefully some tie in with external libraries that provide async APIs (i.e. [Rx](https://github.com/Reactive-Extensions/RxJS), [async](https://github.com/caolan/async)).
 
 ### Observable.prototype.beginWork() (beta API)
 
@@ -775,7 +776,7 @@ GUIs idle, static data: false
 ### Work items
 
 A work item is simply an object that manages the lifetime of one or many async operations that together could be thought of as a single unit of work. 
-There is no object named `workItem` in the ESP codebase, it's simply a related pattern for dealing with async operations. 
+There is no object named `workItem` in the ESP code base, it's simply a related pattern for dealing with async operations. 
 They work in much the same was as `Observable.prototype.beginWork()` whereby results are posted back to the router.
 Usually, but not always, the results would get processed by the event processor that started the work item.
 
@@ -998,7 +999,7 @@ They may decide to hold instance of work items that are long lived, perhaps thes
 
 If you find that you've publish an event in once processor targeted at another, then in the other need to publish a response, perhaps these 2 processors are really dealing with the same concern and need to be merged.
 
-Sometimes you may have a complex sub system within the model, this sub system might be better managed behind a facade that receives all events and calls methods on the facade to manipulate model state.
+Sometimes you may have a complex sub system within the model, this sub system might be better managed behind a façade that receives all events and calls methods on the façade to manipulate model state.
 
 ## Storing a local copy of the model
 
@@ -1048,7 +1049,7 @@ The example will model a complex GUI screen and cover these topic's:
     + Post event processors
 + Miscellaneous
     + Event context customisation
-    + Facade pattern for a sub system
+    + Façade pattern for a sub system
     + Synchronising the GUI with new model state
         ++ avoid triggering event during GUI sync
 
@@ -1056,7 +1057,7 @@ The example will model a complex GUI screen and cover these topic's:
 
 v0.0.2
 
-+ Better async support with pipelines: i.e. a chaining API that can delegate to 3rd part async libraries and handles marshaling async results back through the [state processing workflow](#state-processing-workflow).
++ Better async support with pipelines: i.e. a chaining API that can delegate to 3rd part async libraries and handles marshalling async results back through the [state processing workflow](#state-processing-workflow).
 + Event reentrancy detection.
 + Memory leak and performance analysis/improvements.
 + Better model composition and reusability by allowing [`EventProcessors`](#event-processors) to subscribe to a node of a greater model.

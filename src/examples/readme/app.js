@@ -7,7 +7,7 @@ var runBasicExample =  () => {
     // Create a simple model
     class Car {
         constructor() {
-            this._make = 'Unknoan';
+            this._make = 'Unknown';
             this._color = 'white';
             this._isSportModel = false;
             this._description = '';
@@ -519,7 +519,7 @@ var runWorkItemExample = () => {
         _listenForStaticDataReceivedEvent() {
             // note you could wire up more advanced disposal of this stream (i.e. write
             // a .takeUntilInclusive() extension method, you could also leave it
-            // open if you were to later expect events matching it's eventType
+            // open if you were to later expect events matching its eventType
             this.addDisposable(this._router
                 .getEventObservable('modelId', 'userStaticReceivedEvent')
                 .observe((model, event, eventContext) => {

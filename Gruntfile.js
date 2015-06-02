@@ -66,9 +66,9 @@ module.exports = function(grunt) {
                 output: {
                     libraryTarget: 'umd',
                     sourcePrefix: '    ',
-                    library: 'microdi-js',
+                    library: 'microdi',
                     path: './dist/',
-                    filename: 'microdi-js.js'
+                    filename: 'microdi.js'
                 },
                 module: {
                     loaders: [
@@ -88,12 +88,12 @@ module.exports = function(grunt) {
                     ]
                 },
                 output: {
-                    filename: 'microdi-js.js'
+                    filename: 'microdi.js'
                 }
             },
             release: {
                 output: {
-                    filename: 'microdi-js.min.js'
+                    filename: 'microdi.min.js'
                 },
                 plugins: [
                     new webpack.optimize.UglifyJsPlugin({minimize: true}),
@@ -101,15 +101,29 @@ module.exports = function(grunt) {
                 ]
             }
         },
+        // only used for the examples, the rest of the code gets transpiled via a webpack loader
+        "babel": {
+            options: {
+                sourceMap: false
+            },
+            dist: {
+                files: [{
+                    expand: true,
+                    cwd: 'src/examples',
+                    src: ['**/*.js'],
+                    dest: 'dist/examples'
+                }]
+            }
+        },
         watch: {
             options: {
                 atBegin: true
             },
             files: ['<%= jshint.src.files.src %>', '<%= jshint.tests.files.src %>'],
-            tasks: ['jshint', 'karma:unit:run']
+            tasks: ['jshint', 'karma:unit:run', 'webpack', 'babel']
         }
     });
 
     grunt.registerTask('dev', ['karma:unit:start', 'watch']);
-    grunt.registerTask('default', ['jshint', 'karma:release', 'webpack']);
+    grunt.registerTask('default', ['jshint', 'karma:release', 'webpack', 'babel']);
 };

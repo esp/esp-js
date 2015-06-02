@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define(factory);
 	else if(typeof exports === 'object')
-		exports["microdi-js"] = factory();
+		exports["microdi"] = factory();
 	else
-		root["microdi-js"] = factory();
+		root["microdi"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -496,4 +496,4 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
-//# sourceMappingURL=microdi-js.js.map
+//# sourceMappingURL=microdi.js.map

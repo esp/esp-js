@@ -10,7 +10,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var esp = _interopRequire(require("../../esp-js.js"));
+var esp = _interopRequire(require("../../esp.js"));
 
 var ProductionLine = (function () {
     function ProductionLine() {

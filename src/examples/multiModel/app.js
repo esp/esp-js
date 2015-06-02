@@ -1,4 +1,4 @@
-import esp from '../../esp-js.js';
+import esp from '../../esp.js';
 
 class ProductionLine {
     constructor() {

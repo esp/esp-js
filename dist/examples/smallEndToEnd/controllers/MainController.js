@@ -10,7 +10,7 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== "fun
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var esp = _interopRequire(require("../../../esp-js.js"));
+var esp = _interopRequire(require("../../../esp.js"));
 
 var MainController = (function (_esp$model$DisposableBase) {
     function MainController(router) {

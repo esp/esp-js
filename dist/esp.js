@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define(factory);
 	else if(typeof exports === 'object')
-		exports["esp-js"] = factory();
+		exports["esp"] = factory();
 	else
-		root["esp-js"] = factory();
+		root["esp"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -2206,4 +2206,4 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
-//# sourceMappingURL=esp-js.js.map
+//# sourceMappingURL=esp.js.map

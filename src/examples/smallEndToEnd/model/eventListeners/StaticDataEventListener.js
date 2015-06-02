@@ -1,6 +1,6 @@
 "use strict";
 
-import esp from '../../../../esp-js.js';
+import esp from '../../../../esp.js';
 
 class StaticDataEventProcessor extends esp.model.DisposableBase {
     constructor(router) {

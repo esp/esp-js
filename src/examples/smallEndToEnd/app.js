@@ -1,6 +1,6 @@
 "use strict";
 
-import esp from '../../esp-js.js';
+import esp from '../../esp.js';
 import ModelBootstrapper from './model/ModelBootstrapper';
 import MainController from './controllers/MainController';
 

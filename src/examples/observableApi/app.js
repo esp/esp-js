@@ -1,4 +1,4 @@
-import esp from '../../esp-js.js';
+import esp from '../../esp.js';
 
 // note there are several concerns here that would exist in different areas of your architecture
 // then are all together to demo the concepts.

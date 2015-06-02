@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var esp = _interopRequire(require("../../esp-js.js"));
+var esp = _interopRequire(require("../../esp.js"));
 
 // note there are several concerns here that would exist in different areas of your architecture
 // then are all together to demo the concepts.

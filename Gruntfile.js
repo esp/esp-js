@@ -71,9 +71,9 @@ module.exports = function(grunt) {
                 output: {
                     libraryTarget: 'umd',
                     sourcePrefix: '    ',
-                    library: 'esp-js',
+                    library: 'esp',
                     path: './dist/',
-                    filename: 'esp-js.js'
+                    filename: 'esp.js'
                 },
                 module: {
                     loaders: [
@@ -93,12 +93,12 @@ module.exports = function(grunt) {
                     ]
                 },
                 output: {
-                    filename: 'esp-js.js'
+                    filename: 'esp.js'
                 }
             },
             release: {
                 output: {
-                    filename: 'esp-js.min.js'
+                    filename: 'esp.min.js'
                 },
                 plugins: [
                     new webpack.optimize.UglifyJsPlugin({minimize: true}),

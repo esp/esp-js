@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var esp = _interopRequire(require("../../esp-js.js"));
+var esp = _interopRequire(require("../../esp.js"));
 
 var ModelBootstrapper = _interopRequire(require("./model/ModelBootstrapper"));
 

@@ -1,5 +1,5 @@
 "use strict";
-import esp from '../../../esp-js.js';
+import esp from '../../../esp.js';
 class MainController extends esp.model.DisposableBase {
     constructor(router) {
         super();

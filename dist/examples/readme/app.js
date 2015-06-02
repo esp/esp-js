@@ -10,7 +10,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var esp = _interopRequire(require("../../esp-js.js"));
+var esp = _interopRequire(require("../../esp.js"));
 
 ////////////////////////////////////////////////////////////// basic usage example //////////////////////////////////////////////////////////////
 var runBasicExample = function () {
@@ -21,7 +21,7 @@ var runBasicExample = function () {
         function Car() {
             _classCallCheck(this, Car);
 
-            this._make = "Unknoan";
+            this._make = "Unknown";
             this._color = "white";
             this._isSportModel = false;
             this._description = "";
@@ -574,7 +574,7 @@ var runWorkItemExample = function () {
                 value: function _listenForStaticDataReceivedEvent() {
                     // note you could wire up more advanced disposal of this stream (i.e. write
                     // a .takeUntilInclusive() extension method, you could also leave it
-                    // open if you were to later expect events matching it's eventType
+                    // open if you were to later expect events matching its eventType
                     this.addDisposable(this._router.getEventObservable("modelId", "userStaticReceivedEvent").observe(function (model, event, eventContext) {
                         console.log("Adding static data [" + event + "] to model");
                         model.staticData.push(event);

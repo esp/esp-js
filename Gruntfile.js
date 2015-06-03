@@ -19,7 +19,7 @@ module.exports = function(grunt) {
             },
             src: {
                 files: {
-                    src:['Gruntfile.js', 'src/**/*.js']
+                    src:['Gruntfile.js', 'src/**/*.js', './index.js']
                 }
             },
             tests: {

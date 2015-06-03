@@ -71,9 +71,9 @@ export default class Container {
         }
         return instance;
     }
-    addResolver(type, plugin) {
+    addResolver(type, resolver) {
         if (this._isDisposed) this._throwIsDisposed();
-        this._resolvers[type] = plugin;
+        this._resolvers[type] = resolver;
     }
     dispose() {
         this._disposeContainer();
@@ -128,7 +128,7 @@ export default class Container {
                     } else if (dependencyKey.hasOwnProperty('type') && utils.isString(dependencyKey.type)) {
                         resolver = this._resolvers[dependencyKey.type];
                         if (resolver === undefined) {
-                            throw new Error(utils.sprintf('Error resolving [%s]. No resolver plugin registered to resolve dependency key for type [%s]', name, dependencyKey.type));
+                            throw new Error(utils.sprintf('Error resolving [%s]. No resolver registered to resolve dependency key for type [%s]', name, dependencyKey.type));
                         }
                         dependency = resolver.resolve(this, dependencyKey);
                     } else {
@@ -158,6 +158,7 @@ export default class Container {
         return instance;
     }
     _validateDependencyList(dependencyList) {
+        // TODO
     }
     _createDefaultResolvers() {
         return {

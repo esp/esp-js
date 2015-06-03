@@ -1,13 +1,13 @@
 "use strict";
 
-import Container from '../';
+import microdi from '../';
 
 describe('Container', () =>  {
 
     var container;
 
     beforeEach(() => {
-        container = new Container();
+        container = new microdi.Container();
     });
 
     describe('.register()/.resolve() functionality', () =>  {

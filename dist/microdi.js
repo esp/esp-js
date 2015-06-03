@@ -65,8 +65,8 @@ return /******/ (function(modules) { // webpackBootstrap
     var _srcContainer = __webpack_require__(1);
     
     var _srcContainer2 = _interopRequireDefault(_srcContainer);
-
-    exports['default'] = _srcContainer2['default'];
+    
+    exports['default'] = { Container: _srcContainer2['default'] };
     module.exports = exports['default'];
 
 /***/ },
@@ -180,9 +180,9 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: 'addResolver',
-            value: function addResolver(type, plugin) {
+            value: function addResolver(type, resolver) {
                 if (this._isDisposed) this._throwIsDisposed();
-                this._resolvers[type] = plugin;
+                this._resolvers[type] = resolver;
             }
         }, {
             key: 'dispose',
@@ -243,7 +243,7 @@ return /******/ (function(modules) { // webpackBootstrap
                             } else if (dependencyKey.hasOwnProperty('type') && _utils2['default'].isString(dependencyKey.type)) {
                                 resolver = this._resolvers[dependencyKey.type];
                                 if (resolver === undefined) {
-                                    throw new Error(_utils2['default'].sprintf('Error resolving [%s]. No resolver plugin registered to resolve dependency key for type [%s]', name, dependencyKey.type));
+                                    throw new Error(_utils2['default'].sprintf('Error resolving [%s]. No resolver registered to resolve dependency key for type [%s]', name, dependencyKey.type));
                                 }
                                 dependency = resolver.resolve(this, dependencyKey);
                             } else {
@@ -329,6 +329,8 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports['default'] = Container;
     module.exports = exports['default'];
+
+    // TODO
 
 /***/ },
 /* 2 */

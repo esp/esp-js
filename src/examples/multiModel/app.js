@@ -7,13 +7,6 @@ class ProductionLine {
     }
     get cars() {
         return this._cars;
-        //var cars = [];
-        //for( var p in this._cars) {
-        //    if(this._cars.hasOwnProperty(p)) {
-        //        cars.push(this._cars[p]);
-        //    }
-        //}
-        //return cars;
     }
     get totalCarCost() {
         return this._totalCarCost;
@@ -175,7 +168,7 @@ class ProductionLineController extends esp.model.DisposableBase  {
         this.addDisposable(
             router.getModelObservable(this._productionLineId).observe(model => {
                 console.log("Model update received. Total car cost: %s", model.totalCarCost);
-                
+
             })
         );
     }
@@ -237,4 +230,3 @@ console.log();
 console.log("Adding HOLDEN----------");
 router.publishEvent("productionLineId", "addCar", { type: "HOLDEN" });
 router.publishEvent("carId_3", "modifySpecsEvent", { hasSunRoof: true });
-

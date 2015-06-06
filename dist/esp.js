@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports.EventStage = __webpack_require__(1);
     exports.Router = __webpack_require__(2);
-    exports.model = __webpack_require__(26);
+    exports.model = __webpack_require__(28);
 
 /***/ },
 /* 1 */
@@ -129,9 +129,9 @@ return /******/ (function(modules) { // webpackBootstrap
     var Subject = _reactiveIndex.Subject;
     var Observable = _reactiveIndex.Observable;
     
-    var SubModelChangedEvent = __webpack_require__(23).SubModelChangedEvent;
+    var SubModelChangedEvent = __webpack_require__(25).SubModelChangedEvent;
     
-    var Logger = _interopRequireWildcard(__webpack_require__(25));
+    var Logger = _interopRequireWildcard(__webpack_require__(27));
     
     var utils = _interopRequireWildcard(__webpack_require__(5));
     
@@ -990,13 +990,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
     __webpack_require__(15);
     
-    __webpack_require__(21);
+    __webpack_require__(23);
     
     __webpack_require__(10);
     
     exports.Observable = _interopRequire(__webpack_require__(11));
     exports.Observer = _interopRequire(__webpack_require__(12));
-    exports.Subject = _interopRequire(__webpack_require__(22));
+    exports.Subject = _interopRequire(__webpack_require__(24));
 
 /***/ },
 /* 10 */
@@ -1221,16 +1221,15 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var Guard = _interopRequire(__webpack_require__(4));
     
-    var AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(17));
+    var AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(16));
     
-    var uuid = _interopRequire(__webpack_require__(16));
+    var uuid = _interopRequire(__webpack_require__(17));
     
-    var CompositeDisposable = _interopRequire(__webpack_require__(18));
-    
-    var DictionaryDisposable = _interopRequire(__webpack_require__(20));
+    var system = _interopRequire(__webpack_require__(18));
     
     var _asyncWorkCompleteEventName = "asyncWorkCompleteEvent";
-    
+    var CompositeDisposable = system.disposables.CompositeDisposable;
+    var DictionaryDisposable = system.disposables.DictionaryDisposable;
     /*
     * Note: experimental, needs more test, doesn't work with .take()
     *
@@ -1246,7 +1245,7 @@ return /******/ (function(modules) { // webpackBootstrap
         Guard.isDefined(action, "action required, format: (ec : EventContext, done : (result : any) => { })");
         var source = this;
         var disposables = new CompositeDisposable();
-        var dictionaryDisposable = new DictionaryDisposable();
+        var dictionaryDisposable = new system.disposables.DictionaryDisposable();
         disposables.add(dictionaryDisposable);
         var observe = function (observer) {
             disposables.add(source.observe(function (model, event, eventContext) {
@@ -1283,6 +1282,48 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var AsyncWorkCompleteEvent = (function () {
+        function AsyncWorkCompleteEvent(operationId, results, isFinished) {
+            _classCallCheck(this, AsyncWorkCompleteEvent);
+    
+            this._operationId = operationId;
+            this._results = results;
+            this._isFinished = isFinished;
+        }
+    
+        _createClass(AsyncWorkCompleteEvent, {
+            operationId: {
+                get: function () {
+                    return this._operationId;
+                }
+            },
+            results: {
+                get: function () {
+                    return this._results;
+                }
+            },
+            isFinished: {
+                get: function () {
+                    return this._isFinished;
+                }
+            }
+        });
+    
+        return AsyncWorkCompleteEvent;
+    })();
+    
+    module.exports = AsyncWorkCompleteEvent;
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
     var __WEBPACK_AMD_DEFINE_RESULT__;//     uuid.js
@@ -1535,49 +1576,35 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
     
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    var disposables = _interopRequire(__webpack_require__(19));
     
-    var AsyncWorkCompleteEvent = (function () {
-        function AsyncWorkCompleteEvent(operationId, results, isFinished) {
-            _classCallCheck(this, AsyncWorkCompleteEvent);
-    
-            this._operationId = operationId;
-            this._results = results;
-            this._isFinished = isFinished;
-        }
-    
-        _createClass(AsyncWorkCompleteEvent, {
-            operationId: {
-                get: function () {
-                    return this._operationId;
-                }
-            },
-            results: {
-                get: function () {
-                    return this._results;
-                }
-            },
-            isFinished: {
-                get: function () {
-                    return this._isFinished;
-                }
-            }
-        });
-    
-        return AsyncWorkCompleteEvent;
-    })();
-    
-    module.exports = AsyncWorkCompleteEvent;
+    module.exports = { disposables: disposables };
 
 /***/ },
-/* 18 */
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var CompositeDisposable = _interopRequire(__webpack_require__(20));
+    
+    var DictionaryDisposable = _interopRequire(__webpack_require__(22));
+    
+    var DisposableWrapper = _interopRequire(__webpack_require__(21));
+    
+    module.exports = { CompositeDisposable: CompositeDisposable, DictionaryDisposable: DictionaryDisposable, DisposableWrapper: DisposableWrapper };
+
+/***/ },
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1590,7 +1617,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var Guard = _interopRequire(__webpack_require__(4));
     
-    var DisposableWrapper = _interopRequire(__webpack_require__(19));
+    var DisposableWrapper = _interopRequire(__webpack_require__(21));
     
     var CompositeDisposable = (function () {
         function CompositeDisposable() {
@@ -1620,19 +1647,11 @@ return /******/ (function(modules) { // webpackBootstrap
                 value: function dispose() {
                     if (!this._isDisposed) {
                         this._isDisposed = true;
-                        for (var d in this._disposables) {
-                            this._disposeItem(d);
+                        for (var i = 0, len = this._disposables.length; i < len; i++) {
+                            var disposable = this._disposables[i];
+                            disposable.dispose();
                         }
                         this._disposables.length = 0;
-                    }
-                }
-            },
-            _disposeItem: {
-                value: function _disposeItem(d) {
-                    // at this point if something has deleted the dispose we just ignore it.
-                    // We've ensured it was there during the .add(), given this if it's gone now that must have been an explicit action.
-                    if (d.dispose) {
-                        d.dispose();
                     }
                 }
             }
@@ -1644,7 +1663,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = CompositeDisposable;
 
 /***/ },
-/* 19 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1662,18 +1681,25 @@ return /******/ (function(modules) { // webpackBootstrap
             _classCallCheck(this, DisposableWrapper);
     
             Guard.isDefined(disposable, "disposable must be defined");
-            var d1;
+            var innerDisposable;
             if (typeof disposable === "function") {
-                d1 = { dispose: function dispose() {
+                innerDisposable = { dispose: function dispose() {
                         disposable();
                     } };
-            } else if (disposable.dispose) {
-                d1 = disposable;
+            } else if (disposable.dispose && typeof disposable.dispose === "function") {
+                innerDisposable = {
+                    dispose: function () {
+                        // at this point if something has deleted the dispose or it's not a function we just ignore it.
+                        if (disposable.dispose && typeof disposable.dispose === "function") {
+                            disposable.dispose();
+                        }
+                    }
+                };
             } else {
                 throw new Error("Item to dispose was neither a function nor had a dispose method.");
             }
             this._isDisposed = false;
-            this._disposable = d1;
+            this._disposable = innerDisposable;
         }
     
         _createClass(DisposableWrapper, {
@@ -1684,11 +1710,9 @@ return /******/ (function(modules) { // webpackBootstrap
             },
             dispose: {
                 value: function dispose() {
-                    if (!this._isDisposed) {
+                    if (!this._isDisposed && this._disposable) {
                         this._isDisposed = true;
-                        if (this._disposable) {
-                            this._disposable.dispose();
-                        }
+                        this._disposable.dispose();
                     }
                 }
             }
@@ -1700,7 +1724,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = DisposableWrapper;
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1711,11 +1735,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var DisposableWrapper = _interopRequire(__webpack_require__(19));
+    var DisposableWrapper = _interopRequire(__webpack_require__(21));
     
     var DictionaryDisposable = (function () {
         function DictionaryDisposable() {
             _classCallCheck(this, DictionaryDisposable);
+    
+            this._isDisposed = false;
         }
     
         _createClass(DictionaryDisposable, {
@@ -1725,6 +1751,10 @@ return /******/ (function(modules) { // webpackBootstrap
                         throw new Error("Key " + key + " already found");
                     }
                     var disposableWrapper = new DisposableWrapper(disposable);
+                    if (this._isDisposed) {
+                        disposableWrapper.dispose();
+                        return;
+                    }
                     this[key] = disposableWrapper;
                 }
             },
@@ -1737,6 +1767,8 @@ return /******/ (function(modules) { // webpackBootstrap
             },
             dispose: {
                 value: function dispose() {
+                    // if(!this._isDisposed) {
+                    this._isDisposed = true;
                     for (var p in this) {
                         if (this.hasOwnProperty(p)) {
                             var disposable = this[p];
@@ -1745,6 +1777,7 @@ return /******/ (function(modules) { // webpackBootstrap
                             }
                         }
                     }
+                    // }
                 }
             }
         });
@@ -1755,7 +1788,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = DictionaryDisposable;
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1793,7 +1826,7 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1907,7 +1940,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = Subject;
 
 /***/ },
-/* 23 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1917,11 +1950,11 @@ return /******/ (function(modules) { // webpackBootstrap
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(17));
-    exports.SubModelChangedEvent = _interopRequire(__webpack_require__(24));
+    exports.AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(16));
+    exports.SubModelChangedEvent = _interopRequire(__webpack_require__(26));
 
 /***/ },
-/* 24 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1957,7 +1990,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = SubModelChangedEvent;
 
 /***/ },
-/* 25 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2075,7 +2108,7 @@ return /******/ (function(modules) { // webpackBootstrap
     exports.levels = levels;
 
 /***/ },
-/* 26 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2089,14 +2122,14 @@ return /******/ (function(modules) { // webpackBootstrap
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.DisposableBase = _interopRequire(__webpack_require__(27));
-    exports.ModelBase = _interopRequire(__webpack_require__(28));
-    exports.ModelRootBase = _interopRequire(__webpack_require__(29));
+    exports.DisposableBase = _interopRequire(__webpack_require__(29));
+    exports.ModelBase = _interopRequire(__webpack_require__(30));
+    exports.ModelRootBase = _interopRequire(__webpack_require__(31));
     
-    _defaults(exports, _interopRequireWildcard(__webpack_require__(23)));
+    _defaults(exports, _interopRequireWildcard(__webpack_require__(25)));
 
 /***/ },
-/* 27 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2107,13 +2140,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var CompositeDisposable = _interopRequire(__webpack_require__(18));
+    var system = _interopRequire(__webpack_require__(18));
     
     var DisposableBase = (function () {
         function DisposableBase() {
             _classCallCheck(this, DisposableBase);
     
-            this._disposables = new CompositeDisposable();
+            this._disposables = new system.disposables.CompositeDisposable();
         }
     
         _createClass(DisposableBase, {
@@ -2140,7 +2173,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = DisposableBase;
 
 /***/ },
-/* 28 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2185,7 +2218,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = ModelBase;
 
 /***/ },
-/* 29 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2200,7 +2233,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var ModelBase = _interopRequire(__webpack_require__(28));
+    var ModelBase = _interopRequire(__webpack_require__(30));
     
     /**
      * A base class for the root model entity.

@@ -20,17 +20,11 @@ export default class CompositeDisposable {
     dispose() {
         if(!this._isDisposed) {
             this._isDisposed = true;
-            for (var d in this._disposables) {
-                this._disposeItem(d);
+            for (var i = 0, len = this._disposables.length; i < len; i++) {
+                var disposable = this._disposables[i];
+                disposable.dispose();
             }
             this._disposables.length = 0;
-        }
-    }
-    _disposeItem(d) {
-        // at this point if something has deleted the dispose we just ignore it.
-        // We've ensured it was there during the .add(), given this if it's gone now that must have been an explicit action.
-        if(d.dispose) {
-            d.dispose();
         }
     }
 }

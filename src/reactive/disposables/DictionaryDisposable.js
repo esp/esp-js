@@ -1,9 +1,12 @@
-class DictionaryDisposable {
+import DisposableWrapper from './DisposableWrapper';
+
+export default class DictionaryDisposable {
     add(key, disposable) {
         if(this.hasOwnProperty(key)) {
             throw new Error("Key " + key + " already found");
         }
-        this[key] = disposable;
+        var disposableWrapper = new DisposableWrapper(disposable);
+        this[key] = disposableWrapper;
     }
     remove(key) {
         if(this.hasOwnProperty(key)) {
@@ -14,11 +17,10 @@ class DictionaryDisposable {
         for(var p in this) {
             if(this.hasOwnProperty(p)) {
                 var disposable = this[p];
-                if(disposable && disposable.dispose && typeof disposable.dispose === 'function') {
+                if(disposable.dispose) {
                     disposable.dispose();
                 }
             }
         }
     }
 }
-export default DictionaryDisposable;

@@ -7,6 +7,3 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NotionalEventProcessor = _interopRequire(require("./NotionalEventProcessor"));
 exports.StaticDataEventProcessor = _interopRequire(require("./StaticDataEventProcessor"));
-
-// exports.NotionalEventProcessor = require('./NotionalEventProcessor');
-// exports.StaticDataEventProcessor = require('./StaticDataEventProcessor');

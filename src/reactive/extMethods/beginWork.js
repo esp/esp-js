@@ -2,8 +2,8 @@ import Observable from '../Observable';
 import Guard from '../../Guard';
 import AsyncWorkCompleteEvent from '../../model/events/AsyncWorkCompleteEvent';
 import uuid from 'node-uuid';
-import CompositeDisposable from '../CompositeDisposable';
-import DictionaryDisposable from '../DictionaryDisposable';
+import CompositeDisposable from '../disposables/CompositeDisposable';
+import DictionaryDisposable from '../disposables/DictionaryDisposable';
 
 var _asyncWorkCompleteEventName = 'asyncWorkCompleteEvent';
 

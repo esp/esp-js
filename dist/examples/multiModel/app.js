@@ -24,13 +24,6 @@ var ProductionLine = (function () {
         cars: {
             get: function () {
                 return this._cars;
-                //var cars = [];
-                //for( var p in this._cars) {
-                //    if(this._cars.hasOwnProperty(p)) {
-                //        cars.push(this._cars[p]);
-                //    }
-                //}
-                //return cars;
             }
         },
         totalCarCost: {

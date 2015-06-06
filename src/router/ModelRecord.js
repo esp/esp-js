@@ -1,4 +1,4 @@
-import Guard from './Guard';
+import { Guard } from '../system';
 
 class ModelRecord {
     // parentModelId is undefined if it's the root

@@ -1,5 +1,5 @@
 import Observable from '../Observable';
-import Guard from '../../Guard';
+import { Guard } from '../../system';
 
 // TODO beta, needs test
 Observable.prototype.take = function(number) {

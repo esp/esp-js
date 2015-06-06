@@ -1,2 +1,3 @@
-export { default as AsyncWorkCompleteEvent } from './AsyncWorkCompleteEvent';
-export { default as SubModelChangedEvent } from './SubModelChangedEvent';
+import AsyncWorkCompleteEvent from './AsyncWorkCompleteEvent';
+import SubModelChangedEvent from './SubModelChangedEvent';
+export default { AsyncWorkCompleteEvent, SubModelChangedEvent };

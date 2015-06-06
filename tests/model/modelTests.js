@@ -1,6 +1,4 @@
-"use strict";
-
-import esp from '../';
+import esp from '../../';
 
 class NumericalInput extends esp.model.ModelBase {
     constructor() {

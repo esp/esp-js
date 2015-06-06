@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * A base class for model entities.
  *
@@ -17,6 +15,5 @@ class ModelBase {
     get isLocked() {
         return this._checkIsLocked();
     }
-
 }
 export default ModelBase;

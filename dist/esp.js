@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports.EventStage = __webpack_require__(1);
     exports.Router = __webpack_require__(2);
-    exports.model = __webpack_require__(28);
+    exports.model = __webpack_require__(23);
 
 /***/ },
 /* 1 */
@@ -104,38 +104,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
     "use strict";
     
-    var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
-    
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var Guard = _interopRequire(__webpack_require__(4));
-    
-    var EventContext = _interopRequire(__webpack_require__(6));
+    var EventContext = _interopRequire(__webpack_require__(4));
     
     var EventStage = _interopRequire(__webpack_require__(1));
     
-    var ModelRecord = _interopRequire(__webpack_require__(7));
+    var ModelRecord = _interopRequire(__webpack_require__(13));
     
-    var State = _interopRequire(__webpack_require__(8));
+    var State = _interopRequire(__webpack_require__(14));
     
     var Status = _interopRequire(__webpack_require__(3));
     
-    var _reactiveIndex = __webpack_require__(9);
+    var _reactiveIndex = __webpack_require__(15);
     
     var Subject = _reactiveIndex.Subject;
     var Observable = _reactiveIndex.Observable;
     
-    var SubModelChangedEvent = __webpack_require__(25).SubModelChangedEvent;
+    var SubModelChangedEvent = __webpack_require__(24).SubModelChangedEvent;
     
-    var Logger = _interopRequireWildcard(__webpack_require__(27));
+    var _system = __webpack_require__(5);
     
-    var utils = _interopRequireWildcard(__webpack_require__(5));
+    var Guard = _system.Guard;
+    var utils = _system.utils;
+    var logger = _system.logger;
     
-    var _log = Logger.create("Router");
+    var _log = logger.create("Router");
     
     var Router = (function () {
         function Router() {
@@ -156,7 +154,6 @@ return /******/ (function(modules) { // webpackBootstrap
                     Guard.isDefined(model, "THe model argument must be defined");
                     if (options) Guard.isObject(options, "The options argument should be an object");
                     Guard.isFalsey(this._models[modelId], "The model with id [" + modelId + "] is already registered");
-    
                     this._models[modelId] = new ModelRecord(undefined, modelId, model, options);
                 }
             },
@@ -550,13 +547,185 @@ return /******/ (function(modules) { // webpackBootstrap
 
     "use strict";
     
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var Guard = __webpack_require__(5).Guard;
+    
+    var EventContext = (function () {
+        function EventContext(modelId, eventType, event) {
+            _classCallCheck(this, EventContext);
+    
+            Guard.isString(modelId, "The modelId should be a string");
+            Guard.isString(eventType, "The eventType should be a string");
+            Guard.isDefined(event, "The event should be defined");
+            this._modelId = modelId;
+            this._eventType = eventType;
+            this._event = event;
+            this._isCanceled = false;
+            this._isCommitted = false;
+        }
+    
+        _createClass(EventContext, {
+            isCanceled: {
+                get: function () {
+                    return this._isCanceled;
+                }
+            },
+            isCommitted: {
+                get: function () {
+                    return this._isCommitted;
+                }
+            },
+            modelId: {
+                get: function () {
+                    return this._modelId;
+                }
+            },
+            event: {
+                get: function () {
+                    return this._event;
+                }
+            },
+            eventType: {
+                get: function () {
+                    return this._eventType;
+                }
+            },
+            cancel: {
+                value: function cancel() {
+                    if (!this._isCanceled) {
+                        this._isCanceled = true;
+                    } else {
+                        throw new Error("event is already cancelled");
+                    }
+                }
+            },
+            commit: {
+                value: function commit() {
+                    if (!this._isCommitted) {
+                        this._isCommitted = true;
+                    } else {
+                        throw "event is already committed";
+                    }
+                }
+            }
+        });
+    
+        return EventContext;
+    })();
+    
+    module.exports = EventContext;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var disposables = _interopRequire(__webpack_require__(6));
+    
+    var Guard = _interopRequire(__webpack_require__(8));
+    
+    var logger = _interopRequireWildcard(__webpack_require__(12));
+    
+    var utils = _interopRequireWildcard(__webpack_require__(9));
+    
+    module.exports = { disposables: disposables, Guard: Guard, logger: logger, utils: utils };
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var CompositeDisposable = _interopRequire(__webpack_require__(7));
+    
+    var DictionaryDisposable = _interopRequire(__webpack_require__(11));
+    
+    var DisposableWrapper = _interopRequire(__webpack_require__(10));
+    
+    module.exports = { CompositeDisposable: CompositeDisposable, DictionaryDisposable: DictionaryDisposable, DisposableWrapper: DisposableWrapper };
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var Guard = _interopRequire(__webpack_require__(8));
+    
+    var DisposableWrapper = _interopRequire(__webpack_require__(10));
+    
+    var CompositeDisposable = (function () {
+        function CompositeDisposable() {
+            _classCallCheck(this, CompositeDisposable);
+    
+            this._disposables = [];
+            this._isDisposed = false;
+        }
+    
+        _createClass(CompositeDisposable, {
+            isDisposed: {
+                get: function () {
+                    return this._isDisposed;
+                }
+            },
+            add: {
+                value: function add(disposable) {
+                    var disposableWrapper = new DisposableWrapper(disposable);
+                    if (this._isDisposed) {
+                        disposableWrapper.dispose();
+                        return;
+                    }
+                    this._disposables.push(disposableWrapper);
+                }
+            },
+            dispose: {
+                value: function dispose() {
+                    if (!this._isDisposed) {
+                        this._isDisposed = true;
+                        for (var i = 0, len = this._disposables.length; i < len; i++) {
+                            var disposable = this._disposables[i];
+                            disposable.dispose();
+                        }
+                        this._disposables.length = 0;
+                    }
+                }
+            }
+        });
+    
+        return CompositeDisposable;
+    })();
+    
+    module.exports = CompositeDisposable;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
     var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
     
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var utils = _interopRequireWildcard(__webpack_require__(5));
+    var utils = _interopRequireWildcard(__webpack_require__(9));
     
     var Guard = (function () {
         function Guard() {
@@ -639,17 +808,17 @@ return /******/ (function(modules) { // webpackBootstrap
         return Guard;
     })();
     
+    module.exports = Guard;
+    
     function doThrow(message) {
         if (typeof message === "undefined" || message === "") {
             throw new Error("Argument error");
         }
         throw new Error(message);
     }
-    
-    module.exports = Guard;
 
 /***/ },
-/* 5 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -683,7 +852,7 @@ return /******/ (function(modules) { // webpackBootstrap
     }
 
 /***/ },
-/* 6 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -694,75 +863,57 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Guard = _interopRequire(__webpack_require__(8));
     
-    var EventContext = (function () {
-        function EventContext(modelId, eventType, event) {
-            _classCallCheck(this, EventContext);
+    var DisposableWrapper = (function () {
+        function DisposableWrapper(disposable) {
+            _classCallCheck(this, DisposableWrapper);
     
-            Guard.isString(modelId, "The modelId should be a string");
-            Guard.isString(eventType, "The eventType should be a string");
-            Guard.isDefined(event, "The event should be defined");
-            this._modelId = modelId;
-            this._eventType = eventType;
-            this._event = event;
-            this._isCanceled = false;
-            this._isCommitted = false;
+            Guard.isDefined(disposable, "disposable must be defined");
+            var innerDisposable;
+            if (typeof disposable === "function") {
+                innerDisposable = { dispose: function dispose() {
+                        disposable();
+                    } };
+            } else if (disposable.dispose && typeof disposable.dispose === "function") {
+                innerDisposable = {
+                    dispose: function () {
+                        // at this point if something has deleted the dispose or it's not a function we just ignore it.
+                        if (disposable.dispose && typeof disposable.dispose === "function") {
+                            disposable.dispose();
+                        }
+                    }
+                };
+            } else {
+                throw new Error("Item to dispose was neither a function nor had a dispose method.");
+            }
+            this._isDisposed = false;
+            this._disposable = innerDisposable;
         }
     
-        _createClass(EventContext, {
-            isCanceled: {
+        _createClass(DisposableWrapper, {
+            isDisposed: {
                 get: function () {
-                    return this._isCanceled;
+                    return this._isDisposed;
                 }
             },
-            isCommitted: {
-                get: function () {
-                    return this._isCommitted;
-                }
-            },
-            modelId: {
-                get: function () {
-                    return this._modelId;
-                }
-            },
-            event: {
-                get: function () {
-                    return this._event;
-                }
-            },
-            eventType: {
-                get: function () {
-                    return this._eventType;
-                }
-            },
-            cancel: {
-                value: function cancel() {
-                    if (!this._isCanceled) {
-                        this._isCanceled = true;
-                    } else {
-                        throw new Error("event is already cancelled");
-                    }
-                }
-            },
-            commit: {
-                value: function commit() {
-                    if (!this._isCommitted) {
-                        this._isCommitted = true;
-                    } else {
-                        throw "event is already committed";
+            dispose: {
+                value: function dispose() {
+                    if (!this._isDisposed && this._disposable) {
+                        this._isDisposed = true;
+                        this._disposable.dispose();
                     }
                 }
             }
         });
     
-        return EventContext;
+        return DisposableWrapper;
     })();
     
-    module.exports = EventContext;
+    module.exports = DisposableWrapper;
 
 /***/ },
-/* 7 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -773,7 +924,187 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var DisposableWrapper = _interopRequire(__webpack_require__(10));
+    
+    var DictionaryDisposable = (function () {
+        function DictionaryDisposable() {
+            _classCallCheck(this, DictionaryDisposable);
+    
+            this._isDisposed = false;
+        }
+    
+        _createClass(DictionaryDisposable, {
+            add: {
+                value: function add(key, disposable) {
+                    if (this.hasOwnProperty(key)) {
+                        throw new Error("Key " + key + " already found");
+                    }
+                    var disposableWrapper = new DisposableWrapper(disposable);
+                    if (this._isDisposed) {
+                        disposableWrapper.dispose();
+                        return;
+                    }
+                    this[key] = disposableWrapper;
+                }
+            },
+            remove: {
+                value: function remove(key) {
+                    if (this.hasOwnProperty(key)) {
+                        delete this[key];
+                    }
+                }
+            },
+            dispose: {
+                value: function dispose() {
+                    // if(!this._isDisposed) {
+                    this._isDisposed = true;
+                    for (var p in this) {
+                        if (this.hasOwnProperty(p)) {
+                            var disposable = this[p];
+                            if (disposable.dispose) {
+                                disposable.dispose();
+                            }
+                        }
+                    }
+                    // }
+                }
+            }
+        });
+    
+        return DictionaryDisposable;
+    })();
+    
+    module.exports = DictionaryDisposable;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    exports.create = create;
+    exports.setLevel = setLevel;
+    exports.setSink = setSink;
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    
+    var Guard = _interopRequire(__webpack_require__(8));
+    
+    var levels = {
+        verbose: 0,
+        debug: 1,
+        info: 2,
+        warn: 3,
+        error: 4
+    };
+    
+    var _currentLevel = levels.debug;
+    
+    var _sink = function (logEvent) {
+        console.log("[" + logEvent.logger + "] [" + logEvent.level + "]: " + logEvent.message);
+    };
+    
+    var Logger = (function () {
+        function Logger(name) {
+            _classCallCheck(this, Logger);
+    
+            this._name = name;
+        }
+    
+        _createClass(Logger, {
+            verbose: {
+                value: function verbose(format) {
+                    if (_currentLevel <= levels.verbose) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        this._log("VERBOSE", format, args);
+                    }
+                }
+            },
+            debug: {
+                value: function debug(format) {
+                    if (_currentLevel <= levels.debug) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        this._log("DEBUG", format, args);
+                    }
+                }
+            },
+            info: {
+                value: function info(format) {
+                    if (_currentLevel <= levels.info) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        this._log("INFO", format, args);
+                    }
+                }
+            },
+            warn: {
+                value: function warn(format) {
+                    if (_currentLevel <= levels.warn) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        this._log("WARN", format, args);
+                    }
+                }
+            },
+            error: {
+                value: function error(format) {
+                    if (_currentLevel <= levels.error) {
+                        var args = Array.prototype.slice.call(arguments, 1);
+                        this._log("ERROR", format, args);
+                    }
+                }
+            },
+            _log: {
+                value: function _log(level, format, args) {
+                    Guard.isString(format, "First argument to a log function should be a string, but got [" + format + "]");
+                    var message = format.replace(/{(\d+)}/g, function (match, number) {
+                        return typeof args[number] != "undefined" ? args[number] : match;
+                    });
+                    _sink({
+                        logger: this._name,
+                        level: level,
+                        message: message
+                    });
+                }
+            }
+        });
+    
+        return Logger;
+    })();
+    
+    function create(name) {
+        Guard.isDefined(name, "The name argument should be defined");
+        Guard.isString(name, "The name argument should be a string");
+        return new Logger(name);
+    }
+    
+    function setLevel(level) {
+        _currentLevel = level;
+    }
+    
+    function setSink(sink) {
+        Guard.isFunction(sink, "Logging sink argument must be a function");
+        _sink = sink;
+    }
+    
+    exports.levels = levels;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var Guard = __webpack_require__(5).Guard;
     
     var ModelRecord = (function () {
         // parentModelId is undefined if it's the root
@@ -872,7 +1203,7 @@ return /******/ (function(modules) { // webpackBootstrap
     /* noop processor */
 
 /***/ },
-/* 8 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -883,7 +1214,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Guard = __webpack_require__(5).Guard;
     
     var Status = _interopRequire(__webpack_require__(3));
     
@@ -972,7 +1303,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = State;
 
 /***/ },
-/* 9 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -984,31 +1315,31 @@ return /******/ (function(modules) { // webpackBootstrap
     });
     // these scripts have no exports, they add functionality to Observable
     
-    __webpack_require__(13);
+    __webpack_require__(19);
     
-    __webpack_require__(14);
+    __webpack_require__(20);
     
-    __webpack_require__(15);
+    __webpack_require__(21);
     
-    __webpack_require__(23);
+    __webpack_require__(30);
     
-    __webpack_require__(10);
+    __webpack_require__(16);
     
-    exports.Observable = _interopRequire(__webpack_require__(11));
-    exports.Observer = _interopRequire(__webpack_require__(12));
-    exports.Subject = _interopRequire(__webpack_require__(24));
+    exports.Observable = _interopRequire(__webpack_require__(17));
+    exports.Observer = _interopRequire(__webpack_require__(18));
+    exports.Subject = _interopRequire(__webpack_require__(31));
 
 /***/ },
-/* 10 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
     
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var Observable = _interopRequire(__webpack_require__(11));
+    var Observable = _interopRequire(__webpack_require__(17));
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Guard = __webpack_require__(5).Guard;
     
     // TODO beta, needs test
     Observable.prototype["do"] = function (action) {
@@ -1026,7 +1357,7 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 11 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1037,9 +1368,9 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var Observer = _interopRequire(__webpack_require__(12));
+    var Guard = __webpack_require__(5).Guard;
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Observer = _interopRequire(__webpack_require__(18));
     
     var Observable = (function () {
         function Observable(observe, router) {
@@ -1094,18 +1425,16 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = Observable;
 
 /***/ },
-/* 12 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Guard = __webpack_require__(5).Guard;
     
     var Observer = (function () {
         function Observer(onNext, onError, onCompleted) {
@@ -1161,16 +1490,16 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = Observer;
 
 /***/ },
-/* 13 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
     
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var Observable = _interopRequire(__webpack_require__(11));
+    var Observable = _interopRequire(__webpack_require__(17));
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Guard = __webpack_require__(5).Guard;
     
     Observable.prototype.where = function (predicate) {
         Guard.isDefined(predicate, "predicate Required");
@@ -1188,14 +1517,14 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 14 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
     
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var Observable = _interopRequire(__webpack_require__(11));
+    var Observable = _interopRequire(__webpack_require__(17));
     
     Observable.prototype.asObservable = function () {
         var source = this;
@@ -1210,26 +1539,34 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 15 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
     
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var Observable = _interopRequire(__webpack_require__(11));
+    var uuid = _interopRequire(__webpack_require__(22));
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var Observable = _interopRequire(__webpack_require__(17));
     
-    var AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(16));
+    var model = _interopRequire(__webpack_require__(23));
     
-    var uuid = _interopRequire(__webpack_require__(17));
+    var _system = __webpack_require__(5);
     
-    var system = _interopRequire(__webpack_require__(18));
+    var system = _interopRequire(_system);
+    
+    var Guard = _system.Guard;
+    var utils = _system.utils;
+    var logger = _system.logger;
+    var disposables = _system.disposables;
+    
+    var CompositeDisposable = disposables.CompositeDisposable;
+    var DictionaryDisposable = disposables.DictionaryDisposable;
+    var AsyncWorkCompleteEvent = model.events.AsyncWorkCompleteEvent;
     
     var _asyncWorkCompleteEventName = "asyncWorkCompleteEvent";
-    var CompositeDisposable = system.disposables.CompositeDisposable;
-    var DictionaryDisposable = system.disposables.DictionaryDisposable;
+    
     /*
     * Note: experimental, needs more test, doesn't work with .take()
     *
@@ -1245,7 +1582,7 @@ return /******/ (function(modules) { // webpackBootstrap
         Guard.isDefined(action, "action required, format: (ec : EventContext, done : (result : any) => { })");
         var source = this;
         var disposables = new CompositeDisposable();
-        var dictionaryDisposable = new system.disposables.DictionaryDisposable();
+        var dictionaryDisposable = new DictionaryDisposable();
         disposables.add(dictionaryDisposable);
         var observe = function (observer) {
             disposables.add(source.observe(function (model, event, eventContext) {
@@ -1281,49 +1618,7 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var AsyncWorkCompleteEvent = (function () {
-        function AsyncWorkCompleteEvent(operationId, results, isFinished) {
-            _classCallCheck(this, AsyncWorkCompleteEvent);
-    
-            this._operationId = operationId;
-            this._results = results;
-            this._isFinished = isFinished;
-        }
-    
-        _createClass(AsyncWorkCompleteEvent, {
-            operationId: {
-                get: function () {
-                    return this._operationId;
-                }
-            },
-            results: {
-                get: function () {
-                    return this._results;
-                }
-            },
-            isFinished: {
-                get: function () {
-                    return this._isFinished;
-                }
-            }
-        });
-    
-        return AsyncWorkCompleteEvent;
-    })();
-    
-    module.exports = AsyncWorkCompleteEvent;
-
-/***/ },
-/* 17 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
     var __WEBPACK_AMD_DEFINE_RESULT__;//     uuid.js
@@ -1576,218 +1871,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var disposables = _interopRequire(__webpack_require__(19));
-    
-    module.exports = { disposables: disposables };
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var CompositeDisposable = _interopRequire(__webpack_require__(20));
-    
-    var DictionaryDisposable = _interopRequire(__webpack_require__(22));
-    
-    var DisposableWrapper = _interopRequire(__webpack_require__(21));
-    
-    module.exports = { CompositeDisposable: CompositeDisposable, DictionaryDisposable: DictionaryDisposable, DisposableWrapper: DisposableWrapper };
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var Guard = _interopRequire(__webpack_require__(4));
-    
-    var DisposableWrapper = _interopRequire(__webpack_require__(21));
-    
-    var CompositeDisposable = (function () {
-        function CompositeDisposable() {
-            _classCallCheck(this, CompositeDisposable);
-    
-            this._disposables = [];
-            this._isDisposed = false;
-        }
-    
-        _createClass(CompositeDisposable, {
-            isDisposed: {
-                get: function () {
-                    return this._isDisposed;
-                }
-            },
-            add: {
-                value: function add(disposable) {
-                    var disposableWrapper = new DisposableWrapper(disposable);
-                    if (this._isDisposed) {
-                        disposableWrapper.dispose();
-                        return;
-                    }
-                    this._disposables.push(disposableWrapper);
-                }
-            },
-            dispose: {
-                value: function dispose() {
-                    if (!this._isDisposed) {
-                        this._isDisposed = true;
-                        for (var i = 0, len = this._disposables.length; i < len; i++) {
-                            var disposable = this._disposables[i];
-                            disposable.dispose();
-                        }
-                        this._disposables.length = 0;
-                    }
-                }
-            }
-        });
-    
-        return CompositeDisposable;
-    })();
-    
-    module.exports = CompositeDisposable;
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var Guard = _interopRequire(__webpack_require__(4));
-    
-    var DisposableWrapper = (function () {
-        function DisposableWrapper(disposable) {
-            _classCallCheck(this, DisposableWrapper);
-    
-            Guard.isDefined(disposable, "disposable must be defined");
-            var innerDisposable;
-            if (typeof disposable === "function") {
-                innerDisposable = { dispose: function dispose() {
-                        disposable();
-                    } };
-            } else if (disposable.dispose && typeof disposable.dispose === "function") {
-                innerDisposable = {
-                    dispose: function () {
-                        // at this point if something has deleted the dispose or it's not a function we just ignore it.
-                        if (disposable.dispose && typeof disposable.dispose === "function") {
-                            disposable.dispose();
-                        }
-                    }
-                };
-            } else {
-                throw new Error("Item to dispose was neither a function nor had a dispose method.");
-            }
-            this._isDisposed = false;
-            this._disposable = innerDisposable;
-        }
-    
-        _createClass(DisposableWrapper, {
-            isDisposed: {
-                get: function () {
-                    return this._isDisposed;
-                }
-            },
-            dispose: {
-                value: function dispose() {
-                    if (!this._isDisposed && this._disposable) {
-                        this._isDisposed = true;
-                        this._disposable.dispose();
-                    }
-                }
-            }
-        });
-    
-        return DisposableWrapper;
-    })();
-    
-    module.exports = DisposableWrapper;
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var DisposableWrapper = _interopRequire(__webpack_require__(21));
-    
-    var DictionaryDisposable = (function () {
-        function DictionaryDisposable() {
-            _classCallCheck(this, DictionaryDisposable);
-    
-            this._isDisposed = false;
-        }
-    
-        _createClass(DictionaryDisposable, {
-            add: {
-                value: function add(key, disposable) {
-                    if (this.hasOwnProperty(key)) {
-                        throw new Error("Key " + key + " already found");
-                    }
-                    var disposableWrapper = new DisposableWrapper(disposable);
-                    if (this._isDisposed) {
-                        disposableWrapper.dispose();
-                        return;
-                    }
-                    this[key] = disposableWrapper;
-                }
-            },
-            remove: {
-                value: function remove(key) {
-                    if (this.hasOwnProperty(key)) {
-                        delete this[key];
-                    }
-                }
-            },
-            dispose: {
-                value: function dispose() {
-                    // if(!this._isDisposed) {
-                    this._isDisposed = true;
-                    for (var p in this) {
-                        if (this.hasOwnProperty(p)) {
-                            var disposable = this[p];
-                            if (disposable.dispose) {
-                                disposable.dispose();
-                            }
-                        }
-                    }
-                    // }
-                }
-            }
-        });
-    
-        return DictionaryDisposable;
-    })();
-    
-    module.exports = DictionaryDisposable;
-
-/***/ },
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1795,9 +1878,282 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var Observable = _interopRequire(__webpack_require__(11));
+    var events = _interopRequire(__webpack_require__(24));
     
-    var Guard = _interopRequire(__webpack_require__(4));
+    var DisposableBase = _interopRequire(__webpack_require__(27));
+    
+    var ModelBase = _interopRequire(__webpack_require__(28));
+    
+    var ModelRootBase = _interopRequire(__webpack_require__(29));
+    
+    module.exports = { events: events, DisposableBase: DisposableBase, ModelBase: ModelBase, ModelRootBase: ModelRootBase };
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(25));
+    
+    var SubModelChangedEvent = _interopRequire(__webpack_require__(26));
+    
+    module.exports = { AsyncWorkCompleteEvent: AsyncWorkCompleteEvent, SubModelChangedEvent: SubModelChangedEvent };
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var AsyncWorkCompleteEvent = (function () {
+        function AsyncWorkCompleteEvent(operationId, results, isFinished) {
+            _classCallCheck(this, AsyncWorkCompleteEvent);
+    
+            this._operationId = operationId;
+            this._results = results;
+            this._isFinished = isFinished;
+        }
+    
+        _createClass(AsyncWorkCompleteEvent, {
+            operationId: {
+                get: function () {
+                    return this._operationId;
+                }
+            },
+            results: {
+                get: function () {
+                    return this._results;
+                }
+            },
+            isFinished: {
+                get: function () {
+                    return this._isFinished;
+                }
+            }
+        });
+    
+        return AsyncWorkCompleteEvent;
+    })();
+    
+    module.exports = AsyncWorkCompleteEvent;
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var SubModelChangedEvent = (function () {
+        function SubModelChangedEvent(childModelId, eventType) {
+            _classCallCheck(this, SubModelChangedEvent);
+    
+            this._childModelId = childModelId;
+            this._eventType = eventType;
+        }
+    
+        _createClass(SubModelChangedEvent, {
+            childModelId: {
+                get: function () {
+                    return this._childModelId;
+                }
+            },
+            eventType: {
+                get: function () {
+                    return this._eventType;
+                }
+            }
+        });
+    
+        return SubModelChangedEvent;
+    })();
+    
+    module.exports = SubModelChangedEvent;
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var system = _interopRequire(__webpack_require__(5));
+    
+    var DisposableBase = (function () {
+        function DisposableBase() {
+            _classCallCheck(this, DisposableBase);
+    
+            this._disposables = new system.disposables.CompositeDisposable();
+        }
+    
+        _createClass(DisposableBase, {
+            isDisposed: {
+                get: function () {
+                    return this._disposables.isDisposed;
+                }
+            },
+            addDisposable: {
+                value: function addDisposable(disposable) {
+                    this._disposables.add(disposable);
+                }
+            },
+            dispose: {
+                value: function dispose() {
+                    this._disposables.dispose();
+                }
+            }
+        });
+    
+        return DisposableBase;
+    })();
+    
+    module.exports = DisposableBase;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    /**
+     * A base class for model entities.
+     *
+     * You don't need to derive from this to use the router, provided as a convenience
+     */
+    
+    var ModelBase = (function () {
+        function ModelBase() {
+            _classCallCheck(this, ModelBase);
+    
+            this._checkIsLocked = function () {
+                return true;
+            };
+        }
+    
+        _createClass(ModelBase, {
+            ensureLocked: {
+                value: function ensureLocked() {
+                    if (this._checkIsLocked()) {
+                        throw new Error("Model is locked, can't edit");
+                    }
+                }
+            },
+            isLocked: {
+                get: function () {
+                    return this._checkIsLocked();
+                }
+            }
+        });
+    
+        return ModelBase;
+    })();
+    
+    module.exports = ModelBase;
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+    
+    var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    var ModelBase = _interopRequire(__webpack_require__(28));
+    
+    /**
+     * A base class for the root model entity.
+     *
+     * You don't need to derive from this to use the router, provided as a convenience
+     */
+    
+    var ModelRootBase = (function (_ModelBase) {
+        function ModelRootBase() {
+            _classCallCheck(this, ModelRootBase);
+    
+            _get(Object.getPrototypeOf(ModelRootBase.prototype), "constructor", this).call(this);
+            this._isLocked = true;
+            this._checkIsLocked = (function () {
+                return this._isLocked;
+            }).bind(this);
+        }
+    
+        _inherits(ModelRootBase, _ModelBase);
+    
+        _createClass(ModelRootBase, {
+            lock: {
+                value: function lock() {
+                    this._isLocked = true;
+                }
+            },
+            unlock: {
+                value: function unlock() {
+                    this._isLocked = false;
+                }
+            },
+            bindLockPredicate: {
+                value: function bindLockPredicate() {
+                    this._bindLockPredicate(this);
+                }
+            },
+            _bindLockPredicate: {
+                value: function _bindLockPredicate(parent) {
+                    parent = parent || this;
+                    for (var key in parent) {
+                        if (parent.hasOwnProperty(key)) {
+                            var o = parent[key];
+                            if (o instanceof ModelBase) {
+                                o._checkIsLocked = this._checkIsLocked;
+                                this._bindLockPredicate(o);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        return ModelRootBase;
+    })(ModelBase);
+    
+    module.exports = ModelRootBase;
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    var Observable = _interopRequire(__webpack_require__(17));
+    
+    var Guard = __webpack_require__(5).Guard;
     
     // TODO beta, needs test
     Observable.prototype.take = function (number) {
@@ -1826,14 +2182,12 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 24 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
     
     var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
     
     var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
@@ -1843,9 +2197,9 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
     
-    var utils = _interopRequireWildcard(__webpack_require__(5));
+    var utils = __webpack_require__(5).utils;
     
-    var Observable = _interopRequire(__webpack_require__(11));
+    var Observable = _interopRequire(__webpack_require__(17));
     
     var Subject = (function (_Observable) {
         function Subject(router) {
@@ -1938,358 +2292,6 @@ return /******/ (function(modules) { // webpackBootstrap
         };
     }
     module.exports = Subject;
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(16));
-    exports.SubModelChangedEvent = _interopRequire(__webpack_require__(26));
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var SubModelChangedEvent = (function () {
-        function SubModelChangedEvent(childModelId, eventType) {
-            _classCallCheck(this, SubModelChangedEvent);
-    
-            this._childModelId = childModelId;
-            this._eventType = eventType;
-        }
-    
-        _createClass(SubModelChangedEvent, {
-            childModelId: {
-                get: function () {
-                    return this._childModelId;
-                }
-            },
-            eventType: {
-                get: function () {
-                    return this._eventType;
-                }
-            }
-        });
-    
-        return SubModelChangedEvent;
-    })();
-    
-    module.exports = SubModelChangedEvent;
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    exports.create = create;
-    exports.setLevel = setLevel;
-    exports.setSink = setSink;
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    
-    var Guard = _interopRequire(__webpack_require__(4));
-    
-    var levels = {
-        verbose: 0,
-        debug: 1,
-        info: 2,
-        warn: 3,
-        error: 4
-    };
-    
-    var _currentLevel = levels.debug;
-    
-    var _sink = function (logEvent) {
-        console.log("[" + logEvent.logger + "] [" + logEvent.level + "]: " + logEvent.message);
-    };
-    
-    var Logger = (function () {
-        function Logger(name) {
-            _classCallCheck(this, Logger);
-    
-            this._name = name;
-        }
-    
-        _createClass(Logger, {
-            verbose: {
-                value: function verbose(format) {
-                    if (_currentLevel <= levels.verbose) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        this._log("VERBOSE", format, args);
-                    }
-                }
-            },
-            debug: {
-                value: function debug(format) {
-                    if (_currentLevel <= levels.debug) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        this._log("DEBUG", format, args);
-                    }
-                }
-            },
-            info: {
-                value: function info(format) {
-                    if (_currentLevel <= levels.info) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        this._log("INFO", format, args);
-                    }
-                }
-            },
-            warn: {
-                value: function warn(format) {
-                    if (_currentLevel <= levels.warn) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        this._log("WARN", format, args);
-                    }
-                }
-            },
-            error: {
-                value: function error(format) {
-                    if (_currentLevel <= levels.error) {
-                        var args = Array.prototype.slice.call(arguments, 1);
-                        this._log("ERROR", format, args);
-                    }
-                }
-            },
-            _log: {
-                value: function _log(level, format, args) {
-                    Guard.isString(format, "First argument to a log function should be a string, but got [" + format + "]");
-                    var message = format.replace(/{(\d+)}/g, function (match, number) {
-                        return typeof args[number] != "undefined" ? args[number] : match;
-                    });
-                    _sink({
-                        logger: this._name,
-                        level: level,
-                        message: message
-                    });
-                }
-            }
-        });
-    
-        return Logger;
-    })();
-    
-    function create(name) {
-        Guard.isDefined(name, "The name argument should be defined");
-        Guard.isString(name, "The name argument should be a string");
-        return new Logger(name);
-    }
-    
-    function setLevel(level) {
-        _currentLevel = level;
-    }
-    
-    function setSink(sink) {
-        Guard.isFunction(sink, "Logging sink argument must be a function");
-        _sink = sink;
-    }
-    
-    exports.levels = levels;
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
-    
-    var _defaults = function (obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; };
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.DisposableBase = _interopRequire(__webpack_require__(29));
-    exports.ModelBase = _interopRequire(__webpack_require__(30));
-    exports.ModelRootBase = _interopRequire(__webpack_require__(31));
-    
-    _defaults(exports, _interopRequireWildcard(__webpack_require__(25)));
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var system = _interopRequire(__webpack_require__(18));
-    
-    var DisposableBase = (function () {
-        function DisposableBase() {
-            _classCallCheck(this, DisposableBase);
-    
-            this._disposables = new system.disposables.CompositeDisposable();
-        }
-    
-        _createClass(DisposableBase, {
-            isDisposed: {
-                get: function () {
-                    return this._disposables.isDisposed;
-                }
-            },
-            addDisposable: {
-                value: function addDisposable(disposable) {
-                    this._disposables.add(disposable);
-                }
-            },
-            dispose: {
-                value: function dispose() {
-                    this._disposables.dispose();
-                }
-            }
-        });
-    
-        return DisposableBase;
-    })();
-    
-    module.exports = DisposableBase;
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    /**
-     * A base class for model entities.
-     *
-     * You don't need to derive from this to use the router, provided as a convenience
-     */
-    
-    var ModelBase = (function () {
-        function ModelBase() {
-            _classCallCheck(this, ModelBase);
-    
-            this._checkIsLocked = function () {
-                return true;
-            };
-        }
-    
-        _createClass(ModelBase, {
-            ensureLocked: {
-                value: function ensureLocked() {
-                    if (this._checkIsLocked()) {
-                        throw new Error("Model is locked, can't edit");
-                    }
-                }
-            },
-            isLocked: {
-                get: function () {
-                    return this._checkIsLocked();
-                }
-            }
-        });
-    
-        return ModelBase;
-    })();
-    
-    module.exports = ModelBase;
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-    
-    var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    var ModelBase = _interopRequire(__webpack_require__(30));
-    
-    /**
-     * A base class for the root model entity.
-     *
-     * You don't need to derive from this to use the router, provided as a convenience
-     */
-    
-    var ModelRootBase = (function (_ModelBase) {
-        function ModelRootBase() {
-            _classCallCheck(this, ModelRootBase);
-    
-            _get(Object.getPrototypeOf(ModelRootBase.prototype), "constructor", this).call(this);
-            this._isLocked = true;
-            this._checkIsLocked = (function () {
-                return this._isLocked;
-            }).bind(this);
-        }
-    
-        _inherits(ModelRootBase, _ModelBase);
-    
-        _createClass(ModelRootBase, {
-            lock: {
-                value: function lock() {
-                    this._isLocked = true;
-                }
-            },
-            unlock: {
-                value: function unlock() {
-                    this._isLocked = false;
-                }
-            },
-            bindLockPredicate: {
-                value: function bindLockPredicate() {
-                    this._bindLockPredicate(this);
-                }
-            },
-            _bindLockPredicate: {
-                value: function _bindLockPredicate(parent) {
-                    parent = parent || this;
-                    for (var key in parent) {
-                        if (parent.hasOwnProperty(key)) {
-                            var o = parent[key];
-                            if (o instanceof ModelBase) {
-                                o._checkIsLocked = this._checkIsLocked;
-                                this._bindLockPredicate(o);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    
-        return ModelRootBase;
-    })(ModelBase);
-    
-    module.exports = ModelRootBase;
 
 /***/ }
 /******/ ])

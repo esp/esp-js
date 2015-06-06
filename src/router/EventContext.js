@@ -1,6 +1,6 @@
 "use strict";
 
-import Guard from './Guard';
+import { Guard } from '../system';
 
 class EventContext {
     constructor(modelId, eventType, event) {

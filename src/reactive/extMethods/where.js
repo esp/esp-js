@@ -1,5 +1,5 @@
 import Observable from '../Observable';
-import Guard from '../../Guard';
+import { Guard } from '../../system';
 
 Observable.prototype.where = function(predicate) {
     Guard.isDefined(predicate, 'predicate Required');

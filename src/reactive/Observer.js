@@ -1,6 +1,4 @@
-"use strict";
-
-import Guard from '../Guard';
+import { Guard } from '../system';
 
 class Observer {
     constructor(onNext, onError, onCompleted) {

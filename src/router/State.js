@@ -1,4 +1,4 @@
-import Guard from './Guard';
+import { Guard } from '../system';
 import Status from './Status.js';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already

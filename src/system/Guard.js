@@ -2,7 +2,7 @@
 
 import * as utils from './utils';
 
-class Guard {
+export default class Guard {
     static isDefined(value, message) {
         if (typeof value === 'undefined') {
             doThrow(message);
@@ -61,5 +61,3 @@ function doThrow(message) {
     }
     throw new Error(message);
 }
-
-export default Guard;

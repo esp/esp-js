@@ -1,12 +1,15 @@
-import Observable from '../Observable';
-import Guard from '../../Guard';
-import AsyncWorkCompleteEvent from '../../model/events/AsyncWorkCompleteEvent';
 import uuid from 'node-uuid';
+import Observable from '../Observable';
+import model  from '../../model';
 import system from '../../system';
+import { Guard, utils, logger, disposables } from '../../system';
+
+var CompositeDisposable = disposables.CompositeDisposable;
+var DictionaryDisposable = disposables.DictionaryDisposable;
+var AsyncWorkCompleteEvent = model.events.AsyncWorkCompleteEvent;
 
 var _asyncWorkCompleteEventName = 'asyncWorkCompleteEvent';
-var CompositeDisposable = system.disposables.CompositeDisposable;
-var DictionaryDisposable = system.disposables.DictionaryDisposable;
+
 /*
 * Note: experimental, needs more test, doesn't work with .take()
 *
@@ -20,7 +23,7 @@ Observable.prototype.beginWork = function(action) {
     Guard.isDefined(action, 'action required, format: (ec : EventContext, done : (result : any) => { })');
     var source = this;
     var disposables = new CompositeDisposable();
-    var dictionaryDisposable = new system.disposables.DictionaryDisposable();
+    var dictionaryDisposable = new DictionaryDisposable();
     disposables.add(dictionaryDisposable);
     var observe = observer => {
         disposables.add(

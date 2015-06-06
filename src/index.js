@@ -1,4 +1,4 @@
-exports.EventStage = require('./EventStage');
-exports.Router = require('./Router');
+exports.EventStage = require('./router/EventStage');
+exports.Router = require('./router/Router');
 exports.model = require('./model');
 

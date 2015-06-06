@@ -1,7 +1,5 @@
-"use strict";
-
+import { Guard } from '../system';
 import Observer from './Observer';
-import Guard from '../Guard';
 
 class Observable {
     static create(onObserve, router) {

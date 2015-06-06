@@ -1,4 +1,4 @@
-import Guard from '../../Guard';
+import Guard from '../Guard';
 import DisposableWrapper from './DisposableWrapper';
 
 export default class CompositeDisposable {

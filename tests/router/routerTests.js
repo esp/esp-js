@@ -1,6 +1,6 @@
 "use strict";
 
-import esp from '../';
+import esp from '../../';
 
 describe('Router', () => {
 

@@ -1,5 +1,3 @@
-"use strict";
-
 class EventStage {
     static get preview() { return  'preview'; }
     static get normal() { return  'normal'; }

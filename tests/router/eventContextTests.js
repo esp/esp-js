@@ -1,6 +1,6 @@
 "use strict";
 
-import EventContext from '../src/EventContext';
+import EventContext from '../../src/router/EventContext';
 
 describe('EventContext', () => {
     var ec;

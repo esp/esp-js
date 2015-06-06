@@ -1,2 +1,5 @@
 import disposables from './disposables';
-export default { disposables };
+import Guard from './Guard';
+import * as logger from './logger';
+import * as utils  from './utils'; 
+export default { disposables, Guard, logger, utils };

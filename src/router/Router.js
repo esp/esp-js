@@ -1,17 +1,16 @@
 "use strict";
 
-import Guard from './Guard';
 import EventContext from './EventContext';
 import EventStage from './EventStage';
 import ModelRecord from './ModelRecord';
 import State from './State.js';
 import Status from './Status.js';
-import { Subject, Observable } from './reactive/index';
-import { SubModelChangedEvent } from './model/events/index';
-import * as Logger from './Logger';
-import * as utils from './utils';
 
-var _log = Logger.create('Router');
+import { Subject, Observable } from '../reactive/index';
+import { SubModelChangedEvent } from '../model/events/index';
+import { Guard, utils, logger } from '../system';
+
+var _log = logger.create('Router');
 
 export default class Router {
     constructor() {
@@ -27,8 +26,6 @@ export default class Router {
         Guard.isDefined(model, 'THe model argument must be defined');
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
-
-
         this._models[modelId] = new ModelRecord(undefined, modelId, model, options);
     }
     addChildModel(parentModelId, childModelId, model, options) {

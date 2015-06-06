@@ -1,4 +1,4 @@
-import * as Logger from '../src/Logger';
+import * as Logger from '../../src/system/logger';
 
 describe('Logger', () => {
     var _lastLevel;

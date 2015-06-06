@@ -1,6 +1,4 @@
-"use strict";
-
-import * as utils from '../utils';
+import { utils } from '../system';
 import Observable from './Observable';
 
 class Subject extends Observable  {

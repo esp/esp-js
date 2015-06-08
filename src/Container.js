@@ -3,13 +3,14 @@
 import utils from './utils';
 import ResolverContext from './ResolverContext';
 import InstanceLifecycleType from './InstanceLifecycleType';
-import InstanceLifecycle from './InstanceLifecycle';
+import RegistrationModifier from './RegistrationModifier';
 
 export default class Container {
     constructor() {
         this._isChildContainer = false;
         this._parent = undefined;
         this._registrations = {};
+        this._registrationGroups = {};
         this._instanceCache = {};
         this._resolverContext = new ResolverContext();
         this._resolvers = this._createDefaultResolvers();
@@ -17,13 +18,14 @@ export default class Container {
         this._childContainers = [];
     }
     createChildContainer() {
-        if (this._isDisposed) this._throwIsDisposed();
+        this._throwIfDisposed();
         // The child prototypically inherits some but not all props from its parent.
         // Below we override the ones it doesn't inherit.
         var child = Object.create(this);
         child._parent = this;
         child._isChildContainer = true;
         child._registrations = Object.create(this._registrations);
+        child._registrationGroups = Object.create(this._registrationGroups);
         child._instanceCache = Object.create(this._instanceCache);
         child._resolvers = Object.create(this._resolvers);
         child._isDisposed = false;
@@ -32,7 +34,7 @@ export default class Container {
         return child;
     }
     register(name, proto, dependencyList) {
-        if (this._isDisposed) this._throwIsDisposed();
+        this._throwIfDisposed();
         this._validateDependencyList(dependencyList);
         var registration = {
             name: name,
@@ -41,10 +43,10 @@ export default class Container {
             instanceLifecycleType: InstanceLifecycleType.singleton
         };
         this._registrations[name] = registration;
-        return new InstanceLifecycle(registration, this._instanceCache);
+        return new RegistrationModifier(registration, this._instanceCache, this._registrationGroups);
     }
     registerInstance(name, instance) {
-        if (this._isDisposed) this._throwIsDisposed();
+        this._throwIfDisposed();
         var registration = {
             name: name,
             instanceLifecycleType: InstanceLifecycleType.external
@@ -53,7 +55,7 @@ export default class Container {
         this._instanceCache[name] = instance;
     }
     resolve(name) {
-        if (this._isDisposed) this._throwIsDisposed();
+        this._throwIfDisposed();
         var registration = this._registrations[name],
             dependency,
             instance,
@@ -71,8 +73,23 @@ export default class Container {
         }
         return instance;
     }
+    resolveGroup(groupName) {
+        this._throwIfDisposed();
+        var items = [],
+            mapings,
+            error;
+        mapings = this._registrationGroups[groupName];
+        if (!mapings) {
+            error = utils.sprintf('No group with name [%s] registered', groupName);
+            throw new Error(error);
+        }
+        for (let i = 0, len = mapings.length; i < len; i++) {
+            items.push(this.resolve(mapings[i]));
+        }
+        return items;
+    }
     addResolver(type, resolver) {
-        if (this._isDisposed) this._throwIsDisposed();
+        this._throwIfDisposed();
         this._resolvers[type] = resolver;
     }
     dispose() {
@@ -182,8 +199,8 @@ export default class Container {
             }
         };
     }
-    _throwIsDisposed() {
-        throw new Error("Container has been disposed");
+    _throwIfDisposed() {
+        if (this._isDisposed) throw new Error("Container has been disposed");
     }
     _disposeContainer() {
         if (!this._isDisposed) {

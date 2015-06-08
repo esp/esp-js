@@ -64,15 +64,55 @@ describe('Container', () =>  {
             }).toThrow();
         });
 
-        it('should be able able to register/resolve many objects with the same key', () =>  {
-            pending();
-        });
-
         it('should register/resolve a given instance', () =>  {
             var instance = {};
             container.registerInstance('a', instance);
             var resolved = container.resolve('a');
             expect(resolved).toBe(instance);
+        });
+
+        describe('groups', () =>  {
+
+            it('should be able able to register/resolve many objects with the same key', () =>  {
+                var A = createObject();
+                var B = createObject();
+                container.register('a', A).inGroup('myGroup');
+                container.register('b', B, ['a']).inGroup('myGroup');
+                var group = container.resolveGroup('myGroup');
+                expect(A.isPrototypeOf(group[0])).toEqual(true);
+                expect(B.isPrototypeOf(group[1])).toEqual(true);
+            });
+
+            it('should throw if item already registered in group', () =>  {
+                var A = createObject();
+                expect(() => {
+                    container
+                        .register('a', A)
+                        .inGroup('myGroup')
+                        .inGroup('myGroup');
+                }).toThrow();
+            });
+
+            it('should respect the instance lifetime settings when resolving', () =>  {
+                var A = createObject();
+                var B = createObject();
+                container.register('a', A)
+                    .transient()
+                    .inGroup('myGroup');
+                container.register('b', B, ['a'])
+                    .singleton()
+                    .inGroup('myGroup');
+                var group1 = container.resolveGroup('myGroup');
+                var group2 = container.resolveGroup('myGroup');
+
+                expect(group1[0]).not.toBe(group2[0]); // registration 'a' is transient so we should get a new one each time
+                expect(group1[1]).toBe(group2[1]); // registration 'b' is singleton so we should get the same one each time
+
+                // the 'a' resolved as part of the group should be different as that given to 'b' as a dependency
+                expect(A.isPrototypeOf(group1[0])).toBe(true);
+                expect(A.isPrototypeOf(group1[1].dependencies[0])).toBe(true);
+                expect(group1[0]).not.toBe(group1[1].dependencies[0]);
+            });
         });
 
         describe('constructor functions', () =>  {
@@ -174,6 +214,16 @@ describe('Container', () =>  {
                 var c2a = childContainer.resolve('a');
                 var c1a = container.resolve('a');
                 expect(c2a).toBe(c1a);
+            });
+
+            describe('groups', () =>  {
+                it('should resolve group from parent when no configuration override exists in the child ', () =>  {
+                    pending();
+                });
+
+                it('should resolve group from child when configuration override exists in the child ', () =>  {
+                    pending();
+                });
             });
         });
 

@@ -1,4 +1,6 @@
 // helper to track circular dependencies during a resolve call
+import * as utils from './utils.js';
+
 export default class ResolverContext  {
     constructor() {
         this._isResolving = false;

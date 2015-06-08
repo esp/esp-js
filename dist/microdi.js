@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _InstanceLifecycleType2 = _interopRequireDefault(_InstanceLifecycleType);
     
-    var _InstanceLifecycle = __webpack_require__(5);
+    var _RegistrationModifier = __webpack_require__(5);
     
-    var _InstanceLifecycle2 = _interopRequireDefault(_InstanceLifecycle);
+    var _RegistrationModifier2 = _interopRequireDefault(_RegistrationModifier);
     
     var Container = (function () {
         function Container() {
@@ -108,6 +108,7 @@ return /******/ (function(modules) { // webpackBootstrap
             this._isChildContainer = false;
             this._parent = undefined;
             this._registrations = {};
+            this._registrationGroups = {};
             this._instanceCache = {};
             this._resolverContext = new _ResolverContext2['default']();
             this._resolvers = this._createDefaultResolvers();
@@ -118,13 +119,14 @@ return /******/ (function(modules) { // webpackBootstrap
         _createClass(Container, [{
             key: 'createChildContainer',
             value: function createChildContainer() {
-                if (this._isDisposed) this._throwIsDisposed();
+                this._throwIfDisposed();
                 // The child prototypically inherits some but not all props from its parent.
                 // Below we override the ones it doesn't inherit.
                 var child = Object.create(this);
                 child._parent = this;
                 child._isChildContainer = true;
                 child._registrations = Object.create(this._registrations);
+                child._registrationGroups = Object.create(this._registrationGroups);
                 child._instanceCache = Object.create(this._instanceCache);
                 child._resolvers = Object.create(this._resolvers);
                 child._isDisposed = false;
@@ -135,7 +137,7 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: 'register',
             value: function register(name, proto, dependencyList) {
-                if (this._isDisposed) this._throwIsDisposed();
+                this._throwIfDisposed();
                 this._validateDependencyList(dependencyList);
                 var registration = {
                     name: name,
@@ -144,12 +146,12 @@ return /******/ (function(modules) { // webpackBootstrap
                     instanceLifecycleType: _InstanceLifecycleType2['default'].singleton
                 };
                 this._registrations[name] = registration;
-                return new _InstanceLifecycle2['default'](registration, this._instanceCache);
+                return new _RegistrationModifier2['default'](registration, this._instanceCache, this._registrationGroups);
             }
         }, {
             key: 'registerInstance',
             value: function registerInstance(name, instance) {
-                if (this._isDisposed) this._throwIsDisposed();
+                this._throwIfDisposed();
                 var registration = {
                     name: name,
                     instanceLifecycleType: _InstanceLifecycleType2['default'].external
@@ -160,7 +162,7 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: 'resolve',
             value: function resolve(name) {
-                if (this._isDisposed) this._throwIsDisposed();
+                this._throwIfDisposed();
                 var registration = this._registrations[name],
                     dependency,
                     instance,
@@ -179,9 +181,26 @@ return /******/ (function(modules) { // webpackBootstrap
                 return instance;
             }
         }, {
+            key: 'resolveGroup',
+            value: function resolveGroup(groupName) {
+                this._throwIfDisposed();
+                var items = [],
+                    mapings,
+                    error;
+                mapings = this._registrationGroups[groupName];
+                if (!mapings) {
+                    error = _utils2['default'].sprintf('No group with name [%s] registered', groupName);
+                    throw new Error(error);
+                }
+                for (var i = 0, len = mapings.length; i < len; i++) {
+                    items.push(this.resolve(mapings[i]));
+                }
+                return items;
+            }
+        }, {
             key: 'addResolver',
             value: function addResolver(type, resolver) {
-                if (this._isDisposed) this._throwIsDisposed();
+                this._throwIfDisposed();
                 this._resolvers[type] = resolver;
             }
         }, {
@@ -296,9 +315,9 @@ return /******/ (function(modules) { // webpackBootstrap
                 };
             }
         }, {
-            key: '_throwIsDisposed',
-            value: function _throwIsDisposed() {
-                throw new Error('Container has been disposed');
+            key: '_throwIfDisposed',
+            value: function _throwIfDisposed() {
+                if (this._isDisposed) throw new Error('Container has been disposed');
             }
         }, {
             key: '_disposeContainer',
@@ -349,6 +368,31 @@ return /******/ (function(modules) { // webpackBootstrap
     exports.isString = function (value) {
         return typeof value == 'string' || value instanceof String;
     };
+    
+    var _indexOf = function indexOf(array, item) {
+        if (typeof Array.prototype.indexOf === 'function') {
+            _indexOf = Array.prototype.indexOf;
+        } else {
+            _indexOf = function (item) {
+                var i = -1,
+                    index = -1;
+    
+                for (i = 0; i < this.length; i++) {
+                    if (this[i] === item) {
+                        index = i;
+                        break;
+                    }
+                }
+    
+                return index;
+            };
+        }
+    
+        var index = _indexOf.call(array, item);
+        return index;
+    };
+    
+    exports.indexOf = _indexOf;
 
 /***/ },
 /* 3 */
@@ -363,7 +407,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
+    function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+    
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+    
+    var _utilsJs = __webpack_require__(2);
+    
+    var utils = _interopRequireWildcard(_utilsJs);
     
     var ResolverContext = (function () {
         function ResolverContext() {
@@ -454,32 +504,51 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _InstanceLifecycleType2 = _interopRequireDefault(_InstanceLifecycleType);
     
-    var InstanceLifecycle = (function () {
-        function InstanceLifecycle(registration, instanceCache) {
-            _classCallCheck(this, InstanceLifecycle);
+    var RegistrationModifier = (function () {
+        function RegistrationModifier(registration, instanceCache, registrationGroups) {
+            _classCallCheck(this, RegistrationModifier);
     
             this._registration = registration;
             this._instanceCache = instanceCache;
+            this._registrationGroups = registrationGroups;
             this.singleton();
         }
     
-        _createClass(InstanceLifecycle, [{
+        _createClass(RegistrationModifier, [{
             key: 'transient',
             value: function transient() {
                 this._ensureInstanceNotCreated();
                 this._registration.instanceLifecycleType = _InstanceLifecycleType2['default'].transient;
+                return this;
             }
         }, {
             key: 'singleton',
             value: function singleton() {
                 this._ensureInstanceNotCreated();
                 this._registration.instanceLifecycleType = _InstanceLifecycleType2['default'].singleton;
+                return this;
             }
         }, {
             key: 'singletonPerContainer',
             value: function singletonPerContainer() {
                 this._ensureInstanceNotCreated();
                 this._registration.instanceLifecycleType = _InstanceLifecycleType2['default'].singletonPerContainer;
+                return this;
+            }
+        }, {
+            key: 'inGroup',
+            value: function inGroup(groupName) {
+                this._ensureInstanceNotCreated();
+                var lookup = this._registrationGroups[groupName];
+                if (lookup === undefined) {
+                    lookup = [];
+                    this._registrationGroups[groupName] = lookup;
+                }
+                if (_utils2['default'].indexOf(lookup, this._registration.name) !== -1) {
+                    throw new Error(_utils2['default'].sprintf('Instance already created for key [%s]', this._registration.name));
+                }
+                lookup.push(this._registration.name);
+                return this;
             }
         }, {
             key: '_ensureInstanceNotCreated',
@@ -488,10 +557,10 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }]);
     
-        return InstanceLifecycle;
+        return RegistrationModifier;
     })();
     
-    exports['default'] = InstanceLifecycle;
+    exports['default'] = RegistrationModifier;
     module.exports = exports['default'];
 
 /***/ }

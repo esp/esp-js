@@ -45,11 +45,15 @@ export default class Container {
         this._registrations[name] = registration;
         return new RegistrationModifier(registration, this._instanceCache, this._registrationGroups);
     }
-    registerInstance(name, instance) {
+    registerInstance(name, instance, isExternallyOwned) {
         this._throwIfDisposed();
+        // when isExternallyOwned is not provided we default to InstanceLifecycleType.external
+        var instanceLifecycleType = (isExternallyOwned !== false)
+            ? InstanceLifecycleType.external
+            : InstanceLifecycleType.singleton;
         var registration = {
             name: name,
-            instanceLifecycleType: InstanceLifecycleType.external
+            instanceLifecycleType: instanceLifecycleType
         };
         this._registrations[name] = registration;
         this._instanceCache[name] = instance;

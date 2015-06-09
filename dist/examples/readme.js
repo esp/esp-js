@@ -51,4 +51,53 @@ var runBasicExample = function runBasicExample() {
     parent.sayHello();
 };
 
-runBasicExample();
+var runLifeTimeTypes = function runLifeTimeTypes() {
+    var container = new _microdiJs2["default"].Container();
+
+    console.log("Singleton");
+    var Foo = {};
+    container.register("theFoo", Foo).singleton();
+    var foo1 = container.resolve("theFoo");
+    var foo2 = container.resolve("theFoo");
+    console.log(foo1 == foo2); // true
+
+    console.log("Singleton per container");
+    var Bar = {};
+    container.register("theBar", Bar).singletonPerContainer();
+    var bar1 = container.resolve("theBar");
+    var bar2 = container.resolve("theBar");
+    var childContainer = container.createChildContainer();
+    var bar3 = childContainer.resolve("theBar");
+    var bar4 = childContainer.resolve("theBar");
+    console.log(bar1 == bar2); // true
+    console.log(bar2 == bar3); // false
+    console.log(bar3 == bar4); // true
+
+    console.log("Transient");
+    var Baz = {};
+    container.register("theBaz", Foo).transient();
+    var baz1 = container.resolve("theBaz");
+    var baz2 = container.resolve("theBaz");
+    console.log(baz1 == baz2); // false
+
+    console.log("External");
+    var Disposable = {
+        init: function init() {
+            this.isDisposed = false;
+            return this;
+        },
+        dispose: function dispose() {
+            this.isDisposed = true;
+        }
+    };
+    container.registerInstance("disposable1", Object.create(Disposable).init());
+    container.register("disposable2", Disposable);
+    var disposable1 = container.resolve("disposable1");
+    var disposable2 = container.resolve("disposable2");
+    container.dispose();
+    console.log(disposable1.isDisposed); // false
+    console.log(disposable2.isDisposed); // true
+};
+
+//runBasicExample();
+runLifeTimeTypes();

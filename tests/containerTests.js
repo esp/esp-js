@@ -195,7 +195,7 @@ describe('Container', () =>  {
             pending();
         });
 
-        describe('.register()/.resolve() functionality', () =>  {
+        describe('.register()/.resolve() ', () =>  {
 
             it('should default to resolving from parent when no configuration override exists in the child', () =>  {
                 var A = createObject();
@@ -217,12 +217,35 @@ describe('Container', () =>  {
             });
 
             describe('groups', () =>  {
-                it('should resolve group from parent when no configuration override exists in the child ', () =>  {
-                    pending();
+                var A, B;
+
+                beforeEach(() => {
+                    A = createObject();
+                    B = createObject();
+                    container.register('a', A).singleton().inGroup('myGroup');
+                    container.register('b', B).singleton().inGroup('myGroup');
                 });
 
-                it('should resolve group from child when configuration override exists in the child ', () =>  {
-                    pending();
+                it('should resolve group from parent when no configuration override exists in the child ', () =>  {
+                    var childContainer = container.createChildContainer();
+                    var childGroup = childContainer.resolveGroup('myGroup');
+                    var rootGroup = container.resolveGroup('myGroup');
+                    // here the group resolved from the child should match the parent as
+                    // the group wasn't overridden in the child
+                    expect(childGroup[0]).toBe(rootGroup[0]);
+                    expect(childGroup[1]).toBe(rootGroup[1]);
+                });
+
+                it('should resolve group from child when configuration override exists in the child', () =>  {
+                    var childContainer = container.createChildContainer();
+                    // reconfigure the child container
+                    childContainer.register('a', A).singleton().inGroup('myGroup');
+                    childContainer.register('b', B).singleton().inGroup('myGroup');
+                    var childGroup = childContainer.resolveGroup('myGroup');
+                    var rootGroup = container.resolveGroup('myGroup');
+                    // the two groups should be different as the registration was overridden in the child
+                    expect(childGroup[0]).not.toBe(rootGroup[0]);
+                    expect(childGroup[1]).not.toBe(rootGroup[1]);
                 });
             });
         });
@@ -256,7 +279,6 @@ describe('Container', () =>  {
                 var b4 = container.resolve('b');
                 expect(b1).toBe(b4);
             });
-
         });
 
         describe('lifetime management', () =>  {
@@ -339,10 +361,22 @@ describe('Container', () =>  {
 
         it('should not dispose external objects on container dispose', () =>  {
             var A = createDisposable();
-            container.registerInstance('a', Object.create(A).init());
-            var a1 = container.resolve('a');
+            // registerInstance has an external lifetime type
+            container.registerInstance('a1', Object.create(A).init());
+            container.registerInstance('a2', Object.create(A).init(), true);
+            var a1 = container.resolve('a1');
+            var a2 = container.resolve('a2');
             container.dispose();
             expect(a1.isDisposed).toBe(false);
+            expect(a2.isDisposed).toBe(false);
+        });
+
+        it('should dispose registered instance when their lifetime type was explicitly provided', () =>  {
+            var A = createDisposable();
+            container.registerInstance('a', Object.create(A).init(), false);
+            var a1 = container.resolve('a');
+            container.dispose();
+            expect(a1.isDisposed).toBe(true);
         });
 
         it('should dispose singletonPerContainer instance only in the child container that was disposed', () =>  {

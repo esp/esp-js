@@ -150,11 +150,13 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: 'registerInstance',
-            value: function registerInstance(name, instance) {
+            value: function registerInstance(name, instance, isExternallyOwned) {
                 this._throwIfDisposed();
+                // when isExternallyOwned is not provided we default to InstanceLifecycleType.external
+                var instanceLifecycleType = isExternallyOwned !== false ? _InstanceLifecycleType2['default'].external : _InstanceLifecycleType2['default'].singleton;
                 var registration = {
                     name: name,
-                    instanceLifecycleType: _InstanceLifecycleType2['default'].external
+                    instanceLifecycleType: instanceLifecycleType
                 };
                 this._registrations[name] = registration;
                 this._instanceCache[name] = instance;
@@ -539,8 +541,14 @@ return /******/ (function(modules) { // webpackBootstrap
             key: 'inGroup',
             value: function inGroup(groupName) {
                 this._ensureInstanceNotCreated();
+                var currentContainerOwnsRegistration = true;
                 var lookup = this._registrationGroups[groupName];
-                if (lookup === undefined) {
+                if (lookup) {
+                    // Groups are resolved against the container they are registered against.
+                    // Child containers will inherit the group unless the child overwrites the registration.
+                    currentContainerOwnsRegistration = this._registrationGroups.hasOwnProperty(groupName);
+                }
+                if (lookup === undefined || !currentContainerOwnsRegistration) {
                     lookup = [];
                     this._registrationGroups[groupName] = lookup;
                 }

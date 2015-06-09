@@ -25,8 +25,14 @@ export default class RegistrationModifier  {
     }
     inGroup(groupName) {
         this._ensureInstanceNotCreated();
+        var currentContainerOwnsRegistration = true;
         var lookup = this._registrationGroups[groupName];
-        if(lookup === undefined) {
+        if(lookup) {
+            // Groups are resolved against the container they are registered against.
+            // Child containers will inherit the group unless the child overwrites the registration.
+            currentContainerOwnsRegistration = this._registrationGroups.hasOwnProperty(groupName);
+        }
+        if(lookup === undefined || !currentContainerOwnsRegistration) {
             lookup = [];
             this._registrationGroups[groupName] = lookup;
         }

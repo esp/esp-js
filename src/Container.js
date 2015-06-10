@@ -45,20 +45,17 @@ export default class Container {
         this._registrations[name] = registration;
         return new RegistrationModifier(registration, this._instanceCache, this._registrationGroups);
     }
-    registerInstance(name, instance, isExternallyOwned) {
+    registerInstance(name, instance, isExternallyOwned = true) {
         this._throwIfDisposed();
-        // when isExternallyOwned is not provided we default to InstanceLifecycleType.external
-        var instanceLifecycleType = (isExternallyOwned !== false)
-            ? InstanceLifecycleType.external
-            : InstanceLifecycleType.singleton;
-        var registration = {
+        this._registrations[name] = {
             name: name,
-            instanceLifecycleType: instanceLifecycleType
+            instanceLifecycleType: isExternallyOwned
+                ? InstanceLifecycleType.external
+                : InstanceLifecycleType.singleton
         };
-        this._registrations[name] = registration;
         this._instanceCache[name] = instance;
     }
-    resolve(name) {
+    resolve(name, ...parameterOverrides) {
         this._throwIfDisposed();
         var registration = this._registrations[name],
             dependency,
@@ -70,10 +67,12 @@ export default class Container {
         }
         instance = this._tryRetrieveFromCache(name);
         if (!instance) {
-            instance = this._buildInstance(name);
+            instance = this._buildInstance(name, parameterOverrides);
             if (registration.instanceLifecycleType === InstanceLifecycleType.singleton || registration.instanceLifecycleType === InstanceLifecycleType.singletonPerContainer) {
                 this._instanceCache[name] = instance;
             }
+        } else if(parameterOverrides.length > 0) {
+            throw new Error("The provided parameters can't be used to construct the instance as an existing instance was found in the container");
         }
         return instance;
     }
@@ -130,19 +129,21 @@ export default class Container {
         }
         return instance;
     }
-    _buildInstance(name) {
+    _buildInstance(name, paramaterOverrides) {
         var registration = this._registrations[name],
             dependencies = [],
             dependency,
             dependencyKey,
-            i,
             context,
             instance,
             resolver;
+        for(let j = 0, len = paramaterOverrides.length; j < len; j ++) {
+            dependencies.push(paramaterOverrides[j]);
+        }
         context = this._resolverContext.beginResolve(name);
         try {
             if (registration.dependencyList !== undefined) {
-                for (i = 0; i < registration.dependencyList.length; i++) {
+                for (let i = 0, len = registration.dependencyList.length; i < len; i++) {
                     dependencyKey = registration.dependencyList[i];
                     if (utils.isString(dependencyKey)) {
                         dependency = this.resolve(dependencyKey);
@@ -186,18 +187,21 @@ export default class Container {
             // A resolvers that delegates to the dependency keys resolve method to perform the resolution.
             // It expects a dependency key in format:
             // { type: 'factory', resolve: function(container) { return someInstance } }
-            factory: {
+            dependencyKeyResolver: {
                 resolve: (container, dependencyKey) => {
                     return dependencyKey.resolve(container);
                 }
             },
             // A resolvers that returns a factory that when called will resolve the dependency from the container.
+            // Any arguments passed at runtime will be passed to resolve as parameter overrides
             // It expects a dependency key in format:
             // { type: 'autoFactory', name: "aDependencyName" }
             autoFactory: {
                 resolve: (container, dependencyKey) => {
-                    return () => {
-                        return container.resolve(dependencyKey.name);
+                    return function() { // using function here as I don't want babel to re-write the arguments var
+                        var args = [].slice.call(arguments);
+                        args.unshift(dependencyKey.key);
+                        return container.resolve.apply(container, args );
                     };
                 }
             }

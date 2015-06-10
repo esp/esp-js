@@ -68,10 +68,33 @@ var runLifeTimeTypes = () => {
     container.dispose();
     console.log(disposable1.isDisposed); // false
     console.log(disposable2.isDisposed); // true
-
-
-
 };
 
-//runBasicExample();
+var runInjectionFactories = () => {
+    class Item {
+        constructor(name, otherDependencyA) {
+            this.name = name;
+            this.otherDependencyA = otherDependencyA;
+        }
+    }
+    class Manager{
+        constructor(itemFactory) {
+            this._itemFactory = itemFactory;
+        }
+        createItem(name) {
+            return this._itemFactory(name);
+        }
+    }
+    var container = new microdi.Container();
+    container.registerInstance('otherDependencyA', "look! a string dependency here");
+    container.register('item', Item, ['otherDependencyA']).transient();
+    container.register('manager', Manager, [{ type: "autoFactory", key: 'item'}]);
+    var manager = container.resolve('manager');
+    var fooItem = manager.createItem("Foo");
+    console.log("%s-%s", fooItem.name, fooItem.otherDependencyA);
+    var barItem = manager.createItem("Bar");
+    console.log("%s-%s", barItem.name, barItem.otherDependencyA);
+};
+runBasicExample();
 runLifeTimeTypes();
+runInjectionFactories();

@@ -99,5 +99,41 @@ var runLifeTimeTypes = function runLifeTimeTypes() {
     console.log(disposable2.isDisposed); // true
 };
 
-//runBasicExample();
+var runInjectionFactories = function runInjectionFactories() {
+    var Item = function Item(name, otherDependencyA) {
+        _classCallCheck(this, Item);
+
+        this.name = name;
+        this.otherDependencyA = otherDependencyA;
+    };
+
+    var Manager = (function () {
+        function Manager(itemFactory) {
+            _classCallCheck(this, Manager);
+
+            this._itemFactory = itemFactory;
+        }
+
+        _createClass(Manager, [{
+            key: "createItem",
+            value: function createItem(name) {
+                return this._itemFactory(name);
+            }
+        }]);
+
+        return Manager;
+    })();
+
+    var container = new _microdiJs2["default"].Container();
+    container.registerInstance("otherDependencyA", "look! a string dependency here");
+    container.register("item", Item, ["otherDependencyA"]).transient();
+    container.register("manager", Manager, [{ type: "autoFactory", key: "item" }]);
+    var manager = container.resolve("manager");
+    var fooItem = manager.createItem("Foo");
+    console.log("%s-%s", fooItem.name, fooItem.otherDependencyA);
+    var barItem = manager.createItem("Bar");
+    console.log("%s-%s", barItem.name, barItem.otherDependencyA);
+};
+runBasicExample();
 runLifeTimeTypes();
+runInjectionFactories();

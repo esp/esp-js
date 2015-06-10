@@ -150,20 +150,23 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: 'registerInstance',
-            value: function registerInstance(name, instance, isExternallyOwned) {
+            value: function registerInstance(name, instance) {
+                var isExternallyOwned = arguments[2] === undefined ? true : arguments[2];
+    
                 this._throwIfDisposed();
-                // when isExternallyOwned is not provided we default to InstanceLifecycleType.external
-                var instanceLifecycleType = isExternallyOwned !== false ? _InstanceLifecycleType2['default'].external : _InstanceLifecycleType2['default'].singleton;
-                var registration = {
+                this._registrations[name] = {
                     name: name,
-                    instanceLifecycleType: instanceLifecycleType
+                    instanceLifecycleType: isExternallyOwned ? _InstanceLifecycleType2['default'].external : _InstanceLifecycleType2['default'].singleton
                 };
-                this._registrations[name] = registration;
                 this._instanceCache[name] = instance;
             }
         }, {
             key: 'resolve',
             value: function resolve(name) {
+                for (var _len = arguments.length, parameterOverrides = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+                    parameterOverrides[_key - 1] = arguments[_key];
+                }
+    
                 this._throwIfDisposed();
                 var registration = this._registrations[name],
                     dependency,
@@ -175,10 +178,12 @@ return /******/ (function(modules) { // webpackBootstrap
                 }
                 instance = this._tryRetrieveFromCache(name);
                 if (!instance) {
-                    instance = this._buildInstance(name);
+                    instance = this._buildInstance(name, parameterOverrides);
                     if (registration.instanceLifecycleType === _InstanceLifecycleType2['default'].singleton || registration.instanceLifecycleType === _InstanceLifecycleType2['default'].singletonPerContainer) {
                         this._instanceCache[name] = instance;
                     }
+                } else if (parameterOverrides.length > 0) {
+                    throw new Error('The provided parameters can\'t be used to construct the instance as an existing instance was found in the container');
                 }
                 return instance;
             }
@@ -245,19 +250,21 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: '_buildInstance',
-            value: function _buildInstance(name) {
+            value: function _buildInstance(name, paramaterOverrides) {
                 var registration = this._registrations[name],
                     dependencies = [],
                     dependency,
                     dependencyKey,
-                    i,
                     context,
                     instance,
                     resolver;
+                for (var j = 0, len = paramaterOverrides.length; j < len; j++) {
+                    dependencies.push(paramaterOverrides[j]);
+                }
                 context = this._resolverContext.beginResolve(name);
                 try {
                     if (registration.dependencyList !== undefined) {
-                        for (i = 0; i < registration.dependencyList.length; i++) {
+                        for (var i = 0, len = registration.dependencyList.length; i < len; i++) {
                             dependencyKey = registration.dependencyList[i];
                             if (_utils2['default'].isString(dependencyKey)) {
                                 dependency = this.resolve(dependencyKey);
@@ -299,18 +306,22 @@ return /******/ (function(modules) { // webpackBootstrap
                     // A resolvers that delegates to the dependency keys resolve method to perform the resolution.
                     // It expects a dependency key in format:
                     // { type: 'factory', resolve: function(container) { return someInstance } }
-                    factory: {
+                    dependencyKeyResolver: {
                         resolve: function resolve(container, dependencyKey) {
                             return dependencyKey.resolve(container);
                         }
                     },
                     // A resolvers that returns a factory that when called will resolve the dependency from the container.
+                    // Any arguments passed at runtime will be passed to resolve as parameter overrides
                     // It expects a dependency key in format:
                     // { type: 'autoFactory', name: "aDependencyName" }
                     autoFactory: {
                         resolve: function resolve(container, dependencyKey) {
                             return function () {
-                                return container.resolve(dependencyKey.name);
+                                // using function here as I don't want babel to re-write the arguments var
+                                var args = [].slice.call(arguments);
+                                args.unshift(dependencyKey.key);
+                                return container.resolve.apply(container, args);
                             };
                         }
                     }

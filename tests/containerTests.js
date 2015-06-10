@@ -129,10 +129,10 @@ describe('Container', () =>  {
 
         describe('dependency resolvers', () =>  {
 
-            it('should register/resolve a dependency registered with a factory resolver', () =>  {
+            it('should register/resolve a dependency registered with a dependencyKeyResolver resolver', () =>  {
                 var A = createObject();
                 container.register('a', A, [{
-                    type: "factory",
+                    type: "dependencyKeyResolver",
                     resolve: function()
                     {
                         return { foo: 6 };
@@ -141,20 +141,50 @@ describe('Container', () =>  {
                 var a = container.resolve('a');
                 expect(a.dependencies[0].foo).toBe(6);
             });
+            describe('auto factory ', () =>  {
+                var A, B, C, autoFactoryForA, autoFactoryForB;
 
-            it('should register/resolve a dependency registered with an auto factory resolver', () =>  {
-                var A = createObject();
-                var B = createObject();
-                container.register('a', A);
-                // inject an auto factory function to B for it's dependency 'a'
-                container.register('b', B, [{
-                    type: "autoFactory",
-                    name: 'a'
-                }]);
-                var b = container.resolve('b');
-                var autoFactory = b.dependencies[0];
-                var a1 = autoFactory(), a2 = autoFactory(), a3 = autoFactory();
-                expect(a1 === a2 && a2 === a3).toBe(true);
+                beforeEach(() => {
+                    A = createObject();
+                    B = createObject();
+                    C = createObject();
+                    container.register('a', A); // singleton by default
+                    container.register('b', B, ['a']).transient();
+                    container.register('c', C, [{
+                        type: "autoFactory",
+                        key: 'a' // resolve 'a' each time the injected function is called
+                    }, {
+                        type: "autoFactory",
+                        key: 'b' // resolve 'b' each time the injected function is called
+                    }]);
+                    var c = container.resolve('c');
+                    autoFactoryForA = c.dependencies[0];
+                    autoFactoryForB = c.dependencies[1];
+                });
+
+                it('should resolve an instance each time the auto factory is invoked', () =>  {
+                    var b1 = autoFactoryForB(), b2 = autoFactoryForB(), b3 = autoFactoryForB();
+                    expect(B.isPrototypeOf(b1)).toEqual(true);
+                    expect(B.isPrototypeOf(b2)).toEqual(true);
+                    expect(B.isPrototypeOf(b3)).toEqual(true);
+                    expect(b1 != b2).toEqual(true); // transient registration so the instances should be different
+                    expect(b2 != b3).toEqual(true);
+                });
+
+                it('should pass additional parameters to the constructor on the instance being resolved', () =>  {
+                    var b1 = autoFactoryForB("aParam", "anotherParam");
+                    expect(b1.dependencies[0]).toEqual("aParam");
+                    expect(b1.dependencies[1]).toEqual("anotherParam");
+                    expect(A.isPrototypeOf(b1.dependencies[2])).toEqual(true);
+                });
+
+                it('should throw if parameters passed and the resolve targetsingletonlton and already built', () =>  {
+                    var a1 = autoFactoryForA("aParam", "anotherParam");
+                    expect(() => {
+                        var a2 = autoFactoryForA("aParam", "anotherParam");
+                    }).toThrow();
+                });
+
             });
 
             it('should pass container to dependency resolver', () =>  {

@@ -279,12 +279,12 @@ var runCustomDependencyResolver = function runCustomDependencyResolver() {
 
         _createClass(DomResolver, [{
             key: "resolve",
-            value: function resolve(container, dependencyKey) {
+            value: function resolve(container, resolverKey) {
                 // return a pretend dom elemenet,
                 return Object.defineProperties({}, {
                     description: {
                         get: function () {
-                            return "Fake DOM element - " + dependencyKey.domId;
+                            return "Fake DOM element - " + resolverKey.domId;
                         },
                         configurable: true,
                         enumerable: true
@@ -298,27 +298,72 @@ var runCustomDependencyResolver = function runCustomDependencyResolver() {
 
     var container = new _microdiJs2["default"].Container();
     container.addResolver("domResolver", new DomResolver());
-    container.register("controller", [{ type: "domResolver", domid: "theDomId" }]);
+    // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
+    // This is only required when you don't register a constructor function or prototype.
+    container.register("controller", { type: "domResolver", domId: "theDomId", isResolerKey: true });
     var controller = container.resolve("controller");
-    console.log(JSON.stringify(controller.description));
+    console.log(controller.description);
 };
 
-var runDependencyResolvers1 = function runDependencyResolvers1() {
-    console.log("Dependency resolvers 1");
+var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
+    console.log("Custom dependency resolver 2");
 
-    var Foo = function Foo() {
+    var DomResolver = (function () {
+        function DomResolver() {
+            _classCallCheck(this, DomResolver);
+        }
+
+        _createClass(DomResolver, [{
+            key: "resolve",
+            value: function resolve(container, resolverKey) {
+                // return a pretend dom elemenet,
+                return Object.defineProperties({}, {
+                    description: {
+                        get: function () {
+                            return "Fake DOM element - " + resolverKey.domId;
+                        },
+                        configurable: true,
+                        enumerable: true
+                    }
+                });
+            }
+        }]);
+
+        return DomResolver;
+    })();
+
+    var container = new _microdiJs2["default"].Container();
+    container.addResolver("domResolver", new DomResolver());
+
+    var Controller = function Controller(domElement) {
+        _classCallCheck(this, Controller);
+
+        console.log(domElement.description);
+    };
+
+    // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
+    // The container assumes it is as it appears in the dependency list.
+    container.register("controller", Controller, [{ type: "domResolver", domId: "theDomId" }]);
+    var controller = container.resolve("controller");
+};
+
+var runDelegeateResolver = function runDelegeateResolver() {
+    console.log("Delegate resolver");
+
+    var Foo = function Foo(bar) {
         _classCallCheck(this, Foo);
+
+        console.log("bar is : [%s]", bar);
     };
 
     var container = new _microdiJs2["default"].Container();
     container.register("foo", Foo, [{
         type: "delegate",
-        resolve: function resolve(container1) {
-            console.log("Resolving Foo via a delegate");
-            return new Foo();
+        resolve: function resolve(container, resolveKey) {
+            return "barInstance";
         }
     }]);
-    var foo1 = container.resolve("foo");
+    var foo = container.resolve("foo");
 };
 
 runBasicExample();
@@ -330,4 +375,5 @@ runChildContainer();
 runChildContainerRegistrations();
 runDisposal();
 runCustomDependencyResolver();
-runDependencyResolvers1();
+runCustomDependencyResolver2();
+runDelegeateResolver();

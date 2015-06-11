@@ -201,36 +201,69 @@ var runDisposal = () => {
 var runCustomDependencyResolver = () => {
     console.log("Custom dependency resolver");
     class DomResolver {
-        resolve(container, dependencyKey) {
+        resolve(container, resolverKey) {
             // return a pretend dom elemenet,
             return {
                 get description() {
-                    return "Fake DOM element - " + dependencyKey.domId ;
+                    return "Fake DOM element - " + resolverKey.domId ;
                 }
             };
         }
     }
     var container = new microdi.Container();
     container.addResolver("domResolver", new DomResolver());
-    container.register('controller', [{ type: "domResolver", domid : "theDomId" }]);
+    // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
+    // This is only required when you don't register a constructor function or prototype.
+    container.register('controller', { type: "domResolver", domId : "theDomId", isResolerKey: true });
     var controller = container.resolve('controller');
-    console.log(JSON.stringify(controller.description));
+    console.log(controller.description);
 };
 
 
-var runDependencyResolvers1 = () => {
-    console.log("Dependency resolvers 1");
-    class Foo { }
-    var container = new microdi.Container();
-    container.register('foo', Foo, [{
-        type: "delegate",
-        resolve: container1 =>
-        {
-            console.log("Resolving Foo via a delegate");
-            return new Foo();
+var runCustomDependencyResolver2 = () => {
+    console.log("Custom dependency resolver 2");
+    class DomResolver {
+        resolve(container, resolverKey) {
+            // return a pretend dom elemenet,
+            return {
+                get description() {
+                    return "Fake DOM element - " + resolverKey.domId ;
+                }
+            };
         }
-    }]);
-    var foo1 = container.resolve('foo');
+    }
+    var container = new microdi.Container();
+    container.addResolver("domResolver", new DomResolver());
+    class Controller {
+        constructor(domElement) {
+            console.log(domElement.description);
+        }
+    }
+    // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
+    // The container assumes it is as it appears in the dependency list.
+    container.register('controller', Controller, [{ type: "domResolver", domId : "theDomId" }]);
+    var controller = container.resolve('controller');
+};
+
+var runDelegeateResolver = () => {
+    console.log("Delegate resolver");
+    class Foo  {
+        constructor(bar) {
+            console.log("bar is : [%s]", bar);
+        }
+    }
+    var container = new microdi.Container();
+    container.register(
+        'foo',
+        Foo,
+        [{
+            type: "delegate",
+            resolve: (container, resolveKey) => {
+                return "barInstance";
+            }
+        }]
+    );
+    var foo = container.resolve('foo');
 };
 
 runBasicExample();
@@ -242,4 +275,5 @@ runChildContainer();
 runChildContainerRegistrations();
 runDisposal();
 runCustomDependencyResolver();
-runDependencyResolvers1();
+runCustomDependencyResolver2();
+runDelegeateResolver();

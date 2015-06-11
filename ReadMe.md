@@ -367,34 +367,101 @@ container.register('foo', Foo, [resolverKey]);
 ```
 
 Here is an example where rather than registering a concrete object to build, a `resolverKey` is used.
-The `DomResolver` will be used to build the object.
+The `DomResolver` resolver will be used to build the object.
 
 ```javascript
-console.log("Custom dependency resolver");
 class DomResolver {
-    resolve(container, dependencyKey) {
+    resolve(container, resolverKey) {
         // return a pretend dom elemenet,
         return {
             get description() {
-                return "Fake DOM element - " + dependencyKey.domId ;
+                return "Fake DOM element - " + resolverKey.domId ;
             }
         };
     }
 }
 var container = new microdi.Container();
 container.addResolver("domResolver", new DomResolver());
-container.register('controller', [{ type: "domResolver", domid : "theDomId" }]);
+// Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
+// This is only required when you don't register a constructor function or prototype.
+container.register('controller', { type: "domResolver", domid : "theDomId", isResolerKey: true });
 var controller = container.resolve('controller');
-console.log(JSON.stringify(controller.description));
+console.log(controller.description);
+```
+
+Output:
+
+```
+Fake DOM element - theDomId
 ```
 
 Here is an example where a concrete object is registered and a resolverKey is used to resolve a dependency of the registered item.
 
 ```javascript
+class DomResolver {
+    resolve(container, resolverKey) {
+        // return a pretend dom elemenet,
+        return {
+            get description() {
+                return "Fake DOM element - " + resolverKey.domId ;
+            }
+        };
+    }
+}
+var container = new microdi.Container();
+container.addResolver("domResolver", new DomResolver());
+class Controller {
+    constructor(domElement) {
+        console.log(domElement.description);
+    }
+}
+// Note we don't need to specift the 'isResolerKey' property on the resolverkey.
+// The container assumes it is as it appears in the dependency list.
+container.register('controller', Controller, [{ type: "domResolver", domid : "theDomId" }]);
+var controller = container.resolve('controller');
+```
 
+Output:
+
+```
+Fake DOM element - theDomId
 ```
 
 ### Built in resolvers
+There are 2 built in resolvers.
+
 #### Deletate
-#### Auto Factory
+
+This simply defers object creation to a delegate provided by the resolverKey.
+
+```javascript
+class Foo  {
+    constructor(bar) {
+        console.log("bar is : [%s]", bar);
+    }
+}
+var container = new microdi.Container();
+container.register(
+    'foo',
+    Foo,
+    [{
+        type: "delegate",
+        resolve: (container) => {
+            // create the required instance
+            return "barInstance";
+        }
+    }]
+);
+var foo = container.resolve('foo');
+```
+
+Output:
+
+```
+bar is : [barInstance]
+```
+
+#### Injection factory
+
+Discussed [above](injection-factories) this resolver injects a factory that can be called mutiple times to create the dependency.
 

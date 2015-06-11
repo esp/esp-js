@@ -159,7 +159,15 @@ export default class Container {
                     dependencies.push(dependency);
                 }
             }
-            if (typeof registration.proto === 'function') {
+            if(registration.proto.isResolerKey) {
+                if(registration.proto.type) {
+                    resolver = this._resolvers[registration.proto.type];
+                    instance = resolver.resolve(this, registration.proto);
+                }
+                else {
+                    throw new Error("Registered resolverKey is missing it's type property");
+                }
+            } else if (typeof registration.proto === 'function') {
                 // haven't really tested this working with constructor functions too much
                 // code ripped from here http://stackoverflow.com/questions/3362471/how-can-i-call-a-javascript-constructor-using-call-or-apply
                 var Ctor = registration.proto.bind.apply(

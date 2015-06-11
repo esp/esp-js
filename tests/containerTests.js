@@ -129,7 +129,7 @@ describe('Container', () =>  {
 
         describe('dependency resolvers', () =>  {
 
-            it('should register/resolve a dependency registered with a delegate resolver', () =>  {
+            it('should register/resolve a dependency registered with a dependency key delegate resolver', () =>  {
                 var A = createObject();
                 container.register('a', A, [{
                     type: "delegate",
@@ -141,7 +141,21 @@ describe('Container', () =>  {
                 var a = container.resolve('a');
                 expect(a.dependencies[0].foo).toBe(6);
             });
-            describe('auto factory ', () =>  {
+
+            it('should register/resolve a dependency registered with delegate resolver', () =>  {
+                var A = createObject();
+                container.register('a', {
+                    type: "delegate",
+                    resolve: () => {
+                        return Object.create(A);
+                    },
+                    isResolerKey: true
+                });
+                var a = container.resolve('a');
+                expect(A.isPrototypeOf(a)).toEqual(true);
+            });
+
+            describe('auto factory dependency resolve', () =>  {
                 var A, B, C, autoFactoryForA, autoFactoryForB;
 
                 beforeEach(() => {

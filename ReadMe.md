@@ -186,7 +186,6 @@ var item2 = manager.createItem();
 output:
 
 ```
-injection factories
 creating an item
 creating an item
 
@@ -255,7 +254,31 @@ Hello Bar. Other dependency: look! a string dependency
 ```
 
 ## Resolve groups
+You can group objects together then resolve them using `resolveGroup(name)`.
+Typically this is handy when you're dependencies perform the same function and share a related abstraction.
 
+```javascript
+var Foo = {
+    name: "theFoo"
+};
+var Bar = {
+    name: "theBar"
+};
+var container = new microdi.Container();
+container.register('foo', Foo).inGroup("group1");
+container.register('bar', Bar).inGroup("group1");
+var group1 = container.resolveGroup("group1");
+for (let i = 0, len = group1.length; i < len; i++) {
+    console.log(group1[i].name);
+}
+```
+
+Output:
+
+```
+theFoo
+theBar
+```
 
 ## Child containers
 
@@ -463,5 +486,5 @@ bar is : [barInstance]
 
 #### Injection factory
 
-Discussed [above](injection-factories) this resolver injects a factory that can be called mutiple times to create the dependency.
+Discussed [above](#injection-factories) this resolver injects a factory that can be called mutiple times to create the dependency.
 

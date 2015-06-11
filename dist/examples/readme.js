@@ -202,6 +202,23 @@ var runInjectionFactoriesWithOverridesAndDependencies = function runInjectionFac
     var barItem = manager.createItem("Bar");
 };
 
+var runGroups = function runGroups() {
+    console.log("Groups");
+    var Foo = {
+        name: "theFoo"
+    };
+    var Bar = {
+        name: "theBar"
+    };
+    var container = new _microdiJs2["default"].Container();
+    container.register("foo", Foo).inGroup("group1");
+    container.register("bar", Bar).inGroup("group1");
+    var group1 = container.resolveGroup("group1");
+    for (var i = 0, len = group1.length; i < len; i++) {
+        console.log(group1[i].name);
+    }
+};
+
 var runChildContainer = function runChildContainer() {
     console.log("Child containers");
     var Foo = {};
@@ -371,6 +388,7 @@ runLifeTimeTypes();
 runInjectionFactories();
 runInjectionFactoriesWithOverrides();
 runInjectionFactoriesWithOverridesAndDependencies();
+runGroups();
 runChildContainer();
 runChildContainerRegistrations();
 runDisposal();

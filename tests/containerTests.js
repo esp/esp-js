@@ -129,10 +129,10 @@ describe('Container', () =>  {
 
         describe('dependency resolvers', () =>  {
 
-            it('should register/resolve a dependency registered with a dependencyKeyResolver resolver', () =>  {
+            it('should register/resolve a dependency registered with a delegate resolver', () =>  {
                 var A = createObject();
                 container.register('a', A, [{
-                    type: "dependencyKeyResolver",
+                    type: "delegate",
                     resolve: function()
                     {
                         return { foo: 6 };

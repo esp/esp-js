@@ -100,11 +100,12 @@ var runLifeTimeTypes = function runLifeTimeTypes() {
 };
 
 var runInjectionFactories = function runInjectionFactories() {
-    var Item = function Item(name, otherDependencyA) {
+    console.log("injection factories");
+
+    var Item = function Item() {
         _classCallCheck(this, Item);
 
-        this.name = name;
-        this.otherDependencyA = otherDependencyA;
+        console.log("creating an item");
     };
 
     var Manager = (function () {
@@ -125,15 +126,208 @@ var runInjectionFactories = function runInjectionFactories() {
     })();
 
     var container = new _microdiJs2["default"].Container();
-    container.registerInstance("otherDependencyA", "look! a string dependency here");
+    container.register("item", Item).transient();
+    container.register("manager", Manager, [{ type: "autoFactory", key: "item" }]);
+    var manager = container.resolve("manager");
+    var item1 = manager.createItem();
+    var item2 = manager.createItem();
+};
+
+var runInjectionFactoriesWithOverrides = function runInjectionFactoriesWithOverrides() {
+    console.log("injection factories with overrides");
+
+    var Item = function Item(name) {
+        _classCallCheck(this, Item);
+
+        console.log("Hello " + name);
+    };
+
+    var Manager = (function () {
+        function Manager(itemFactory) {
+            _classCallCheck(this, Manager);
+
+            this._itemFactory = itemFactory;
+        }
+
+        _createClass(Manager, [{
+            key: "createItem",
+            value: function createItem(name) {
+                return this._itemFactory(name);
+            }
+        }]);
+
+        return Manager;
+    })();
+
+    var container = new _microdiJs2["default"].Container();
+    container.register("item", Item).transient();
+    container.register("manager", Manager, [{ type: "autoFactory", key: "item" }]);
+    var manager = container.resolve("manager");
+    var item1 = manager.createItem("Bob");
+    var item2 = manager.createItem("Mick");
+};
+
+var runInjectionFactoriesWithOverridesAndDependencies = function runInjectionFactoriesWithOverridesAndDependencies() {
+    console.log("injection factories with overrides and other dependencies");
+
+    var Item = function Item(name, otherDependencyA) {
+        _classCallCheck(this, Item);
+
+        console.log("Hello " + name + ". Other dependency: " + otherDependencyA);
+    };
+
+    var Manager = (function () {
+        function Manager(itemFactory) {
+            _classCallCheck(this, Manager);
+
+            this._itemFactory = itemFactory;
+        }
+
+        _createClass(Manager, [{
+            key: "createItem",
+            value: function createItem(name) {
+                return this._itemFactory(name);
+            }
+        }]);
+
+        return Manager;
+    })();
+
+    var container = new _microdiJs2["default"].Container();
+    container.registerInstance("otherDependencyA", "look! a string dependency");
     container.register("item", Item, ["otherDependencyA"]).transient();
     container.register("manager", Manager, [{ type: "autoFactory", key: "item" }]);
     var manager = container.resolve("manager");
     var fooItem = manager.createItem("Foo");
-    console.log("%s-%s", fooItem.name, fooItem.otherDependencyA);
     var barItem = manager.createItem("Bar");
-    console.log("%s-%s", barItem.name, barItem.otherDependencyA);
 };
+
+var runChildContainer = function runChildContainer() {
+    console.log("Child containers");
+    var Foo = {};
+    var container = new _microdiJs2["default"].Container();
+    var childcontainer = container.createChildContainer();
+    container.register("foo", Foo); // defaults to singleton registration
+    var foo1 = container.resolve("foo");
+    var foo2 = childcontainer.resolve("foo");
+    console.log(foo1 == foo2); // true, same instance
+
+    container.register("fooAgain", Foo).singletonPerContainer();
+    var foo3 = container.resolve("fooAgain");
+    var foo4 = childcontainer.resolve("fooAgain");
+    console.log(foo3 == foo4); // false, different instance
+    var foo5 = childcontainer.resolve("fooAgain");
+    console.log(foo4 == foo5); // true, same instance
+};
+
+var runChildContainerRegistrations = function runChildContainerRegistrations() {
+    console.log("Child container registrations");
+    var Foo = {};
+    var container = new _microdiJs2["default"].Container();
+    container.register("foo", Foo); // defaults to singleton registration
+
+    var childcontainer = container.createChildContainer();
+    childcontainer.register("foo", Foo).transient();
+
+    var foo1 = container.resolve("foo");
+    var foo2 = container.resolve("foo");
+    console.log(foo1 == foo2); // true, same instance
+
+    var foo3 = childcontainer.resolve("foo");
+    console.log(foo2 == foo3); // false, different instance
+
+    var foo4 = childcontainer.resolve("foo");
+    console.log(foo3 == foo4); // false, different instance
+};
+
+var runDisposal = function runDisposal() {
+    console.log("Container disposal");
+
+    var Foo = (function () {
+        function Foo() {
+            _classCallCheck(this, Foo);
+        }
+
+        _createClass(Foo, [{
+            key: "dispose",
+            value: function dispose() {
+                console.log("foo disposed");
+            }
+        }]);
+
+        return Foo;
+    })();
+
+    var container = new _microdiJs2["default"].Container();
+
+    container.register("foo", Foo).singletonPerContainer();
+    var foo1 = container.resolve("foo");
+
+    var childcontainer = container.createChildContainer();
+    var foo2 = childcontainer.resolve("foo");
+
+    container.dispose();
+};
+
+var runCustomDependencyResolver = function runCustomDependencyResolver() {
+    console.log("Custom dependency resolver");
+
+    var DomResolver = (function () {
+        function DomResolver() {
+            _classCallCheck(this, DomResolver);
+        }
+
+        _createClass(DomResolver, [{
+            key: "resolve",
+            value: function resolve(container, dependencyKey) {
+                // return a pretend dom elemenet,
+                return Object.defineProperties({}, {
+                    description: {
+                        get: function () {
+                            return "Fake DOM element - " + dependencyKey.domId;
+                        },
+                        configurable: true,
+                        enumerable: true
+                    }
+                });
+            }
+        }]);
+
+        return DomResolver;
+    })();
+
+    var container = new _microdiJs2["default"].Container();
+    container.addResolver("domResolver", new DomResolver());
+    container.register("controller", [{ type: "domResolver", domid: "theDomId" }]);
+    var controller = container.resolve("controller");
+    console.log(JSON.stringify(controller.description));
+};
+
+var runDependencyResolvers1 = function runDependencyResolvers1() {
+    console.log("Dependency resolvers 1");
+
+    var Foo = function Foo() {
+        _classCallCheck(this, Foo);
+    };
+
+    var container = new _microdiJs2["default"].Container();
+    container.register("foo", Foo, [{
+        type: "delegate",
+        resolve: function resolve(container1) {
+            console.log("Resolving Foo via a delegate");
+            return new Foo();
+        }
+    }]);
+    var foo1 = container.resolve("foo");
+};
+
 runBasicExample();
 runLifeTimeTypes();
 runInjectionFactories();
+runInjectionFactoriesWithOverrides();
+runInjectionFactoriesWithOverridesAndDependencies();
+runChildContainer();
+runChildContainerRegistrations();
+runDisposal();
+runCustomDependencyResolver();
+runDependencyResolvers1();

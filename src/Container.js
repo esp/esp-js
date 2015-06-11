@@ -187,7 +187,7 @@ export default class Container {
             // A resolvers that delegates to the dependency keys resolve method to perform the resolution.
             // It expects a dependency key in format:
             // { type: 'factory', resolve: function(container) { return someInstance } }
-            dependencyKeyResolver: {
+            delegate: {
                 resolve: (container, dependencyKey) => {
                     return dependencyKey.resolve(container);
                 }

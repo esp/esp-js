@@ -141,7 +141,7 @@ describe('Container', () =>  {
             it('should register/resolve a dependency registered with a dependency key delegate resolver', () =>  {
                 var A = createObject();
                 container.register('a', A, [{
-                    type: "delegate",
+                    resolver: "delegate",
                     resolve: function()
                     {
                         return { foo: 6 };
@@ -154,7 +154,7 @@ describe('Container', () =>  {
             it('should register/resolve a dependency registered with delegate resolver', () =>  {
                 var A = createObject();
                 container.register('a', {
-                    type: "delegate",
+                    resolver: "delegate",
                     resolve: () => {
                         return Object.create(A);
                     },
@@ -174,10 +174,10 @@ describe('Container', () =>  {
                     container.register('a', A); // singleton by default
                     container.register('b', B, ['a']).transient();
                     container.register('c', C, [{
-                        type: "factory",
+                        resolver: "factory",
                         key: 'a' // resolve 'a' each time the injected function is called
                     }, {
-                        type: "factory",
+                        resolver: "factory",
                         key: 'b' // resolve 'b' each time the injected function is called
                     }]);
                     var c = container.resolve('c');
@@ -359,7 +359,7 @@ describe('Container', () =>  {
                         this.id = id;
                         return this;
                     },
-                    type: "myResolver",
+                    resolver: "myResolver",
                     resolve: function(container) {
                         return this.id;
                     }
@@ -367,14 +367,14 @@ describe('Container', () =>  {
 
                 var A = createObject();
                 container.addResolver("myResolver", Object.create(CustomResolver).init("container1Resolver"));
-                container.register('a', A, [{ type: "myResolver" }]).singleton();
+                container.register('a', A, [{ resolver: "myResolver" }]).singleton();
 
                 var childContainer = container.createChildContainer();
                 // replace the parent containers resolver
                 childContainer.addResolver("myResolver", Object.create(CustomResolver).init("container2Resolver"));
                 // you must also override the objects registration if it's a singleton otherwise
                 // the container will just delegate to the root for resolution as that's whats owns the registration
-                childContainer.register('a', A, [{ type: "myResolver" }]).singleton();
+                childContainer.register('a', A, [{ resolver: "myResolver" }]).singleton();
 
                 var a1 = container.resolve('a');
                 expect(a1.dependencies[0]).toBe("container1Resolver");

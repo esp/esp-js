@@ -208,9 +208,9 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: 'addResolver',
-            value: function addResolver(type, resolver) {
+            value: function addResolver(name, resolver) {
                 this._throwIfDisposed();
-                this._resolvers[type] = resolver;
+                this._resolvers[name] = resolver;
             }
         }, {
             key: 'dispose',
@@ -267,14 +267,14 @@ return /******/ (function(modules) { // webpackBootstrap
                             dependencyKey = registration.dependencyList[i];
                             if (utils.isString(dependencyKey)) {
                                 dependency = this.resolve(dependencyKey);
-                            } else if (dependencyKey.hasOwnProperty('type') && utils.isString(dependencyKey.type)) {
-                                resolver = this._resolvers[dependencyKey.type];
+                            } else if (dependencyKey.hasOwnProperty('resolver') && utils.isString(dependencyKey.resolver)) {
+                                resolver = this._resolvers[dependencyKey.resolver];
                                 if (resolver === undefined) {
-                                    throw new Error(utils.sprintf('Error resolving [%s]. No resolver registered to resolve dependency key for type [%s]', name, dependencyKey.type));
+                                    throw new Error(utils.sprintf('Error resolving [%s]. No resolver registered to resolve dependency key for resolver [%s]', name, dependencyKey.resolver));
                                 }
                                 dependency = resolver.resolve(this, dependencyKey);
                             } else {
-                                throw new Error(utils.sprintf('Error resolving [%s]. It\'s dependency at index [%s] had an unknown resolver type', name, i));
+                                throw new Error(utils.sprintf('Error resolving [%s]. It\'s dependency at index [%s] had an unknown resolver', name, i));
                             }
                             dependencies.push(dependency);
                         }
@@ -283,11 +283,11 @@ return /******/ (function(modules) { // webpackBootstrap
                         dependencies.push(additionalDependencies[j]);
                     }
                     if (registration.proto.isResolerKey) {
-                        if (registration.proto.type) {
-                            resolver = this._resolvers[registration.proto.type];
+                        if (registration.proto.resolver) {
+                            resolver = this._resolvers[registration.proto.resolver];
                             instance = resolver.resolve(this, registration.proto);
                         } else {
-                            throw new Error('Registered resolverKey is missing it\'s type property');
+                            throw new Error('Registered resolverKey is missing it\'s resolver property');
                         }
                     } else if (typeof registration.proto === 'function') {
                         var Ctor = registration.proto.bind.apply(registration.proto, [null].concat(dependencies));
@@ -312,7 +312,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 return {
                     // A resolvers that delegates to the dependency keys resolve method to perform the resolution.
                     // It expects a dependency key in format:
-                    // { type: 'factory', resolve: function(container) { return someInstance } }
+                    // { resolver: 'factory', resolve: function(container) { return someInstance } }
                     delegate: {
                         resolve: function resolve(container, dependencyKey) {
                             return dependencyKey.resolve(container);
@@ -321,7 +321,7 @@ return /******/ (function(modules) { // webpackBootstrap
                     // A resolvers that returns a factory that when called will resolve the dependency from the container.
                     // Any arguments passed at runtime will be passed to resolve as additional dependencies
                     // It expects a dependency key in format:
-                    // { type: 'factory', name: "aDependencyName" }
+                    // { resolver: 'factory', name: "aDependencyName" }
                     factory: {
                         resolve: function resolve(container, dependencyKey) {
                             return function () {

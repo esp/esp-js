@@ -159,7 +159,7 @@ var runInjectionFactories = function runInjectionFactories() {
 
     var container = new _microdiJs2["default"].Container();
     container.register("item", Item).transient();
-    container.register("manager", Manager, [{ type: "factory", key: "item" }]);
+    container.register("manager", Manager, [{ resolver: "factory", key: "item" }]);
     var manager = container.resolve("manager");
     var item1 = manager.createItem();
     var item2 = manager.createItem();
@@ -193,7 +193,7 @@ var runInjectionFactoriesWithOverrides = function runInjectionFactoriesWithOverr
 
     var container = new _microdiJs2["default"].Container();
     container.register("item", Item).transient();
-    container.register("manager", Manager, [{ type: "factory", key: "item" }]);
+    container.register("manager", Manager, [{ resolver: "factory", key: "item" }]);
     var manager = container.resolve("manager");
     var item1 = manager.createItem("Bob");
     var item2 = manager.createItem("Mick");
@@ -228,7 +228,7 @@ var runInjectionFactoriesWithOverridesAndDependencies = function runInjectionFac
     var container = new _microdiJs2["default"].Container();
     container.registerInstance("otherDependencyA", "look! a string dependency");
     container.register("item", Item, ["otherDependencyA"]).transient();
-    container.register("manager", Manager, [{ type: "factory", key: "item" }]);
+    container.register("manager", Manager, [{ resolver: "factory", key: "item" }]);
     var manager = container.resolve("manager");
     var fooItem = manager.createItem("Foo");
     var barItem = manager.createItem("Bar");
@@ -332,7 +332,7 @@ var runCustomDependencyResolver = function runCustomDependencyResolver() {
     container.addResolver("domResolver", new DomResolver());
     // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
     // This is only required when you don't register a constructor function or prototype.
-    container.register("view", { type: "domResolver", domId: "theDomId", isResolerKey: true });
+    container.register("view", { resolver: "domResolver", domId: "theDomId", isResolerKey: true });
     var view = container.resolve("view");
     console.log(view.description);
 };
@@ -375,7 +375,7 @@ var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
 
     // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
     // The container assumes it is as it appears in the dependency list.
-    container.register("controller", Controller, [{ type: "domResolver", domId: "viewId" }]);
+    container.register("controller", Controller, [{ resolver: "domResolver", domId: "viewId" }]);
     var controller = container.resolve("controller");
 };
 
@@ -390,7 +390,7 @@ var runDelegeateResolver = function runDelegeateResolver() {
 
     var container = new _microdiJs2["default"].Container();
     container.register("foo", Foo, [{
-        type: "delegate",
+        resolver: "delegate",
         resolve: function resolve(container, resolveKey) {
             return "barInstance";
         }

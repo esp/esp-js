@@ -71,6 +71,15 @@ describe('Container', () =>  {
             expect(resolved).toBe(instance);
         });
 
+        it('should pass additional dependencies to object being  resolved', () =>  {
+            var A = createObject();
+            container.register('a', A);
+            var resolved = container.resolve('a', "Foo", "Bar");
+            expect(resolved.dependencies.length).toEqual(2);
+            expect(resolved.dependencies[0]).toEqual("Foo");
+            expect(resolved.dependencies[1]).toEqual("Bar");
+        });
+
         describe('groups', () =>  {
 
             it('should be able able to register/resolve many objects with the same key', () =>  {
@@ -185,11 +194,12 @@ describe('Container', () =>  {
                     expect(b2 != b3).toEqual(true);
                 });
 
-                it('should pass additional parameters to the constructor on the instance being resolved', () =>  {
+                it('should pass additional dependencies to the constructor on the instance being resolved', () =>  {
                     var b1 = factoryForB("aParam", "anotherParam");
-                    expect(b1.dependencies[0]).toEqual("aParam");
-                    expect(b1.dependencies[1]).toEqual("anotherParam");
-                    expect(A.isPrototypeOf(b1.dependencies[2])).toEqual(true);
+                    expect(b1.dependencies.length).toEqual(3);
+                    expect(A.isPrototypeOf(b1.dependencies[0])).toEqual(true);
+                    expect(b1.dependencies[1]).toEqual("aParam");
+                    expect(b1.dependencies[2]).toEqual("anotherParam");
                 });
 
                 it('should throw if parameters passed and the resolve targetsingletonlton and already built', () =>  {

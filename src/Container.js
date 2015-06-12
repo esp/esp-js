@@ -53,7 +53,7 @@ export default class Container {
         };
         this._instanceCache[name] = instance;
     }
-    resolve(name, ...parameterOverrides) {
+    resolve(name, ...additionalDependencies) {
         this._throwIfDisposed();
         var registration = this._registrations[name],
             dependency,
@@ -65,12 +65,12 @@ export default class Container {
         }
         instance = this._tryRetrieveFromCache(name);
         if (!instance) {
-            instance = this._buildInstance(name, parameterOverrides);
+            instance = this._buildInstance(name, additionalDependencies);
             if (registration.instanceLifecycleType === InstanceLifecycleType.singleton || registration.instanceLifecycleType === InstanceLifecycleType.singletonPerContainer) {
                 this._instanceCache[name] = instance;
             }
-        } else if(parameterOverrides.length > 0) {
-            throw new Error("The provided parameters can't be used to construct the instance as an existing instance was found in the container");
+        } else if(additionalDependencies.length > 0) {
+            throw new Error("The provided additional dependencies can't be used to construct the instance as an existing instance was found in the container");
         }
         return instance;
     }
@@ -127,7 +127,7 @@ export default class Container {
         }
         return instance;
     }
-    _buildInstance(name, paramaterOverrides) {
+    _buildInstance(name, additionalDependencies) {
         var registration = this._registrations[name],
             dependencies = [],
             dependency,
@@ -135,9 +135,6 @@ export default class Container {
             context,
             instance,
             resolver;
-        for(let j = 0, len = paramaterOverrides.length; j < len; j ++) {
-            dependencies.push(paramaterOverrides[j]);
-        }
         context = this._resolverContext.beginResolve(name);
         try {
             if (registration.dependencyList !== undefined) {
@@ -156,6 +153,9 @@ export default class Container {
                     }
                     dependencies.push(dependency);
                 }
+            }
+            for(let j = 0, len = additionalDependencies.length; j < len; j ++) {
+                dependencies.push(additionalDependencies[j]);
             }
             if(registration.proto.isResolerKey) {
                 if(registration.proto.type) {
@@ -197,7 +197,7 @@ export default class Container {
                 }
             },
             // A resolvers that returns a factory that when called will resolve the dependency from the container.
-            // Any arguments passed at runtime will be passed to resolve as parameter overrides
+            // Any arguments passed at runtime will be passed to resolve as additional dependencies
             // It expects a dependency key in format:
             // { type: 'factory', name: "aDependencyName" }
             factory: {

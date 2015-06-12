@@ -70,6 +70,37 @@ var runLifeTimeTypes = () => {
     console.log(disposable2.isDisposed); // true
 };
 
+
+var runGroups = () => {
+    console.log("Groups");
+    var Foo = {
+        name: "theFoo"
+    };
+    var Bar = {
+        name: "theBar"
+    };
+    var container = new microdi.Container();
+    container.register('foo', Foo).inGroup("group1");
+    container.register('bar', Bar).inGroup("group1");
+    var group1 = container.resolveGroup("group1");
+    for (let i = 0, len = group1.length; i < len; i++) {
+        console.log(group1[i].name);
+    }
+};
+
+var runResolutionWithAdditionalDependencies = () => {
+    console.log("Resolution with additional dependencies");
+    class Foo {
+        constructor(fizz, bar, bazz) {
+            console.log("%s %s %s", fizz.name, bar.name, bazz.name);
+        }
+    }
+    var container = new microdi.Container();
+    container.register('fizz', { name: "fizz"});
+    container.register('foo', Foo, ['fizz']);
+    var foo = container.resolve("foo", { name: "bar"}, { name: "bazz"});
+};
+
 var runInjectionFactories = () => {
     console.log("injection factories");
     class Item {
@@ -119,7 +150,7 @@ var runInjectionFactoriesWithOverrides = () => {
 var runInjectionFactoriesWithOverridesAndDependencies = () => {
     console.log("injection factories with overrides and other dependencies");
     class Item {
-        constructor(name, otherDependencyA) {
+        constructor(otherDependencyA, name) {
             console.log("Hello " + name + ". Other dependency: " + otherDependencyA);
         }
     }
@@ -138,23 +169,6 @@ var runInjectionFactoriesWithOverridesAndDependencies = () => {
     var manager = container.resolve('manager');
     var fooItem = manager.createItem("Foo");
     var barItem = manager.createItem("Bar");
-};
-
-var runGroups = () => {
-    console.log("Groups");
-    var Foo = {
-        name: "theFoo"
-    };
-    var Bar = {
-        name: "theBar"
-    };
-    var container = new microdi.Container();
-    container.register('foo', Foo).inGroup("group1");
-    container.register('bar', Bar).inGroup("group1");
-    var group1 = container.resolveGroup("group1");
-    for (let i = 0, len = group1.length; i < len; i++) {
-        console.log(group1[i].name);
-    }
 };
 
 var runChildContainer = () => {
@@ -289,6 +303,7 @@ runInjectionFactories();
 runInjectionFactoriesWithOverrides();
 runInjectionFactoriesWithOverridesAndDependencies();
 runGroups();
+runResolutionWithAdditionalDependencies();
 runChildContainer();
 runChildContainerRegistrations();
 runDisposal();

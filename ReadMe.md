@@ -13,7 +13,7 @@ You can register an object using one of two methods:
 
 Object resolution is done via :
 
-* `container.resolve(identifier:string [, ...dependencyOverrides]);`
+* `container.resolve(identifier:string [, ...additionalDependencies]);`
   This simply builds the object registered with the given `identifier`;
  
 ## Example
@@ -94,7 +94,7 @@ If the type registered is a constructor function (i.e. typeof registeredObject =
 
 If the type registered is not a constructor function it will be assumed a prototype.
 At resolve time new object/s will be created using Object.create(registeredObject).
-If the object has an `init` method then this will be called passing any dependencies in the [dependency list](#dependency-list).
+If the object has an `init` method then this will be called passing any dependencies in the [dependency list](#the-dependency-list).
 
 ## Lifetime management
 
@@ -169,6 +169,58 @@ console.log(disposable1.isDisposed); // false
 console.log(disposable2.isDisposed); // true
 ```
 
+## Resolve groups
+
+You can group objects together then resolve them using `resolveGroup(name)`.
+Typically this is handy when you're dependencies share a related abstraction.
+
+```javascript
+var Foo = {
+    name: "theFoo"
+};
+var Bar = {
+    name: "theBar"
+};
+var container = new microdi.Container();
+container.register('foo', Foo).inGroup("group1");
+container.register('bar', Bar).inGroup("group1");
+var group1 = container.resolveGroup("group1");
+for (let i = 0, len = group1.length; i < len; i++) {
+    console.log(group1[i].name);
+}
+```
+
+Output:
+
+```
+theFoo
+theBar
+```
+
+## Resolution with additional dependencies
+
+When calling `resolve` you can optionally pass additional dependencies.
+These will be apended to the list of dependencies registerd for the object to be resolved (if any).
+
+```javascript
+class Foo {
+    constructor(fizz, bar, bazz) {
+        console.log("%s %s %s", fizz.name, bar.name, bazz.name);
+    }
+}
+var container = new microdi.Container();
+container.register('fizz', { name: "fizz"});
+container.register('foo', Foo, ['fizz']);
+// pass in 2 additional dependencies at resolve time
+var foo = container.resolve("foo", { name: "bar"}, { name: "bazz"});
+```
+
+Output
+
+```
+fizz bar bazz
+```
+
 ## Injection factories
 
 Sometimes you want your object to receive a factory that when called will return the dependency in question.
@@ -231,13 +283,13 @@ Hello Mick
 ```
 
 ### Parameter overrides with other dependencies
-If the object that your auto factory will create takes dependencies, these dependencies will be prepended (TODO make these postpended instead) to the paramaters you pass.
+If the object that your auto factory will create takes dependencies, any additionl paramaters will be apended to the dependencie list.
 
 The above sample modified to demonstrate this:
 
 ```javascript
 class Item {
-    constructor(name, otherDependencyA) {
+    constructor(otherDependencyA, name) {
         console.log("Hello " + name + ". Other dependency: " + otherDependencyA);
     }
 }
@@ -263,34 +315,6 @@ Output:
 ```
 Hello Foo. Other dependency: look! a string dependency
 Hello Bar. Other dependency: look! a string dependency
-```
-
-## Resolve groups
-
-You can group objects together then resolve them using `resolveGroup(name)`.
-Typically this is handy when you're dependencies share a related abstraction.
-
-```javascript
-var Foo = {
-    name: "theFoo"
-};
-var Bar = {
-    name: "theBar"
-};
-var container = new microdi.Container();
-container.register('foo', Foo).inGroup("group1");
-container.register('bar', Bar).inGroup("group1");
-var group1 = container.resolveGroup("group1");
-for (let i = 0, len = group1.length; i < len; i++) {
-    console.log(group1[i].name);
-}
-```
-
-Output:
-
-```
-theFoo
-theBar
 ```
 
 ## Child containers
@@ -392,7 +416,7 @@ foo disposed
 Dependency resolvers alters the default way a dependecy is created.
 A dependency resolver is simplly an object with a `resolve(container, resolverKey)` method.
 You can create your own resolvers and add them to the container.
-When registering an object, a `resolverKey` can be used in the [dependency list](#dependency-list) to enable the container to resolve the dependency using the resolver specified.
+When registering an object, a `resolverKey` can be used in the [dependency list](#the-dependency-list) to enable the container to resolve the dependency using the resolver specified.
 A `resolverKey` can can also be specified as a replacement for the object or construction function that is to be built.
 At resolve time the container will call the dependency reolver specified by the `resolverKey` to create the object in question passing itself and the resolverKey.
 This sounds a bit more complicated than it actually is, it's eaiser to demonstrate with some code.
@@ -462,7 +486,7 @@ Fake DOM element - viewId
 ### Built in resolvers
 There are 2 built in resolvers.
 
-#### Deletate
+#### Delegate
 
 This simply defers object creation to a delegate provided by the resolverKey.
 

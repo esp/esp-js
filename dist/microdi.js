@@ -165,8 +165,8 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: 'resolve',
             value: function resolve(name) {
-                for (var _len = arguments.length, parameterOverrides = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                    parameterOverrides[_key - 1] = arguments[_key];
+                for (var _len = arguments.length, additionalDependencies = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+                    additionalDependencies[_key - 1] = arguments[_key];
                 }
     
                 this._throwIfDisposed();
@@ -180,12 +180,12 @@ return /******/ (function(modules) { // webpackBootstrap
                 }
                 instance = this._tryRetrieveFromCache(name);
                 if (!instance) {
-                    instance = this._buildInstance(name, parameterOverrides);
+                    instance = this._buildInstance(name, additionalDependencies);
                     if (registration.instanceLifecycleType === _InstanceLifecycleType2['default'].singleton || registration.instanceLifecycleType === _InstanceLifecycleType2['default'].singletonPerContainer) {
                         this._instanceCache[name] = instance;
                     }
-                } else if (parameterOverrides.length > 0) {
-                    throw new Error('The provided parameters can\'t be used to construct the instance as an existing instance was found in the container');
+                } else if (additionalDependencies.length > 0) {
+                    throw new Error('The provided additional dependencies can\'t be used to construct the instance as an existing instance was found in the container');
                 }
                 return instance;
             }
@@ -252,7 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: '_buildInstance',
-            value: function _buildInstance(name, paramaterOverrides) {
+            value: function _buildInstance(name, additionalDependencies) {
                 var registration = this._registrations[name],
                     dependencies = [],
                     dependency,
@@ -260,9 +260,6 @@ return /******/ (function(modules) { // webpackBootstrap
                     context,
                     instance,
                     resolver;
-                for (var j = 0, len = paramaterOverrides.length; j < len; j++) {
-                    dependencies.push(paramaterOverrides[j]);
-                }
                 context = this._resolverContext.beginResolve(name);
                 try {
                     if (registration.dependencyList !== undefined) {
@@ -281,6 +278,9 @@ return /******/ (function(modules) { // webpackBootstrap
                             }
                             dependencies.push(dependency);
                         }
+                    }
+                    for (var j = 0, len = additionalDependencies.length; j < len; j++) {
+                        dependencies.push(additionalDependencies[j]);
                     }
                     if (registration.proto.isResolerKey) {
                         if (registration.proto.type) {
@@ -319,7 +319,7 @@ return /******/ (function(modules) { // webpackBootstrap
                         }
                     },
                     // A resolvers that returns a factory that when called will resolve the dependency from the container.
-                    // Any arguments passed at runtime will be passed to resolve as parameter overrides
+                    // Any arguments passed at runtime will be passed to resolve as additional dependencies
                     // It expects a dependency key in format:
                     // { type: 'factory', name: "aDependencyName" }
                     factory: {

@@ -46,7 +46,7 @@ var runBasicExample = function runBasicExample() {
 
     var container = new _microdiJs2["default"].Container();
     container.register("child", Child);
-    container.register("parent", Parent, ["child"]);
+    container.register("parent", Parent).inject("child");
     var parent = container.resolve("parent");
     parent.sayHello();
 };
@@ -127,7 +127,7 @@ var runResolutionWithAdditionalDependencies = function runResolutionWithAddition
 
     var container = new _microdiJs2["default"].Container();
     container.register("fizz", { name: "fizz" });
-    container.register("foo", Foo, ["fizz"]);
+    container.register("foo", Foo).inject("fizz");
     var foo = container.resolve("foo", { name: "bar" }, { name: "bazz" });
 };
 
@@ -159,14 +159,14 @@ var runInjectionFactories = function runInjectionFactories() {
 
     var container = new _microdiJs2["default"].Container();
     container.register("item", Item).transient();
-    container.register("manager", Manager, [{ resolver: "factory", key: "item" }]);
+    container.register("manager", Manager).inject({ resolver: "factory", key: "item" });
     var manager = container.resolve("manager");
     var item1 = manager.createItem();
     var item2 = manager.createItem();
 };
 
-var runInjectionFactoriesWithOverrides = function runInjectionFactoriesWithOverrides() {
-    console.log("injection factories with overrides");
+var runInjectionFactoriesWithAdditionalDependencies = function runInjectionFactoriesWithAdditionalDependencies() {
+    console.log("injection factories with additional dependencies");
 
     var Item = function Item(name) {
         _classCallCheck(this, Item);
@@ -193,14 +193,14 @@ var runInjectionFactoriesWithOverrides = function runInjectionFactoriesWithOverr
 
     var container = new _microdiJs2["default"].Container();
     container.register("item", Item).transient();
-    container.register("manager", Manager, [{ resolver: "factory", key: "item" }]);
+    container.register("manager", Manager).inject({ resolver: "factory", key: "item" });
     var manager = container.resolve("manager");
     var item1 = manager.createItem("Bob");
     var item2 = manager.createItem("Mick");
 };
 
-var runInjectionFactoriesWithOverridesAndDependencies = function runInjectionFactoriesWithOverridesAndDependencies() {
-    console.log("injection factories with overrides and other dependencies");
+var runInjectionFactoriesWithAdditionalAndExistingDependencies = function runInjectionFactoriesWithAdditionalAndExistingDependencies() {
+    console.log("injection factories with additional and existing dependencies");
 
     var Item = function Item(otherDependencyA, name) {
         _classCallCheck(this, Item);
@@ -227,8 +227,8 @@ var runInjectionFactoriesWithOverridesAndDependencies = function runInjectionFac
 
     var container = new _microdiJs2["default"].Container();
     container.registerInstance("otherDependencyA", "look! a string dependency");
-    container.register("item", Item, ["otherDependencyA"]).transient();
-    container.register("manager", Manager, [{ resolver: "factory", key: "item" }]);
+    container.register("item", Item).inject("otherDependencyA").transient();
+    container.register("manager", Manager).inject({ resolver: "factory", key: "item" });
     var manager = container.resolve("manager");
     var fooItem = manager.createItem("Foo");
     var barItem = manager.createItem("Bar");
@@ -375,7 +375,7 @@ var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
 
     // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
     // The container assumes it is as it appears in the dependency list.
-    container.register("controller", Controller, [{ resolver: "domResolver", domId: "viewId" }]);
+    container.register("controller", Controller).inject({ resolver: "domResolver", domId: "viewId" });
     var controller = container.resolve("controller");
 };
 
@@ -389,20 +389,20 @@ var runDelegeateResolver = function runDelegeateResolver() {
     };
 
     var container = new _microdiJs2["default"].Container();
-    container.register("foo", Foo, [{
+    container.register("foo", Foo).inject({
         resolver: "delegate",
         resolve: function resolve(container, resolveKey) {
             return "barInstance";
         }
-    }]);
+    });
     var foo = container.resolve("foo");
 };
 
 runBasicExample();
 runLifeTimeTypes();
 runInjectionFactories();
-runInjectionFactoriesWithOverrides();
-runInjectionFactoriesWithOverridesAndDependencies();
+runInjectionFactoriesWithAdditionalDependencies();
+runInjectionFactoriesWithAdditionalAndExistingDependencies();
 runGroups();
 runResolutionWithAdditionalDependencies();
 runChildContainer();

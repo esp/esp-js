@@ -39,8 +39,8 @@ describe('Container', () =>  {
             var B = createObject();
             var C = createObject();
             container.register('a', A);
-            container.register('b', B, ['a']);
-            container.register('c', C, ['b']);
+            container.register('b', B).inject('a');
+            container.register('c', C).inject('b');
             var c = container.resolve('c');
             expect(c.dependencies.length).toBe(1);
             expect(B.isPrototypeOf(c.dependencies[0])).toBe(true);
@@ -50,9 +50,9 @@ describe('Container', () =>  {
             var A = createObject();
             var B = createObject();
             var C = createObject();
-            container.register('a', A, ['b']);
-            container.register('b', B, ['a']);
-            container.register('c', C, ['b']);
+            container.register('a', A).inject('b');
+            container.register('b', B).inject('a');
+            container.register('c', C).inject('b');
             expect(() =>  {
                 var b = container.resolve('b');
             }).toThrow();
@@ -86,7 +86,7 @@ describe('Container', () =>  {
                 var A = createObject();
                 var B = createObject();
                 container.register('a', A).inGroup('myGroup');
-                container.register('b', B, ['a']).inGroup('myGroup');
+                container.register('b', B).inject('a').inGroup('myGroup');
                 var group = container.resolveGroup('myGroup');
                 expect(A.isPrototypeOf(group[0])).toEqual(true);
                 expect(B.isPrototypeOf(group[1])).toEqual(true);
@@ -108,7 +108,8 @@ describe('Container', () =>  {
                 container.register('a', A)
                     .transient()
                     .inGroup('myGroup');
-                container.register('b', B, ['a'])
+                container.register('b', B)
+                    .inject('a')
                     .singleton()
                     .inGroup('myGroup');
                 var group1 = container.resolveGroup('myGroup');
@@ -129,7 +130,7 @@ describe('Container', () =>  {
                 var Foo = createFunction();
                 var Bar = createFunction();
                 container.register('foo', Foo);
-                container.register('bar', Bar, ['foo']);
+                container.register('bar', Bar).inject('foo');
                 var bar = container.resolve('bar');
                 var foo = container.resolve('foo');
                 expect(bar.dependencies[0]).toBe(foo);
@@ -140,13 +141,13 @@ describe('Container', () =>  {
 
             it('should register/resolve a dependency registered with a dependency key delegate resolver', () =>  {
                 var A = createObject();
-                container.register('a', A, [{
+                container.register('a', A).inject({
                     resolver: "delegate",
                     resolve: function()
                     {
                         return { foo: 6 };
                     }
-                }]);
+                });
                 var a = container.resolve('a');
                 expect(a.dependencies[0].foo).toBe(6);
             });
@@ -172,14 +173,14 @@ describe('Container', () =>  {
                     B = createObject();
                     C = createObject();
                     container.register('a', A); // singleton by default
-                    container.register('b', B, ['a']).transient();
-                    container.register('c', C, [{
+                    container.register('b', B).inject('a').transient();
+                    container.register('c', C).inject({
                         resolver: "factory",
                         key: 'a' // resolve 'a' each time the injected function is called
                     }, {
                         resolver: "factory",
                         key: 'b' // resolve 'b' each time the injected function is called
-                    }]);
+                    });
                     var c = container.resolve('c');
                     factoryForA = c.dependencies[0];
                     factoryForB = c.dependencies[1];
@@ -312,7 +313,7 @@ describe('Container', () =>  {
                 container.register('b', B);
                 var childContainer = container.createChildContainer();
                 // override 'a' configuration to make it take 'b' as a dependency.
-                childContainer.register('a', A, ['b']);
+                childContainer.register('a', A).inject('b');
                 var a1 = container.resolve('a');
                 var a2 = childContainer.resolve('a');
                 expect(a1).not.toBe(a2);
@@ -367,14 +368,14 @@ describe('Container', () =>  {
 
                 var A = createObject();
                 container.addResolver("myResolver", Object.create(CustomResolver).init("container1Resolver"));
-                container.register('a', A, [{ resolver: "myResolver" }]).singleton();
+                container.register('a', A).inject({ resolver: "myResolver" }).singleton();
 
                 var childContainer = container.createChildContainer();
                 // replace the parent containers resolver
                 childContainer.addResolver("myResolver", Object.create(CustomResolver).init("container2Resolver"));
                 // you must also override the objects registration if it's a singleton otherwise
                 // the container will just delegate to the root for resolution as that's whats owns the registration
-                childContainer.register('a', A, [{ resolver: "myResolver" }]).singleton();
+                childContainer.register('a', A).inject({ resolver: "myResolver" }).singleton();
 
                 var a1 = container.resolve('a');
                 expect(a1.dependencies[0]).toBe("container1Resolver");

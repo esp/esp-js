@@ -138,13 +138,12 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }, {
             key: 'register',
-            value: function register(name, proto, dependencyList) {
+            value: function register(name, proto) {
                 this._throwIfDisposed();
-                this._validateDependencyList(dependencyList);
                 var registration = {
                     name: name,
                     proto: proto,
-                    dependencyList: dependencyList,
+                    dependencyList: [],
                     instanceLifecycleType: _InstanceLifecycleType2['default'].singleton
                 };
                 this._registrations[name] = registration;
@@ -304,9 +303,6 @@ return /******/ (function(modules) { // webpackBootstrap
                 return instance;
             }
         }, {
-            key: '_validateDependencyList',
-            value: function _validateDependencyList(dependencyList) {}
-        }, {
             key: '_createDefaultResolvers',
             value: function _createDefaultResolvers() {
                 return {
@@ -368,8 +364,6 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports['default'] = Container;
     module.exports = exports['default'];
-
-    // TODO
 
 /***/ },
 /* 2 */
@@ -544,6 +538,15 @@ return /******/ (function(modules) { // webpackBootstrap
         }
     
         _createClass(RegistrationModifier, [{
+            key: 'inject',
+            value: function inject() {
+                this._ensureInstanceNotCreated();
+                var dependencyList = Array.prototype.slice.call(arguments);
+                this._validateDependencyList(dependencyList);
+                this._registration.dependencyList = dependencyList;
+                return this;
+            }
+        }, {
             key: 'transient',
             value: function transient() {
                 this._ensureInstanceNotCreated();
@@ -590,6 +593,9 @@ return /******/ (function(modules) { // webpackBootstrap
             value: function _ensureInstanceNotCreated() {
                 if (this._registration.hasOwnProperty(this._registration.name) && this._instanceCache.hasOwnProperty(this._registration.name)) throw new Error(utils.sprintf('Instance already created for key [%s]', this._registration.name));
             }
+        }, {
+            key: '_validateDependencyList',
+            value: function _validateDependencyList(dependencyList) {}
         }]);
     
         return RegistrationModifier;
@@ -597,6 +603,8 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports['default'] = RegistrationModifier;
     module.exports = exports['default'];
+
+    // TODO
 
 /***/ }
 /******/ ])

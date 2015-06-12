@@ -31,13 +31,12 @@ export default class Container {
         this._childContainers.push(child);
         return child;
     }
-    register(name, proto, dependencyList) {
+    register(name, proto) {
         this._throwIfDisposed();
-        this._validateDependencyList(dependencyList);
         var registration = {
             name: name,
             proto: proto,
-            dependencyList: dependencyList,
+            dependencyList: [],
             instanceLifecycleType: InstanceLifecycleType.singleton
         };
         this._registrations[name] = registration;
@@ -182,9 +181,6 @@ export default class Container {
             context.endResolve();
         }
         return instance;
-    }
-    _validateDependencyList(dependencyList) {
-        // TODO
     }
     _createDefaultResolvers() {
         return {

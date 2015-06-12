@@ -6,8 +6,11 @@ Microdi-js is a tiny but feature rich dependency injection container for JavaScr
 
 You can register an object using one of two methods:
 
-* `container.register(identifier:string, object:object/ctor-function [, dependencyList:[]])`.
-  Registers either a constructor function or object prototype using the given identifier. Optionally provide a [dependencyList](#the-dependency-list).
+* `container.register(identifier:string, object:object/ctor-function)`.
+  Registers either a constructor function or object prototype using the given identifier.
+  You can chain calls off the registration to alter the registration settings.
+  If the registered item has dependencies you can pass them via `.inject([dependencyList](#the-dependency-list))`.
+  You can also modify the [lifetype type](#lifetime-management) and register the items as part of a [group](#resolve-groups).
 * `container.registerInstance(identifier:string, objectInstance:object)`.
   Registers the given object instance using the given identifier.
 
@@ -21,7 +24,7 @@ Object resolution is done via :
 Below we have 2 simple classes. 
 `Parent` takes `Child` as it's dependency. 
 `Child` is registered with the identifier 'child' and `Parent` with the identifier 'parent'.
-Additionally the parent registration denotes via it's [dependency list](#the-dependency-list) that it requires a `Child` instance as a dependency.
+Additionally the parent registration injects the `Child` via it's [dependency list](#the-dependency-list).
 
 ``` javascript
 class Child {
@@ -38,9 +41,9 @@ class Parent {
         this._child.sayHello();
     }
 }
-var container = new Container();
+var container = new microdi.Container();
 container.register('child', Child);
-container.register('parent', Parent, ['child']);
+container.register('parent', Parent).inject('child');
 var parent = container.resolve('parent');
 parent.sayHello();
 ```
@@ -75,7 +78,7 @@ An example registration using a dependency list:
 container.register('a', A);
 container.register('b', B);
 container.register('c', C);
-container.register('controller', Controller, ['a', { resolver: "factory", key : "b" }, 'c']);
+container.register('controller', Controller).inject('a', { resolver: "factory", key : "b" }, 'c');
 ```
 The above registers a `Controller` using the key `controller` and specifies `Controller` requires the dependencies `a`, a factory that creates dependencies `b` (i.e. inject a function that when called craetes `b`) and finally `c`.
 The `resolverKey` `{ resolver: "factory", key : "b" }` tells the container to build the dependency `b` using the build in [injection factory](#injection-factories) resolver.
@@ -210,8 +213,7 @@ class Foo {
 }
 var container = new microdi.Container();
 container.register('fizz', { name: "fizz"});
-container.register('foo', Foo, ['fizz']);
-// pass in 2 additional dependencies at resolve time
+container.register('foo', Foo).inject('fizz');
 var foo = container.resolve("foo", { name: "bar"}, { name: "bazz"});
 ```
 
@@ -241,7 +243,7 @@ class Manager{
 }
 var container = new microdi.Container();
 container.register('item', Item).transient();
-container.register('manager', Manager, [{ resolver: "factory", key: 'item'}]);
+container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
 var manager = container.resolve('manager');
 var item1 = manager.createItem();
 var item2 = manager.createItem();
@@ -255,7 +257,7 @@ creating an item
 
 ```
 
-### Parameter overrides
+### Additional dependencies
 
 You can pass arguments to the factory and they will be passed in order to the item being constructed.
 If we change `Item` in the above sample to be:
@@ -282,7 +284,7 @@ Hello Bob
 Hello Mick
 ```
 
-### Parameter overrides with other dependencies
+### Additional dependencies with previously registered dependencies
 If the object that your auto factory will create takes dependencies, any additionl paramaters will be apended to the dependencie list.
 
 The above sample modified to demonstrate this:
@@ -303,8 +305,8 @@ class Manager{
 }
 var container = new microdi.Container();
 container.registerInstance('otherDependencyA', "look! a string dependency");
-container.register('item', Item, ['otherDependencyA']).transient();
-container.register('manager', Manager, [{ resolver: "factory", key: 'item'}]);
+container.register('item', Item).inject('otherDependencyA').transient();
+container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
 var manager = container.resolve('manager');
 var fooItem = manager.createItem("Foo");
 var barItem = manager.createItem("Bar");
@@ -473,7 +475,7 @@ class Controller {
 }
 // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
 // The container assumes it is as it appears in the dependency list.
-container.register('controller', Controller, [{ resolver: "domResolver", domId : "viewId" }]);
+container.register('controller', Controller).inject({ resolver: "domResolver", domId : "viewId" });
 var controller = container.resolve('controller');
 ```
 
@@ -497,17 +499,14 @@ class Foo  {
     }
 }
 var container = new microdi.Container();
-container.register(
-    'foo',
-    Foo,
-    [{
+container.register('foo', Foo)
+    .inject(
+    {
         resolver: "delegate",
-        resolve: (container) => {
-            // create the required instance
+        resolve: (container, resolveKey) => {
             return "barInstance";
         }
-    }]
-);
+    });
 var foo = container.resolve('foo');
 ```
 

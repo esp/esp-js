@@ -8,6 +8,13 @@ export default class RegistrationModifier  {
         this._registrationGroups = registrationGroups;
         this.singleton();
     }
+    inject(){
+        this._ensureInstanceNotCreated();
+        var dependencyList = Array.prototype.slice.call(arguments);
+        this._validateDependencyList(dependencyList);
+        this._registration.dependencyList = dependencyList;
+        return this;
+    }
     transient() {
         this._ensureInstanceNotCreated();
         this._registration.instanceLifecycleType = InstanceLifecycleType.transient;
@@ -45,5 +52,8 @@ export default class RegistrationModifier  {
     _ensureInstanceNotCreated() {
         if(this._registration.hasOwnProperty(this._registration.name) && this._instanceCache.hasOwnProperty(this._registration.name))
             throw new Error(utils.sprintf('Instance already created for key [%s]', this._registration.name));
+    }
+    _validateDependencyList(dependencyList) {
+        // TODO
     }
 }

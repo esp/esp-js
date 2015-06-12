@@ -156,7 +156,7 @@ describe('Container', () =>  {
             });
 
             describe('auto factory dependency resolve', () =>  {
-                var A, B, C, autoFactoryForA, autoFactoryForB;
+                var A, B, C, factoryForA, factoryForB;
 
                 beforeEach(() => {
                     A = createObject();
@@ -165,19 +165,19 @@ describe('Container', () =>  {
                     container.register('a', A); // singleton by default
                     container.register('b', B, ['a']).transient();
                     container.register('c', C, [{
-                        type: "autoFactory",
+                        type: "factory",
                         key: 'a' // resolve 'a' each time the injected function is called
                     }, {
-                        type: "autoFactory",
+                        type: "factory",
                         key: 'b' // resolve 'b' each time the injected function is called
                     }]);
                     var c = container.resolve('c');
-                    autoFactoryForA = c.dependencies[0];
-                    autoFactoryForB = c.dependencies[1];
+                    factoryForA = c.dependencies[0];
+                    factoryForB = c.dependencies[1];
                 });
 
                 it('should resolve an instance each time the auto factory is invoked', () =>  {
-                    var b1 = autoFactoryForB(), b2 = autoFactoryForB(), b3 = autoFactoryForB();
+                    var b1 = factoryForB(), b2 = factoryForB(), b3 = factoryForB();
                     expect(B.isPrototypeOf(b1)).toEqual(true);
                     expect(B.isPrototypeOf(b2)).toEqual(true);
                     expect(B.isPrototypeOf(b3)).toEqual(true);
@@ -186,16 +186,16 @@ describe('Container', () =>  {
                 });
 
                 it('should pass additional parameters to the constructor on the instance being resolved', () =>  {
-                    var b1 = autoFactoryForB("aParam", "anotherParam");
+                    var b1 = factoryForB("aParam", "anotherParam");
                     expect(b1.dependencies[0]).toEqual("aParam");
                     expect(b1.dependencies[1]).toEqual("anotherParam");
                     expect(A.isPrototypeOf(b1.dependencies[2])).toEqual(true);
                 });
 
                 it('should throw if parameters passed and the resolve targetsingletonlton and already built', () =>  {
-                    var a1 = autoFactoryForA("aParam", "anotherParam");
+                    var a1 = factoryForA("aParam", "anotherParam");
                     expect(() => {
-                        var a2 = autoFactoryForA("aParam", "anotherParam");
+                        var a2 = factoryForA("aParam", "anotherParam");
                     }).toThrow();
                 });
 

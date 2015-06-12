@@ -1,4 +1,4 @@
-import utils from './utils';
+import * as utils from './utils';
 import InstanceLifecycleType from './InstanceLifecycleType';
 
 export default class RegistrationModifier  {

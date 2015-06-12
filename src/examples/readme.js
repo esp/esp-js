@@ -87,7 +87,7 @@ var runInjectionFactories = () => {
     }
     var container = new microdi.Container();
     container.register('item', Item).transient();
-    container.register('manager', Manager, [{ type: "autoFactory", key: 'item'}]);
+    container.register('manager', Manager, [{ type: "factory", key: 'item'}]);
     var manager = container.resolve('manager');
     var item1 = manager.createItem();
     var item2 = manager.createItem();
@@ -110,7 +110,7 @@ var runInjectionFactoriesWithOverrides = () => {
     }
     var container = new microdi.Container();
     container.register('item', Item).transient();
-    container.register('manager', Manager, [{ type: "autoFactory", key: 'item'}]);
+    container.register('manager', Manager, [{ type: "factory", key: 'item'}]);
     var manager = container.resolve('manager');
     var item1 = manager.createItem("Bob");
     var item2 = manager.createItem("Mick");
@@ -134,7 +134,7 @@ var runInjectionFactoriesWithOverridesAndDependencies = () => {
     var container = new microdi.Container();
     container.registerInstance('otherDependencyA', "look! a string dependency");
     container.register('item', Item, ['otherDependencyA']).transient();
-    container.register('manager', Manager, [{ type: "autoFactory", key: 'item'}]);
+    container.register('manager', Manager, [{ type: "factory", key: 'item'}]);
     var manager = container.resolve('manager');
     var fooItem = manager.createItem("Foo");
     var barItem = manager.createItem("Bar");
@@ -231,9 +231,9 @@ var runCustomDependencyResolver = () => {
     container.addResolver("domResolver", new DomResolver());
     // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
     // This is only required when you don't register a constructor function or prototype.
-    container.register('controller', { type: "domResolver", domId : "theDomId", isResolerKey: true });
-    var controller = container.resolve('controller');
-    console.log(controller.description);
+    container.register('view', { type: "domResolver", domId : "theDomId", isResolerKey: true });
+    var view = container.resolve('view');
+    console.log(view.description);
 };
 
 
@@ -252,13 +252,13 @@ var runCustomDependencyResolver2 = () => {
     var container = new microdi.Container();
     container.addResolver("domResolver", new DomResolver());
     class Controller {
-        constructor(domElement) {
-            console.log(domElement.description);
+        constructor(view) {
+            console.log(view.description);
         }
     }
     // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
     // The container assumes it is as it appears in the dependency list.
-    container.register('controller', Controller, [{ type: "domResolver", domId : "theDomId" }]);
+    container.register('controller', Controller, [{ type: "domResolver", domId : "viewId" }]);
     var controller = container.resolve('controller');
 };
 

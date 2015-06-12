@@ -1,18 +1,19 @@
-exports.sprintf = function sprintf(format, etc) {
+export function sprintf(format, etc) {
     var arg = arguments;
     var i = 1;
     return format.replace(/%((%)|s)/g, function (m) { return m[2] || arg[i++]; });
-};
+}
 
-exports.isString =function(value) {
+export function isString(value) {
     return typeof value == 'string' || value instanceof String;
-};
+}
 
-var indexOf = function(array, item) {
+export function indexOf(array, item) {
+    var iOf;
     if(typeof Array.prototype.indexOf === 'function') {
-        indexOf = Array.prototype.indexOf;
+        iOf = Array.prototype.indexOf;
     } else {
-        indexOf = function(item) {
+        iOf = function(item) {
             var i = -1, index = -1;
 
             for(i = 0; i < this.length; i++) {
@@ -26,8 +27,6 @@ var indexOf = function(array, item) {
         };
     }
 
-    var index = indexOf.call(array, item);
+    var index = iOf.call(array, item);
     return index;
-};
-
-exports.indexOf = indexOf;
+}

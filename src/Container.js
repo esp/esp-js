@@ -1,6 +1,4 @@
-"use strict";
-
-import utils from './utils';
+import * as utils from './utils';
 import ResolverContext from './ResolverContext';
 import InstanceLifecycleType from './InstanceLifecycleType';
 import RegistrationModifier from './RegistrationModifier';
@@ -168,8 +166,6 @@ export default class Container {
                     throw new Error("Registered resolverKey is missing it's type property");
                 }
             } else if (typeof registration.proto === 'function') {
-                // haven't really tested this working with constructor functions too much
-                // code ripped from here http://stackoverflow.com/questions/3362471/how-can-i-call-a-javascript-constructor-using-call-or-apply
                 var Ctor = registration.proto.bind.apply(
                     registration.proto,
                     [null].concat(dependencies)
@@ -203,8 +199,8 @@ export default class Container {
             // A resolvers that returns a factory that when called will resolve the dependency from the container.
             // Any arguments passed at runtime will be passed to resolve as parameter overrides
             // It expects a dependency key in format:
-            // { type: 'autoFactory', name: "aDependencyName" }
-            autoFactory: {
+            // { type: 'factory', name: "aDependencyName" }
+            factory: {
                 resolve: (container, dependencyKey) => {
                     return function() { // using function here as I don't want babel to re-write the arguments var
                         var args = [].slice.call(arguments);

@@ -83,11 +83,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
     
+    function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+    
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
     
     var _utils = __webpack_require__(2);
     
-    var _utils2 = _interopRequireDefault(_utils);
+    var utils = _interopRequireWildcard(_utils);
     
     var _ResolverContext = __webpack_require__(3);
     
@@ -173,7 +175,7 @@ return /******/ (function(modules) { // webpackBootstrap
                     instance,
                     error;
                 if (!registration) {
-                    error = _utils2['default'].sprintf('Nothing registered for dependency [%s]', name);
+                    error = utils.sprintf('Nothing registered for dependency [%s]', name);
                     throw new Error(error);
                 }
                 instance = this._tryRetrieveFromCache(name);
@@ -196,7 +198,7 @@ return /******/ (function(modules) { // webpackBootstrap
                     error;
                 mapings = this._registrationGroups[groupName];
                 if (!mapings) {
-                    error = _utils2['default'].sprintf('No group with name [%s] registered', groupName);
+                    error = utils.sprintf('No group with name [%s] registered', groupName);
                     throw new Error(error);
                 }
                 for (var i = 0, len = mapings.length; i < len; i++) {
@@ -266,16 +268,16 @@ return /******/ (function(modules) { // webpackBootstrap
                     if (registration.dependencyList !== undefined) {
                         for (var i = 0, len = registration.dependencyList.length; i < len; i++) {
                             dependencyKey = registration.dependencyList[i];
-                            if (_utils2['default'].isString(dependencyKey)) {
+                            if (utils.isString(dependencyKey)) {
                                 dependency = this.resolve(dependencyKey);
-                            } else if (dependencyKey.hasOwnProperty('type') && _utils2['default'].isString(dependencyKey.type)) {
+                            } else if (dependencyKey.hasOwnProperty('type') && utils.isString(dependencyKey.type)) {
                                 resolver = this._resolvers[dependencyKey.type];
                                 if (resolver === undefined) {
-                                    throw new Error(_utils2['default'].sprintf('Error resolving [%s]. No resolver registered to resolve dependency key for type [%s]', name, dependencyKey.type));
+                                    throw new Error(utils.sprintf('Error resolving [%s]. No resolver registered to resolve dependency key for type [%s]', name, dependencyKey.type));
                                 }
                                 dependency = resolver.resolve(this, dependencyKey);
                             } else {
-                                throw new Error(_utils2['default'].sprintf('Error resolving [%s]. It\'s dependency at index [%s] had an unknown resolver type', name, i));
+                                throw new Error(utils.sprintf('Error resolving [%s]. It\'s dependency at index [%s] had an unknown resolver type', name, i));
                             }
                             dependencies.push(dependency);
                         }
@@ -288,8 +290,6 @@ return /******/ (function(modules) { // webpackBootstrap
                             throw new Error('Registered resolverKey is missing it\'s type property');
                         }
                     } else if (typeof registration.proto === 'function') {
-                        // haven't really tested this working with constructor functions too much
-                        // code ripped from here http://stackoverflow.com/questions/3362471/how-can-i-call-a-javascript-constructor-using-call-or-apply
                         var Ctor = registration.proto.bind.apply(registration.proto, [null].concat(dependencies));
                         instance = new Ctor();
                     } else {
@@ -321,8 +321,8 @@ return /******/ (function(modules) { // webpackBootstrap
                     // A resolvers that returns a factory that when called will resolve the dependency from the container.
                     // Any arguments passed at runtime will be passed to resolve as parameter overrides
                     // It expects a dependency key in format:
-                    // { type: 'autoFactory', name: "aDependencyName" }
-                    autoFactory: {
+                    // { type: 'factory', name: "aDependencyName" }
+                    factory: {
                         resolve: function resolve(container, dependencyKey) {
                             return function () {
                                 // using function here as I don't want babel to re-write the arguments var
@@ -377,23 +377,31 @@ return /******/ (function(modules) { // webpackBootstrap
 
     'use strict';
     
-    exports.sprintf = function sprintf(format, etc) {
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+    exports.sprintf = sprintf;
+    exports.isString = isString;
+    exports.indexOf = indexOf;
+    
+    function sprintf(format, etc) {
         var arg = arguments;
         var i = 1;
         return format.replace(/%((%)|s)/g, function (m) {
             return m[2] || arg[i++];
         });
-    };
+    }
     
-    exports.isString = function (value) {
+    function isString(value) {
         return typeof value == 'string' || value instanceof String;
-    };
+    }
     
-    var _indexOf = function indexOf(array, item) {
+    function indexOf(array, item) {
+        var iOf;
         if (typeof Array.prototype.indexOf === 'function') {
-            _indexOf = Array.prototype.indexOf;
+            iOf = Array.prototype.indexOf;
         } else {
-            _indexOf = function (item) {
+            iOf = function (item) {
                 var i = -1,
                     index = -1;
     
@@ -408,17 +416,14 @@ return /******/ (function(modules) { // webpackBootstrap
             };
         }
     
-        var index = _indexOf.call(array, item);
+        var index = iOf.call(array, item);
         return index;
-    };
-    
-    exports.indexOf = _indexOf;
+    }
 
 /***/ },
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-    // helper to track circular dependencies during a resolve call
     'use strict';
     
     Object.defineProperty(exports, '__esModule', {
@@ -434,6 +439,8 @@ return /******/ (function(modules) { // webpackBootstrap
     var _utilsJs = __webpack_require__(2);
     
     var utils = _interopRequireWildcard(_utilsJs);
+    
+    // helper to track circular dependencies during a resolve call
     
     var ResolverContext = (function () {
         function ResolverContext() {
@@ -514,11 +521,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
     
+    function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+    
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
     
     var _utils = __webpack_require__(2);
     
-    var _utils2 = _interopRequireDefault(_utils);
+    var utils = _interopRequireWildcard(_utils);
     
     var _InstanceLifecycleType = __webpack_require__(4);
     
@@ -570,8 +579,8 @@ return /******/ (function(modules) { // webpackBootstrap
                     lookup = [];
                     this._registrationGroups[groupName] = lookup;
                 }
-                if (_utils2['default'].indexOf(lookup, this._registration.name) !== -1) {
-                    throw new Error(_utils2['default'].sprintf('Instance already created for key [%s]', this._registration.name));
+                if (utils.indexOf(lookup, this._registration.name) !== -1) {
+                    throw new Error(utils.sprintf('Instance already created for key [%s]', this._registration.name));
                 }
                 lookup.push(this._registration.name);
                 return this;
@@ -579,7 +588,7 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: '_ensureInstanceNotCreated',
             value: function _ensureInstanceNotCreated() {
-                if (this._registration.hasOwnProperty(this._registration.name) && this._instanceCache.hasOwnProperty(this._registration.name)) throw new Error(_utils2['default'].sprintf('Instance already created for key [%s]', this._registration.name));
+                if (this._registration.hasOwnProperty(this._registration.name) && this._instanceCache.hasOwnProperty(this._registration.name)) throw new Error(utils.sprintf('Instance already created for key [%s]', this._registration.name));
             }
         }]);
     

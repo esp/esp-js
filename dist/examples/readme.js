@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _microdiJs = require("../microdi.js");
+var _microdiJs = require('../microdi.js');
 
 var _microdiJs2 = _interopRequireDefault(_microdiJs);
 
@@ -17,9 +17,9 @@ var runBasicExample = function runBasicExample() {
         }
 
         _createClass(Child, [{
-            key: "sayHello",
+            key: 'sayHello',
             value: function sayHello() {
-                console.log("Hello from the child");
+                console.log('Hello from the child');
             }
         }]);
 
@@ -34,9 +34,9 @@ var runBasicExample = function runBasicExample() {
         }
 
         _createClass(Parent, [{
-            key: "sayHello",
+            key: 'sayHello',
             value: function sayHello() {
-                console.log("Hello from the parent");
+                console.log('Hello from the parent');
                 this._child.sayHello();
             }
         }]);
@@ -44,43 +44,43 @@ var runBasicExample = function runBasicExample() {
         return Parent;
     })();
 
-    var container = new _microdiJs2["default"].Container();
-    container.register("child", Child);
-    container.register("parent", Parent).inject("child");
-    var parent = container.resolve("parent");
+    var container = new _microdiJs2['default'].Container();
+    container.register('child', Child);
+    container.register('parent', Parent).inject('child');
+    var parent = container.resolve('parent');
     parent.sayHello();
 };
 
 var runLifeTimeTypes = function runLifeTimeTypes() {
-    var container = new _microdiJs2["default"].Container();
+    var container = new _microdiJs2['default'].Container();
 
-    console.log("Singleton");
+    console.log('Singleton');
     var Foo = {};
-    container.register("theFoo", Foo).singleton();
-    var foo1 = container.resolve("theFoo");
-    var foo2 = container.resolve("theFoo");
+    container.register('theFoo', Foo).singleton();
+    var foo1 = container.resolve('theFoo');
+    var foo2 = container.resolve('theFoo');
     console.log(foo1 == foo2); // true
 
-    console.log("Singleton per container");
+    console.log('Singleton per container');
     var Bar = {};
-    container.register("theBar", Bar).singletonPerContainer();
-    var bar1 = container.resolve("theBar");
-    var bar2 = container.resolve("theBar");
+    container.register('theBar', Bar).singletonPerContainer();
+    var bar1 = container.resolve('theBar');
+    var bar2 = container.resolve('theBar');
     var childContainer = container.createChildContainer();
-    var bar3 = childContainer.resolve("theBar");
-    var bar4 = childContainer.resolve("theBar");
+    var bar3 = childContainer.resolve('theBar');
+    var bar4 = childContainer.resolve('theBar');
     console.log(bar1 == bar2); // true
     console.log(bar2 == bar3); // false
     console.log(bar3 == bar4); // true
 
-    console.log("Transient");
+    console.log('Transient');
     var Baz = {};
-    container.register("theBaz", Foo).transient();
-    var baz1 = container.resolve("theBaz");
-    var baz2 = container.resolve("theBaz");
+    container.register('theBaz', Foo).transient();
+    var baz1 = container.resolve('theBaz');
+    var baz2 = container.resolve('theBaz');
     console.log(baz1 == baz2); // false
 
-    console.log("External");
+    console.log('External');
     var Disposable = {
         init: function init() {
             this.isDisposed = false;
@@ -90,54 +90,57 @@ var runLifeTimeTypes = function runLifeTimeTypes() {
             this.isDisposed = true;
         }
     };
-    container.registerInstance("disposable1", Object.create(Disposable).init());
-    container.register("disposable2", Disposable);
-    var disposable1 = container.resolve("disposable1");
-    var disposable2 = container.resolve("disposable2");
+    // Note registerInstance internally sets the lifetime type as 'external',
+    // You can pass false as the last argument if you want to change this.
+    // The container will then manage it as 'singleton' and dispose the instance at disposal time
+    container.registerInstance('disposable1', Object.create(Disposable).init());
+    container.register('disposable2', Disposable);
+    var disposable1 = container.resolve('disposable1');
+    var disposable2 = container.resolve('disposable2');
     container.dispose();
     console.log(disposable1.isDisposed); // false
     console.log(disposable2.isDisposed); // true
 };
 
 var runGroups = function runGroups() {
-    console.log("Groups");
+    console.log('Groups');
     var Foo = {
-        name: "theFoo"
+        name: 'theFoo'
     };
     var Bar = {
-        name: "theBar"
+        name: 'theBar'
     };
-    var container = new _microdiJs2["default"].Container();
-    container.register("foo", Foo).inGroup("group1");
-    container.register("bar", Bar).inGroup("group1");
-    var group1 = container.resolveGroup("group1");
+    var container = new _microdiJs2['default'].Container();
+    container.register('foo', Foo).inGroup('group1');
+    container.register('bar', Bar).inGroup('group1');
+    var group1 = container.resolveGroup('group1');
     for (var i = 0, len = group1.length; i < len; i++) {
         console.log(group1[i].name);
     }
 };
 
 var runResolutionWithAdditionalDependencies = function runResolutionWithAdditionalDependencies() {
-    console.log("Resolution with additional dependencies");
+    console.log('Resolution with additional dependencies');
 
     var Foo = function Foo(fizz, bar, bazz) {
         _classCallCheck(this, Foo);
 
-        console.log("%s %s %s", fizz.name, bar.name, bazz.name);
+        console.log('%s %s %s', fizz.name, bar.name, bazz.name);
     };
 
-    var container = new _microdiJs2["default"].Container();
-    container.register("fizz", { name: "fizz" });
-    container.register("foo", Foo).inject("fizz");
-    var foo = container.resolve("foo", { name: "bar" }, { name: "bazz" });
+    var container = new _microdiJs2['default'].Container();
+    container.register('fizz', { name: 'fizz' });
+    container.register('foo', Foo).inject('fizz');
+    var foo = container.resolve('foo', { name: 'bar' }, { name: 'bazz' });
 };
 
 var runInjectionFactories = function runInjectionFactories() {
-    console.log("injection factories");
+    console.log('injection factories');
 
     var Item = function Item() {
         _classCallCheck(this, Item);
 
-        console.log("creating an item");
+        console.log('creating an item');
     };
 
     var Manager = (function () {
@@ -148,7 +151,7 @@ var runInjectionFactories = function runInjectionFactories() {
         }
 
         _createClass(Manager, [{
-            key: "createItem",
+            key: 'createItem',
             value: function createItem(name) {
                 return this._itemFactory(name);
             }
@@ -157,55 +160,21 @@ var runInjectionFactories = function runInjectionFactories() {
         return Manager;
     })();
 
-    var container = new _microdiJs2["default"].Container();
-    container.register("item", Item).transient();
-    container.register("manager", Manager).inject({ resolver: "factory", key: "item" });
-    var manager = container.resolve("manager");
+    var container = new _microdiJs2['default'].Container();
+    container.register('item', Item).transient();
+    container.register('manager', Manager).inject({ resolver: 'factory', key: 'item' });
+    var manager = container.resolve('manager');
     var item1 = manager.createItem();
     var item2 = manager.createItem();
 };
 
 var runInjectionFactoriesWithAdditionalDependencies = function runInjectionFactoriesWithAdditionalDependencies() {
-    console.log("injection factories with additional dependencies");
-
-    var Item = function Item(name) {
-        _classCallCheck(this, Item);
-
-        console.log("Hello " + name);
-    };
-
-    var Manager = (function () {
-        function Manager(itemFactory) {
-            _classCallCheck(this, Manager);
-
-            this._itemFactory = itemFactory;
-        }
-
-        _createClass(Manager, [{
-            key: "createItem",
-            value: function createItem(name) {
-                return this._itemFactory(name);
-            }
-        }]);
-
-        return Manager;
-    })();
-
-    var container = new _microdiJs2["default"].Container();
-    container.register("item", Item).transient();
-    container.register("manager", Manager).inject({ resolver: "factory", key: "item" });
-    var manager = container.resolve("manager");
-    var item1 = manager.createItem("Bob");
-    var item2 = manager.createItem("Mick");
-};
-
-var runInjectionFactoriesWithAdditionalAndExistingDependencies = function runInjectionFactoriesWithAdditionalAndExistingDependencies() {
-    console.log("injection factories with additional and existing dependencies");
+    console.log('injection factories with additional dependencies');
 
     var Item = function Item(otherDependencyA, name) {
         _classCallCheck(this, Item);
 
-        console.log("Hello " + name + ". Other dependency: " + otherDependencyA);
+        console.log('Hello ' + name + '. Other dependency: ' + otherDependencyA);
     };
 
     var Manager = (function () {
@@ -216,7 +185,7 @@ var runInjectionFactoriesWithAdditionalAndExistingDependencies = function runInj
         }
 
         _createClass(Manager, [{
-            key: "createItem",
+            key: 'createItem',
             value: function createItem(name) {
                 return this._itemFactory(name);
             }
@@ -225,55 +194,55 @@ var runInjectionFactoriesWithAdditionalAndExistingDependencies = function runInj
         return Manager;
     })();
 
-    var container = new _microdiJs2["default"].Container();
-    container.registerInstance("otherDependencyA", "look! a string dependency");
-    container.register("item", Item).inject("otherDependencyA").transient();
-    container.register("manager", Manager).inject({ resolver: "factory", key: "item" });
-    var manager = container.resolve("manager");
-    var fooItem = manager.createItem("Foo");
-    var barItem = manager.createItem("Bar");
+    var container = new _microdiJs2['default'].Container();
+    container.registerInstance('otherDependencyA', 'look! a string dependency');
+    container.register('item', Item).inject('otherDependencyA').transient();
+    container.register('manager', Manager).inject({ resolver: 'factory', key: 'item' });
+    var manager = container.resolve('manager');
+    var fooItem = manager.createItem('Foo');
+    var barItem = manager.createItem('Bar');
 };
 
 var runChildContainer = function runChildContainer() {
-    console.log("Child containers");
+    console.log('Child containers');
     var Foo = {};
-    var container = new _microdiJs2["default"].Container();
-    var childcontainer = container.createChildContainer();
-    container.register("foo", Foo); // defaults to singleton registration
-    var foo1 = container.resolve("foo");
-    var foo2 = childcontainer.resolve("foo");
+    var container = new _microdiJs2['default'].Container();
+    var childContainer = container.createChildContainer();
+    container.register('foo', Foo); // defaults to singleton registration
+    var foo1 = container.resolve('foo');
+    var foo2 = childContainer.resolve('foo');
     console.log(foo1 == foo2); // true, same instance
 
-    container.register("fooAgain", Foo).singletonPerContainer();
-    var foo3 = container.resolve("fooAgain");
-    var foo4 = childcontainer.resolve("fooAgain");
+    container.register('fooAgain', Foo).singletonPerContainer();
+    var foo3 = container.resolve('fooAgain');
+    var foo4 = childContainer.resolve('fooAgain');
     console.log(foo3 == foo4); // false, different instance
-    var foo5 = childcontainer.resolve("fooAgain");
+    var foo5 = childContainer.resolve('fooAgain');
     console.log(foo4 == foo5); // true, same instance
 };
 
 var runChildContainerRegistrations = function runChildContainerRegistrations() {
-    console.log("Child container registrations");
+    console.log('Child container registrations');
     var Foo = {};
-    var container = new _microdiJs2["default"].Container();
-    container.register("foo", Foo); // defaults to singleton registration
+    var container = new _microdiJs2['default'].Container();
+    container.register('foo', Foo); // defaults to singleton registration
 
     var childcontainer = container.createChildContainer();
-    childcontainer.register("foo", Foo).transient();
+    childcontainer.register('foo', Foo).transient();
 
-    var foo1 = container.resolve("foo");
-    var foo2 = container.resolve("foo");
+    var foo1 = container.resolve('foo');
+    var foo2 = container.resolve('foo');
     console.log(foo1 == foo2); // true, same instance
 
-    var foo3 = childcontainer.resolve("foo");
+    var foo3 = childcontainer.resolve('foo');
     console.log(foo2 == foo3); // false, different instance
 
-    var foo4 = childcontainer.resolve("foo");
+    var foo4 = childcontainer.resolve('foo');
     console.log(foo3 == foo4); // false, different instance
 };
 
 var runDisposal = function runDisposal() {
-    console.log("Container disposal");
+    console.log('Container disposal');
 
     var Foo = (function () {
         function Foo() {
@@ -281,28 +250,28 @@ var runDisposal = function runDisposal() {
         }
 
         _createClass(Foo, [{
-            key: "dispose",
+            key: 'dispose',
             value: function dispose() {
-                console.log("foo disposed");
+                console.log('foo disposed');
             }
         }]);
 
         return Foo;
     })();
 
-    var container = new _microdiJs2["default"].Container();
+    var container = new _microdiJs2['default'].Container();
 
-    container.register("foo", Foo).singletonPerContainer();
-    var foo1 = container.resolve("foo");
+    container.register('foo', Foo).singletonPerContainer();
+    var foo1 = container.resolve('foo');
 
     var childcontainer = container.createChildContainer();
-    var foo2 = childcontainer.resolve("foo");
+    var foo2 = childcontainer.resolve('foo');
 
     container.dispose();
 };
 
 var runCustomDependencyResolver = function runCustomDependencyResolver() {
-    console.log("Custom dependency resolver");
+    console.log('Custom dependency resolver');
 
     var DomResolver = (function () {
         function DomResolver() {
@@ -310,13 +279,13 @@ var runCustomDependencyResolver = function runCustomDependencyResolver() {
         }
 
         _createClass(DomResolver, [{
-            key: "resolve",
+            key: 'resolve',
             value: function resolve(container, resolverKey) {
-                // return a pretend dom elemenet,
+                // return a pretend dom element,
                 return Object.defineProperties({}, {
                     description: {
                         get: function () {
-                            return "Fake DOM element - " + resolverKey.domId;
+                            return 'Fake DOM element - ' + resolverKey.domId;
                         },
                         configurable: true,
                         enumerable: true
@@ -328,17 +297,17 @@ var runCustomDependencyResolver = function runCustomDependencyResolver() {
         return DomResolver;
     })();
 
-    var container = new _microdiJs2["default"].Container();
-    container.addResolver("domResolver", new DomResolver());
-    // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
+    var container = new _microdiJs2['default'].Container();
+    container.addResolver('domResolver', new DomResolver());
+    // Note the usage of 'isResolverKey' so the container can distinguish this from a normal object.
     // This is only required when you don't register a constructor function or prototype.
-    container.register("view", { resolver: "domResolver", domId: "theDomId", isResolerKey: true });
-    var view = container.resolve("view");
+    container.register('view', { resolver: 'domResolver', domId: 'theDomId', isResolverKey: true });
+    var view = container.resolve('view');
     console.log(view.description);
 };
 
 var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
-    console.log("Custom dependency resolver 2");
+    console.log('Custom dependency resolver 2');
 
     var DomResolver = (function () {
         function DomResolver() {
@@ -346,13 +315,13 @@ var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
         }
 
         _createClass(DomResolver, [{
-            key: "resolve",
+            key: 'resolve',
             value: function resolve(container, resolverKey) {
                 // return a pretend dom elemenet,
                 return Object.defineProperties({}, {
                     description: {
                         get: function () {
-                            return "Fake DOM element - " + resolverKey.domId;
+                            return 'Fake DOM element - ' + resolverKey.domId;
                         },
                         configurable: true,
                         enumerable: true
@@ -364,8 +333,8 @@ var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
         return DomResolver;
     })();
 
-    var container = new _microdiJs2["default"].Container();
-    container.addResolver("domResolver", new DomResolver());
+    var container = new _microdiJs2['default'].Container();
+    container.addResolver('domResolver', new DomResolver());
 
     var Controller = function Controller(view) {
         _classCallCheck(this, Controller);
@@ -373,36 +342,35 @@ var runCustomDependencyResolver2 = function runCustomDependencyResolver2() {
         console.log(view.description);
     };
 
-    // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
+    // Note we don't need to specify the 'isResolverKey' property on the resolverKey.
     // The container assumes it is as it appears in the dependency list.
-    container.register("controller", Controller).inject({ resolver: "domResolver", domId: "viewId" });
-    var controller = container.resolve("controller");
+    container.register('controller', Controller).inject({ resolver: 'domResolver', domId: 'viewId' });
+    var controller = container.resolve('controller');
 };
 
 var runDelegeateResolver = function runDelegeateResolver() {
-    console.log("Delegate resolver");
+    console.log('Delegate resolver');
 
     var Foo = function Foo(bar) {
         _classCallCheck(this, Foo);
 
-        console.log("bar is : [%s]", bar);
+        console.log('bar is : [%s]', bar);
     };
 
-    var container = new _microdiJs2["default"].Container();
-    container.register("foo", Foo).inject({
-        resolver: "delegate",
+    var container = new _microdiJs2['default'].Container();
+    container.register('foo', Foo).inject({
+        resolver: 'delegate',
         resolve: function resolve(container, resolveKey) {
-            return "barInstance";
+            return 'barInstance';
         }
     });
-    var foo = container.resolve("foo");
+    var foo = container.resolve('foo');
 };
 
 runBasicExample();
 runLifeTimeTypes();
 runInjectionFactories();
 runInjectionFactoriesWithAdditionalDependencies();
-runInjectionFactoriesWithAdditionalAndExistingDependencies();
 runGroups();
 runResolutionWithAdditionalDependencies();
 runChildContainer();

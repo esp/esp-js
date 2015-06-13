@@ -3,7 +3,7 @@ import microdi from '../microdi.js';
 var runBasicExample =  () => {
     class Child {
         sayHello() {
-            console.log("Hello from the child");
+            console.log('Hello from the child');
         }
     }
     class Parent {
@@ -11,7 +11,7 @@ var runBasicExample =  () => {
             this._child = child;
         }
         sayHello() {
-            console.log("Hello from the parent");
+            console.log('Hello from the parent');
             this._child.sayHello();
         }
     }
@@ -25,14 +25,14 @@ var runBasicExample =  () => {
 var runLifeTimeTypes = () => {
     var container = new microdi.Container();
 
-    console.log("Singleton");
+    console.log('Singleton');
     var Foo = {};
     container.register('theFoo', Foo).singleton();
     var foo1 = container.resolve('theFoo');
     var foo2 = container.resolve('theFoo');
     console.log(foo1 == foo2); // true
 
-    console.log("Singleton per container");
+    console.log('Singleton per container');
     var Bar = {};
     container.register('theBar', Bar).singletonPerContainer();
     var bar1 = container.resolve('theBar');
@@ -44,14 +44,14 @@ var runLifeTimeTypes = () => {
     console.log(bar2 == bar3); // false
     console.log(bar3 == bar4); // true
 
-    console.log("Transient");
+    console.log('Transient');
     var Baz = {};
     container.register('theBaz', Foo).transient();
     var baz1 = container.resolve('theBaz');
     var baz2 = container.resolve('theBaz');
     console.log(baz1 == baz2); // false
 
-    console.log("External");
+    console.log('External');
     var Disposable = {
         init() {
             this.isDisposed = false;
@@ -61,6 +61,9 @@ var runLifeTimeTypes = () => {
             this.isDisposed = true;
         }
     };
+    // Note registerInstance internally sets the lifetime type as 'external',
+    // You can pass false as the last argument if you want to change this.
+    // The container will then manage it as 'singleton' and dispose the instance at disposal time
     container.registerInstance('disposable1', Object.create(Disposable).init());
     container.register('disposable2', Disposable);
     var disposable1 = container.resolve('disposable1');
@@ -72,40 +75,40 @@ var runLifeTimeTypes = () => {
 
 
 var runGroups = () => {
-    console.log("Groups");
+    console.log('Groups');
     var Foo = {
-        name: "theFoo"
+        name: 'theFoo'
     };
     var Bar = {
-        name: "theBar"
+        name: 'theBar'
     };
     var container = new microdi.Container();
-    container.register('foo', Foo).inGroup("group1");
-    container.register('bar', Bar).inGroup("group1");
-    var group1 = container.resolveGroup("group1");
+    container.register('foo', Foo).inGroup('group1');
+    container.register('bar', Bar).inGroup('group1');
+    var group1 = container.resolveGroup('group1');
     for (let i = 0, len = group1.length; i < len; i++) {
         console.log(group1[i].name);
     }
 };
 
 var runResolutionWithAdditionalDependencies = () => {
-    console.log("Resolution with additional dependencies");
+    console.log('Resolution with additional dependencies');
     class Foo {
         constructor(fizz, bar, bazz) {
-            console.log("%s %s %s", fizz.name, bar.name, bazz.name);
+            console.log('%s %s %s', fizz.name, bar.name, bazz.name);
         }
     }
     var container = new microdi.Container();
-    container.register('fizz', { name: "fizz"});
+    container.register('fizz', { name: 'fizz'});
     container.register('foo', Foo).inject('fizz');
-    var foo = container.resolve("foo", { name: "bar"}, { name: "bazz"});
+    var foo = container.resolve('foo', { name: 'bar'}, { name: 'bazz'});
 };
 
 var runInjectionFactories = () => {
-    console.log("injection factories");
+    console.log('injection factories');
     class Item {
         constructor() {
-            console.log("creating an item");
+            console.log('creating an item');
         }
     }
     class Manager{
@@ -118,40 +121,17 @@ var runInjectionFactories = () => {
     }
     var container = new microdi.Container();
     container.register('item', Item).transient();
-    container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
+    container.register('manager', Manager).inject({ resolver: 'factory', key: 'item'});
     var manager = container.resolve('manager');
     var item1 = manager.createItem();
     var item2 = manager.createItem();
 };
 
 var runInjectionFactoriesWithAdditionalDependencies = () => {
-    console.log("injection factories with additional dependencies");
-    class Item {
-        constructor(name) {
-            console.log("Hello " + name);
-        }
-    }
-    class Manager{
-        constructor(itemFactory) {
-            this._itemFactory = itemFactory;
-        }
-        createItem(name) {
-            return this._itemFactory(name);
-        }
-    }
-    var container = new microdi.Container();
-    container.register('item', Item).transient();
-    container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
-    var manager = container.resolve('manager');
-    var item1 = manager.createItem("Bob");
-    var item2 = manager.createItem("Mick");
-};
-
-var runInjectionFactoriesWithAdditionalAndExistingDependencies = () => {
-    console.log("injection factories with additional and existing dependencies");
+    console.log('injection factories with additional dependencies');
     class Item {
         constructor(otherDependencyA, name) {
-            console.log("Hello " + name + ". Other dependency: " + otherDependencyA);
+            console.log('Hello ' + name + '. Other dependency: ' + otherDependencyA);
         }
     }
     class Manager{
@@ -163,34 +143,34 @@ var runInjectionFactoriesWithAdditionalAndExistingDependencies = () => {
         }
     }
     var container = new microdi.Container();
-    container.registerInstance('otherDependencyA', "look! a string dependency");
+    container.registerInstance('otherDependencyA', 'look! a string dependency');
     container.register('item', Item).inject('otherDependencyA').transient();
-    container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
+    container.register('manager', Manager).inject({ resolver: 'factory', key: 'item'});
     var manager = container.resolve('manager');
-    var fooItem = manager.createItem("Foo");
-    var barItem = manager.createItem("Bar");
+    var fooItem = manager.createItem('Foo');
+    var barItem = manager.createItem('Bar');
 };
 
 var runChildContainer = () => {
-    console.log("Child containers");
+    console.log('Child containers');
     var Foo = { };
     var container = new microdi.Container();
-    var childcontainer = container.createChildContainer();
+    var childContainer = container.createChildContainer();
     container.register('foo', Foo); // defaults to singleton registration
     var foo1 = container.resolve('foo');
-    var foo2 = childcontainer.resolve('foo');
+    var foo2 = childContainer.resolve('foo');
     console.log(foo1 == foo2); // true, same instance
 
     container.register('fooAgain', Foo).singletonPerContainer();
     var foo3 = container.resolve('fooAgain');
-    var foo4 = childcontainer.resolve('fooAgain');
+    var foo4 = childContainer.resolve('fooAgain');
     console.log(foo3 == foo4); // false, different instance
-    var foo5 = childcontainer.resolve('fooAgain');
+    var foo5 = childContainer.resolve('fooAgain');
     console.log(foo4 == foo5); // true, same instance
 };
 
 var runChildContainerRegistrations = () => {
-    console.log("Child container registrations");
+    console.log('Child container registrations');
     var Foo = { };
     var container = new microdi.Container();
     container.register('foo', Foo); // defaults to singleton registration
@@ -210,11 +190,11 @@ var runChildContainerRegistrations = () => {
 };
 
 var runDisposal = () => {
-    console.log("Container disposal");
+    console.log('Container disposal');
 
     class Foo {
         dispose() {
-            console.log("foo disposed");
+            console.log('foo disposed');
         }
     }
 
@@ -230,66 +210,66 @@ var runDisposal = () => {
 };
 
 var runCustomDependencyResolver = () => {
-    console.log("Custom dependency resolver");
+    console.log('Custom dependency resolver');
     class DomResolver {
         resolve(container, resolverKey) {
-            // return a pretend dom elemenet,
+            // return a pretend dom element,
             return {
                 get description() {
-                    return "Fake DOM element - " + resolverKey.domId ;
+                    return 'Fake DOM element - ' + resolverKey.domId ;
                 }
             };
         }
     }
     var container = new microdi.Container();
-    container.addResolver("domResolver", new DomResolver());
-    // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
+    container.addResolver('domResolver', new DomResolver());
+    // Note the usage of 'isResolverKey' so the container can distinguish this from a normal object.
     // This is only required when you don't register a constructor function or prototype.
-    container.register('view', { resolver: "domResolver", domId : "theDomId", isResolerKey: true });
+    container.register('view', { resolver: 'domResolver', domId : 'theDomId', isResolverKey: true });
     var view = container.resolve('view');
     console.log(view.description);
 };
 
 
 var runCustomDependencyResolver2 = () => {
-    console.log("Custom dependency resolver 2");
+    console.log('Custom dependency resolver 2');
     class DomResolver {
         resolve(container, resolverKey) {
             // return a pretend dom elemenet,
             return {
                 get description() {
-                    return "Fake DOM element - " + resolverKey.domId ;
+                    return 'Fake DOM element - ' + resolverKey.domId ;
                 }
             };
         }
     }
     var container = new microdi.Container();
-    container.addResolver("domResolver", new DomResolver());
+    container.addResolver('domResolver', new DomResolver());
     class Controller {
         constructor(view) {
             console.log(view.description);
         }
     }
-    // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
+    // Note we don't need to specify the 'isResolverKey' property on the resolverKey.
     // The container assumes it is as it appears in the dependency list.
-    container.register('controller', Controller).inject({ resolver: "domResolver", domId : "viewId" });
+    container.register('controller', Controller).inject({ resolver: 'domResolver', domId : 'viewId' });
     var controller = container.resolve('controller');
 };
 
 var runDelegeateResolver = () => {
-    console.log("Delegate resolver");
+    console.log('Delegate resolver');
     class Foo  {
         constructor(bar) {
-            console.log("bar is : [%s]", bar);
+            console.log('bar is : [%s]', bar);
         }
     }
     var container = new microdi.Container();
     container.register('foo', Foo)
         .inject(
         {
-            resolver: "delegate",
+            resolver: 'delegate',
             resolve: (container, resolveKey) => {
-                return "barInstance";
+                return 'barInstance';
             }
         });
     var foo = container.resolve('foo');
@@ -299,7 +279,6 @@ runBasicExample();
 runLifeTimeTypes();
 runInjectionFactories();
 runInjectionFactoriesWithAdditionalDependencies();
-runInjectionFactoriesWithAdditionalAndExistingDependencies();
 runGroups();
 runResolutionWithAdditionalDependencies();
 runChildContainer();

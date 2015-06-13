@@ -156,7 +156,7 @@ export default class Container {
             for(let j = 0, len = additionalDependencies.length; j < len; j ++) {
                 dependencies.push(additionalDependencies[j]);
             }
-            if(registration.proto.isResolerKey) {
+            if(registration.proto.isResolverKey) {
                 if(registration.proto.resolver) {
                     resolver = this._resolvers[registration.proto.resolver];
                     instance = resolver.resolve(this, registration.proto);

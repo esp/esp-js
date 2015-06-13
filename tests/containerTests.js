@@ -159,7 +159,7 @@ describe('Container', () =>  {
                     resolve: () => {
                         return Object.create(A);
                     },
-                    isResolerKey: true
+                    isResolverKey: true
                 });
                 var a = container.resolve('a');
                 expect(A.isPrototypeOf(a)).toEqual(true);

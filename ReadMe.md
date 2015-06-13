@@ -241,7 +241,7 @@ The object contains little business logic as event processors own this.
 Additionally they own how the model state shifts/grows/contracts over time (more on this below). 
 The root of the model obviously knows about objects below it.
 However its focus is really on interacting with its direct children, and those children with their own children. 
-This interaction is usually quite simplistic (i.e. indexers, look-ups etc).
+This interaction is usually quite simplistic (i.e. indexers, lookups etc).
 
 A model purist may say only *model what's specific to your business domain*. 
 This pattern prefers the broader definition *model what's specific to your system*.
@@ -285,7 +285,7 @@ You can always start with a single Event Processor for your root entity then and
 When an event is published to the router it starts the state processing workflow. 
 The workflow has 3 ordered stages, with each stage offering different benefits depending on what state you want to modify. 
 The model can be modified at each stage.
-Stage 2 can be further split into 3 sub stages that are progressive, i.e. the event may not progress though these 3 stages depending upon how event processors decide to process the event.
+Stage 2 can be further split into 3 sub stages that are progressive, i.e. the event may not progress through these 3 stages depending upon how event processors decide to process the event.
 
 > If there were no stages, processors could simply apply the change to the model then raise a new event for 'reacting' processors to observe, similar for events that need to be verified before proceeding. 
 > To avoid `eventType` explosion the preview and committed stages are provided around the normal stage.
@@ -766,7 +766,7 @@ router
         model.isBusy = true;
         setTimeout(() =>{
             console.log("Static returned");
-            onResultsReceived({staticData:"MyStatData"});
+            onResultsReceived({staticData:"MyStaticData"});
         }, 1000);
     })
     .observe((model, event) => {
@@ -801,7 +801,7 @@ Getting static data async
 GUIs busy, static data: false
 initialiseEvent published
 Static returned
-Static data received: MyStatData
+Static data received: MyStaticData
 GUIs idle, static data: false
 ```
 
@@ -896,7 +896,7 @@ Adding static data [StaticDataB] to model
 ## Error Flows
 
 If an exception is unhandled during the event processing workflow the router will halt. 
-Any further usage results in the initial error being wrapped and re-thrown.
+Any further usage results in the initial error being wrapped and rethrown.
 
 If an observable stream (returned from `router.getEventObservable(...)` or `router.getModelObservable(...)`) has an exception, its `onError` handler will be called.
 This allows the developer to log a more detailed exception based on the streams details.
@@ -1061,8 +1061,8 @@ There is nothing physically stopping this, it is just an anti pattern and should
 
 # Examples
 
-There is already a a basic example in the _src_ in addition to all the examples in this _readme_. 
-On the road map is a example that covers each of the below areas in details.
+There is already a basic example in the _src_ in addition to all the examples in this _readme_. 
+On the road map is an example that covers each of the below areas in details.
 It will give an idea how you can lay out a complex systems model. 
 The example will model a complex GUI screen and cover these topics:
 
@@ -1103,3 +1103,5 @@ v0.0.2
 + Event reentrancy detection.
 + Memory leak and performance analysis/improvements.
 + Better model composition and reusability by allowing [`EventProcessors`](#event-processors) to subscribe to a node of a greater model.
+
+

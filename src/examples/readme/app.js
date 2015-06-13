@@ -449,7 +449,7 @@ var runAsyncWorkExample = () => {
             model.isBusy = true;
             setTimeout(() =>{
                 console.log("Static returned");
-                onResultsReceived({staticData:"MyStatData"});
+                onResultsReceived({staticData:"MyStaticData"});
             }, 1000);
         })
         .observe((model, event) => {

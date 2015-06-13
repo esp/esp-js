@@ -10,22 +10,23 @@ You can register an object using one of two methods:
 
 * `container.register(identifier, Item)`.
 
-  This registers either a constructor function OR object prototype `Item` using the given string `identifier`.
+  This registers either a constructor function OR an object prototype `Item` using the given string `identifier`.
 
   You can chain calls to alter the registration settings:
   
   ```javascript
+  var identifier = 'itemKey1';
   container
-    .register(identifier, Item)
+    .register('identifier', Item)
     .inject('otherDependencyIdentifier1', 'otherDependencyIdentifier1')
     .singletonPerContainer()
     .inGroup('mySimilarObjects');
   ```
 
   Here we register `Item` using the string `identifier`. 
-  We state it requires [dependencies](#dependencies) `otherDependencyIdentifier1` and `otherDependencyIdentifier1`. 
+  We state that it requires [dependencies](#dependencies) `otherDependencyIdentifier1` and `otherDependencyIdentifier1`. 
   It's [lifetime management](#lifetime-management) is `singletonPerContainer`.
-  It can be resolved using the `identifer` or as part of the [group](#resolve-groups) `mySimilarObjects`. 
+  It can be resolved using the `identifier` or as part of the [group](#resolve-groups) `mySimilarObjects`. 
   
 * `container.registerInstance(identifier, objectInstance)`.
 
@@ -33,7 +34,7 @@ You can register an object using one of two methods:
 
 Object resolution is done via :
 
-* `container.resolve(identifier [, additionalDependency1, additionalDependency2, etc ]);`
+* `container.resolve(identifier [, additionalDependency1, additionalDependency2, etc. ]);`
 
   This simply builds the object registered with the given `identifier`. 
   Any dependencies will also be built and injected.
@@ -85,7 +86,7 @@ Hello from the child
 ## Identifiers
 
 JavaScript doesn't have a type system which makes containers a little cumbersome to use. 
-Typically in typed languages you'd utilise information provided by type system to aid in dependency resolution and injection.
+Typically in typed languages you'd utilise information provided by the type system to aid in dependency resolution and injection.
 However without such a system all is not lost, we can simply use strings (i.e. 'identifiers') to identify objects to construct.
 
 ## Dependencies
@@ -95,7 +96,7 @@ We specify dependencies via `inject`:
 
 ```javascript
 container.register('a', A)
-         .inject(dependency1, dependency2, etc ...);`
+         .inject(dependency1, dependency2, etc.);`
 ```
 
 Each item passed to `inject` represents a dependency to be injected into the instance that will be build.
@@ -141,13 +142,13 @@ If the object has an `init` method then this will be called passing any [depende
 
 ## Lifetime management
 
-An objects lifetime can be controlled by the container in a number of ways.
+An object’s lifetime can be controlled by the container in a number of ways.
 
 ### Singleton
 
 A singleton registration specifies the container will hold onto the object instance.
 Multiple calls to `resolve` with the same key will yield the same instance.
-When the container is disposed, and any registered instances have a `dispose` method, this method will be called.
+When the container is disposed, the container will, for any registered instances with a `dispose` function, invoke that function.
 
 
 ```javascript
@@ -158,7 +159,7 @@ var foo2 = container.resolve('theFoo');
 console.log(foo1 == foo2); // true
 ```
 
-Note this is the default lifetime used and so the call to `.singelton()` is optional.
+Note this is the default lifetime used and so the call to `.singleton()` is optional.
 
 ### Singleton per container
 
@@ -269,7 +270,7 @@ fizz bar bazz
 
 ## Injection factories
 
-Sometimes you want your object to receive a factory that when called will `resolve` and return the dependency in question.
+Sometimes you want your object to receive a factory, that when called will `resolve` and return the dependency in question.
 
 ```javascript
 class Item {
@@ -349,7 +350,7 @@ var childcontainer = container.createChildContainer();
 
 ### Lifetime management in child containers
 
-Depending upon registration configurations, objects resoled from a child container will either be owned by the child container or the parent.
+Depending upon registration configurations, objects resolved from a child container will either be owned by the child container or the parent.
 
 ```javascript
 var Foo = { };
@@ -401,9 +402,9 @@ false
 
 ### Disposal
 
-When you call `.dispose()` on a child container, that container will inspect any object it holds and if an object has a `dispose` function it will be called.
+When you call `.dispose()` on a child container, that container will inspect any object it holds and if an object has a `dispose` function, it will be called.
 However it will not dispose transient-created objects or objects registered via `registerInstance('aKey', myInstance)`.
-Any child containers created from the deposed parent will also be disposed.
+Any child containers created from the disposed parent will also be disposed.  These child containers will in turn dispose of their registered instances.
 
 ```javascript
 class Foo {
@@ -477,7 +478,7 @@ Here is an example where a concrete object is registered and a resolverKey is us
 ```javascript
 class DomResolver {
     resolve(container, resolverKey) {
-        // return a pretend dom elemenet,
+        // return a pretend dom element,
         return {
             get description() {
                 return 'Fake DOM element - ' + resolverKey.domId ;
@@ -538,4 +539,3 @@ bar is : [barInstance]
 #### Injection factory
 
 Discussed [above](#injection-factories), this resolver injects a factory that can be called multiple times to create the dependency.
-

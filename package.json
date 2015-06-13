@@ -1,7 +1,17 @@
 {
   "name": "esp-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
+  "keywords": [
+    "state processor",
+    "evented state processor",
+    "reactive",
+    "rx",
+    "event loop",
+    "complex state processor",
+    "router",
+    "event router"
+  ],
   "main": "index.js",
   "author": "Keith Woods",
   "license": "ISC",

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sonic78/microdi-js.svg?branch=master)](https://travis-ci.org/sonic78/microdi-js)
+
 # Microdi-js
 
 Microdi-js is a tiny but feature rich dependency injection container for JavaScript.

@@ -124,6 +124,8 @@ module.exports = function(grunt) {
         }
     });
 
+    grunt.registerTask('build', ['jshint', 'webpack', 'babel']);
+    grunt.registerTask('test', ['build', 'karma:release']);
     grunt.registerTask('dev', ['karma:unit:start', 'watch']);
-    grunt.registerTask('default', ['jshint', 'karma:release', 'webpack', 'babel']);
+    grunt.registerTask('default', ['test']);
 };

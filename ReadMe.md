@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sonic78/esp-js.svg?branch=master)](https://travis-ci.org/sonic78/esp-js)
+
 # Evented State Processor (ESP)
 
 ESP adds specific processing workflow around changes to a model's state. 

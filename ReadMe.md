@@ -2,6 +2,8 @@
 
 # Evented State Processor (ESP)
 
+[![Join the chat at https://gitter.im/sonic78/esp-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sonic78/esp-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ESP adds specific processing workflow around changes to a model's state. 
 It takes ownership of a [single root model](#single-root-model).
 Those interested in observing the model's state observe a stream of events from a `Router`.

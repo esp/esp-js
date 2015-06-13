@@ -6,25 +6,33 @@ Microdi-js is a tiny but feature rich dependency injection container for JavaScr
 
 You can register an object using one of two methods:
 
-* `container.register(identifier:string, object:object/ctor-function)`.
-  Registers either a constructor function or object prototype using the given identifier.
+* `container.register(identifier, item)`.
+
+  This registers either the constructor function OR object prototype `item` using the given string `identifier`.
+
   You can chain calls off the registration to alter the registration settings.
-  If the registered item has dependencies you can pass them via `.inject([dependencyList](#the-dependency-list))`.
-  You can also modify the [lifetype type](#lifetime-management) and register the items as part of a [group](#resolve-groups).
-* `container.registerInstance(identifier:string, objectInstance:object)`.
-  Registers the given object instance using the given identifier.
+
+  If the registered `item` has [dependencies](#dependencies) you can pass them via the chain method `.inject(dependency1, dependency2, etc ...)`.
+
+  You can also modify the [lifetype type](#lifetime-management) and register the items as part of a [group](#resolve-groups) with chained methods.
+
+* `container.registerInstance(identifier, objectInstance)`.
+
+  Registers the given `objectInstance` using the specified `identifier`.
 
 Object resolution is done via :
 
-* `container.resolve(identifier:string [, ...additionalDependencies]);`
-  This simply builds the object registered with the given `identifier`;
+* `container.resolve(identifier [, additionalDependency1, additionalDependency2, etc ]);`
+
+  This simply builds the object registered with the given `identifier`.
+  Optionally pass additional dependencies which will get passed in after any that were speficied at registration time.
  
 ## Example
 
 Below we have 2 simple classes. 
 `Parent` takes `Child` as it's dependency. 
 `Child` is registered with the identifier 'child' and `Parent` with the identifier 'parent'.
-Additionally the parent registration injects the `Child` via it's [dependency list](#the-dependency-list).
+Additionally the parent registration injects the `Child` as a [dependency](#dependencies).
 
 ``` javascript
 class Child {
@@ -64,12 +72,18 @@ JavaScript doesn't have a type system which makes containers a little cumbersome
 Typically in typed languages you'd utilise information provided by type system to aid in dependency resolution and injection.
 However without such a system all is not lost, we can simply use strings (i.e. 'identifiers') to id objects to construct.
 
-## The Dependency List
+## Dependencies
+Without a type system we need to manually specify an objects dependencies at registration time.
+We do this by specifing dependencies via `inject`:
 
-The dependency list is an array of dependencies required to build the instance being registered (if any).
-Each item in the dependency list represents a dependency to be injected into the instance that will be build.
-The order of the items in the list matches the order of the items listed in the items constructor (be it an objects or ctor function).
-The list can contain string identifiers referencing other registrations and/or `resolverKsy`s.
+```javascript
+container.register('a', A)
+         .inject(dependency1, dependency2, etc ...);`
+```
+
+Each item represents a dependency to be injected into the instance that will be build.
+The container will resolve and pass these arguments, in this order, to the object being built.
+The list can contain string identifiers referencing to other registrations and/or `resolverKeys`.
 A `resolverKey` refernces a [dependency resolver](#dependency-resolvers) which add functionality to how the container will acquire and build the dependency that is to be injected.
 
 An example registration using a dependency list:
@@ -80,24 +94,28 @@ container.register('b', B);
 container.register('c', C);
 container.register('controller', Controller).inject('a', { resolver: "factory", key : "b" }, 'c');
 ```
-The above registers a `Controller` using the key `controller` and specifies `Controller` requires the dependencies `a`, a factory that creates dependencies `b` (i.e. inject a function that when called craetes `b`) and finally `c`.
-The `resolverKey` `{ resolver: "factory", key : "b" }` tells the container to build the dependency `b` using the build in [injection factory](#injection-factories) resolver.
+The above registers a `Controller` using the key `controller`.
+It specifies `Controller` requires 3 dependencies:
+
+* The dependncy registered as `a`.
+* A [factory](#injection-factories) that creates dependencies `b` (i.e. inject a function that when called creates `b`).
+* The dependncy registered as `c`.
 
 # Features
 
 ## Object creation & dependency injection
 
-A call to `resolve` will trigger build up of the object in question. Any dependencies the object requires will be injected.
+A call to `resolve` will trigger build up of the object in question. Any [dependencies](#dependencies) the object requires will be resolved and injected.
 
 ### Function constructors
 
-If the type registered is a constructor function (i.e. typeof registeredObject === 'function') it will be initialised accordingly and any dependencies passed in.
+If the type registered is a constructor function (i.e. typeof registeredObject === 'function') it will be initialised accordingly and any [dependencies](#dependencies) passed in.
 
 ### Prototypical inheritance
 
 If the type registered is not a constructor function it will be assumed a prototype.
 At resolve time new object/s will be created using Object.create(registeredObject).
-If the object has an `init` method then this will be called passing any dependencies in the [dependency list](#the-dependency-list).
+If the object has an `init` method then this will be called passing any [dependencies](#dependencies).
 
 ## Lifetime management
 
@@ -139,7 +157,8 @@ console.log(bar3 == bar4); // true
 
 ### Transient
 
-This creates a new instance each time
+This creates a new instance each time.
+The container will not hold a reference to the instances created.
 
 ```javascript
 var Baz = {};
@@ -202,8 +221,8 @@ theBar
 
 ## Resolution with additional dependencies
 
-When calling `resolve` you can optionally pass additional dependencies.
-These will be apended to the list of dependencies registerd for the object to be resolved (if any).
+When calling `resolve` you can optionally pass additional [dependencies](#dependencies).
+These will be apended to any registerd [dependencies](#dependencies) and provide to the object at construction time.
 
 ```javascript
 class Foo {
@@ -418,7 +437,7 @@ foo disposed
 Dependency resolvers alters the default way a dependecy is created.
 A dependency resolver is simplly an object with a `resolve(container, resolverKey)` method.
 You can create your own resolvers and add them to the container.
-When registering an object, a `resolverKey` can be used in the [dependency list](#the-dependency-list) to enable the container to resolve the dependency using the resolver specified.
+When registering an object, a `resolverKey` can be used in the [dependency list](#dependencies) to enable the container to resolve the dependency using the resolver specified.
 A `resolverKey` can can also be specified as a replacement for the object or construction function that is to be built.
 At resolve time the container will call the dependency reolver specified by the `resolverKey` to create the object in question passing itself and the resolverKey.
 This sounds a bit more complicated than it actually is, it's eaiser to demonstrate with some code.

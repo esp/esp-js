@@ -70,7 +70,7 @@ Hello from the child
 
 JavaScript doesn't have a type system which makes containers a little cumbersome to use. 
 Typically in typed languages you'd utilise information provided by type system to aid in dependency resolution and injection.
-However without such a system all is not lost, we can simply use strings (i.e. 'identifiers') to id objects to construct.
+However without such a system all is not lost, we can simply use strings (i.e. 'identifiers') to identify objects to construct.
 
 ## Dependencies
 Without a type system we need to manually specify an objects dependencies at registration time.
@@ -83,22 +83,21 @@ container.register('a', A)
 
 Each item represents a dependency to be injected into the instance that will be build.
 The container will resolve and pass these arguments, in this order, to the object being built.
-The list can contain string identifiers referencing to other registrations and/or `resolverKeys`.
-A `resolverKey` refernces a [dependency resolver](#dependency-resolvers) which add functionality to how the container will acquire and build the dependency that is to be injected.
+The list can contain string identifiers referencing other registrations and/or `resolverKsy`s.
+A `resolverKey` refernces a [dependency resolver](#dependency-resolvers) which adds functionality to how the container will acquire and build the dependency that is to be injected.
 
 An example registration using a dependency list:
 
 ```javascript
 container.register('a', A);
 container.register('b', B);
-container.register('c', C);
-container.register('controller', Controller).inject('a', { resolver: "factory", key : "b" }, 'c');
+container.register('controller', Controller).inject('a', { resolver: 'factory', key : 'b' });
 ```
 The above registers a `Controller` using the key `controller`.
 It specifies `Controller` requires 3 dependencies:
-
+The above registers a `Controller` using the key `controller` and specifies that `Controller` requires the dependencies `a`, a factory that creates dependencies `b` (i.e. inject a function that when called craetes `b`) and finally `c`.
 * The dependncy registered as `a`.
-* A [factory](#injection-factories) that creates dependencies `b` (i.e. inject a function that when called creates `b`).
+The `resolverKey` `{ resolver: 'factory', key : 'b' }` tells the container to build the dependency `b` using the build in [injection factory](#injection-factories) resolver.
 * The dependncy registered as `c`.
 
 # Features
@@ -125,7 +124,7 @@ An objects lifetime can be controlled by the container in a number of ways.
 
 If a registration is singleton this means the container will hold onto the object instance.
 Multipe calls to `resolve` with the same key will yield the same instance.
-When the container is disposed, and if the instance has a `dispose` method, this method will be called.
+When the container is disposed, and any registered instances have a `dispose` method, this method will be called.
 
 
 ```javascript
@@ -157,12 +156,12 @@ console.log(bar3 == bar4); // true
 
 ### Transient
 
-This creates a new instance each time.
+This creates a new instance each time a call to resolve() is made.
 The container will not hold a reference to the instances created.
 
 ```javascript
 var Baz = {};
-container.register('theBaz', Foo).transient();
+container.register('theBaz', Baz).transient();
 var baz1 = container.resolve('theBaz');
 var baz2 = container.resolve('theBaz');
 console.log(baz1 == baz2); // false
@@ -222,7 +221,7 @@ theBar
 ## Resolution with additional dependencies
 
 When calling `resolve` you can optionally pass additional [dependencies](#dependencies).
-These will be apended to any registerd [dependencies](#dependencies) and provide to the object at construction time.
+These will be apended to the list of dependencies registered for the object to be resolved (if any).
 
 ```javascript
 class Foo {
@@ -262,7 +261,7 @@ class Manager{
 }
 var container = new microdi.Container();
 container.register('item', Item).transient();
-container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
+container.register('manager', Manager).inject({ resolver: 'factory', key: 'item'});
 var manager = container.resolve('manager');
 var item1 = manager.createItem();
 var item2 = manager.createItem();
@@ -284,7 +283,7 @@ If we change `Item` in the above sample to be:
 ```javascript
 class Item {
     constructor(name) {
-        console.log("Hello " + name);
+        console.log('Hello ' + name);
     }
 }
 ```
@@ -304,14 +303,14 @@ Hello Mick
 ```
 
 ### Additional dependencies with previously registered dependencies
-If the object that your auto factory will create takes dependencies, any additionl paramaters will be apended to the dependencie list.
+If the object that your auto factory will create takes dependencies, any additional paramaters will be appended to the dependency list.
 
 The above sample modified to demonstrate this:
 
 ```javascript
 class Item {
     constructor(otherDependencyA, name) {
-        console.log("Hello " + name + ". Other dependency: " + otherDependencyA);
+        console.log('Hello ' + name + '. Other dependency: ' + otherDependencyA);
     }
 }
 class Manager{
@@ -323,12 +322,12 @@ class Manager{
     }
 }
 var container = new microdi.Container();
-container.registerInstance('otherDependencyA', "look! a string dependency");
+container.registerInstance('otherDependencyA', 'look! a string dependency');
 container.register('item', Item).inject('otherDependencyA').transient();
-container.register('manager', Manager).inject({ resolver: "factory", key: 'item'});
+container.register('manager', Manager).inject({ resolver: 'factory', key: 'item'});
 var manager = container.resolve('manager');
-var fooItem = manager.createItem("Foo");
-var barItem = manager.createItem("Bar");
+var fooItem = manager.createItem('Foo');
+var barItem = manager.createItem('Bar');
 ```
 
 Output:
@@ -353,7 +352,7 @@ var childcontainer = container.createChildContainer();
 Depending upon object configurations, objects resoled from a child containser will either be owned by the child container or the parent.
 
 ```javascript
-console.log("Child containers");
+console.log('Child containers');
 var Foo = { };
 var container = new microdi.Container();
 var childcontainer = container.createChildContainer();
@@ -372,7 +371,7 @@ console.log(foo4 == foo5); // true, same instance
 
 ### Overriding Registrations
 
-The configuration of a child container can be overriden if required.
+The configuration of a child container can be overridden if required.
 
 ```javascript
 var Foo = { };
@@ -403,14 +402,14 @@ false
 
 ### Disposal
 
-When you call `.disopse()` on a child container, it will call a `dispose` method on any object it holds reference to.
-It will not dispose trasientely created objects or objects registered via `registerInstance('aKey', myInstance)`.
+When you call `.dispose()` on a child container, it will call a `dispose` function on any object it holds a reference to.
+It will not dispose transient-created objects or objects registered via `registerInstance('aKey', myInstance)`.
 Any child containers and objects they hold will also be disposed.
 
 ```javascript
 class Foo {
     dispose() {
-        console.log("foo disposed");
+        console.log('foo disposed');
     }
 }
 
@@ -435,11 +434,11 @@ foo disposed
 ## Dependency Resolvers
 
 Dependency resolvers alters the default way a dependecy is created.
-A dependency resolver is simplly an object with a `resolve(container, resolverKey)` method.
+A dependency resolver is simply an object with a `resolve(container, resolverKey)` method.
 You can create your own resolvers and add them to the container.
 When registering an object, a `resolverKey` can be used in the [dependency list](#dependencies) to enable the container to resolve the dependency using the resolver specified.
 A `resolverKey` can can also be specified as a replacement for the object or construction function that is to be built.
-At resolve time the container will call the dependency reolver specified by the `resolverKey` to create the object in question passing itself and the resolverKey.
+At resolve time the container will call the dependency resolver specified by the `resolverKey` to create the object in question passing itself and the resolverKey.
 This sounds a bit more complicated than it actually is, it's eaiser to demonstrate with some code.
 
 Here is an example where rather than registering a concrete object to build, a `resolverKey` is used.
@@ -451,16 +450,16 @@ class DomResolver {
         // return a pretend dom elemenet,
         return {
             get description() {
-                return "Fake DOM element - " + resolverKey.domId ;
+                return 'Fake DOM element - ' + resolverKey.domId ;
             }
         };
     }
 }
 var container = new microdi.Container();
-container.addResolver("domResolver", new DomResolver());
+container.addResolver('domResolver', new DomResolver());
 // Note the usage of 'isResolverKey' so the container can distingush this from a normal object.
 // This is only required when you don't register a constructor function or prototype.
-container.register('view', { resolver: "domResolver", domId : "theDomId", isResolerKey: true });
+container.register('view', { resolver: 'domResolver', domId : 'theDomId', isResolerKey: true });
 var view = container.resolve('view');
 console.log(view.description);
 ```
@@ -480,13 +479,13 @@ class DomResolver {
         // return a pretend dom elemenet,
         return {
             get description() {
-                return "Fake DOM element - " + resolverKey.domId ;
+                return 'Fake DOM element - ' + resolverKey.domId ;
             }
         };
     }
 }
 var container = new microdi.Container();
-container.addResolver("domResolver", new DomResolver());
+container.addResolver('domResolver', new DomResolver());
 class Controller {
     constructor(view) {
         console.log(view.description);
@@ -494,7 +493,7 @@ class Controller {
 }
 // Note we don't need to specift the 'isResolerKey' property on the resolverkey.
 // The container assumes it is as it appears in the dependency list.
-container.register('controller', Controller).inject({ resolver: "domResolver", domId : "viewId" });
+container.register('controller', Controller).inject({ resolver: 'domResolver', domId : 'viewId' });
 var controller = container.resolve('controller');
 ```
 
@@ -514,16 +513,16 @@ This simply defers object creation to a delegate provided by the resolverKey.
 ```javascript
 class Foo  {
     constructor(bar) {
-        console.log("bar is : [%s]", bar);
+        console.log('bar is : [%s]', bar);
     }
 }
 var container = new microdi.Container();
 container.register('foo', Foo)
     .inject(
     {
-        resolver: "delegate",
+        resolver: 'delegate',
         resolve: (container, resolveKey) => {
-            return "barInstance";
+            return 'barInstance';
         }
     });
 var foo = container.resolve('foo');

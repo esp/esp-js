@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/sonic78/esp-js.svg?branch=master)](https://travis-ci.org/sonic78/esp-js)
+[![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
 
 # Evented State Processor (ESP)
 

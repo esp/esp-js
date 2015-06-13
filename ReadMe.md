@@ -15,7 +15,7 @@ You can register an object using one of two methods:
   You can chain calls to alter the registration settings:
   
   ```javascript
-  var idenfifier = 'itemKey1';
+  var identifier = 'itemKey1';
   container
     .register('identifier', Item)
     .inject('otherDependencyIdentifier1', 'otherDependencyIdentifier1')
@@ -26,7 +26,7 @@ You can register an object using one of two methods:
   Here we register `Item` using the string `identifier`. 
   We state that it requires [dependencies](#dependencies) `otherDependencyIdentifier1` and `otherDependencyIdentifier1`. 
   It's [lifetime management](#lifetime-management) is `singletonPerContainer`.
-  It can be resolved using the `identifer` or as part of the [group](#resolve-groups) `mySimilarObjects`. 
+  It can be resolved using the `identifier` or as part of the [group](#resolve-groups) `mySimilarObjects`. 
   
 * `container.registerInstance(identifier, objectInstance)`.
 
@@ -142,7 +142,7 @@ If the object has an `init` method then this will be called passing any [depende
 
 ## Lifetime management
 
-An objects lifetime can be controlled by the container in a number of ways.
+An object’s lifetime can be controlled by the container in a number of ways.
 
 ### Singleton
 
@@ -350,7 +350,7 @@ var childcontainer = container.createChildContainer();
 
 ### Lifetime management in child containers
 
-Depending upon registration configurations, objects resoled from a child container will either be owned by the child container or the parent.
+Depending upon registration configurations, objects resolved from a child container will either be owned by the child container or the parent.
 
 ```javascript
 var Foo = { };
@@ -478,7 +478,7 @@ Here is an example where a concrete object is registered and a resolverKey is us
 ```javascript
 class DomResolver {
     resolve(container, resolverKey) {
-        // return a pretend dom elemenet,
+        // return a pretend dom element,
         return {
             get description() {
                 return 'Fake DOM element - ' + resolverKey.domId ;
@@ -539,4 +539,3 @@ bar is : [barInstance]
 #### Injection factory
 
 Discussed [above](#injection-factories), this resolver injects a factory that can be called multiple times to create the dependency.
-

@@ -2,6 +2,7 @@ import * as utils from './utils';
 import ResolverContext from './ResolverContext';
 import InstanceLifecycleType from './InstanceLifecycleType';
 import RegistrationModifier from './RegistrationModifier';
+import Guard from './Guard';
 
 export default class Container {
     constructor() {
@@ -32,6 +33,9 @@ export default class Container {
         return child;
     }
     register(name, proto) {
+        Guard.isString(name, 'name must be a string');
+        Guard.isTrue(!utils.isString(proto), 'Can not register a string using register(). Use registerInstance()');
+        Guard.isTrue(!utils.isNumber(proto), 'Can not register a number using register(). Use registerInstance()');
         this._throwIfDisposed();
         var registration = {
             name: name,
@@ -162,7 +166,7 @@ export default class Container {
                     instance = resolver.resolve(this, registration.proto);
                 }
                 else {
-                    throw new Error("Registered resolverKey is missing it's resolver property");
+                    throw new Error('Registered resolverKey is missing it\'s resolver property');
                 }
             } else if (typeof registration.proto === 'function') {
                 var Ctor = registration.proto.bind.apply(

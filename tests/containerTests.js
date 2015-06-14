@@ -80,6 +80,14 @@ describe('Container', () =>  {
             expect(resolved.dependencies[1]).toEqual("Bar");
         });
 
+        it('should throw if string registered', () => {
+        	expect(() => { container.register('a', 'aString'); }).toThrow(new Error('Can not register a string using register(). Use registerInstance()'));
+        });
+
+        it('should throw if number registered', () => {
+            expect(() => { container.register('a', 1234); }).toThrow(new Error('Can not register a number using register(). Use registerInstance()'));
+        });
+
         describe('groups', () =>  {
 
             it('should be able able to register/resolve many objects with the same key', () =>  {

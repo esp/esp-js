@@ -103,6 +103,10 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _RegistrationModifier2 = _interopRequireDefault(_RegistrationModifier);
     
+    var _Guard = __webpack_require__(6);
+    
+    var _Guard2 = _interopRequireDefault(_Guard);
+    
     var Container = (function () {
         function Container() {
             _classCallCheck(this, Container);
@@ -139,6 +143,9 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: 'register',
             value: function register(name, proto) {
+                _Guard2['default'].isString(name, 'name must be a string');
+                _Guard2['default'].isTrue(!utils.isString(proto), 'Can not register a string using register(). Use registerInstance()');
+                _Guard2['default'].isTrue(!utils.isNumber(proto), 'Can not register a number using register(). Use registerInstance()');
                 this._throwIfDisposed();
                 var registration = {
                     name: name,
@@ -376,6 +383,7 @@ return /******/ (function(modules) { // webpackBootstrap
     });
     exports.sprintf = sprintf;
     exports.isString = isString;
+    exports.isNumber = isNumber;
     exports.indexOf = indexOf;
     
     function sprintf(format, etc) {
@@ -387,7 +395,11 @@ return /******/ (function(modules) { // webpackBootstrap
     }
     
     function isString(value) {
-        return typeof value == 'string' || value instanceof String;
+        return Object.prototype.toString.call(value) === '[object String]';
+    }
+    
+    function isNumber(value) {
+        return Object.prototype.toString.call(value) === '[object Number]';
     }
     
     function indexOf(array, item) {
@@ -605,6 +617,116 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = exports['default'];
 
     // TODO
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+    'use strict';
+    
+    Object.defineProperty(exports, '__esModule', {
+        value: true
+    });
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+    
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+    
+    var _utils = __webpack_require__(2);
+    
+    var utils = _interopRequireWildcard(_utils);
+    
+    var Guard = (function () {
+        function Guard() {
+            _classCallCheck(this, Guard);
+        }
+    
+        _createClass(Guard, null, [{
+            key: 'isDefined',
+            value: function isDefined(value, message) {
+                if (typeof value === 'undefined') {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'isFalsey',
+            value: function isFalsey(value, message) {
+                if (value) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'lengthIs',
+            value: function lengthIs(array, length, message) {
+                if (array.length !== length) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'lengthGreaterThan',
+            value: function lengthGreaterThan(array, expected, message) {
+                if (array.length < expected) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'lengthIsAtLeast',
+            value: function lengthIsAtLeast(array, expected, message) {
+                if (array.length < expected) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'isString',
+            value: function isString(value, message) {
+                if (!utils.isString(value)) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'isNumber',
+            value: function isNumber(value, message) {
+                if (!utils.isNumber(value)) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'isTrue',
+            value: function isTrue(check, message) {
+                if (!check) {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'isFunction',
+            value: function isFunction(item, message) {
+                if (typeof item != 'function') {
+                    doThrow(message);
+                }
+            }
+        }, {
+            key: 'isObject',
+            value: function isObject(value, message) {
+                if (typeof value !== 'object') {
+                    doThrow(message);
+                }
+            }
+        }]);
+    
+        return Guard;
+    })();
+    
+    exports['default'] = Guard;
+    
+    function doThrow(message) {
+        if (typeof message === 'undefined' || message === '') {
+            throw new Error('Argument error');
+        }
+        throw new Error(message);
+    }
+    module.exports = exports['default'];
 
 /***/ }
 /******/ ])

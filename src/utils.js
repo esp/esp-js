@@ -5,7 +5,11 @@ export function sprintf(format, etc) {
 }
 
 export function isString(value) {
-    return typeof value == 'string' || value instanceof String;
+    return Object.prototype.toString.call(value) === '[object String]';
+}
+
+export function isNumber(value) {
+    return Object.prototype.toString.call(value) === '[object Number]';
 }
 
 export function indexOf(array, item) {

@@ -31,6 +31,11 @@ export default class Guard {
             doThrow(message);
         }
     }
+    static isNumber(value, message) {
+        if (!utils.isNumber(value)) {
+            doThrow(message);
+        }
+    }
     static isTrue(check, message) {
         if (!check) {
             doThrow(message);
@@ -38,11 +43,6 @@ export default class Guard {
     }
     static isFunction(item, message) {
         if (typeof(item) != "function") {
-            doThrow(message);
-        }
-    }
-    static isNumber(value, message) {
-        if (isNaN(value)) {
             doThrow(message);
         }
     }

@@ -1,6 +1,6 @@
 {
   "name": "microdi-js",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A tiny DI container",
   "keywords": [
     "di",
@@ -13,7 +13,7 @@
   ],
   "main": "index.js",
   "author": "Keith Woods",
-  "license": "ISC",
+  "license": "Apache 2",
   "repository": "https://github.com/sonic78/microdi-js.git",
   "devDependencies": {
     "babel": "^5.4.7",

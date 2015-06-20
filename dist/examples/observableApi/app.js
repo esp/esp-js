@@ -1,3 +1,8 @@
+"use strict";
+
+var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+
+// notice_start
 /*
  * Copyright 2015 Keith Woods
  *
@@ -13,9 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-"use strict";
-
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+// notice_end
 
 var esp = _interopRequire(require("../../esp.js"));
 

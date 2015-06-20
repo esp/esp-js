@@ -5,7 +5,7 @@ module.exports = function(grunt) {
 
     var webpack = require('webpack');
 
-    var headerBanner = grunt.file.read('LicenseHeader.txt');
+    var headerBanner = grunt.file.read('NOTICE');
 
     grunt.initConfig({
         jshint: {
@@ -130,6 +130,15 @@ module.exports = function(grunt) {
                 files: {
                     src: [ 'dist/**/*.js']
                 }
+            },
+            src: {
+                options: {
+                    position: 'top',
+                    banner: headerBanner
+                },
+                files: {
+                    src: [ 'index.js', 'Gruntfile.js', 'karma.conf.js', 'src/**/*.js', 'tests/**/*.js']
+                }
             }
         },
         watch: {
@@ -144,5 +153,6 @@ module.exports = function(grunt) {
     grunt.registerTask('build', ['jshint', 'webpack', 'babel', 'usebanner']);
     grunt.registerTask('test', ['build', 'karma:release']);
     grunt.registerTask('dev', ['karma:unit:start', 'watch']);
+    grunt.registerTask('updateLicense', ['usebanner']);
     grunt.registerTask('default', ['test']);
 };

@@ -2,7 +2,6 @@
 [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
 [![Join the chat at https://gitter.im/esp/esp-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/esp/esp-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-**[Evented State Processor](#evented-state-processor)** |
 **[Installation](#installation)** |
 **[Basic usage](#basic-usage)** |
 **[Key concepts](#key-concepts)** |

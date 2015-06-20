@@ -1,6 +1,14 @@
-[![Build Status](https://travis-ci.org/sonic78/esp-js.svg?branch=master)](https://travis-ci.org/sonic78/esp-js)
+[![Build Status](https://travis-ci.org/esp/esp-js.svg?branch=master)](https://travis-ci.org/esp/esp-js)
 [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
 [![Join the chat at https://gitter.im/esp/esp-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/esp/esp-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+**[Evented State Processor](#evented-state-processor)** |
+**[Installation](#installation)** |
+**[Basic usage](#basic-usage)** |
+**[Key concepts](#key-concepts)** |
+**[Anti Patterns](#anti-patterns)** |
+**[Examples](#examples)** |
+**[Feature Road Map](#feature-road-map)**
 
 # Evented State Processor (ESP)
 
@@ -34,6 +42,18 @@ Within your application you may have several independent areas that manage compl
 * On the client it can be used to process state for a complex screen or a set of related complex screens. 
 * It complements the MV* range of patterns by providing a deterministic method to modify and observe state. 
 * On the server you might use it to model push-based user state and general internal server state, again it provides a deterministic method to modify and observe such state.
+
+# Installation
+Install from npm: `npm install esp-js --save`.
+
+If you're using ES6 with a package manager such as [webpack](https://webpack.github.io) you can import `esp` like this:
+
+```javascript
+import esp from 'esp-js';
+var router = new esp.Router();
+```
+
+Alternatevely you can reference `dist\esp.js` or `dist\esp.min.js` via a `script` tag. These files expose `esp` using the Universal Module Definition (UMD) format. 
 
 # Basic usage
 

@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/esp/esp-js.svg?branch=master)](https://travis-ci.org/esp/esp-js)
 [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
-[![Join the chat at https://gitter.im/esp/esp-js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/esp/esp-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/esp/chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/esp/chat?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 **[Installation](#installation)** |
 **[Basic usage](#basic-usage)** |

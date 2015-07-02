@@ -1,0 +1,22 @@
+{
+  "name": "esp-todomvc-react",
+  "version": "0.0.1",
+  "description": "Example ESP architecture of popular TodoMVC app.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/esp/esp-js"
+  },
+  "private": true,
+  "dependencies": {
+    "babel-core": "^5.6.15",
+    "director": "^1.2.8",
+    "esp-js": "0.0.9",
+    "react": "^0.13.3",
+    "todomvc-app-css": "^2.0.0",
+    "todomvc-common": "^1.0.0"
+  }
+}

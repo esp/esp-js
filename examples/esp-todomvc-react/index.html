@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Template • TodoMVC</title>
+		<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
+		<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
+		<!-- CSS overrides - remove if you don't need it -->
+		<link rel="stylesheet" href="css/app.css">
+	</head>
+	<body>
+		<section id="todoapp" class="todoapp"></section>
+		<footer class="info">
+			<p>Double-click to edit a todo</p>
+			<!-- Remove the below line ↓ -->
+			<p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
+			<!-- Change this out with your name and url ↓ -->
+			<p>Created by <a href="http://todomvc.com">you</a></p>
+			<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+		</footer>
+		<!-- Scripts here. Don't remove ↓ -->
+		<script src="node_modules/todomvc-common/base.js"></script>
+		<script src="node_modules/react/dist/react-with-addons.js"></script>
+		<script src="node_modules/react/dist/JSXTransformer.js"></script>
+        <script src="node_modules/director/build/director.js"></script>
+		<script src="node_modules/esp-js/dist/esp.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/model/index.js"></script>
+		<script src="js/model/entities/TodoItem.js"></script>
+		<script src="js/model/entities/Filter.js"></script>
+		<script src="js/model/entities/TodoList.js"></script>
+		<script src="js/model/eventProcessors/TodoListEventProcessor.js"></script>
+        <script src="js/model/eventProcessors/TodoListPostEventProcessor.js"></script>
+		<script src="js/model/ModelBootstrapper.js"></script>
+		<script type="text/jsx" src="js/todoItem.jsx"></script>
+        <script type="text/jsx" src="js/header.jsx"></script>
+        <script type="text/jsx" src="js/main.jsx"></script>
+		<script type="text/jsx" src="js/footer.jsx"></script>
+		<script type="text/jsx" src="js/app.jsx"></script>
+	</body>
+</html>

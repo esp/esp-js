@@ -1,5 +1,5 @@
 #  components 
-node_modules/*
+**/node_modules/*
 devshop/**/node_modules/*
 !node_modules/app
 .gitignore~

@@ -32,7 +32,7 @@ class ModelBootstrapper {
 
         // start some event processors, for simplicity we just statically define them here,
         // in reality they may come and go as the model expands and contracts, or they may
-        // get resolved from a container. EventProcessors are not part of the MER, they are just
+        // get resolved from a container. EventProcessors are not part of the ESP, they are just
         // a satellite pattern and are responsible for receiving events and mutating the model.
         var notionalEventProcessor = new eventProcessors.NotionalEventProcessor(this._router);
         notionalEventProcessor.start();

@@ -11,10 +11,11 @@ var app = app || {};
                 return;
             }
             event.preventDefault();
-            var val = React.findDOMNode(this.refs.newField).value.trim();
+            var inputField = React.findDOMNode(this.refs.newField);
+            var val = inputField.value.trim();
             if (val) {
                 this.props.router.publishEvent("todoList", "todoAdded", { title: val });
-                React.findDOMNode(this.refs.newField).value = "";
+                inputField.value = "";
             }
         },
 

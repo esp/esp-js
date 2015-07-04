@@ -7,7 +7,7 @@ var app = app || {};
     app.Footer = React.createClass({
 
         handleClear: function () {
-            this.props.router.publishEvent("todoList", "clearCompleted", {});
+            this.props.router.publishEvent(this.props.modelId, "clearCompleted", {});
         },
 
         render: function () {

@@ -14,28 +14,28 @@ var app = app || {};
         },
 
         handleDestroy: function () {
-            this.props.router.publishEvent("todoList", "todoDestroyed", { id: this.props.id });
+            this.props.router.publishEvent(this.props.modelId, "todoDestroyed", { id: this.props.id });
         },
 
         handleSubmit: function () {
             var val = this.state.editText.trim();
             if (val) {
-                this.props.router.publishEvent("todoList", "editCompleted", { id: this.props.id, title: val });
+                this.props.router.publishEvent(this.props.modelId, "editCompleted", { id: this.props.id, title: val });
                 this.setState({editText: val});
             } else {
-                this.props.router.publishEvent("todoList", "todoDestroyed", { id: this.props.id });
+                this.props.router.publishEvent(this.props.modelId, "todoDestroyed", { id: this.props.id });
             }
         },
 
         handleEdit: function () {
             this.setState({editText: this.props.model.title});
-            this.props.router.publishEvent("todoList", "editStarted", { id: this.props.id });
+            this.props.router.publishEvent(this.props.modelId, "editStarted", { id: this.props.id });
         },
 
         handleKeyDown: function (event) {
             if (event.which === ESCAPE_KEY) {
                 this.setState({editText: this.props.model.title});
-                this.props.router.publishEvent("todoList", "editCancelled", { id: this.props.id });
+                this.props.router.publishEvent(this.props.modelId, "editCancelled", { id: this.props.id });
             } else if (event.which === ENTER_KEY) {
                 this.handleSubmit(event);
             }
@@ -46,7 +46,7 @@ var app = app || {};
         },
 
         handleToggle: function () {
-            this.props.router.publishEvent("todoList", "todoToggled", { id: this.props.id });
+            this.props.router.publishEvent(this.props.modelId, "todoToggled", { id: this.props.id });
         },
 
         /**
@@ -90,7 +90,7 @@ var app = app || {};
                             type="checkbox"
                             checked={todoItem.complete}
                             onChange={this.handleToggle}
-                            />
+                        />
                         <label onDoubleClick={this.handleEdit}>
                             {todoItem.title}
                         </label>
@@ -103,7 +103,7 @@ var app = app || {};
                         onBlur={this.handleSubmit}
                         onChange={this.handleChange}
                         onKeyDown={this.handleKeyDown}
-                        />
+                    />
                 </li>
             );
         }

@@ -9,7 +9,7 @@ var app = app || {};
     app.Main = React.createClass({
 
         handleToggleAll: function (event) {
-            this.props.router.publishEvent("todoList", "toggleAll", { checked: event.target.checked });
+            this.props.router.publishEvent(this.props.modelId, "toggleAll", { checked: event.target.checked });
         },
 
         render: function () {
@@ -21,17 +21,21 @@ var app = app || {};
                 return (
                     <TodoItem
                         key={todoItem.id}
-                        id={todoItem.id}
                         router={this.props.router}
-                        model={todoItem} />
+                        modelId={this.props.modelId}
+                        id={todoItem.id}
+                        model={todoItem}
+                    />
                 );
             }, this);
             return (
                 <section className="main">
-                    <input className="toggle-all"
-                           type="checkbox"
-                           onChange={this.handleToggleAll}
-                           checked={main.toggleAll.checked} />
+                    <input
+                        className="toggle-all"
+                       type="checkbox"
+                       onChange={this.handleToggleAll}
+                       checked={main.toggleAll.checked}
+                    />
                     <ul id="todo-list" className="todo-list">
                         {todoItems}
                     </ul>

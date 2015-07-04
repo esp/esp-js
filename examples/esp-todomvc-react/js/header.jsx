@@ -14,7 +14,7 @@ var app = app || {};
             var inputField = React.findDOMNode(this.refs.newField);
             var val = inputField.value.trim();
             if (val) {
-                this.props.router.publishEvent("todoList", "todoAdded", { title: val });
+                this.props.router.publishEvent(this.props.modelId, "todoAdded", { title: val });
                 inputField.value = "";
             }
         },
@@ -30,7 +30,7 @@ var app = app || {};
                         placeholder="What needs to be done?"
                         onKeyDown={this.handleKeyDown}
                         autoFocus={true}
-                        />
+                    />
                 </header>
             );
         }

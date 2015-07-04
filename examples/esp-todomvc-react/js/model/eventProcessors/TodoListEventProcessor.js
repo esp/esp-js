@@ -5,9 +5,10 @@
 
     var extend = app.Utils.extend;
 
-    var TodoListEventProcessor = function (router) {
+    var TodoListEventProcessor = function (router, modelId) {
         esp.model.DisposableBase.call(this);
         this.router = router;
+        this.modelId = modelId;
     };
 
     TodoListEventProcessor.prototype = Object.create(esp.model.DisposableBase.prototype);
@@ -27,7 +28,7 @@
 
     TodoListEventProcessor.prototype.observeInitEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "initEvent")
+            .getEventObservable(this.modelId, "initEvent")
             .observe(function (model) {
                 var todoItems = app.Utils.store(model.localStorageKey);
                 var todoItemsById = {};
@@ -43,7 +44,7 @@
 
     TodoListEventProcessor.prototype.observeToggleEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "todoToggled")
+            .getEventObservable(this.modelId, "todoToggled")
             .observe(function (model, event) {
                 var todoItem = model.todoItemsById[event.id];
                 todoItem = extend({}, todoItem, { complete: !todoItem.complete });
@@ -55,7 +56,7 @@
 
     TodoListEventProcessor.prototype.observeToggleAllEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "toggleAll")
+            .getEventObservable(this.modelId, "toggleAll")
             .observe(function (model, event) {
                 model.main.filteredTodoItems.forEach(function (todoItem) {
                     todoItem = extend({}, todoItem, { complete: event.checked });
@@ -68,7 +69,7 @@
 
     TodoListEventProcessor.prototype.observeTodoAddedEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "todoAdded")
+            .getEventObservable(this.modelId, "todoAdded")
             .observe(function (model, event) {
                 var id = app.Utils.uuid();
                 var todoItem = new app.model.TodoItem(id, event.title);
@@ -80,7 +81,7 @@
 
     TodoListEventProcessor.prototype.observeTodoDestroyedEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "todoDestroyed")
+            .getEventObservable(this.modelId, "todoDestroyed")
             .observe(function (model, event) {
                 delete model.todoItemsById[event.id];
                 this.save(model);
@@ -90,7 +91,7 @@
 
     TodoListEventProcessor.prototype.observeFilterChangedEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "filterChanged")
+            .getEventObservable(this.modelId, "filterChanged")
             .observe(function (model, event) {
                 model.footer.filter = event.filter;
             })
@@ -99,7 +100,7 @@
 
     TodoListEventProcessor.prototype.observeClearCompletedEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "clearCompleted")
+            .getEventObservable(this.modelId, "clearCompleted")
             .observe(function (model) {
                 for (var id in model.todoItemsById) {
                     if (model.todoItemsById.hasOwnProperty(id)) {
@@ -115,7 +116,7 @@
 
     TodoListEventProcessor.prototype.observeEditStartedEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "editStarted")
+            .getEventObservable(this.modelId, "editStarted")
             .observe(function (model, event) {
                 var todoItem = model.todoItemsById[event.id];
                 model.todoItemsById[todoItem.id] = extend({}, todoItem, { editing: true });
@@ -125,7 +126,7 @@
 
     TodoListEventProcessor.prototype.observeEditCancelledEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "editCancelled")
+            .getEventObservable(this.modelId, "editCancelled")
             .observe(function (model, event) {
                 var todoItem = model.todoItemsById[event.id];
                 model.todoItemsById[todoItem.id] = extend({}, todoItem, { editing: false });
@@ -135,7 +136,7 @@
 
     TodoListEventProcessor.prototype.observeEditCompletedEvent = function () {
         this.addDisposable(this.router
-            .getEventObservable("todoList", "editCompleted")
+            .getEventObservable(this.modelId, "editCompleted")
             .observe(function (model, event) {
                 var todoItem = model.todoItemsById[event.id];
                 model.todoItemsById[todoItem.id] = extend({}, todoItem, { title: event.title, editing: false });

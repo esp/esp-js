@@ -81,9 +81,9 @@ var app = app || {};
             var todoItem = this.props.model;
             return (
                 <li className={React.addons.classSet({
-					completed: todoItem.complete,
-					editing: todoItem.editing
-				})}>
+                    completed: todoItem.complete,
+                    editing: todoItem.editing
+                })}>
                     <div className="view">
                         <input
                             className="toggle"

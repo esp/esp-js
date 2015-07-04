@@ -28,9 +28,9 @@ var app = app || {};
             }
             return (
                 <footer className="footer">
-					<span className="todo-count">
-						<strong>{footer.incompleteCount}</strong> {incompleteCountLabel} left
-					</span>
+                    <span className="todo-count">
+                        <strong>{footer.incompleteCount}</strong> {incompleteCountLabel} left
+                    </span>
                     <ul className="filters">
                         <li>
                             <a

@@ -5,7 +5,7 @@ window.app = window.app || {};
     "use strict";
 
     var Header = app.Header,
-        Main = app.Main,
+        MainSection = app.MainSection,
         Footer = app.Footer;
 
     app.TodoApp = React.createClass({
@@ -32,7 +32,7 @@ window.app = window.app || {};
                         router={router}
                         modelId={this.props.modelId}
                     />
-                    <Main
+                    <MainSection
                         model={model.main}
                         router={router}
                         modelId={this.props.modelId}

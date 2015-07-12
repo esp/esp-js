@@ -102,11 +102,11 @@
         this.addDisposable(this.router
             .getEventObservable(this.modelId, "clearCompleted")
             .observe(function (model) {
-                for (var id in model.todoItemsById) {
-                    if (model.todoItemsById.hasOwnProperty(id)) {
-                        if (model.todoItemsById[id].complete) {
-                            delete model.todoItemsById[id];
-                        }
+                var ids = Object.keys(model.todoItemsById);
+                for (var i = 0; i < ids.length; i++) {
+                    var id = ids[i];
+                    if (model.todoItemsById[id].complete) {
+                        delete model.todoItemsById[id];
                     }
                 }
                 this.save(model);
@@ -147,10 +147,10 @@
 
     TodoListEventProcessor.prototype.save = function (model) {
         var todoItems = [];
-        for (var id in model.todoItemsById) {
-            if (model.todoItemsById.hasOwnProperty(id)) {
-                todoItems.push(model.todoItemsById[id]);
-            }
+        var ids = Object.keys(model.todoItemsById);
+        for (var i = 0; i < ids.length; i++) {
+            var id = ids[i];
+            todoItems.push(model.todoItemsById[id]);
         }
         app.Utils.store(model.localStorageKey, todoItems);
     };

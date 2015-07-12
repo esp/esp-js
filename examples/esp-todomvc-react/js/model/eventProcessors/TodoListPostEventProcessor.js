@@ -21,22 +21,20 @@
             } else {
                 filter = function () { return true; };
             }
-            for (id in model.todoItemsById) {
-                if (model.todoItemsById.hasOwnProperty(id)) {
-                    todoItem = model.todoItemsById[id];
-                    if (filter(todoItem)) {
-                        filteredTodoItems.push(todoItem);
-                        allChecked = todoItem.complete && allChecked;
-                    }
-
-                    if (!todoItem.complete) {
-                        incompleteCount++;
-                    } else {
-                        completeCount++;
-                    }
-
-                    count++;
+            var ids = Object.keys(model.todoItemsById);
+            for (var i = 0; i < ids.length; i++) {
+                id = ids[i];
+                todoItem = model.todoItemsById[id];
+                if (filter(todoItem)) {
+                    filteredTodoItems.push(todoItem);
+                    allChecked = todoItem.complete && allChecked;
                 }
+                if (!todoItem.complete) {
+                    incompleteCount++;
+                } else {
+                    completeCount++;
+                }
+                count++;
             }
             model.main.filteredTodoItems = filteredTodoItems;
             model.main.toggleAll.visible = filteredTodoItems.length > 0;

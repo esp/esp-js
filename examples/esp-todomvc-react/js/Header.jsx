@@ -4,10 +4,12 @@ window.app = window.app || {};
 (function () {
     "use strict";
 
+    var ENTER_KEY = 13;
+
     app.Header = React.createClass({
 
         handleKeyDown: function (event) {
-            if (event.keyCode !== 13) { // enter key
+            if (event.keyCode !== ENTER_KEY) {
                 return;
             }
             event.preventDefault();

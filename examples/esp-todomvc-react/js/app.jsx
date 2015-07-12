@@ -1,6 +1,4 @@
-/*global React, React, esp*/
-var app = app || {};
-
+/*global React,window,esp,app*/
 (function () {
     "use strict";
 

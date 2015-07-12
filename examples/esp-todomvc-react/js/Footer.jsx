@@ -1,5 +1,5 @@
-/*global React*/
-var app = app || {};
+/*global React,window,app*/
+window.app = window.app || {};
 
 (function () {
     "use strict";

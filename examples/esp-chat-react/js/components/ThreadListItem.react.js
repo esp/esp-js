@@ -13,7 +13,7 @@ var ThreadListItem = React.createClass({
     render: function () {
         var thread = this.props.model;
         return (
-            <li
+            <div
                 className={cx({
                 'thread-list-item': true,
                 'active': thread.isActive
@@ -27,7 +27,7 @@ var ThreadListItem = React.createClass({
                 <div className="thread-last-message">
                     {thread.lastMessageText}
                 </div>
-            </li>
+            </div>
         );
     }
 });

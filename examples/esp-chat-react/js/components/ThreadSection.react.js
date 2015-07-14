@@ -9,12 +9,14 @@ var ThreadSection = React.createClass({
         var threadSection = this.props.model;
         var threadListItems = threadSection.sortedThreads.map(function (thread) {
                 return (
-                    <ThreadListItem
-                        key={thread.id}
-                        router={this.props.router}
-                        modelId={this.props.modelId}
-                        model={thread}
-                    />
+                    <li>
+                        <ThreadListItem
+                            key={thread.id}
+                            router={this.props.router}
+                            modelId={this.props.modelId}
+                            model={thread}
+                        />
+                    </li>
                 );
             }, this);
         var unread = null;

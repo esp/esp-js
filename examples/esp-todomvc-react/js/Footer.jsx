@@ -13,11 +13,7 @@ window.app = window.app || {};
 		render: function () {
 			var footer = this.props.model;
 			var incompleteCountLabel = app.Utils.pluralize(footer.incompleteCount, 'item');
-			var clearButton = null;
-
-			if (!footer.visible) {
-				return null;
-			}
+			var clearButton;
 
 			if (footer.clearButtonVisible) {
 				clearButton = (

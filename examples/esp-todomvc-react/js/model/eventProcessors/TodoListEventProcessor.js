@@ -58,7 +58,7 @@
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'toggleAll')
 			.observe(function (model, event) {
-				model.main.filteredTodoItems.forEach(function (todoItem) {
+				model.mainSection.filteredTodoItems.forEach(function (todoItem) {
 					todoItem = extend({}, todoItem, { complete: event.checked });
 					model.todoItemsById[todoItem.id] = todoItem;
 				});

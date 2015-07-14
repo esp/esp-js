@@ -25,6 +25,26 @@ window.app = window.app || {};
 
 			var model = this.state.model;
 			var router = this.props.router;
+			var main;
+			var footer;
+
+			if (model.mainSection.visible) {
+				main =
+						<MainSection
+							model={model.mainSection}
+							router={router}
+							modelId={this.props.modelId}
+						/>;
+			}
+
+			if (model.footer.visible) {
+				footer =
+						<Footer
+							model={model.footer}
+							router={router}
+							modelId={this.props.modelId}
+						/>;
+			}
 
 			return (
 				<div>
@@ -32,16 +52,8 @@ window.app = window.app || {};
 						router={router}
 						modelId={this.props.modelId}
 					/>
-					<MainSection
-						model={model.main}
-						router={router}
-						modelId={this.props.modelId}
-					/>
-					<Footer
-						model={model.footer}
-						router={router}
-						modelId={this.props.modelId}
-					/>
+					{main}
+					{footer}
 				</div>
 			);
 		}

@@ -6,7 +6,8 @@ var app = app || {};
 	app.model.TodoList = function (localStorageKey) {
 		this.localStorageKey = localStorageKey;
 		this.todoItemsById = {};
-		this.main = {
+		this.mainSection = {
+			visible: false,
 			toggleAll: {
 				visible: false,
 				checked: false

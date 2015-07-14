@@ -40,9 +40,10 @@
 				count++;
 			}
 
-			model.main.filteredTodoItems = filteredTodoItems;
-			model.main.toggleAll.visible = filteredTodoItems.length > 0;
-			model.main.toggleAll.checked = filteredTodoItems.length > 0 && allChecked;
+			model.mainSection.visible = filteredTodoItems.length > 0;
+			model.mainSection.filteredTodoItems = filteredTodoItems;
+			model.mainSection.toggleAll.visible = filteredTodoItems.length > 0;
+			model.mainSection.toggleAll.checked = filteredTodoItems.length > 0 && allChecked;
 			model.footer.incompleteCount = incompleteCount;
 			model.footer.visible = count > 0;
 			model.footer.clearButtonVisible = completeCount > 0;

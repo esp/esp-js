@@ -13,12 +13,9 @@ window.app = window.app || {};
 		},
 
 		render: function () {
-			var main = this.props.model;
-			if (main.filteredTodoItems.length === 0) {
-				return null;
-			}
+			var mainSection = this.props.model;
 
-			var todoItems = main.filteredTodoItems.map(function (todoItem) {
+			var todoItems = mainSection.filteredTodoItems.map(function (todoItem) {
 				return (
 					<TodoItem
 						key={todoItem.id}
@@ -36,7 +33,7 @@ window.app = window.app || {};
 						className='toggle-all'
 					   type='checkbox'
 					   onChange={this.handleToggleAll}
-					   checked={main.toggleAll.checked}
+					   checked={mainSection.toggleAll.checked}
 					/>
 					<ul id='todo-list' className='todo-list'>
 						{todoItems}

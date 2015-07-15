@@ -11,7 +11,7 @@
 			router={router}
 			modelId={modelId}
 		/>,
-		document.getElementById('todoapp')
+		document.getElementsByClassName('todoapp')[0]
 	);
 
 	var modelBootstrapper = new app.model.ModelBootstrapper(router, modelId);

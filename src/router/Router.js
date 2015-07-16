@@ -21,7 +21,7 @@ import EventStage from './EventStage';
 import ModelRecord from './ModelRecord';
 import State from './State.js';
 import Status from './Status.js';
-
+import ModelRouter from './ModelRouter.js';
 import { Subject, Observable } from '../reactive/index';
 import { SubModelChangedEvent } from '../model/events/index';
 import { Guard, utils, logger } from '../system';
@@ -183,6 +183,10 @@ export default class Router {
             }
             return updateSubject.observe(o);
         }, this);
+    }
+    createModelRouter(targetModelId) {
+        Guard.isString(targetModelId, 'The targetModelId argument should be a string');
+        return new ModelRouter(this, targetModelId);
     }
     _getModelsEventSubjects(modelId, eventType) {
         let modelEventSubject = this._modelEventSubjects[modelId];

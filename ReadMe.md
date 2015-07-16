@@ -914,6 +914,40 @@ Sending results event for StaticDataB
 Adding static data [StaticDataB] to model
 ```
 
+## Model Specific Routers
+Sometimes it can be too verbose to provide a model's id.
+Perhaps you have a subsystem that only ever deals wih a single model or your app is small so only warrants a single model.
+In these scenarios you can use `router.createModelRouter(modelId)` to return a `ModelRouter` which proxies `router` and passes the correct `modelId`.
+The modelId still exists and is required by the underlying `Router` however the object returned from 'createModelRouter()' will deal with passing it.
+This simplifies the API for use by the application and/or subsystem.
+
+``` javascript
+var myModel = {
+    foo:0
+};
+var router = new esp.Router();
+router.registerModel('myModel', myModel);
+var modelRouter = router.createModelRouter('myModel');
+
+modelRouter.getEventObservable('fooEvent').observe((m,e) => {
+    m.foo = e.theFoo;
+});
+modelRouter.getModelObservable().observe(m => {
+    console.log('Update, foo is: %s', m.foo);
+});
+modelRouter.publishEvent('fooEvent', { theFoo: 1});
+modelRouter.publishEvent('fooEvent', { theFoo: 2});
+```
+
+Output:
+
+```
+Update, foo is: 1
+Update, foo is: 2
+```
+
+Note how in the above code the calls to `getEventObservable()`, `getModelObservable()` and `publishEvent()` don't take the `modelId`.
+
 ## Error Flows
 
 If an exception is unhandled during the event processing workflow the router will halt. 
@@ -1058,8 +1092,8 @@ However information relating to the progress state of the work items should be o
 
 If you publish an event that requires a response from another processor, then perhaps these 2 processors are really dealing with the same concern and need to be merged.
 
-You may have a complex sub system within the model.
-This sub system might be better managed behind a façade that receives all events and calls methods on the façade to manipulate model state.
+You may have a complex subsystem within the model.
+This subsystem might be better managed behind a façade that receives all events and calls methods on the façade to manipulate model state.
 
 ## Having circular dependencies between models
 
@@ -1112,7 +1146,7 @@ The example will model a complex GUI screen and cover these topics:
     + Post event processors
 + Miscellaneous
     + Event context customisation
-    + Façade pattern for a sub system
+    + Façade pattern for a subsystem
     + Synchronising the GUI with new model state
         ++ avoid triggering event during GUI sync
 

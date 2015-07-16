@@ -94,7 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports.EventStage = __webpack_require__(1);
     exports.Router = __webpack_require__(2);
-    exports.model = __webpack_require__(23);
+    exports.model = __webpack_require__(24);
 
 /***/ },
 /* 1 */
@@ -182,24 +182,26 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var EventContext = _interopRequire(__webpack_require__(4));
+    var EventContext = _interopRequire(__webpack_require__(3));
     
     var EventStage = _interopRequire(__webpack_require__(1));
     
-    var ModelRecord = _interopRequire(__webpack_require__(13));
+    var ModelRecord = _interopRequire(__webpack_require__(12));
     
-    var State = _interopRequire(__webpack_require__(14));
+    var State = _interopRequire(__webpack_require__(13));
     
-    var Status = _interopRequire(__webpack_require__(3));
+    var Status = _interopRequire(__webpack_require__(14));
     
-    var _reactiveIndex = __webpack_require__(15);
+    var ModelRouter = _interopRequire(__webpack_require__(15));
+    
+    var _reactiveIndex = __webpack_require__(16);
     
     var Subject = _reactiveIndex.Subject;
     var Observable = _reactiveIndex.Observable;
     
-    var SubModelChangedEvent = __webpack_require__(24).SubModelChangedEvent;
+    var SubModelChangedEvent = __webpack_require__(25).SubModelChangedEvent;
     
-    var _system = __webpack_require__(5);
+    var _system = __webpack_require__(4);
     
     var Guard = _system.Guard;
     var utils = _system.utils;
@@ -377,6 +379,12 @@ return /******/ (function(modules) { // webpackBootstrap
                         }
                         return updateSubject.observe(o);
                     }, this);
+                }
+            },
+            createModelRouter: {
+                value: function createModelRouter(targetModelId) {
+                    Guard.isString(targetModelId, "The targetModelId argument should be a string");
+                    return new ModelRouter(this, targetModelId);
                 }
             },
             _getModelsEventSubjects: {
@@ -557,82 +565,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 3 */
-/***/ function(module, exports) {
-
-    "use strict";
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
-    
-    // notice_start
-    /*
-     * Copyright 2015 Keith Woods
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    // notice_end
-    
-    var Status = (function () {
-      function Status() {
-        _classCallCheck(this, Status);
-      }
-    
-      _createClass(Status, null, {
-        Idle: {
-          get: function () {
-            return "idle";
-          }
-        },
-        PreEventProcessing: {
-          get: function () {
-            return "preEventProcessorDispatch";
-          }
-        },
-        EventProcessorDispatch: {
-          get: function () {
-            return "eventProcessorDispatch";
-          }
-        },
-        EventExecution: {
-          get: function () {
-            return "eventProcessorExecution";
-          }
-        },
-        PostProcessing: {
-          get: function () {
-            return "postEventProcessorDispatch";
-          }
-        },
-        DispatchModelUpdates: {
-          get: function () {
-            return "dispatchModelUpdates";
-          }
-        },
-        Halted: {
-          get: function () {
-            return "halted";
-          }
-        }
-      });
-    
-      return Status;
-    })();
-    
-    module.exports = Status;
-
-/***/ },
-/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -659,7 +591,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
     var EventContext = (function () {
         function EventContext(modelId, eventType, event) {
@@ -727,7 +659,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = EventContext;
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -754,18 +686,18 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var disposables = _interopRequire(__webpack_require__(6));
+    var disposables = _interopRequire(__webpack_require__(5));
     
-    var Guard = _interopRequire(__webpack_require__(8));
+    var Guard = _interopRequire(__webpack_require__(7));
     
-    var logger = _interopRequireWildcard(__webpack_require__(12));
+    var logger = _interopRequireWildcard(__webpack_require__(11));
     
-    var utils = _interopRequireWildcard(__webpack_require__(9));
+    var utils = _interopRequireWildcard(__webpack_require__(8));
     
     module.exports = { disposables: disposables, Guard: Guard, logger: logger, utils: utils };
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -790,16 +722,16 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var CompositeDisposable = _interopRequire(__webpack_require__(7));
+    var CompositeDisposable = _interopRequire(__webpack_require__(6));
     
-    var DictionaryDisposable = _interopRequire(__webpack_require__(11));
+    var DictionaryDisposable = _interopRequire(__webpack_require__(10));
     
-    var DisposableWrapper = _interopRequire(__webpack_require__(10));
+    var DisposableWrapper = _interopRequire(__webpack_require__(9));
     
     module.exports = { CompositeDisposable: CompositeDisposable, DictionaryDisposable: DictionaryDisposable, DisposableWrapper: DisposableWrapper };
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -828,9 +760,9 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = _interopRequire(__webpack_require__(8));
+    var Guard = _interopRequire(__webpack_require__(7));
     
-    var DisposableWrapper = _interopRequire(__webpack_require__(10));
+    var DisposableWrapper = _interopRequire(__webpack_require__(9));
     
     var CompositeDisposable = (function () {
         function CompositeDisposable() {
@@ -876,7 +808,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = CompositeDisposable;
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -905,7 +837,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var utils = _interopRequireWildcard(__webpack_require__(9));
+    var utils = _interopRequireWildcard(__webpack_require__(8));
     
     var Guard = (function () {
         function Guard() {
@@ -998,7 +930,7 @@ return /******/ (function(modules) { // webpackBootstrap
     }
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
     // notice_start
@@ -1050,7 +982,7 @@ return /******/ (function(modules) { // webpackBootstrap
     }
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1079,7 +1011,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = _interopRequire(__webpack_require__(8));
+    var Guard = _interopRequire(__webpack_require__(7));
     
     var DisposableWrapper = (function () {
         function DisposableWrapper(disposable) {
@@ -1129,7 +1061,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = DisposableWrapper;
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1158,7 +1090,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var DisposableWrapper = _interopRequire(__webpack_require__(10));
+    var DisposableWrapper = _interopRequire(__webpack_require__(9));
     
     var DictionaryDisposable = (function () {
         function DictionaryDisposable() {
@@ -1211,7 +1143,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = DictionaryDisposable;
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1246,7 +1178,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = _interopRequire(__webpack_require__(8));
+    var Guard = _interopRequire(__webpack_require__(7));
     
     var levels = {
         verbose: 0,
@@ -1346,7 +1278,7 @@ return /******/ (function(modules) { // webpackBootstrap
     exports.levels = levels;
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1373,7 +1305,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
     var ModelRecord = (function () {
         // parentModelId is undefined if it's the root
@@ -1472,7 +1404,7 @@ return /******/ (function(modules) { // webpackBootstrap
     /* noop processor */
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1501,9 +1433,9 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
-    var Status = _interopRequire(__webpack_require__(3));
+    var Status = _interopRequire(__webpack_require__(14));
     
     // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
     
@@ -1590,7 +1522,147 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = State;
 
 /***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    // notice_start
+    /*
+     * Copyright 2015 Keith Woods
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    // notice_end
+    
+    var Status = (function () {
+      function Status() {
+        _classCallCheck(this, Status);
+      }
+    
+      _createClass(Status, null, {
+        Idle: {
+          get: function () {
+            return "idle";
+          }
+        },
+        PreEventProcessing: {
+          get: function () {
+            return "preEventProcessorDispatch";
+          }
+        },
+        EventProcessorDispatch: {
+          get: function () {
+            return "eventProcessorDispatch";
+          }
+        },
+        EventExecution: {
+          get: function () {
+            return "eventProcessorExecution";
+          }
+        },
+        PostProcessing: {
+          get: function () {
+            return "postEventProcessorDispatch";
+          }
+        },
+        DispatchModelUpdates: {
+          get: function () {
+            return "dispatchModelUpdates";
+          }
+        },
+        Halted: {
+          get: function () {
+            return "halted";
+          }
+        }
+      });
+    
+      return Status;
+    })();
+    
+    module.exports = Status;
+
+/***/ },
 /* 15 */
+/***/ function(module, exports) {
+
+    "use strict";
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    
+    // notice_start
+    /*
+     * Copyright 2015 Keith Woods
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    // notice_end
+    
+    var ModelRouter = (function () {
+        function ModelRouter(underlyingRouter, targetModelId) {
+            _classCallCheck(this, ModelRouter);
+    
+            this._underlying = underlyingRouter;
+            this._targetModelId = targetModelId;
+        }
+    
+        _createClass(ModelRouter, {
+            publishEvent: {
+                value: function publishEvent(eventType, event) {
+                    this._underlying.publishEvent(this._targetModelId, eventType, event);
+                }
+            },
+            executeEvent: {
+                value: function executeEvent(eventType, event) {
+                    this._underlying.executeEvent(eventType, event);
+                }
+            },
+            getEventObservable: {
+                value: function getEventObservable(eventType, stage) {
+                    return this._underlying.getEventObservable(this._targetModelId, eventType, stage);
+                }
+            },
+            getModelObservable: {
+                value: function getModelObservable() {
+                    return this._underlying.getModelObservable(this._targetModelId);
+                }
+            }
+        });
+    
+        return ModelRouter;
+    })();
+    
+    module.exports = ModelRouter;
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1620,22 +1692,22 @@ return /******/ (function(modules) { // webpackBootstrap
     
     // these scripts have no exports, they add functionality to Observable
     
-    __webpack_require__(19);
-    
     __webpack_require__(20);
     
     __webpack_require__(21);
     
-    __webpack_require__(30);
+    __webpack_require__(22);
     
-    __webpack_require__(16);
+    __webpack_require__(31);
     
-    exports.Observable = _interopRequire(__webpack_require__(17));
-    exports.Observer = _interopRequire(__webpack_require__(18));
-    exports.Subject = _interopRequire(__webpack_require__(31));
+    __webpack_require__(17);
+    
+    exports.Observable = _interopRequire(__webpack_require__(18));
+    exports.Observer = _interopRequire(__webpack_require__(19));
+    exports.Subject = _interopRequire(__webpack_require__(32));
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1660,9 +1732,9 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Observable = _interopRequire(__webpack_require__(17));
+    var Observable = _interopRequire(__webpack_require__(18));
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
     // TODO beta, needs test
     Observable.prototype["do"] = function (action) {
@@ -1680,7 +1752,7 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1709,9 +1781,9 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
-    var Observer = _interopRequire(__webpack_require__(18));
+    var Observer = _interopRequire(__webpack_require__(19));
     
     var Observable = (function () {
         function Observable(observe, router) {
@@ -1766,7 +1838,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = Observable;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -1793,7 +1865,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
     var Observer = (function () {
         function Observer(onNext, onError, onCompleted) {
@@ -1849,51 +1921,6 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = Observer;
 
 /***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    // notice_start
-    /*
-     * Copyright 2015 Keith Woods
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    // notice_end
-    
-    var Observable = _interopRequire(__webpack_require__(17));
-    
-    var Guard = __webpack_require__(5).Guard;
-    
-    Observable.prototype.where = function (predicate) {
-        Guard.isDefined(predicate, "predicate Required");
-        var source = this;
-        var observe = function (observer) {
-            return source.observe(function (arg1, arg2, arg3) {
-                if (predicate(arg1, arg2, arg3)) {
-                    observer.onNext(arg1, arg2, arg3);
-                }
-            }, observer.onError.bind(observer), function () {
-                return observer.onCompleted();
-            });
-        };
-        return new Observable(observe, this._router);
-    };
-
-/***/ },
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -1919,13 +1946,18 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Observable = _interopRequire(__webpack_require__(17));
+    var Observable = _interopRequire(__webpack_require__(18));
     
-    Observable.prototype.asObservable = function () {
+    var Guard = __webpack_require__(4).Guard;
+    
+    Observable.prototype.where = function (predicate) {
+        Guard.isDefined(predicate, "predicate Required");
         var source = this;
         var observe = function (observer) {
             return source.observe(function (arg1, arg2, arg3) {
-                observer.onNext(arg1, arg2, arg3);
+                if (predicate(arg1, arg2, arg3)) {
+                    observer.onNext(arg1, arg2, arg3);
+                }
             }, observer.onError.bind(observer), function () {
                 return observer.onCompleted();
             });
@@ -1959,13 +1991,53 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var uuid = _interopRequire(__webpack_require__(22));
+    var Observable = _interopRequire(__webpack_require__(18));
     
-    var Observable = _interopRequire(__webpack_require__(17));
+    Observable.prototype.asObservable = function () {
+        var source = this;
+        var observe = function (observer) {
+            return source.observe(function (arg1, arg2, arg3) {
+                observer.onNext(arg1, arg2, arg3);
+            }, observer.onError.bind(observer), function () {
+                return observer.onCompleted();
+            });
+        };
+        return new Observable(observe, this._router);
+    };
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
     
-    var model = _interopRequire(__webpack_require__(23));
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
     
-    var _system = __webpack_require__(5);
+    // notice_start
+    /*
+     * Copyright 2015 Keith Woods
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    // notice_end
+    
+    var uuid = _interopRequire(__webpack_require__(23));
+    
+    var Observable = _interopRequire(__webpack_require__(18));
+    
+    var model = _interopRequire(__webpack_require__(24));
+    
+    var _system = __webpack_require__(4);
     
     var system = _interopRequire(_system);
     
@@ -2031,7 +2103,7 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
     var __WEBPACK_AMD_DEFINE_RESULT__;//     uuid.js
@@ -2284,42 +2356,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-    "use strict";
-    
-    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-    
-    // notice_start
-    /*
-     * Copyright 2015 Keith Woods
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    // notice_end
-    
-    var events = _interopRequire(__webpack_require__(24));
-    
-    var DisposableBase = _interopRequire(__webpack_require__(27));
-    
-    var ModelBase = _interopRequire(__webpack_require__(28));
-    
-    var ModelRootBase = _interopRequire(__webpack_require__(29));
-    
-    module.exports = { events: events, DisposableBase: DisposableBase, ModelBase: ModelBase, ModelRootBase: ModelRootBase };
-
-/***/ },
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -2345,14 +2381,50 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(25));
+    var events = _interopRequire(__webpack_require__(25));
     
-    var SubModelChangedEvent = _interopRequire(__webpack_require__(26));
+    var DisposableBase = _interopRequire(__webpack_require__(28));
+    
+    var ModelBase = _interopRequire(__webpack_require__(29));
+    
+    var ModelRootBase = _interopRequire(__webpack_require__(30));
+    
+    module.exports = { events: events, DisposableBase: DisposableBase, ModelBase: ModelBase, ModelRootBase: ModelRootBase };
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+    "use strict";
+    
+    var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+    
+    // notice_start
+    /*
+     * Copyright 2015 Keith Woods
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    // notice_end
+    
+    var AsyncWorkCompleteEvent = _interopRequire(__webpack_require__(26));
+    
+    var SubModelChangedEvent = _interopRequire(__webpack_require__(27));
     
     module.exports = { AsyncWorkCompleteEvent: AsyncWorkCompleteEvent, SubModelChangedEvent: SubModelChangedEvent };
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports) {
 
     "use strict";
@@ -2412,7 +2484,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = AsyncWorkCompleteEvent;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports) {
 
     "use strict";
@@ -2466,7 +2538,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = SubModelChangedEvent;
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2495,7 +2567,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var system = _interopRequire(__webpack_require__(5));
+    var system = _interopRequire(__webpack_require__(4));
     
     var DisposableBase = (function () {
         function DisposableBase() {
@@ -2528,7 +2600,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = DisposableBase;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
     "use strict";
@@ -2591,7 +2663,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = ModelBase;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2624,7 +2696,7 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var ModelBase = _interopRequire(__webpack_require__(28));
+    var ModelBase = _interopRequire(__webpack_require__(29));
     
     /**
      * A base class for the root model entity.
@@ -2683,7 +2755,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = ModelRootBase;
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2708,9 +2780,9 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var Observable = _interopRequire(__webpack_require__(17));
+    var Observable = _interopRequire(__webpack_require__(18));
     
-    var Guard = __webpack_require__(5).Guard;
+    var Guard = __webpack_require__(4).Guard;
     
     // TODO beta, needs test
     Observable.prototype.take = function (number) {
@@ -2739,7 +2811,7 @@ return /******/ (function(modules) { // webpackBootstrap
     };
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
     "use strict";
@@ -2772,9 +2844,9 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    var utils = __webpack_require__(5).utils;
+    var utils = __webpack_require__(4).utils;
     
-    var Observable = _interopRequire(__webpack_require__(17));
+    var Observable = _interopRequire(__webpack_require__(18));
     
     var Subject = (function (_Observable) {
         function Subject(router) {

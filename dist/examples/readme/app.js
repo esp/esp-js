@@ -719,9 +719,26 @@ var runModelLockUnlock = function () {
     console.log("Notional is " + tile.leg1.notionalField.notional);
 };
 
+var runModelRouter = function () {
+    var myModel = {
+        foo: 0
+    };
+    var router = new esp.Router();
+    router.registerModel("myModel", myModel);
+    var modelRouter = router.createModelRouter("myModel");
+
+    modelRouter.getEventObservable("fooEvent").observe(function (m, e) {
+        m.foo = e.theFoo;
+    });
+    modelRouter.getModelObservable().observe(function (m) {
+        console.log("Update, foo is: %s", m.foo);
+    });
+    modelRouter.publishEvent("fooEvent", { theFoo: 1 });
+    modelRouter.publishEvent("fooEvent", { theFoo: 2 });
+};
 // uncomment out the example you want to run, you can uncomment them all but their results would overlap as they do things async.
 
-runBasicExample();
+// runBasicExample();
 // runEventWorkflowExample();
 // runModelObserveExample();
 // runObserveApiBasicExample();
@@ -729,3 +746,4 @@ runBasicExample();
 // runAsyncWorkExample();
 // runWorkItemExample();
 // runModelLockUnlock();
+runModelRouter();

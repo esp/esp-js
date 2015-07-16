@@ -1,11 +1,11 @@
 var app = app || {};
 
 (function () {
-    "use strict";
+	'use strict';
 
-    app.model.Filter = {
-        all: "all",
-        active: "active",
-        complete: "complete"
-    };
+	app.model.Filter = {
+		all: 'all',
+		active: 'active',
+		complete: 'complete'
+	};
 }());

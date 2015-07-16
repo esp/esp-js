@@ -2,48 +2,60 @@
 window.app = window.app || {};
 
 (function () {
-    "use strict";
+	'use strict';
 
-    var Header = app.Header,
-        MainSection = app.MainSection,
-        Footer = app.Footer;
+	var Header = app.Header,
+		MainSection = app.MainSection,
+		Footer = app.Footer;
 
-    app.TodoApp = React.createClass({
+	app.TodoApp = React.createClass({
 
-        componentWillMount: function () {
-            this.props.router
-                .getModelObservable(this.props.modelId)
-                .observe(function (model) {
-                    this.setState({ model: model });
-                }.bind(this));
-        },
+		componentWillMount: function () {
+			this.props.router
+				.getModelObservable(this.props.modelId)
+				.observe(function (model) {
+					this.setState({ model: model });
+				}.bind(this));
+		},
 
-        render: function () {
-            if (this.state === null) {
-                return null;
-            }
+		render: function () {
+			if (this.state === null) {
+				return null;
+			}
 
-            var model = this.state.model,
-                router = this.props.router;
+			var model = this.state.model;
+			var router = this.props.router;
+			var main;
+			var footer;
 
-            return (
-                <div>
-                    <Header
-                        router={router}
-                        modelId={this.props.modelId}
-                    />
-                    <MainSection
-                        model={model.main}
-                        router={router}
-                        modelId={this.props.modelId}
-                    />
-                    <Footer
-                        model={model.footer}
-                        router={router}
-                        modelId={this.props.modelId}
-                    />
-                </div>
-            );
-        }
-    });
+			if (model.mainSection.visible) {
+				main =
+						<MainSection
+							model={model.mainSection}
+							router={router}
+							modelId={this.props.modelId}
+						/>;
+			}
+
+			if (model.footer.visible) {
+				footer =
+						<Footer
+							model={model.footer}
+							router={router}
+							modelId={this.props.modelId}
+						/>;
+			}
+
+			return (
+				<div>
+					<Header
+						router={router}
+						modelId={this.props.modelId}
+					/>
+					{main}
+					{footer}
+				</div>
+			);
+		}
+	});
 }());

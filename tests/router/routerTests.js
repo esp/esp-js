@@ -1157,4 +1157,48 @@ describe('Router', () => {
             });
         });
     });
+
+    describe('.createModelRouter()', () => {
+        var _model, _modelRouter, _dispatchedModels;
+
+        beforeEach(() => {
+            _model = {
+                id:'theModel',
+                aNumber:0,
+                anotherNumber:0,
+                executePassed: false
+            };
+            _dispatchedModels = [];
+            _router.registerModel(_model.id, _model);
+            _modelRouter = _router.createModelRouter(_model.id);
+            _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
+                m.aNumber = e;
+            });
+            _modelRouter.getModelObservable().observe(m => {
+                _dispatchedModels.push(m);
+            });
+            _modelRouter.publishEvent('fooEvent', 1);
+        });
+
+        it('should proxy publishEvent and getEventObservable', ()=> {
+            expect(_model.aNumber).toEqual(1);
+        });
+
+        it('should proxy executeEvent to correct model event processor', ()=> {
+            _modelRouter.getEventObservable('barEvent').observe((m,e) => {
+                m.executePassed = m.anotherNumber === 0;
+            });
+            _modelRouter.getEventObservable('fooEvent2').observe((m,e) => {
+                _modelRouter.executeEvent('barEvent', 'theBar');
+                m.anotherNumber = 1;
+            });
+            _modelRouter.publishEvent('fooEvent2', {});
+            expect(_model.executePassed).toEqual(true);
+        });
+
+        it('should proxy getModelObservable to correct models change stream', ()=> {
+            expect(_dispatchedModels.length).toEqual(1);
+            expect(_dispatchedModels[0].aNumber).toEqual(1);
+        });
+    });
 });

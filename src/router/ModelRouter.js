@@ -22,15 +22,15 @@ export default class ModelRouter {
         this._targetModelId = targetModelId;
     }
     publishEvent(eventType, event) {
-        this._underlying.publish(this._targetModelId, eventType, event);
+        this._underlying.publishEvent(this._targetModelId, eventType, event);
     }
     executeEvent(eventType, event) {
         this._underlying.executeEvent(eventType, event);
     }
     getEventObservable(eventType, stage) {
-        return this._getEventObservable(this._targetModelId, eventType, stage);
+        return this._underlying.getEventObservable(this._targetModelId, eventType, stage);
     }
     getModelObservable() {
-        return this._getModelObservable(this._targetModelId);
+        return this._underlying.getModelObservable(this._targetModelId);
     }
 }

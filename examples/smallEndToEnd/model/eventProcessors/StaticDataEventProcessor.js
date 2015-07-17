@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import esp from '../../../../esp.js';
+import esp from '../../../../dist/esp.js';
 
 class StaticDataEventProcessor extends esp.model.DisposableBase {
     constructor(router) {

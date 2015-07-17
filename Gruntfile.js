@@ -125,20 +125,6 @@ module.exports = function(grunt) {
                 ]
             }
         },
-        // only used for the examples, the rest of the code gets transpiled via a webpack loader
-        "babel": {
-            options: {
-                sourceMap: false
-            },
-            dist: {
-                files: [{
-                    expand: true,
-                    cwd: 'src/examples',
-                    src: ['**/*.js'],
-                    dest: 'dist/examples'
-                }]
-            }
-        },
         usebanner: {
             dist: {
                 options: {
@@ -164,11 +150,11 @@ module.exports = function(grunt) {
                 atBegin: true
             },
             files: ['<%= jshint.src.files.src %>', '<%= jshint.tests.files.src %>', 'index.js'],
-            tasks: ['jshint', 'karma:unit:run', 'webpack', 'babel', 'usebanner:dist']
+            tasks: ['jshint', 'karma:unit:run', 'webpack', 'usebanner:dist']
         }
     });
 
-    grunt.registerTask('build', ['jshint', 'webpack', 'babel', 'usebanner:dist']);
+    grunt.registerTask('build', ['jshint', 'webpack', 'usebanner:dist']);
     grunt.registerTask('test', ['build', 'karma:release']);
     grunt.registerTask('dev', ['karma:unit:start', 'watch']);
     grunt.registerTask('updateEs6License', ['usebanner:es6Src']);

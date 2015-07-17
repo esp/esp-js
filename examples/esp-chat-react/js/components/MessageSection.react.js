@@ -3,8 +3,18 @@
 var MessageComposer = require('./MessageComposer.react');
 var MessageListItem = require('./MessageListItem.react');
 var React = require('react');
+var modelRouter = require('../model/modelRouter');
 
 var MessageSection = React.createClass({
+
+    componentWillMount: function () {
+        modelRouter
+            .getModelObservable()
+            .observe(function (model) {
+                this.setState(model.messageSection);
+            }.bind(this));
+    },
+
     componentDidMount: function () {
         this._scrollToBottom();
     },
@@ -14,13 +24,20 @@ var MessageSection = React.createClass({
     },
 
     _scrollToBottom: function() {
+        if (this.state === null) {
+            return null;
+        }
+
         var ul = this.refs.messageList.getDOMNode();
         ul.scrollTop = ul.scrollHeight;
     },
 
     render: function () {
-        var messageSection = this.props.model;
-        var messageListItems = messageSection.sortedMessages.map(function (message) {
+        if (this.state === null) {
+            return null;
+        }
+
+        var messageListItems = this.state.sortedMessages.map(function (message) {
             return (
                 <MessageListItem
                     key={message.id}
@@ -30,14 +47,11 @@ var MessageSection = React.createClass({
         });
         return (
             <div className="message-section">
-                <h3 className="message-thread-heading">{messageSection.threadName}</h3>
+                <h3 className="message-thread-heading">{this.state.threadName}</h3>
                 <ul className="message-list" ref="messageList">
                 {messageListItems}
                 </ul>
-                <MessageComposer
-                    router={this.props.router}
-                    modelId={this.props.modelId}
-                />
+                <MessageComposer />
             </div>
         );
     }

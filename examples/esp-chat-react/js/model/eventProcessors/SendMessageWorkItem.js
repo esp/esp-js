@@ -5,6 +5,7 @@
 var esp = require("esp-js");
 var Rx = require("rx");
 var uuid = require('node-uuid');
+var modelRouter = require('../modelRouter');
 
 // !!! Please Note !!!
 // We are using localStorage as an example, but in a real-world scenario, this
@@ -13,10 +14,8 @@ var uuid = require('node-uuid');
 // the contents of the functions are just trying to simulate client-server
 // communication and server-side processing.
 
-var SendMessageWorkItem = function (router, modelId) {
+var SendMessageWorkItem = function () {
     esp.model.DisposableBase.call(this);
-    this.router = router;
-    this.modelId = modelId;
 };
 
 SendMessageWorkItem.prototype = Object.create(esp.model.DisposableBase.prototype);
@@ -40,7 +39,7 @@ SendMessageWorkItem.prototype.send = function (text, threadId, threadName) {
         Rx.Observable
             .timer(0)
             .subscribe(function () {
-                this.router.publishEvent(this.modelId, "messagesReceived", { rawMessages: [ rawMessage ] });
+                modelRouter.publishEvent("messagesReceived", { rawMessages: [ rawMessage ] });
             }.bind(this))
     );
 };

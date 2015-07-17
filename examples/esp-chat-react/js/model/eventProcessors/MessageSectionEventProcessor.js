@@ -3,12 +3,11 @@
 var esp = require('esp-js');
 var entities = require('../entities');
 var SendMessageWorkItem = require('./SendMessageWorkItem');
+var modelRouter = require('../modelRouter');
 
-var MessageSectionEventProcessor = function (router, modelId) {
+var MessageSectionEventProcessor = function () {
     esp.model.DisposableBase.call(this);
-    this.router = router;
-    this.modelId = modelId;
-    this.messageSubscription = null;
+    this.messageSubscription = undefined;
 };
 
 MessageSectionEventProcessor.prototype = Object.create(esp.model.DisposableBase.prototype);
@@ -20,8 +19,8 @@ MessageSectionEventProcessor.prototype.start = function () {
 };
 
 MessageSectionEventProcessor.prototype.observeMessagesReceived = function () {
-    this.addDisposable(this.router
-        .getEventObservable(this.modelId, "messagesReceived", esp.EventStage.commited)
+    this.addDisposable(modelRouter
+        .getEventObservable("messagesReceived", esp.EventStage.commited)
         .observe(function (model) {
             this._updateMessages(model);
         }.bind(this))
@@ -29,8 +28,8 @@ MessageSectionEventProcessor.prototype.observeMessagesReceived = function () {
 };
 
 MessageSectionEventProcessor.prototype.observeThreadSelected = function () {
-    this.addDisposable(this.router
-        .getEventObservable(this.modelId, "threadSelected", esp.EventStage.commited)
+    this.addDisposable(modelRouter
+        .getEventObservable("threadSelected", esp.EventStage.commited)
         .observe(function (model, event) {
             this._updateMessages(model);
             model.messageSection.threadName = event.threadName;
@@ -39,11 +38,11 @@ MessageSectionEventProcessor.prototype.observeThreadSelected = function () {
 };
 
 MessageSectionEventProcessor.prototype.observeMessageSent = function () {
-    this.addDisposable(this.router
-        .getEventObservable(this.modelId, "messageSent")
+    this.addDisposable(modelRouter
+        .getEventObservable("messageSent")
         .observe(function (model, event) {
             // Todo: cleanup old disposables?
-            var sendMessageWorkItem = new SendMessageWorkItem(this.router, this.modelId);
+            var sendMessageWorkItem = new SendMessageWorkItem();
             this.addDisposable(sendMessageWorkItem);
             sendMessageWorkItem.send(event.text, model.selectedThreadId, model.messageSection.threadName);
         }.bind(this))

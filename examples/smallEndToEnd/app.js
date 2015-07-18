@@ -1,10 +1,3 @@
-"use strict";
-
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 // notice_start
 /*
  * Copyright 2015 Keith Woods
@@ -21,7 +14,15 @@ Object.defineProperty(exports, "__esModule", {
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// notice_end
+ // notice_end
 
-exports.NotionalEventProcessor = _interopRequire(require("./NotionalEventProcessor"));
-exports.StaticDataEventProcessor = _interopRequire(require("./StaticDataEventProcessor"));
+import esp from '../../dist/esp.js';
+import ModelBootstrapper from './model/ModelBootstrapper';
+import MainController from './controllers/MainController';
+
+var router = new esp.Router();
+var mainController = new MainController(router);
+var modelBootstrapper = new ModelBootstrapper(router);
+
+mainController.start();
+modelBootstrapper.start();

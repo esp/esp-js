@@ -2,7 +2,7 @@
 
 This React example integrates ESP (Evented State Processing) for its model.
 
-> ESP is a new architectural design pattern for managing the 'M' in your MVC application, based on reactive programming and domain driven design. The heart of ESP is a clear model that comprehensively captures your entire application's state, which is  is published to your controllers as single observable stream of changes. Inside the the model, ESP events and processors provide a scalable pattern for decomposing complicated interdependent logic into manageable chunks. It's great for big, complex applications with complex state transitions and real-time events (e.g. streaming data).
+> ESP is a new architectural design pattern for managing the 'M' in your MVC application, based on reactive programming and domain driven design. The heart of ESP is a clear model that comprehensively captures your entire application's state, which is published to your controllers as single observable stream of changes. Inside the the model, ESP events and processors provide a scalable pattern for decomposing complicated interdependent logic into manageable chunks. It's great for big, complex applications with complex state transitions and real-time events (e.g. streaming data).
 
 > _[Evented State Processing (ESP) - github.com/esp/esp-js](https://github.com/esp/esp-js)_
 

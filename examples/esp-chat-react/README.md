@@ -1,16 +1,16 @@
 # Evented State Processor (ESP) React Facebook Chat Example
 
-> ESP adds specific processing workflow around changes to a model's state.
-  It takes ownership of a single root model.
-  Those interested in observing the model's state observe a stream of events from a `Router`.
-  Those wanting to change a model's state can publish events to the `Router`.
-  The `Router` routes events to `EventProcessors` responsible for applying the new state using a state processing workflow.
-  Once the workflow is done, the `Router` dispatches the most recent model version to all model observers.
-  
-> The single root model allows a developer to focus on modeling the problem domain without worrying about infrastructural clutter. 
-  The router's observable event dispatch and state processing workflow allows a developer to compose complex state manipulation logic of smaller units which are executed in a deterministic manner.
-
-> _[Evented State Processor (ESP) - github.com/esp/esp-js](https://github.com/esp/esp-js)_
+This is a port of [Flux Chat]
+(https://github.com/facebook/flux/tree/master/examples/flux-chat) to [ESP 
+(Evented State Processing)](https://github.com/esp/esp-js). ESP is a new
+architectural design pattern that takes the concept of unidirectional data flow
+to the next level by adding a clear model that comprehensively captures your
+entire application's state. The model is published to your controllers as a
+single observable stream of changes. Inside the the model, ESP events and
+processors provide a scalable pattern for decomposing complicated
+interdependent logic into manageable chunks. It's great for big, complex
+applications with complex state transitions and real-time events (e.g.
+streaming data).
 
 ## Learning ESP
 

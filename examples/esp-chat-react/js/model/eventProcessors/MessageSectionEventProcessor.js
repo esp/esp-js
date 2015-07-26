@@ -23,6 +23,7 @@ MessageSectionEventProcessor.prototype.observeMessagesReceived = function () {
         .getEventObservable("messagesReceived", esp.EventStage.commited)
         .observe(function (model) {
             this._updateMessages(model);
+            model.messageSection.hasChanges = true;
         }.bind(this))
         );
 };
@@ -33,6 +34,7 @@ MessageSectionEventProcessor.prototype.observeThreadSelected = function () {
         .observe(function (model, event) {
             this._updateMessages(model);
             model.messageSection.threadName = event.threadName;
+            model.messageSection.hasChanges = true;
         }.bind(this))
         );
 };

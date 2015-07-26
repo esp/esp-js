@@ -8,6 +8,7 @@ var ThreadSection = React.createClass({
     componentWillMount: function () {
         modelRouter
             .getModelObservable()
+            .where(function (model) { return model.threadSection.hasChanges; })
             .observe(function (model) {
                 this.setState(model.threadSection);
             }.bind(this));

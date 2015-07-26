@@ -9,11 +9,13 @@ var ChatAppModel = function () {
         unreadCount: {
             value: 0,
             isVisible: false
-        }
+        },
+        hasChanges: false
     };
     this.messageSection = {
         sortedMessages: [],
-        threadName: null
+        threadName: null,
+        hasChanges: false
     };
 };
 

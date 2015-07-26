@@ -2,7 +2,7 @@
 
 var esp = require('esp-js');
 var MessageSubscription = require('./MessageSubscription');
-var modelRouter = require('../modelRouter');
+var modelRouter = require('./../modelRouter');
 
 var ChatAppEventProcessor = function () {
     esp.model.DisposableBase.call(this);

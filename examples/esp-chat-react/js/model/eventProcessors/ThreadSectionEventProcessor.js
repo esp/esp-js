@@ -46,6 +46,7 @@ ThreadSectionEventProcessor.prototype.observeMessagesReceived = function () {
             });
             this._updateActiveFlags(model);
             this._updateUnreadCount(model);
+            model.threadSection.hasChanges = true;
         }.bind(this))
         );
 };
@@ -57,6 +58,7 @@ ThreadSectionEventProcessor.prototype.observeThreadSelected = function () {
             model.threadSection.threadsById[model.selectedThreadId].isRead = true;
             this._updateActiveFlags(model);
             this._updateUnreadCount(model);
+            model.threadSection.hasChanges = true;
         }.bind(this))
         );
 };

@@ -10,6 +10,7 @@ var MessageSection = React.createClass({
     componentWillMount: function () {
         modelRouter
             .getModelObservable()
+            .where(function (model) { return model.messageSection.hasChanges; })
             .observe(function (model) {
                 this.setState(model.messageSection);
             }.bind(this));

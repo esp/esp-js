@@ -1,0 +1,33 @@
+{
+  "name": "esp-chat-react",
+  "version": "0.0.1",
+  "description": "ESP port of Facebook Flux example chat application.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/esp/esp-js"
+  },
+  "main": "js/app.js",
+  "private": true,
+  "dependencies": {
+    "esp-js": "0.0.11",
+    "node-uuid": "^1.4.3",
+    "react": "^0.12.0"
+  },
+  "devDependencies": {
+    "browserify": "^6.2.0",
+    "envify": "^3.0.0",
+    "reactify": "^0.15.2",
+    "uglify-js": "~2.4.15",
+    "watchify": "^2.1.1"
+  },
+  "scripts": {
+    "start": "watchify -o js/bundle.js -v -d js/app.js",
+    "build": "browserify . -t [envify --NODE_ENV production] | uglifyjs -cm > js/bundle.min.js"
+  },
+  "browserify": {
+    "transform": [
+      "reactify",
+      "envify"
+    ]
+  }
+}

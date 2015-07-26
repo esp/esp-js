@@ -3,6 +3,7 @@
 devshop/**/node_modules/*
 !node_modules/app
 .gitignore~
+examples/esp-chat-react/js/bundle.js
 
 # other 
 **/.idea

@@ -4,24 +4,18 @@
 var ChatApp = require('./components/ChatApp.react');
 var ChatExampleData = require('./ChatExampleData');
 var model = require('./model');
-var esp = require("esp-js");
+var modelRouter = require('./model/modelRouter');
 var React = require('react');
 window.React = React; // export for http://fb.me/react-devtools
-
-var router = new esp.Router();
-var modelId = "chatApp";
 
 ChatExampleData.init(); // load example data into localstorage
 
 React.render(
-    <ChatApp
-        router={router}
-        modelId={modelId}
-    />,
+    <ChatApp />,
     document.getElementById('react')
 );
 
-var modelBootstrapper = new model.ModelBootstrapper(router, modelId);
+var modelBootstrapper = new model.ModelBootstrapper();
 modelBootstrapper.start();
 
-router.publishEvent(modelId, "initEvent", {});
+modelRouter.publishEvent("initEvent", {});

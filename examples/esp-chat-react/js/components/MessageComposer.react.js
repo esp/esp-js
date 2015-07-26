@@ -1,6 +1,7 @@
 "use strict";
 
 var React = require('react');
+var modelRouter = require('../model/modelRouter');
 
 var ENTER_KEY = 13;
 
@@ -18,7 +19,7 @@ var MessageComposer = React.createClass({
             event.preventDefault();
             var text = this.state.text.trim();
             if (text) {
-                this.props.router.publishEvent(this.props.modelId, "messageSent", { text: text });
+                modelRouter.publishEvent("messageSent", { text: text });
             }
             this.setState({text: ''});
         }

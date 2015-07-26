@@ -3,6 +3,7 @@
 
 var esp = require("esp-js");
 var Rx = require("rx");
+var modelRouter = require('../modelRouter');
 
 // !!! Please Note !!!
 // We are using localStorage as an example, but in a real-world scenario, this
@@ -11,10 +12,8 @@ var Rx = require("rx");
 // the contents of the functions are just trying to simulate client-server
 // communication and server-side processing.
 
-var MessageSubscription = function (router, modelId) {
+var MessageSubscription = function () {
     esp.model.DisposableBase.call(this);
-    this.router = router;
-    this.modelId = modelId;
 };
 
 MessageSubscription.prototype = Object.create(esp.model.DisposableBase.prototype);
@@ -28,7 +27,7 @@ MessageSubscription.prototype.start = function () {
         Rx.Observable
             .timer(0)
             .subscribe(function () {
-                this.router.publishEvent(this.modelId, "messagesReceived", { rawMessages: rawMessages });
+                modelRouter.publishEvent("messagesReceived", { rawMessages: rawMessages });
             }.bind(this))
     );
 };

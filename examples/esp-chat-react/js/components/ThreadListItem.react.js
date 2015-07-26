@@ -2,12 +2,13 @@
 
 var React = require('react');
 var cx = require('react/lib/cx');
+var modelRouter = require('../model/modelRouter');
 
 var ThreadListItem = React.createClass({
 
     _onClick: function() {
         var thread = this.props.model;
-        this.props.router.publishEvent(this.props.modelId, "threadSelected", { threadId: thread.id, threadName: this.props.model.name });
+        modelRouter.publishEvent("threadSelected", { threadId: thread.id, threadName: this.props.model.name });
     },
 
     render: function () {

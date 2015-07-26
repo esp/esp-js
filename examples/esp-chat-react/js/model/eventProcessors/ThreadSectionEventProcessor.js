@@ -2,11 +2,10 @@
 
 var esp = require('esp-js');
 var entities = require('../entities');
+var modelRouter = require('../modelRouter');
 
-var ThreadSectionEventProcessor = function (router, modelId) {
+var ThreadSectionEventProcessor = function () {
     esp.model.DisposableBase.call(this);
-    this.router = router;
-    this.modelId = modelId;
 };
 
 ThreadSectionEventProcessor.prototype = Object.create(esp.model.DisposableBase.prototype);
@@ -17,8 +16,8 @@ ThreadSectionEventProcessor.prototype.start = function () {
 };
 
 ThreadSectionEventProcessor.prototype.observeMessagesReceived = function () {
-    this.addDisposable(this.router
-        .getEventObservable(this.modelId, "messagesReceived", esp.EventStage.commited)
+    this.addDisposable(modelRouter
+        .getEventObservable("messagesReceived", esp.EventStage.commited)
         .observe(function (model, event) {
             for (var i = 0; i < event.rawMessages.length; i++) {
                 var rawMessage = event.rawMessages[i];
@@ -52,8 +51,8 @@ ThreadSectionEventProcessor.prototype.observeMessagesReceived = function () {
 };
 
 ThreadSectionEventProcessor.prototype.observeThreadSelected = function () {
-    this.addDisposable(this.router
-        .getEventObservable(this.modelId, "threadSelected", esp.EventStage.commited)
+    this.addDisposable(modelRouter
+        .getEventObservable("threadSelected", esp.EventStage.commited)
         .observe(function (model) {
             model.threadSection.threadsById[model.selectedThreadId].isRead = true;
             this._updateActiveFlags(model);

@@ -3,7 +3,6 @@
 "use strict";
 
 var esp = require("esp-js");
-var Rx = require("rx");
 var uuid = require('node-uuid');
 var modelRouter = require('../modelRouter');
 
@@ -35,13 +34,9 @@ SendMessageWorkItem.prototype.send = function (text, threadId, threadName) {
     localStorage.setItem("messages", JSON.stringify(rawMessages));
 
     // simulate success callback
-    this.addDisposable(
-        Rx.Observable
-            .timer(0)
-            .subscribe(function () {
-                modelRouter.publishEvent("messagesReceived", { rawMessages: [ rawMessage ] });
-            }.bind(this))
-    );
+    setTimeout(function () {
+        modelRouter.publishEvent("messagesReceived", { rawMessages: [ rawMessage ] });
+    }, 0);
 };
 
 module.exports = SendMessageWorkItem;

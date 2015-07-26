@@ -2,7 +2,6 @@
 "use strict";
 
 var esp = require("esp-js");
-var Rx = require("rx");
 var modelRouter = require('../modelRouter');
 
 // !!! Please Note !!!
@@ -23,13 +22,9 @@ MessageSubscription.prototype.start = function () {
     var rawMessages = JSON.parse(localStorage.getItem("messages"));
 
     // simulate success callback
-    this.addDisposable(
-        Rx.Observable
-            .timer(0)
-            .subscribe(function () {
-                modelRouter.publishEvent("messagesReceived", { rawMessages: rawMessages });
-            }.bind(this))
-    );
+    setTimeout(function () {
+        modelRouter.publishEvent("messagesReceived", {rawMessages: rawMessages});
+    }, 0);
 };
 
 module.exports = MessageSubscription;

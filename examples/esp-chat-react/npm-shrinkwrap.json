@@ -16,11 +16,6 @@
       "version": "0.12.2",
       "from": "https://registry.npmjs.org/react/-/react-0.12.2.tgz",
       "resolved": "https://registry.npmjs.org/react/-/react-0.12.2.tgz"
-    },
-    "rx": {
-      "version": "2.5.3",
-      "from": "https://registry.npmjs.org/rx/-/rx-2.5.3.tgz",
-      "resolved": "https://registry.npmjs.org/rx/-/rx-2.5.3.tgz"
     }
   }
 }

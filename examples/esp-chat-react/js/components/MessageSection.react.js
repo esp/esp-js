@@ -46,10 +46,9 @@ var MessageSection = React.createClass({
 
         var messageListItems = this.state.sortedMessages.map(function (message) {
             return (
-                <MessageListItem
-                    key={message.id}
-                    model={message}
-                />
+                <li key={message.id}>
+                    <MessageListItem model={message} />
+                </li>
             );
         });
         return (

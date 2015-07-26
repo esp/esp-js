@@ -28,11 +28,8 @@ var ThreadSection = React.createClass({
 
         var threadListItems = this.state.sortedThreads.map(function (thread) {
                 return (
-                    <li>
-                        <ThreadListItem
-                            key={thread.id}
-                            model={thread}
-                        />
+                    <li key={thread.id}>
+                        <ThreadListItem model={thread} />
                     </li>
                 );
             }, this);

@@ -5,14 +5,22 @@ var ThreadListItem = require('../components/ThreadListItem.react');
 var modelRouter = require('../model/modelRouter');
 
 var ThreadSection = React.createClass({
+
+    _subscription: null,
+
     componentWillMount: function () {
-        modelRouter
+        this._subscription = modelRouter
             .getModelObservable()
             .where(function (model) { return model.threadSection.hasChanges; })
             .observe(function (model) {
                 this.setState(model.threadSection);
             }.bind(this));
     },
+
+    componentWillUnmount: function () {
+        this._subscription.dispose();
+    },
+
     render: function () {
         if (this.state === null) {
             return null;

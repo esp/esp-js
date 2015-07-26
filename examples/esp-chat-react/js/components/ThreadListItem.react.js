@@ -3,8 +3,13 @@
 var React = require('react');
 var cx = require('react/lib/cx');
 var modelRouter = require('../model/modelRouter');
+var Thread = require('../model/entities/Thread');
 
 var ThreadListItem = React.createClass({
+
+    propTypes: {
+        model: React.PropTypes.instanceOf(Thread)
+    },
 
     _onClick: function() {
         var thread = this.props.model;

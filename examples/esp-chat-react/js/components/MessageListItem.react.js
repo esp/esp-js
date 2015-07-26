@@ -1,8 +1,13 @@
 "use strict";
 
 var React = require('react');
+var Message = require('../model/entities/Message');
 
 var MessageListItem = React.createClass({
+
+    propTypes: {
+        model: React.PropTypes.instanceOf(Message)
+    },
 
     render: function () {
         var message = this.props.model;

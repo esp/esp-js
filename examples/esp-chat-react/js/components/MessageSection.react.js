@@ -7,8 +7,10 @@ var modelRouter = require('../model/modelRouter');
 
 var MessageSection = React.createClass({
 
+    _subscription: null,
+
     componentWillMount: function () {
-        modelRouter
+        this._subscription = modelRouter
             .getModelObservable()
             .where(function (model) { return model.messageSection.hasChanges; })
             .observe(function (model) {
@@ -22,6 +24,10 @@ var MessageSection = React.createClass({
 
     componentDidUpdate: function() {
         this._scrollToBottom();
+    },
+
+    componentWillUnmount: function () {
+        this._subscription.dispose();
     },
 
     _scrollToBottom: function() {

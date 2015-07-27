@@ -16,7 +16,8 @@
  */
  // notice_end
 
-import esp from '../../dist/esp.js';
+import esp from 'esp-js';
+import prompt from 'prompt';
 
 ////////////////////////////////////////////////////////////// basic usage example //////////////////////////////////////////////////////////////
 var runBasicExample =  () => {
@@ -640,14 +641,46 @@ var runModelRouter = () => {
     modelRouter.publishEvent('fooEvent', { theFoo: 1});
     modelRouter.publishEvent('fooEvent', { theFoo: 2});
 };
-// uncomment out the example you want to run, you can uncomment them all but their results would overlap as they do things async.
 
-// runBasicExample();
-// runEventWorkflowExample();
-// runModelObserveExample();
-// runObserveApiBasicExample();
-// runErrorFlowsExample();
-// runAsyncWorkExample();
-// runWorkItemExample();
-// runModelLockUnlock();
-runModelRouter();
+///////////////////////// example bootstrap code /////////////////
+// Simply calls one of the functions above via the prompt
+//////////////////////////////////////////////////////////////////
+
+var examples = {
+    "1" : { description : "Basic Example", action : runBasicExample },
+    "2" : { description : "Event Workflow Example", action : runEventWorkflowExample },
+    "3" : { description : "Model Observe Example", action : runModelObserveExample },
+    "4" : { description : "Observable Api Basic Example", action : runObserveApiBasicExample },
+    "5" : { description : "Async Work Example", action : runAsyncWorkExample },
+    "6" : { description : "Work Item Example", action : runWorkItemExample },
+    "7" : { description : "Model Lock/Unlock", action : runModelLockUnlock },
+};
+
+console.log('Which sample do you want to run (enter a number)?');
+for (let exampleKey in examples) {
+    if (examples.hasOwnProperty(exampleKey)) {
+        console.log('%s - %s', exampleKey, examples[exampleKey].description);
+    }
+}
+
+var properties = [
+    {
+        name: 'sampleNumber',
+        validator: /^[1-7]$/,
+        warning: 'Sample number must be a number between 1-7 inclusive'
+    }
+];
+
+prompt.start();
+
+prompt.get(properties, function (err, result) {
+    if (err) { return onErr(err); }
+    var example = examples[result.sampleNumber];
+    console.log('Running sample \'%s\'', example.description);
+    examples[result.sampleNumber].action();
+});
+
+function onErr(err) {
+    console.log(err);
+    return 1;
+}

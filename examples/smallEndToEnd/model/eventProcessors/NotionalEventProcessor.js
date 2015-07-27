@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import esp from '../../../../dist/esp.js';
+import esp from 'esp-js';
 
 class NotionalEventProcessor extends esp.model.DisposableBase {
     constructor(router) {

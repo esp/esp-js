@@ -19,7 +19,6 @@
 // these scripts have no exports, they add functionality to Observable
 import './extMethods/where';
 import './extMethods/asObservable';
-import './extMethods/beginWork';
 import './extMethods/take';
 import './extMethods/do';
 

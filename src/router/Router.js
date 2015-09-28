@@ -169,7 +169,7 @@ export default class Router {
             let subjects = this._getModelsEventSubjects(modelId, eventType);
             let subject = subjects[stage];
             return subject.observe(o);
-        }, this);
+        });
     }
     getModelObservable(modelId) {
         return Observable.create(o => {
@@ -178,11 +178,11 @@ export default class Router {
 
             let updateSubject = this._modelUpdateSubjects[modelId];
             if (typeof updateSubject === 'undefined') {
-                updateSubject = new Subject(this);
+                updateSubject = new Subject();
                 this._modelUpdateSubjects[modelId] = updateSubject;
             }
             return updateSubject.observe(o);
-        }, this);
+        });
     }
     createModelRouter(targetModelId) {
         Guard.isString(targetModelId, 'The targetModelId argument should be a string');
@@ -197,9 +197,9 @@ export default class Router {
         let subjects = modelEventSubject[eventType];
         if (typeof subjects === 'undefined') {
             subjects = {
-                preview: new Subject(this),
-                normal: new Subject(this),
-                committed: new Subject(this)
+                preview: new Subject(),
+                normal: new Subject(),
+                committed: new Subject()
             };
             modelEventSubject[eventType] = subjects;
         }

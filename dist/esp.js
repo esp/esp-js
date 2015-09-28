@@ -94,7 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports.ObservationStage = __webpack_require__(1);
     exports.Router = __webpack_require__(2);
-    exports.model = __webpack_require__(23);
+    exports.model = __webpack_require__(27);
 
 /***/ },
 /* 1 */
@@ -374,7 +374,7 @@ return /******/ (function(modules) { // webpackBootstrap
                     var subjects = _this2._getModelsEventSubjects(modelId, eventType);
                     var subject = subjects[stage];
                     return subject.observe(o);
-                }, this);
+                });
             }
         }, {
             key: 'getModelObservable',
@@ -387,11 +387,11 @@ return /******/ (function(modules) { // webpackBootstrap
     
                     var updateSubject = _this3._modelUpdateSubjects[modelId];
                     if (typeof updateSubject === 'undefined') {
-                        updateSubject = new _reactiveIndex.Subject(_this3);
+                        updateSubject = new _reactiveIndex.Subject();
                         _this3._modelUpdateSubjects[modelId] = updateSubject;
                     }
                     return updateSubject.observe(o);
-                }, this);
+                });
             }
         }, {
             key: 'createModelRouter',
@@ -410,9 +410,9 @@ return /******/ (function(modules) { // webpackBootstrap
                 var subjects = modelEventSubject[eventType];
                 if (typeof subjects === 'undefined') {
                     subjects = {
-                        preview: new _reactiveIndex.Subject(this),
-                        normal: new _reactiveIndex.Subject(this),
-                        committed: new _reactiveIndex.Subject(this)
+                        preview: new _reactiveIndex.Subject(),
+                        normal: new _reactiveIndex.Subject(),
+                        committed: new _reactiveIndex.Subject()
                     };
                     modelEventSubject[eventType] = subjects;
                 }
@@ -1785,9 +1785,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     __webpack_require__(21);
     
-    __webpack_require__(30);
-    
-    __webpack_require__(31);
+    __webpack_require__(22);
     
     var _Observable = __webpack_require__(18);
     
@@ -1797,7 +1795,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports.Observer = _interopRequire(_Observer);
     
-    var _Subject = __webpack_require__(32);
+    var _Subject = __webpack_require__(23);
     
     exports.Subject = _interopRequire(_Subject);
 
@@ -1845,7 +1843,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 return observer.onCompleted();
             });
         };
-        return new _Observable2['default'](observe, this._router);
+        return new _Observable2['default'](observe);
     };
 
 /***/ },
@@ -1891,30 +1889,19 @@ return /******/ (function(modules) { // webpackBootstrap
     var Observable = (function () {
         _createClass(Observable, null, [{
             key: 'create',
-            value: function create(onObserve, router) {
-                _system.Guard.lengthIs(arguments, 2, "Incorrect argument count on Observable");
+            value: function create(onObserve) {
+                _system.Guard.lengthIs(arguments, 1, "Incorrect argument count on Observable, expect 1 onObserve function");
                 var observe = function observe(observer) {
                     return onObserve(observer);
                 };
-                return new Observable(observe, router);
+                return new Observable(observe);
             }
         }]);
     
-        function Observable(observe, router) {
+        function Observable(observe) {
             _classCallCheck(this, Observable);
     
             this._observe = observe;
-            /*
-             * note the Observable has explicit knowledge of the router to enable advanced
-             * scenarios whereby links in the observable stream re-post events back into the
-             * workflow, it enables the results of async operations and held event actions
-             * to be posted back through the full event workflow. It does feel a little dirty
-             * but it's reasonable for now. Perhaps the entire reactive objects could be wrapped
-             * in a configurable module whereby each instance of the router get's it's own copy,
-             * then only the explicit extensions to Observable could access the instance of
-             * the router they require.
-             */
-            this._router = router;
         }
     
         _createClass(Observable, [{
@@ -1930,7 +1917,7 @@ return /******/ (function(modules) { // webpackBootstrap
                     var onCompleted = arguments.length >= 2 ? arguments[2] : undefined;
                     observer = new _Observer2['default'](onNext, onError, onCompleted);
                 }
-                _system.Guard.isDefined(this._observe, 'observe Required');
+                _system.Guard.isDefined(this._observe, '_observe not set');
                 return this._observe(observer);
             }
         }]);
@@ -2067,7 +2054,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 return observer.onCompleted();
             });
         };
-        return new _Observable2['default'](observe, this._router);
+        return new _Observable2['default'](observe);
     };
 
 /***/ },
@@ -2096,330 +2083,84 @@ return /******/ (function(modules) { // webpackBootstrap
     
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
     
-    var _nodeUuid = __webpack_require__(22);
-    
-    var _nodeUuid2 = _interopRequireDefault(_nodeUuid);
-    
     var _Observable = __webpack_require__(18);
     
     var _Observable2 = _interopRequireDefault(_Observable);
     
-    var _model = __webpack_require__(23);
-    
-    var _model2 = _interopRequireDefault(_model);
-    
     var _system = __webpack_require__(4);
     
-    var _system2 = _interopRequireDefault(_system);
-    
-    var CompositeDisposable = _system.disposables.CompositeDisposable;
-    var DictionaryDisposable = _system.disposables.DictionaryDisposable;
-    var AsyncWorkCompleteEvent = _model2['default'].events.AsyncWorkCompleteEvent;
-    
-    var _asyncWorkCompleteEventName = 'asyncWorkCompleteEvent';
-    
-    /*
-    * Note: experimental, needs more test, doesn't work with .take()
-    *
-    * Used for asynchronous operations from event processors, this should only be used on event streams, a future revision will likely
-    * enforce this or ensure the method only exists in the correct context.
-    *
-    * Note: this function may be removed in the future in favour of a pipeline that fully supports async interactions and is
-    * more compatible with other libraries.
-    * */
-    _Observable2['default'].prototype.beginWork = function (action) {
-        var _this = this;
-    
-        _system.Guard.isDefined(action, 'action required, format: (ec : EventContext, done : (result : any) => { })');
+    // TODO beta, needs test
+    _Observable2['default'].prototype.take = function (number) {
+        _system.Guard.isNumber(number, "provided value isn't a number");
         var source = this;
-        var disposables = new CompositeDisposable();
-        var dictionaryDisposable = new DictionaryDisposable();
-        disposables.add(dictionaryDisposable);
+        var itemsReceived = 0;
+        var hasCompleted = false;
         var observe = function observe(observer) {
-            disposables.add(source.observe(function (model, event, eventContext) {
-                var modelId = eventContext.modelId;
-                var operationId = _nodeUuid2['default'].v1();
-                var disposable = _this._router.getEventObservable(modelId, _asyncWorkCompleteEventName).where(function (m, e) {
-                    return e.operationId === operationId;
-                }).observe(function (m, e, ec) {
-                    if (!disposables.isDisposed) {
-                        if (e.isFinished) {
-                            disposable.dispose();
-                            dictionaryDisposable.remove(operationId);
-                        }
-                        observer.onNext(m, e, ec);
-                    }
-                });
-                var onResultsReceived = function onResultsReceived(result, isFinished) {
-                    if (!disposables.isDisposed) {
-                        isFinished = isFinished === 'undefined' ? true : isFinished;
-                        var asyncWorkCompleteEvent = new AsyncWorkCompleteEvent(operationId, result, isFinished);
-                        // publish the async results back through the router so the full event workflow is triggered
-                        source._router.publishEvent(modelId, _asyncWorkCompleteEventName, asyncWorkCompleteEvent);
-                    }
-                };
-                dictionaryDisposable.add(operationId, disposable);
-                action(model, event, eventContext, onResultsReceived);
+            return source.observe(function (arg1, arg2, arg3) {
+                // there is possibly some strange edge cases if the observer also pumps a new value, this 'should' cover that (no tests yet)
+                itemsReceived++;
+                var shouldYield = !number || itemsReceived <= number;
+                if (shouldYield) {
+                    observer.onNext(arg1, arg2, arg3);
+                }
+                var shouldComplete = !number || itemsReceived >= number;
+                if (!hasCompleted && shouldComplete) {
+                    hasCompleted = true;
+                    observer.onCompleted();
+                }
             }, observer.onError.bind(observer), function () {
                 return observer.onCompleted();
-            }));
-            return disposables;
+            });
         };
-        return new _Observable2['default'](observe, this._router);
+        return new _Observable2['default'](observe);
     };
 
 /***/ },
 /* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-    var __WEBPACK_AMD_DEFINE_RESULT__;//     uuid.js
-    //
-    //     Copyright (c) 2010-2012 Robert Kieffer
-    //     MIT License - http://opensource.org/licenses/mit-license.php
+    // notice_start
+    /*
+     * Copyright 2015 Keith Woods
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    // notice_end
     
-    (function() {
-      var _global = this;
+    'use strict';
     
-      // Unique ID creation requires a high quality random # generator.  We feature
-      // detect to determine the best RNG source, normalizing to a function that
-      // returns 128-bits of randomness, since that's what's usually required
-      var _rng;
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
     
-      // Node.js crypto-based RNG - http://nodejs.org/docs/v0.6.2/api/crypto.html
-      //
-      // Moderately fast, high quality
-      if (typeof(_global.require) == 'function') {
-        try {
-          var _rb = _global.require('crypto').randomBytes;
-          _rng = _rb && function() {return _rb(16);};
-        } catch(e) {}
-      }
+    var _Observable = __webpack_require__(18);
     
-      if (!_rng && _global.crypto && crypto.getRandomValues) {
-        // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
-        //
-        // Moderately fast, high quality
-        var _rnds8 = new Uint8Array(16);
-        _rng = function whatwgRNG() {
-          crypto.getRandomValues(_rnds8);
-          return _rnds8;
+    var _Observable2 = _interopRequireDefault(_Observable);
+    
+    var _system = __webpack_require__(4);
+    
+    // TODO beta, needs test
+    _Observable2['default'].prototype['do'] = function (action) {
+        _system.Guard.isFunction(action, "provided value isn't a function");
+        var source = this;
+        var observe = function observe(observer) {
+            return source.observe(function (arg1, arg2, arg3) {
+                action(arg1, arg2, arg3);
+                observer.onNext(arg1, arg2, arg3);
+            }, observer.onError.bind(observer), function () {
+                return observer.onCompleted();
+            });
         };
-      }
-    
-      if (!_rng) {
-        // Math.random()-based (RNG)
-        //
-        // If all else fails, use Math.random().  It's fast, but is of unspecified
-        // quality.
-        var  _rnds = new Array(16);
-        _rng = function() {
-          for (var i = 0, r; i < 16; i++) {
-            if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-            _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-          }
-    
-          return _rnds;
-        };
-      }
-    
-      // Buffer class to use
-      var BufferClass = typeof(_global.Buffer) == 'function' ? _global.Buffer : Array;
-    
-      // Maps for number <-> hex string conversion
-      var _byteToHex = [];
-      var _hexToByte = {};
-      for (var i = 0; i < 256; i++) {
-        _byteToHex[i] = (i + 0x100).toString(16).substr(1);
-        _hexToByte[_byteToHex[i]] = i;
-      }
-    
-      // **`parse()` - Parse a UUID into it's component bytes**
-      function parse(s, buf, offset) {
-        var i = (buf && offset) || 0, ii = 0;
-    
-        buf = buf || [];
-        s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
-          if (ii < 16) { // Don't overflow!
-            buf[i + ii++] = _hexToByte[oct];
-          }
-        });
-    
-        // Zero out remaining bytes if string was short
-        while (ii < 16) {
-          buf[i + ii++] = 0;
-        }
-    
-        return buf;
-      }
-    
-      // **`unparse()` - Convert UUID byte array (ala parse()) into a string**
-      function unparse(buf, offset) {
-        var i = offset || 0, bth = _byteToHex;
-        return  bth[buf[i++]] + bth[buf[i++]] +
-                bth[buf[i++]] + bth[buf[i++]] + '-' +
-                bth[buf[i++]] + bth[buf[i++]] + '-' +
-                bth[buf[i++]] + bth[buf[i++]] + '-' +
-                bth[buf[i++]] + bth[buf[i++]] + '-' +
-                bth[buf[i++]] + bth[buf[i++]] +
-                bth[buf[i++]] + bth[buf[i++]] +
-                bth[buf[i++]] + bth[buf[i++]];
-      }
-    
-      // **`v1()` - Generate time-based UUID**
-      //
-      // Inspired by https://github.com/LiosK/UUID.js
-      // and http://docs.python.org/library/uuid.html
-    
-      // random #'s we need to init node and clockseq
-      var _seedBytes = _rng();
-    
-      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
-      var _nodeId = [
-        _seedBytes[0] | 0x01,
-        _seedBytes[1], _seedBytes[2], _seedBytes[3], _seedBytes[4], _seedBytes[5]
-      ];
-    
-      // Per 4.2.2, randomize (14 bit) clockseq
-      var _clockseq = (_seedBytes[6] << 8 | _seedBytes[7]) & 0x3fff;
-    
-      // Previous uuid creation time
-      var _lastMSecs = 0, _lastNSecs = 0;
-    
-      // See https://github.com/broofa/node-uuid for API details
-      function v1(options, buf, offset) {
-        var i = buf && offset || 0;
-        var b = buf || [];
-    
-        options = options || {};
-    
-        var clockseq = options.clockseq != null ? options.clockseq : _clockseq;
-    
-        // UUID timestamps are 100 nano-second units since the Gregorian epoch,
-        // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
-        // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
-        // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-        var msecs = options.msecs != null ? options.msecs : new Date().getTime();
-    
-        // Per 4.2.1.2, use count of uuid's generated during the current clock
-        // cycle to simulate higher resolution clock
-        var nsecs = options.nsecs != null ? options.nsecs : _lastNSecs + 1;
-    
-        // Time since last uuid creation (in msecs)
-        var dt = (msecs - _lastMSecs) + (nsecs - _lastNSecs)/10000;
-    
-        // Per 4.2.1.2, Bump clockseq on clock regression
-        if (dt < 0 && options.clockseq == null) {
-          clockseq = clockseq + 1 & 0x3fff;
-        }
-    
-        // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
-        // time interval
-        if ((dt < 0 || msecs > _lastMSecs) && options.nsecs == null) {
-          nsecs = 0;
-        }
-    
-        // Per 4.2.1.2 Throw error if too many uuids are requested
-        if (nsecs >= 10000) {
-          throw new Error('uuid.v1(): Can\'t create more than 10M uuids/sec');
-        }
-    
-        _lastMSecs = msecs;
-        _lastNSecs = nsecs;
-        _clockseq = clockseq;
-    
-        // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
-        msecs += 12219292800000;
-    
-        // `time_low`
-        var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
-        b[i++] = tl >>> 24 & 0xff;
-        b[i++] = tl >>> 16 & 0xff;
-        b[i++] = tl >>> 8 & 0xff;
-        b[i++] = tl & 0xff;
-    
-        // `time_mid`
-        var tmh = (msecs / 0x100000000 * 10000) & 0xfffffff;
-        b[i++] = tmh >>> 8 & 0xff;
-        b[i++] = tmh & 0xff;
-    
-        // `time_high_and_version`
-        b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
-        b[i++] = tmh >>> 16 & 0xff;
-    
-        // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
-        b[i++] = clockseq >>> 8 | 0x80;
-    
-        // `clock_seq_low`
-        b[i++] = clockseq & 0xff;
-    
-        // `node`
-        var node = options.node || _nodeId;
-        for (var n = 0; n < 6; n++) {
-          b[i + n] = node[n];
-        }
-    
-        return buf ? buf : unparse(b);
-      }
-    
-      // **`v4()` - Generate random UUID**
-    
-      // See https://github.com/broofa/node-uuid for API details
-      function v4(options, buf, offset) {
-        // Deprecated - 'format' argument, as supported in v1.2
-        var i = buf && offset || 0;
-    
-        if (typeof(options) == 'string') {
-          buf = options == 'binary' ? new BufferClass(16) : null;
-          options = null;
-        }
-        options = options || {};
-    
-        var rnds = options.random || (options.rng || _rng)();
-    
-        // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-        rnds[6] = (rnds[6] & 0x0f) | 0x40;
-        rnds[8] = (rnds[8] & 0x3f) | 0x80;
-    
-        // Copy bytes to buffer, if provided
-        if (buf) {
-          for (var ii = 0; ii < 16; ii++) {
-            buf[i + ii] = rnds[ii];
-          }
-        }
-    
-        return buf || unparse(rnds);
-      }
-    
-      // Export public API
-      var uuid = v4;
-      uuid.v1 = v1;
-      uuid.v4 = v4;
-      uuid.parse = parse;
-      uuid.unparse = unparse;
-      uuid.BufferClass = BufferClass;
-    
-      if (typeof(module) != 'undefined' && module.exports) {
-        // Publish as node.js module
-        module.exports = uuid;
-      } else  if (true) {
-        // Publish as AMD module
-        !(__WEBPACK_AMD_DEFINE_RESULT__ = function() {return uuid;}.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-     
-    
-      } else {
-        // Publish as global (in browsers)
-        var _previousRoot = _global.uuid;
-    
-        // **`noConflict()` - (browser only) to reset global 'uuid' var**
-        uuid.noConflict = function() {
-          _global.uuid = _previousRoot;
-          return uuid;
-        };
-    
-        _global.uuid = uuid;
-      }
-    }).call(this);
-
+        return new _Observable2['default'](observe);
+    };
 
 /***/ },
 /* 23 */
@@ -2446,28 +2187,116 @@ return /******/ (function(modules) { // webpackBootstrap
     'use strict';
     
     Object.defineProperty(exports, '__esModule', {
-      value: true
+        value: true
     });
+    
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    
+    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
     
     function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
     
-    var _events = __webpack_require__(24);
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
     
-    var _events2 = _interopRequireDefault(_events);
+    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
     
-    var _DisposableBase = __webpack_require__(27);
+    var _system = __webpack_require__(4);
     
-    var _DisposableBase2 = _interopRequireDefault(_DisposableBase);
+    var _Observable2 = __webpack_require__(18);
     
-    var _ModelBase = __webpack_require__(28);
+    var _Observable3 = _interopRequireDefault(_Observable2);
     
-    var _ModelBase2 = _interopRequireDefault(_ModelBase);
+    var Subject = (function (_Observable) {
+        _inherits(Subject, _Observable);
     
-    var _ModelRootBase = __webpack_require__(29);
+        function Subject() {
+            _classCallCheck(this, Subject);
     
-    var _ModelRootBase2 = _interopRequireDefault(_ModelRootBase);
+            _get(Object.getPrototypeOf(Subject.prototype), 'constructor', this).call(this, undefined);
+            this._observe = observe.bind(this);
+            this._observers = [];
+            this._hasComplete = false;
+            this._hasError = false;
+        }
     
-    exports['default'] = { events: _events2['default'], DisposableBase: _DisposableBase2['default'], ModelBase: _ModelBase2['default'], ModelRootBase: _ModelRootBase2['default'] };
+        _createClass(Subject, [{
+            key: 'onNext',
+    
+            // The reactivate implementation can push 3 arguments through the stream, initially this was setup to
+            // pass all arguments using .apply, however it's performance is about 40% slower than direct method calls
+            // given this, and that we only ever push a max of 3 args, it makes sense to hard code them.
+            value: function onNext(arg1, arg2, arg3) {
+                if (!this._hasComplete) {
+                    var os = this._observers.slice(0);
+                    for (var i = 0, len = os.length; i < len; i++) {
+                        if (this._hasError) break;
+                        var observer = os[i];
+                        try {
+                            observer.onNext(arg1, arg2, arg3);
+                        } catch (err) {
+                            this._hasError = true;
+                            this._error = err;
+                            observer.onError(err);
+                        }
+                    }
+                }
+            }
+        }, {
+            key: 'onCompleted',
+            value: function onCompleted() {
+                if (!this._hasComplete && !this._hasError) {
+                    this._hasComplete = true;
+                    var os = this._observers.slice(0);
+                    for (var i = 0, len = os.length; i < len; i++) {
+                        var observer = os[i];
+                        observer.onCompleted();
+                    }
+                }
+            }
+        }, {
+            key: 'onError',
+            value: function onError(err) {
+                if (!this._hasError) {
+                    this._hasError = true;
+                    var os = this._observers.slice(0);
+                    for (var i = 0, len = os.length; i < len; i++) {
+                        var observer = os[i];
+                        observer.onError(err);
+                    }
+                }
+            }
+        }, {
+            key: 'getObserverCount',
+            value: function getObserverCount() {
+                return this._observers.length;
+            }
+        }, {
+            key: 'hasError',
+            get: function get() {
+                return this._hasError;
+            }
+        }, {
+            key: 'error',
+            get: function get() {
+                return this._error;
+            }
+        }]);
+    
+        return Subject;
+    })(_Observable3['default']);
+    
+    function observe(observer) {
+        var _this = this;
+    
+        /*jshint validthis:true */
+        this._observers.push(observer);
+        return {
+            dispose: function dispose() {
+                _system.utils.removeAll(_this._observers, observer);
+            }
+        };
+    }
+    exports['default'] = Subject;
     module.exports = exports['default'];
 
 /***/ },
@@ -2658,6 +2487,55 @@ return /******/ (function(modules) { // webpackBootstrap
     'use strict';
     
     Object.defineProperty(exports, '__esModule', {
+      value: true
+    });
+    
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+    
+    var _events = __webpack_require__(24);
+    
+    var _events2 = _interopRequireDefault(_events);
+    
+    var _DisposableBase = __webpack_require__(28);
+    
+    var _DisposableBase2 = _interopRequireDefault(_DisposableBase);
+    
+    var _ModelBase = __webpack_require__(29);
+    
+    var _ModelBase2 = _interopRequireDefault(_ModelBase);
+    
+    var _ModelRootBase = __webpack_require__(30);
+    
+    var _ModelRootBase2 = _interopRequireDefault(_ModelRootBase);
+    
+    exports['default'] = { events: _events2['default'], DisposableBase: _DisposableBase2['default'], ModelBase: _ModelBase2['default'], ModelRootBase: _ModelRootBase2['default'] };
+    module.exports = exports['default'];
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+    // notice_start
+    /*
+     * Copyright 2015 Keith Woods
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    // notice_end
+    
+    'use strict';
+    
+    Object.defineProperty(exports, '__esModule', {
         value: true
     });
     
@@ -2702,7 +2580,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = exports['default'];
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports) {
 
     // notice_start
@@ -2768,7 +2646,7 @@ return /******/ (function(modules) { // webpackBootstrap
     module.exports = exports["default"];
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
     // notice_start
@@ -2805,7 +2683,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
     
-    var _ModelBase2 = __webpack_require__(28);
+    var _ModelBase2 = __webpack_require__(29);
     
     var _ModelBase3 = _interopRequireDefault(_ModelBase2);
     
@@ -2863,248 +2741,6 @@ return /******/ (function(modules) { // webpackBootstrap
     })(_ModelBase3['default']);
     
     exports['default'] = ModelRootBase;
-    module.exports = exports['default'];
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-    // notice_start
-    /*
-     * Copyright 2015 Keith Woods
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    // notice_end
-    
-    'use strict';
-    
-    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-    
-    var _Observable = __webpack_require__(18);
-    
-    var _Observable2 = _interopRequireDefault(_Observable);
-    
-    var _system = __webpack_require__(4);
-    
-    // TODO beta, needs test
-    _Observable2['default'].prototype.take = function (number) {
-        _system.Guard.isNumber(number, "provided value isn't a number");
-        var source = this;
-        var itemsReceived = 0;
-        var hasCompleted = false;
-        var observe = function observe(observer) {
-            return source.observe(function (arg1, arg2, arg3) {
-                // there is possibly some strange edge cases if the observer also pumps a new value, this 'should' cover that (no tests yet)
-                itemsReceived++;
-                var shouldYield = !number || itemsReceived <= number;
-                if (shouldYield) {
-                    observer.onNext(arg1, arg2, arg3);
-                }
-                var shouldComplete = !number || itemsReceived >= number;
-                if (!hasCompleted && shouldComplete) {
-                    hasCompleted = true;
-                    observer.onCompleted();
-                }
-            }, observer.onError.bind(observer), function () {
-                return observer.onCompleted();
-            });
-        };
-        return new _Observable2['default'](observe, this._router);
-    };
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-    // notice_start
-    /*
-     * Copyright 2015 Keith Woods
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    // notice_end
-    
-    'use strict';
-    
-    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-    
-    var _Observable = __webpack_require__(18);
-    
-    var _Observable2 = _interopRequireDefault(_Observable);
-    
-    var _system = __webpack_require__(4);
-    
-    // TODO beta, needs test
-    _Observable2['default'].prototype['do'] = function (action) {
-        _system.Guard.isFunction(action, "provided value isn't a function");
-        var source = this;
-        var observe = function observe(observer) {
-            return source.observe(function (arg1, arg2, arg3) {
-                action(arg1, arg2, arg3);
-                observer.onNext(arg1, arg2, arg3);
-            }, observer.onError.bind(observer), function () {
-                return observer.onCompleted();
-            });
-        };
-        return new _Observable2['default'](observe, this._router);
-    };
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-    // notice_start
-    /*
-     * Copyright 2015 Keith Woods
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    // notice_end
-    
-    'use strict';
-    
-    Object.defineProperty(exports, '__esModule', {
-        value: true
-    });
-    
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-    
-    var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-    
-    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-    
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-    
-    function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-    
-    var _system = __webpack_require__(4);
-    
-    var _Observable2 = __webpack_require__(18);
-    
-    var _Observable3 = _interopRequireDefault(_Observable2);
-    
-    var Subject = (function (_Observable) {
-        _inherits(Subject, _Observable);
-    
-        function Subject(router) {
-            _classCallCheck(this, Subject);
-    
-            _get(Object.getPrototypeOf(Subject.prototype), 'constructor', this).call(this, undefined, router);
-            this._observe = observe.bind(this);
-            this._observers = [];
-            this._hasComplete = false;
-            this._hasError = false;
-        }
-    
-        _createClass(Subject, [{
-            key: 'onNext',
-    
-            // The reactivate implementation can push 3 arguments through the stream, initially this was setup to
-            // pass all arguments using .apply, however it's performance is about 40% slower than direct method calls
-            // given this, and that we only ever push a max of 3 args, it makes sense to hard code them.
-            value: function onNext(arg1, arg2, arg3) {
-                if (!this._hasComplete) {
-                    var os = this._observers.slice(0);
-                    for (var i = 0, len = os.length; i < len; i++) {
-                        if (this._hasError) break;
-                        var observer = os[i];
-                        try {
-                            observer.onNext(arg1, arg2, arg3);
-                        } catch (err) {
-                            this._hasError = true;
-                            this._error = err;
-                            observer.onError(err);
-                        }
-                    }
-                }
-            }
-        }, {
-            key: 'onCompleted',
-            value: function onCompleted() {
-                if (!this._hasComplete && !this._hasError) {
-                    this._hasComplete = true;
-                    var os = this._observers.slice(0);
-                    for (var i = 0, len = os.length; i < len; i++) {
-                        var observer = os[i];
-                        observer.onCompleted();
-                    }
-                }
-            }
-        }, {
-            key: 'onError',
-            value: function onError(err) {
-                if (!this._hasError) {
-                    this._hasError = true;
-                    var os = this._observers.slice(0);
-                    for (var i = 0, len = os.length; i < len; i++) {
-                        var observer = os[i];
-                        observer.onError(err);
-                    }
-                }
-            }
-        }, {
-            key: 'getObserverCount',
-            value: function getObserverCount() {
-                return this._observers.length;
-            }
-        }, {
-            key: 'hasError',
-            get: function get() {
-                return this._hasError;
-            }
-        }, {
-            key: 'error',
-            get: function get() {
-                return this._error;
-            }
-        }]);
-    
-        return Subject;
-    })(_Observable3['default']);
-    
-    function observe(observer) {
-        var _this = this;
-    
-        /*jshint validthis:true */
-        this._observers.push(observer);
-        return {
-            dispose: function dispose() {
-                _system.utils.removeAll(_this._observers, observer);
-            }
-        };
-    }
-    exports['default'] = Subject;
     module.exports = exports['default'];
 
 /***/ }

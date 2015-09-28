@@ -17,5 +17,5 @@
  // notice_end
 
 import AsyncWorkCompleteEvent from './AsyncWorkCompleteEvent';
-import SubModelChangedEvent from './SubModelChangedEvent';
-export default { AsyncWorkCompleteEvent, SubModelChangedEvent };
+import ModelChangedEvent from './ModelChangedEvent';
+export default { AsyncWorkCompleteEvent, ModelChangedEvent };

@@ -241,29 +241,12 @@ return /******/ (function(modules) { // webpackBootstrap
                 _system.Guard.isDefined(model, 'THe model argument must be defined');
                 if (options) _system.Guard.isObject(options, 'The options argument should be an object');
                 _system.Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
-                this._models[modelId] = new _ModelRecord2['default'](undefined, modelId, model, options);
-            }
-        }, {
-            key: 'addChildModel',
-            value: function addChildModel(parentModelId, childModelId, model, options) {
-                this._throwIfHalted();
-                _system.Guard.isString(parentModelId, 'The parentModelId argument should be a string');
-                _system.Guard.isString(childModelId, 'The childModelId argument should be a string');
-                _system.Guard.isDefined(model, 'The model argument should be defined');
-                if (options) _system.Guard.isObject(options, 'The options argument should be an object');
-    
-                var parentModelRecord = this._models[parentModelId];
-                if (!parentModelRecord) {
-                    throw new Error('Parent model with id [' + parentModelId + '] is not registered');
-                }
-                this._models[childModelId] = new _ModelRecord2['default'](parentModelId, childModelId, model, options);
-                parentModelRecord.childrenIds.push(childModelId);
+                this._models[modelId] = new _ModelRecord2['default'](modelId, model, options);
             }
         }, {
             key: 'removeModel',
             value: function removeModel(modelId) {
                 _system.Guard.isString(modelId, 'The modelId argument should be a string');
-    
                 var modelRecord = this._models[modelId];
                 if (modelRecord) {
                     modelRecord.wasRemoved = true;
@@ -283,22 +266,6 @@ return /******/ (function(modules) { // webpackBootstrap
                                 eventSubjects.preview.onCompleted();
                                 eventSubjects.normal.onCompleted();
                                 eventSubjects.committed.onCompleted();
-                            }
-                        }
-                    }
-                    for (var i = 0, len = modelRecord.childrenIds.length; i < len; i++) {
-                        var childModelId = modelRecord.childrenIds[i];
-                        this.removeModel(childModelId);
-                    }
-                    if (modelRecord.parentModelId) {
-                        var parentModelRecord = this._models[modelRecord.parentModelId];
-                        // parentModelRecord will be undefined if the parent was first removed
-                        if (parentModelRecord) {
-                            for (var i = 0; i < parentModelRecord.childrenIds.length; i++) {
-                                if (parentModelRecord.childrenIds[i] === modelId) {
-                                    parentModelRecord.childrenIds.splice(i, 1);
-                                    break;
-                                }
                             }
                         }
                     }
@@ -459,16 +426,9 @@ return /******/ (function(modules) { // webpackBootstrap
                                     }
                                 }
                             }
-                            if (modelRecord.parentModelId) {
-                                // if we're currently processing a child model, we raise a 'modelChangedEvent' to the parent
-                                // and set it as the next model to process.
-                                this.publishEvent(modelRecord.parentModelId, 'modelChangedEvent', new _modelEventsIndex.SubModelChangedEvent(modelRecord.modelId, eventRecord.eventType));
-                                modelRecord = this._models[modelRecord.parentModelId];
-                                hasEvents = true;
-                            } else {
-                                modelRecord = this._getNextModelRecordWithQueuedEvents();
-                                hasEvents = typeof modelRecord !== 'undefined';
-                            }
+                            this.broadcastEvent('modelChangedEvent', new _modelEventsIndex.ModelChangedEvent(modelRecord.modelId, eventRecord.eventType));
+                            modelRecord = this._getNextModelRecordWithQueuedEvents();
+                            hasEvents = typeof modelRecord !== 'undefined';
                         } // keep looping until any events raised during post event processing OR event that have come in for other models are processed
                         this._state.moveToDispatchModelUpdates();
                         this._dispatchModelUpdates();
@@ -1384,10 +1344,9 @@ return /******/ (function(modules) { // webpackBootstrap
     var ModelRecord = (function () {
         // parentModelId is undefined if it's the root
     
-        function ModelRecord(parentModelId, modelId, model, options) {
+        function ModelRecord(modelId, model, options) {
             _classCallCheck(this, ModelRecord);
     
-            this._parentModelId = parentModelId;
             this._modelId = modelId;
             this._model = model;
             this._eventQueue = [];
@@ -1395,7 +1354,6 @@ return /******/ (function(modules) { // webpackBootstrap
             this._wasRemoved = false;
             this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", options ? options.preEventProcessor : undefined);
             this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", options ? options.postEventProcessor : undefined);
-            this._childrenIds = [];
         }
     
         _createClass(ModelRecord, [{
@@ -1416,11 +1374,6 @@ return /******/ (function(modules) { // webpackBootstrap
                     };
                 }
                 return function () {/* noop processor */};
-            }
-        }, {
-            key: "parentModelId",
-            get: function get() {
-                return this._parentModelId;
             }
         }, {
             key: "modelId",
@@ -1462,11 +1415,6 @@ return /******/ (function(modules) { // webpackBootstrap
             key: "runPostEventProcessor",
             get: function get() {
                 return this._runPostEventProcessor;
-            }
-        }, {
-            key: "childrenIds",
-            get: function get() {
-                return this._childrenIds;
             }
         }]);
     
@@ -2333,11 +2281,11 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _AsyncWorkCompleteEvent2 = _interopRequireDefault(_AsyncWorkCompleteEvent);
     
-    var _SubModelChangedEvent = __webpack_require__(26);
+    var _ModelChangedEvent = __webpack_require__(26);
     
-    var _SubModelChangedEvent2 = _interopRequireDefault(_SubModelChangedEvent);
+    var _ModelChangedEvent2 = _interopRequireDefault(_ModelChangedEvent);
     
-    exports['default'] = { AsyncWorkCompleteEvent: _AsyncWorkCompleteEvent2['default'], SubModelChangedEvent: _SubModelChangedEvent2['default'] };
+    exports['default'] = { AsyncWorkCompleteEvent: _AsyncWorkCompleteEvent2['default'], ModelChangedEvent: _ModelChangedEvent2['default'] };
     module.exports = exports['default'];
 
 /***/ },
@@ -2436,18 +2384,18 @@ return /******/ (function(modules) { // webpackBootstrap
     
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     
-    var SubModelChangedEvent = (function () {
-        function SubModelChangedEvent(childModelId, eventType) {
-            _classCallCheck(this, SubModelChangedEvent);
+    var ModelChangedEvent = (function () {
+        function ModelChangedEvent(modelId, eventType) {
+            _classCallCheck(this, ModelChangedEvent);
     
-            this._childModelId = childModelId;
+            this._modelId = modelId;
             this._eventType = eventType;
         }
     
-        _createClass(SubModelChangedEvent, [{
-            key: "childModelId",
+        _createClass(ModelChangedEvent, [{
+            key: "modelId",
             get: function get() {
-                return this._childModelId;
+                return this._modelId;
             }
         }, {
             key: "eventType",
@@ -2456,10 +2404,10 @@ return /******/ (function(modules) { // webpackBootstrap
             }
         }]);
     
-        return SubModelChangedEvent;
+        return ModelChangedEvent;
     })();
     
-    exports["default"] = SubModelChangedEvent;
+    exports["default"] = ModelChangedEvent;
     module.exports = exports["default"];
 
 /***/ },

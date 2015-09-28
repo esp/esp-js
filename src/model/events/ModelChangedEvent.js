@@ -16,16 +16,16 @@
  */
  // notice_end
 
-class SubModelChangedEvent {
-    constructor(childModelId, eventType) {
-        this._childModelId = childModelId;
+class ModelChangedEvent {
+    constructor(modelId, eventType) {
+        this._modelId = modelId;
         this._eventType = eventType;
     }
-    get childModelId() {
-        return this._childModelId;
+    get modelId() {
+        return this._modelId;
     }
     get eventType() {
         return this._eventType;
     }
 }
-export default SubModelChangedEvent;
+export default ModelChangedEvent;

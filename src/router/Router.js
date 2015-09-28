@@ -23,7 +23,7 @@ import State from './State.js';
 import Status from './Status.js';
 import ModelRouter from './ModelRouter.js';
 import { Subject, Observable } from '../reactive/index';
-import { SubModelChangedEvent } from '../model/events/index';
+import { ModelChangedEvent } from '../model/events/index';
 import { Guard, utils, logger } from '../system';
 
 var _log = logger.create('Router');
@@ -42,25 +42,10 @@ export default class Router {
         Guard.isDefined(model, 'THe model argument must be defined');
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
-        this._models[modelId] = new ModelRecord(undefined, modelId, model, options);
-    }
-    addChildModel(parentModelId, childModelId, model, options) {
-        this._throwIfHalted();
-        Guard.isString(parentModelId, 'The parentModelId argument should be a string');
-        Guard.isString(childModelId, 'The childModelId argument should be a string');
-        Guard.isDefined(model, 'The model argument should be defined');
-        if(options) Guard.isObject(options, 'The options argument should be an object');
-
-        var parentModelRecord = this._models[parentModelId];
-        if(!parentModelRecord) {
-            throw new Error('Parent model with id [' + parentModelId + '] is not registered');
-        }
-        this._models[childModelId] = new ModelRecord(parentModelId, childModelId, model, options);
-        parentModelRecord.childrenIds.push(childModelId);
-    }
+        this._models[modelId] = new ModelRecord(modelId, model, options);
+    }  
     removeModel(modelId){
         Guard.isString(modelId, 'The modelId argument should be a string');
-
         let modelRecord = this._models[modelId];
         if(modelRecord){
             modelRecord.wasRemoved = true;
@@ -80,22 +65,6 @@ export default class Router {
                         eventSubjects.preview.onCompleted();
                         eventSubjects.normal.onCompleted();
                         eventSubjects.committed.onCompleted();
-                    }
-                }
-            }
-            for (let i = 0, len = modelRecord.childrenIds.length; i < len; i++) {
-                var childModelId = modelRecord.childrenIds[i];
-                this.removeModel(childModelId);
-            }
-            if(modelRecord.parentModelId) {
-                var parentModelRecord = this._models[modelRecord.parentModelId];
-                // parentModelRecord will be undefined if the parent was first removed
-                if(parentModelRecord) {
-                    for (let i = 0; i < parentModelRecord.childrenIds.length; i++) {
-                        if (parentModelRecord.childrenIds[i] === modelId) {
-                            parentModelRecord.childrenIds.splice(i, 1);
-                            break;
-                        }
                     }
                 }
             }
@@ -244,16 +213,9 @@ export default class Router {
                             }
                         }
                     }
-                    if (modelRecord.parentModelId) {
-                        // if we're currently processing a child model, we raise a 'modelChangedEvent' to the parent
-                        // and set it as the next model to process.
-                        this.publishEvent(modelRecord.parentModelId, 'modelChangedEvent', new SubModelChangedEvent(modelRecord.modelId, eventRecord.eventType));
-                        modelRecord = this._models[modelRecord.parentModelId];
-                        hasEvents = true;
-                    } else {
-                        modelRecord = this._getNextModelRecordWithQueuedEvents();
-                        hasEvents = typeof modelRecord !== 'undefined';
-                    }
+                    this.broadcastEvent('modelChangedEvent', new ModelChangedEvent(modelRecord.modelId, eventRecord.eventType));
+                    modelRecord = this._getNextModelRecordWithQueuedEvents();
+                    hasEvents = typeof modelRecord !== 'undefined';
                 }  // keep looping until any events raised during post event processing OR event that have come in for other models are processed
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();

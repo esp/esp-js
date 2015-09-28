@@ -28,7 +28,6 @@ class Observable {
         return new Observable(observe, router);
     }
     constructor(observe, router) {
-        Guard.isDefined(observe, 'observe Required');
         this._observe = observe;
         /*
          * note the Observable has explicit knowledge of the router to enable advanced
@@ -53,6 +52,7 @@ class Observable {
             var onCompleted = arguments.length >= 2 ? arguments[2] : undefined;
             observer = new Observer(onNext, onError, onCompleted);
         }
+        Guard.isDefined(this._observe, 'observe Required');
         return this._observe(observer);
     }
 }

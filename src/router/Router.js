@@ -17,7 +17,7 @@
  // notice_end
 
 import EventContext from './EventContext';
-import EventStage from './EventStage';
+import ObservationStage from './ObservationStage';
 import ModelRecord from './ModelRecord';
 import State from './State.js';
 import Status from './Status.js';
@@ -162,9 +162,9 @@ export default class Router {
 
             if(stage) {
                 Guard.isString(stage, 'The stage argument should be a string');
-                Guard.isTrue(stage === EventStage.preview || stage === EventStage.normal || stage === EventStage.committed, 'The stage argument value of [' + stage + '] is incorrect. It should be preview, normal or committed.');
+                Guard.isTrue(stage === ObservationStage.preview || stage === ObservationStage.normal || stage === ObservationStage.committed, 'The stage argument value of [' + stage + '] is incorrect. It should be preview, normal or committed.');
             } else {
-                stage = EventStage.normal;
+                stage = ObservationStage.normal;
             }
             let subjects = this._getModelsEventSubjects(modelId, eventType);
             let subject = subjects[stage];

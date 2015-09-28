@@ -17,10 +17,10 @@
  // notice_end
 
 
-class EventStage {
+class ObservationStage {
     static get preview() { return  'preview'; }
     static get normal() { return  'normal'; }
     static get committed() { return  'committed'; }
 }
 
-export default EventStage;
+export default ObservationStage;

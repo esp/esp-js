@@ -21,7 +21,8 @@ import Observable from './Observable';
 
 class Subject extends Observable  {
     constructor(router) {
-        super(observe.bind(this), router);
+        super(undefined, router);
+        this._observe = observe.bind(this);
         this._observers = [];
         this._hasComplete = false;
         this._hasError = false;

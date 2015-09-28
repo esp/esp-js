@@ -611,20 +611,20 @@ describe('Router', () => {
                     commitStage: ''
                 };
                 _router.registerModel('modelId1', {});
-                _router.getEventObservable('modelId1', 'Event1', esp.EventStage.preview)
+                _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.preview)
                     .observe((model, event, eventContext) => {
                         receivedAtPreview = true;
-                        actOnEventContext(eventContext, esp.EventStage.preview);
+                        actOnEventContext(eventContext, esp.ObservationStage.preview);
                     });
-                _router.getEventObservable('modelId1', 'Event1', esp.EventStage.normal)
+                _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.normal)
                     .observe((model, event, eventContext) => {
                         receivedAtNormal = true;
-                        actOnEventContext(eventContext, esp.EventStage.normal);
+                        actOnEventContext(eventContext, esp.ObservationStage.normal);
                     });
-                _router.getEventObservable('modelId1', 'Event1', esp.EventStage.committed)
+                _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.committed)
                     .observe((model, event, eventContext) => {
                         receivedAtCommitted = true;
-                        actOnEventContext(eventContext, esp.EventStage.committed);
+                        actOnEventContext(eventContext, esp.ObservationStage.committed);
                     });
             });
 
@@ -635,7 +635,7 @@ describe('Router', () => {
 
             it('doesn\'t propagate events canceled at preview stage', () => {
                 eventContextActions.shouldCancel = true;
-                eventContextActions.cancelStage = esp.EventStage.preview;
+                eventContextActions.cancelStage = esp.ObservationStage.preview;
                 publishEvent();
                 expect(receivedAtPreview).toBe(true);
                 expect(receivedAtNormal).toBe(false);
@@ -653,14 +653,14 @@ describe('Router', () => {
 
             it('propagates committed events to the committed stage ', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.normal;
+                eventContextActions.commitStage = esp.ObservationStage.normal;
                 publishEvent();
                 expect(receivedAtCommitted).toBe(true);
             });
 
             it('throws if event committed at the preview stage', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.preview;
+                eventContextActions.commitStage = esp.ObservationStage.preview;
                 expect(() => {
                     publishEvent();
                 }).toThrow();
@@ -668,7 +668,7 @@ describe('Router', () => {
 
             it('throws if event canceled at the normal stage', () => {
                 eventContextActions.shouldCancel = true;
-                eventContextActions.cancelStage = esp.EventStage.normal;
+                eventContextActions.cancelStage = esp.ObservationStage.normal;
                 expect(() => {
                     publishEvent();
                 }).toThrow();
@@ -676,9 +676,9 @@ describe('Router', () => {
 
             it('throws if event canceled at the committed stage', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.normal;
+                eventContextActions.commitStage = esp.ObservationStage.normal;
                 eventContextActions.shouldCancel = true;
-                eventContextActions.cancelStage = esp.EventStage.committed;
+                eventContextActions.cancelStage = esp.ObservationStage.committed;
                 expect(() => {
                     publishEvent();
                 }).toThrow();
@@ -686,7 +686,7 @@ describe('Router', () => {
 
             it('throws if event committed at the committed stage', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.committed;
+                eventContextActions.commitStage = esp.ObservationStage.committed;
                 _router.getEventObservable('modelId1', 'Event1')
                     .observe((model, event, eventContext) => {
                         eventContext.commit();

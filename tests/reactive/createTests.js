@@ -26,11 +26,10 @@ describe('.create', () => {
     });
 
     it('.create invokes the subscription factory on observable subscription', () => {
-        var mer = {};
         var subject = new reactive.Subject();
         var stream  = reactive.Observable.create(o => {
             return subject.observe(o);
-        }, mer);
+        });
         var received = [];
         stream.observe(i => {
             received.push(i);

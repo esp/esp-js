@@ -16,7 +16,7 @@
  */
  // notice_end
 
-exports.EventStage = require('./router/EventStage');
+exports.ObservationStage = require('./router/ObservationStage');
 exports.Router = require('./router/Router');
 exports.model = require('./model');
 

@@ -39,5 +39,5 @@ Observable.prototype.takeUntil = function(predicate, inclusive) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe, this._router);
+    return new Observable(observe);
 };

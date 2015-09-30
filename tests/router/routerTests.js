@@ -338,6 +338,9 @@ describe('Router', () => {
             _router.getEventObservable('modelId4', 'Event2').observe(() => {
                wasPublished = true;
             });
+            _router.getEventObservable('modelId4', 'Event1').observe(() => {
+                /* noop */
+            });
             _router.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(wasPublished).toEqual(true);
         });
@@ -611,20 +614,20 @@ describe('Router', () => {
                     commitStage: ''
                 };
                 _router.registerModel('modelId1', {});
-                _router.getEventObservable('modelId1', 'Event1', esp.EventStage.preview)
+                _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.preview)
                     .observe((model, event, eventContext) => {
                         receivedAtPreview = true;
-                        actOnEventContext(eventContext, esp.EventStage.preview);
+                        actOnEventContext(eventContext, esp.ObservationStage.preview);
                     });
-                _router.getEventObservable('modelId1', 'Event1', esp.EventStage.normal)
+                _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.normal)
                     .observe((model, event, eventContext) => {
                         receivedAtNormal = true;
-                        actOnEventContext(eventContext, esp.EventStage.normal);
+                        actOnEventContext(eventContext, esp.ObservationStage.normal);
                     });
-                _router.getEventObservable('modelId1', 'Event1', esp.EventStage.committed)
+                _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.committed)
                     .observe((model, event, eventContext) => {
                         receivedAtCommitted = true;
-                        actOnEventContext(eventContext, esp.EventStage.committed);
+                        actOnEventContext(eventContext, esp.ObservationStage.committed);
                     });
             });
 
@@ -635,7 +638,7 @@ describe('Router', () => {
 
             it('doesn\'t propagate events canceled at preview stage', () => {
                 eventContextActions.shouldCancel = true;
-                eventContextActions.cancelStage = esp.EventStage.preview;
+                eventContextActions.cancelStage = esp.ObservationStage.preview;
                 publishEvent();
                 expect(receivedAtPreview).toBe(true);
                 expect(receivedAtNormal).toBe(false);
@@ -653,14 +656,14 @@ describe('Router', () => {
 
             it('propagates committed events to the committed stage ', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.normal;
+                eventContextActions.commitStage = esp.ObservationStage.normal;
                 publishEvent();
                 expect(receivedAtCommitted).toBe(true);
             });
 
             it('throws if event committed at the preview stage', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.preview;
+                eventContextActions.commitStage = esp.ObservationStage.preview;
                 expect(() => {
                     publishEvent();
                 }).toThrow();
@@ -668,7 +671,7 @@ describe('Router', () => {
 
             it('throws if event canceled at the normal stage', () => {
                 eventContextActions.shouldCancel = true;
-                eventContextActions.cancelStage = esp.EventStage.normal;
+                eventContextActions.cancelStage = esp.ObservationStage.normal;
                 expect(() => {
                     publishEvent();
                 }).toThrow();
@@ -676,9 +679,9 @@ describe('Router', () => {
 
             it('throws if event canceled at the committed stage', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.normal;
+                eventContextActions.commitStage = esp.ObservationStage.normal;
                 eventContextActions.shouldCancel = true;
-                eventContextActions.cancelStage = esp.EventStage.committed;
+                eventContextActions.cancelStage = esp.ObservationStage.committed;
                 expect(() => {
                     publishEvent();
                 }).toThrow();
@@ -686,7 +689,7 @@ describe('Router', () => {
 
             it('throws if event committed at the committed stage', () => {
                 eventContextActions.shouldCommit = true;
-                eventContextActions.commitStage = esp.EventStage.committed;
+                eventContextActions.commitStage = esp.ObservationStage.committed;
                 _router.getEventObservable('modelId1', 'Event1')
                     .observe((model, event, eventContext) => {
                         eventContext.commit();
@@ -944,28 +947,17 @@ describe('Router', () => {
         });
     });
 
-    describe('child models', () => {
+    describe('multiple models', () => {
 
-        var _model, _otherModel, _rootOptionsHelper, _childOptionsHelper, _grandchildOptionsHelper;
+        var _model, _model2, _model1OptionsHelper, _model2OptionsHelper;
 
         beforeEach(() => {
-            _model = {
-                id:"rootId",
-                child: {
-                    id:"childId",
-                    grandchild: {
-                        id:"grandchildId"
-                    }
-                }
-            };
-            _otherModel = { id : "otherModelId" };
-            _rootOptionsHelper = createOptionsHelper();
-            _childOptionsHelper = createOptionsHelper();
-            _grandchildOptionsHelper = createOptionsHelper();
-            _router.registerModel(_otherModel.id, _otherModel);
-            _router.registerModel(_model.id, _model, _rootOptionsHelper.options);
-            _router.addChildModel(_model.id, _model.child.id, _model.child, _childOptionsHelper.options);
-            _router.addChildModel(_model.child.id, _model.child.grandchild.id, _model.child.grandchild, _grandchildOptionsHelper.options);
+            _model = { id: "model1"  };
+            _model2 = { id : " model2" };
+            _model1OptionsHelper = createOptionsHelper();
+            _model2OptionsHelper = createOptionsHelper();
+            _router.registerModel(_model.id, _model, _model1OptionsHelper.options);
+            _router.registerModel(_model2.id, _model2, _model2OptionsHelper.options);
         });
 
         function createOptionsHelper() {
@@ -984,177 +976,52 @@ describe('Router', () => {
             return helper;
         }
 
-        it('should throw if parentModelId undefined', function() {
-            expect(() => {_router.addChildModel(undefined, undefined, undefined); }).toThrow(new Error('The parentModelId argument should be a string'));
-        });
-        it('should throw if childModelId undefined', function() {
-            expect(() => {_router.addChildModel("id", undefined, undefined); }).toThrow(new Error('The childModelId argument should be a string'));
-        });
-        it('should throw if model undefined', () => {
-            expect(() => {_router.addChildModel("id", "childID", undefined); }).toThrow(new Error('The model argument should be defined'));
-        });
-        it('should throw if parentModelId not registered', () => {
-            expect(() => {_router.addChildModel("id", "childID", {}); }).toThrow(new Error('Parent model with id [id] is not registered'));
-        });
-
-        it('should deliver the child model and event to event observers', () => {
-            var receivedModel, receivedEvent;
-            _router.getEventObservable(_model.child.id, "fooEvent").observe((model, event) => {
-                receivedModel = model;
-                receivedEvent = event;
+        it('should deliver correct model and event to target event observers', () => {
+            var receivedModel2, receivedEvent2, model1ReceivedEvent = false;
+            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => {
+                model1ReceivedEvent = true;
             });
-            _router.publishEvent(_model.child.id, "fooEvent", 1);
-            expect(receivedModel).toBeDefined();
-            expect(receivedModel).toBe(_model.child);
-            expect(receivedEvent).toBeDefined();
-            expect(receivedEvent).toEqual(1);
+            _router.getEventObservable(_model2.id, "fooEvent").observe((model, event) => {
+                receivedModel2 = model;
+                receivedEvent2 = event;
+            });
+            _router.publishEvent(_model2.id, "fooEvent", 1);
+            expect(receivedModel2).toBeDefined();
+            expect(receivedModel2).toBe(_model2);
+            expect(receivedEvent2).toBeDefined();
+            expect(receivedEvent2).toEqual(1);
+            expect(model1ReceivedEvent).toBe(false);
+
         });
 
         it('should dispatch updates for the child model only', () => {
-            var parentUpdateCount = 0, childUpdateCount = 0;
-            _router.getEventObservable(_model.child.id, "fooEvent").observe((model, event) => { /* noop */});
+            var model1UpdateCount = 0, model2UpdateCount = 0;
+            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => { /* noop */});
+            _router.getEventObservable(_model2.id, "fooEvent").observe((model, event) => { /* noop */});
             _router.getModelObservable(_model.id).observe(() => {
-                parentUpdateCount++;
+                model1UpdateCount++;
             });
-            _router.getModelObservable(_model.child.id).observe(() => {
-                childUpdateCount++;
+            _router.getModelObservable(_model2.id).observe(() => {
+                model2UpdateCount++;
             });
-            _router.publishEvent(_model.child.id, "fooEvent", 1);
-            expect(parentUpdateCount).toEqual(0);
-            expect(childUpdateCount).toEqual(1);
+            _router.publishEvent(_model2.id, "fooEvent", 1);
+            expect(model1UpdateCount).toEqual(0);
+            expect(model2UpdateCount).toEqual(1);
         });
 
-        it('should raise a model changed event to parent when child\'s event workflow done', () => {
-            var receivedModel, receivedEvent, childsWorkflowDone;
-            _router.getEventObservable(_model.child.id, "fooEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model.id, "modelChangedEvent").observe((model, event) => {
+        it('should raise a model changed when child\'s event workflow done', () => {
+            var receivedModel, receivedEvent, workflowDone;
+            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => { /* noop */});
+            _router.getEventObservable(_model2.id, "modelChangedEvent").observe((model, event) => {
                 receivedModel = model;
                 receivedEvent = event;
-                childsWorkflowDone = _childOptionsHelper.modelsSentForPostProcessing.length === 1;
+                workflowDone = _model1OptionsHelper.modelsSentForPostProcessing.length === 1;
             });
-            _router.publishEvent(_model.child.id, "fooEvent", 1);
-            expect(receivedModel).toBe(_model);
+            _router.publishEvent(_model.id, "fooEvent", 1);
+            expect(receivedModel).toBe(_model2);
             expect(receivedEvent).toBeDefined();
-            expect(receivedEvent.childModelId).toEqual(_model.child.id);
-            expect(receivedEvent.eventType).toEqual("fooEvent");
-            expect(childsWorkflowDone).toEqual(true);
-        });
-
-        it('should process parents modelChangedEvent before events for other models', () => {
-            var testPassed = false, barEventReceived = false;
-            _router.getEventObservable(_otherModel.id, "barEvent").observe((model, event) => {
-                barEventReceived = true;
-            });
-            _router.getEventObservable(_model.child.id, "fooEvent").observe((model, event) => {
-                // even though this 'barEvent' will get raised before the 'modelChangedEvent',
-                // it should be processed after.
-                _router.publishEvent(_otherModel.id, "barEvent", 1);
-                testPassed =
-                    _rootOptionsHelper.modelsSentForPreProcessing.length === 0 &&
-                    _rootOptionsHelper.modelsSentForPostProcessing.length === 0 &&
-                    _childOptionsHelper.modelsSentForPreProcessing.length === 1 &&
-                    _childOptionsHelper.modelsSentForPostProcessing.length === 0;
-            });
-            _router.getEventObservable(_model.id, "modelChangedEvent").observe((model, event) => {
-                testPassed =
-                    testPassed &&
-                    !barEventReceived &&
-                    _rootOptionsHelper.modelsSentForPreProcessing.length === 1 &&
-                    _rootOptionsHelper.modelsSentForPostProcessing.length === 0 &&
-                    _childOptionsHelper.modelsSentForPreProcessing.length === 1 &&
-                    _childOptionsHelper.modelsSentForPostProcessing.length === 1;
-            });
-            _router.publishEvent(_model.child.id, "fooEvent", 1);
-            testPassed =
-                testPassed &&
-                barEventReceived &&
-                _rootOptionsHelper.modelsSentForPreProcessing.length === 1 &&
-                _rootOptionsHelper.modelsSentForPostProcessing.length === 1 &&
-                _childOptionsHelper.modelsSentForPreProcessing.length === 1 &&
-                _childOptionsHelper.modelsSentForPostProcessing.length === 1;
-            expect(testPassed).toEqual(true);
-        });
-
-        it('should deliver parent model update before child models', () => {
-            var updateOrders = [];
-            _router.getModelObservable(_model.child.grandchild.id).observe(() => {
-                updateOrders.push("grandchild");
-            });
-            _router.getModelObservable(_model.child.id).observe(() => {
-                updateOrders.push("child");
-            });
-            _router.getModelObservable(_model.id).observe(() => {
-                updateOrders.push("parent");
-            });
-            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model.child.id, "fooEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model.child.grandchild.id, "fooEvent").observe((model, event) => { /* noop */});
-
-            _router.getEventObservable(_model.id, "modelChangedEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model.child.id, "modelChangedEvent").observe((model, event) => { /* noop */});
-
-            _router.publishEvent(_model.child.grandchild.id, "fooEvent", 1);
-            expect(updateOrders).toEqual(["parent", "child", "grandchild"]);
-        });
-
-        describe('.removeChildModel', () => {
-            it('should remove the child', () => {
-               var model = {
-                    id:"rootId1",
-                    child: {
-                        id:"childId"
-                    }
-                };
-                _router.registerModel(model.id, model);
-                _router.addChildModel(model.id, model.child.id, model.child);
-                expect(_router._models[model.child.id]).toBeDefined();
-                expect(_router._models[model.id].childrenIds.length).toEqual(1);
-            });
- 
-            it('should remove all children when a parent is removed', () => {
-                var rootCompleted = false, childCompleted = false, grandChildCompleted = false;
-                _router.getModelObservable(_model.id).observe(
-                    () => {                     },
-                    ex => {},
-                    () =>{
-                        rootCompleted = true;
-                    }
-                );
-                _router.getModelObservable(_model.child.id).observe(
-                    () => {                     },
-                    ex => {},
-                    () =>{
-                        childCompleted = true;
-                    }
-                );
-                _router.getModelObservable(_model.child.grandchild.id).observe(
-                    () => {                     },
-                    ex => {},
-                    () =>{
-                        grandChildCompleted = true;
-                    }
-                );
-                _router.removeModel(_model.id);
-                expect(rootCompleted).toEqual(true);
-                expect(childCompleted).toEqual(true);
-                expect(grandChildCompleted).toEqual(true);
-            });
-
-            it('should remove reference to child from parent', ()=> {
-                var model = { id:"rootId1"  };
-                var child1 = { id :"1" };
-                var child2 = { id :"2" };
-                var child3 = { id :"3" };
-                var child4 = { id :"4" };
-                _router.registerModel(model.id, model);
-                _router.addChildModel(model.id, child1.id, child1);
-                _router.addChildModel(model.id, child2.id, child2);
-                _router.addChildModel(model.id, child3.id, child3);
-                _router.addChildModel(model.id, child4.id, child4);
-                expect(_router._models[model.id].childrenIds).toEqual(["1","2","3","4"]);
-                _router.removeModel(child3.id);
-                expect(_router._models[model.id].childrenIds).toEqual(["1","2","4"]);
-            });
+            expect(receivedEvent.modelId).toBe(_model.id);
+            expect(workflowDone).toEqual(true);
         });
     });
 

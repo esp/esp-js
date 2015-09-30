@@ -20,27 +20,15 @@ import { Guard } from '../system';
 import Observer from './Observer';
 
 class Observable {
-    static create(onObserve, router) {
-        Guard.lengthIs(arguments, 2, "Incorrect argument count on Observable");
+    static create(onObserve) {
+        Guard.lengthIs(arguments, 1, "Incorrect argument count on Observable, expect 1 onObserve function");
         var observe =  observer => {
             return onObserve(observer);
         };
-        return new Observable(observe, router);
+        return new Observable(observe);
     }
-    constructor(observe, router) {
-        Guard.isDefined(observe, 'observe Required');
+    constructor(observe) {
         this._observe = observe;
-        /*
-         * note the Observable has explicit knowledge of the router to enable advanced
-         * scenarios whereby links in the observable stream re-post events back into the
-         * workflow, it enables the results of async operations and held event actions
-         * to be posted back through the full event workflow. It does feel a little dirty
-         * but it's reasonable for now. Perhaps the entire reactive objects could be wrapped
-         * in a configurable module whereby each instance of the router get's it's own copy,
-         * then only the explicit extensions to Observable could access the instance of
-         * the router they require.
-         */
-        this._router = router;
     }
     observe() {
         var observer;
@@ -53,6 +41,7 @@ class Observable {
             var onCompleted = arguments.length >= 2 ? arguments[2] : undefined;
             observer = new Observer(onNext, onError, onCompleted);
         }
+        Guard.isDefined(this._observe, '_observe not set');
         return this._observe(observer);
     }
 }

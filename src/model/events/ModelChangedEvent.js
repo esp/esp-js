@@ -16,11 +16,16 @@
  */
  // notice_end
 
-
-class EventStage {
-    static get preview() { return  'preview'; }
-    static get normal() { return  'normal'; }
-    static get committed() { return  'committed'; }
+class ModelChangedEvent {
+    constructor(modelId, eventType) {
+        this._modelId = modelId;
+        this._eventType = eventType;
+    }
+    get modelId() {
+        return this._modelId;
+    }
+    get eventType() {
+        return this._eventType;
+    }
 }
-
-export default EventStage;
+export default ModelChangedEvent;

@@ -44,5 +44,5 @@ Observable.prototype.take = function(number) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe, this._router);
+    return new Observable(observe);
 };

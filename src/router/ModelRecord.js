@@ -20,8 +20,7 @@ import { Guard } from '../system';
 
 class ModelRecord {
     // parentModelId is undefined if it's the root
-    constructor(parentModelId, modelId, model, options) {
-        this._parentModelId = parentModelId;
+    constructor(modelId, model, options) {
         this._modelId = modelId;
         this._model = model;
         this._eventQueue = [];
@@ -29,10 +28,6 @@ class ModelRecord {
         this._wasRemoved = false;
         this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", options ? options.preEventProcessor : undefined);
         this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", options ? options.postEventProcessor : undefined);
-        this._childrenIds = [];
-    }
-    get parentModelId() {
-        return this._parentModelId;
     }
     get modelId() {
         return this._modelId;
@@ -60,9 +55,6 @@ class ModelRecord {
     }
     get runPostEventProcessor() {
         return this._runPostEventProcessor;
-    }
-    get childrenIds() {
-        return this._childrenIds;
     }
     _createEventProcessor(name, processor) {
         if(processor) {

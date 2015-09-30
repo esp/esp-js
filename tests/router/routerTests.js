@@ -221,7 +221,7 @@ describe('Router', () => {
             expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow(new Error('The modelId argument should be a string'));
         });
 
-        fit('queues and processes events received during event loop by model id', () => {
+        it('queues and processes events received during event loop by model id', () => {
             var model1ProcessorReceived = 0, testPassed = false;
             _router.registerModel('modelId1', {});
             _router.registerModel('modelId2', {});
@@ -337,6 +337,9 @@ describe('Router', () => {
             var wasPublished = false;
             _router.getEventObservable('modelId4', 'Event2').observe(() => {
                wasPublished = true;
+            });
+            _router.getEventObservable('modelId4', 'Event1').observe(() => {
+                /* noop */
             });
             _router.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(wasPublished).toEqual(true);
@@ -984,7 +987,7 @@ describe('Router', () => {
             });
             _router.publishEvent(_model2.id, "fooEvent", 1);
             expect(receivedModel2).toBeDefined();
-            expect(receivedModel2).toBe(_model);
+            expect(receivedModel2).toBe(_model2);
             expect(receivedEvent2).toBeDefined();
             expect(receivedEvent2).toEqual(1);
             expect(model1ReceivedEvent).toBe(false);
@@ -1009,14 +1012,15 @@ describe('Router', () => {
         it('should raise a model changed when child\'s event workflow done', () => {
             var receivedModel, receivedEvent, workflowDone;
             _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model.id, "modelChangedEvent").observe((model, event) => {
+            _router.getEventObservable(_model2.id, "modelChangedEvent").observe((model, event) => {
                 receivedModel = model;
                 receivedEvent = event;
                 workflowDone = _model1OptionsHelper.modelsSentForPostProcessing.length === 1;
             });
-            _router.publishEvent(_model1.id, "fooEvent", 1);
-            expect(receivedModel).toBe(_model);
+            _router.publishEvent(_model.id, "fooEvent", 1);
+            expect(receivedModel).toBe(_model2);
             expect(receivedEvent).toBeDefined();
+            expect(receivedEvent.modelId).toBe(_model.id);
             expect(workflowDone).toEqual(true);
         });
     });

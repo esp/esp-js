@@ -365,12 +365,18 @@ return /******/ (function(modules) { // webpackBootstrap
                     throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
                 } else {
                     try {
-                        var subjects = this._getModelsEventSubjects(modelId, eventType);
+                        var shouldEnqueue = false;
+                        var modelEventSubject = this._modelEventSubjects[modelId];
                         // only enqueue if the model has observers for the given event type
-                        if (subjects.hasOwnProperty(eventType)) {
-                            modelRecord.eventQueue.push({ eventType: eventType, event: event });
+                        if (typeof modelEventSubject !== 'undefined') {
+                            if (modelEventSubject.hasOwnProperty(eventType)) {
+                                shouldEnqueue = true;
+                            }
                         }
-                        this._purgeEventQueues();
+                        if (shouldEnqueue) {
+                            modelRecord.eventQueue.push({ eventType: eventType, event: event });
+                            this._purgeEventQueues();
+                        }
                     } catch (err) {
                         this._halt(err);
                     }

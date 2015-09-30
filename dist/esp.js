@@ -400,9 +400,7 @@ return /******/ (function(modules) { // webpackBootstrap
             value: function _purgeEventQueues() {
                 if (this._state.currentStatus === _StatusJs2['default'].Idle) {
                     var modelRecord = this._getNextModelRecordWithQueuedEvents();
-                    var hasEvents = true;
-    
-                    // TODO -> Explanation of why we have the two while loops
+                    var hasEvents = typeof modelRecord !== 'undefined';
                     while (hasEvents) {
                         while (hasEvents) {
                             this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);

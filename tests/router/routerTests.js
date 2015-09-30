@@ -221,7 +221,7 @@ describe('Router', () => {
             expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow(new Error('The modelId argument should be a string'));
         });
 
-        it('queues and processes events received during event loop by model id', () => {
+        fit('queues and processes events received during event loop by model id', () => {
             var model1ProcessorReceived = 0, testPassed = false;
             _router.registerModel('modelId1', {});
             _router.registerModel('modelId2', {});

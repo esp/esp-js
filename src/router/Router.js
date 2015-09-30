@@ -149,18 +149,24 @@ export default class Router {
     _eventQueue(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
         if(eventType === 'modelChangedEvent' && event.modelId === modelId)
-            return;
+            return; 
         let modelRecord = this._models[modelId];
         if (typeof modelRecord === 'undefined') {
             throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
         } else {
             try {
-                let subjects = this._getModelsEventSubjects(modelId, eventType);
+                let shouldEnqueue = false;
+                let modelEventSubject = this._modelEventSubjects[modelId];
                 // only enqueue if the model has observers for the given event type
-                if(subjects.hasOwnProperty(eventType)) {
-                    modelRecord.eventQueue.push({eventType: eventType, event: event});
+                if (typeof modelEventSubject !== 'undefined') {
+                    if(modelEventSubject.hasOwnProperty(eventType)) {
+                        shouldEnqueue = true;
+                    }
                 }
-                this._purgeEventQueues();
+                if(shouldEnqueue) {
+                    modelRecord.eventQueue.push({eventType: eventType, event: event});
+                    this._purgeEventQueues();
+                }
             } catch (err) {
                 this._halt(err);
             }
@@ -186,9 +192,7 @@ export default class Router {
     _purgeEventQueues() {
         if (this._state.currentStatus === Status.Idle) {
             let modelRecord = this._getNextModelRecordWithQueuedEvents();
-            let hasEvents = true;
-
-            // TODO -> Explanation of why we have the two while loops
+            let hasEvents = typeof modelRecord !== 'undefined';
             while (hasEvents) {
                 while (hasEvents) {
                     this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);

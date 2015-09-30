@@ -29,7 +29,7 @@ module.exports = function (config) {
         },
         webpack: {
             watch: false,
-            devtool: "eval",
+            devtool: "inline-source-map",
             module: {
                 loaders: [
                     {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader?sourceMap=true'}

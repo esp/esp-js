@@ -277,22 +277,12 @@ return /******/ (function(modules) { // webpackBootstrap
                 _system.Guard.isString(modelId, 'The modelId argument should be a string');
                 _system.Guard.isString(eventType, 'The eventType argument should be a string');
                 _system.Guard.isDefined(event, 'The event argument must be defined');
-    
                 this._throwIfHalted();
                 if (this._state.currentStatus === _StatusJs2['default'].EventExecution) {
                     throw new Error('You can not publish further events when performing an event execution. modelId1: [' + modelId + '], eventType:[' + eventType + ']');
                 }
-                var modelRecord = this._models[modelId];
-                if (typeof modelRecord === 'undefined') {
-                    throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
-                } else {
-                    try {
-                        modelRecord.eventQueue.push({ eventType: eventType, event: event });
-                        this._purgeEventQueues();
-                    } catch (err) {
-                        this._halt(err);
-                    }
-                }
+                this._eventQueue(modelId, eventType, event);
+                this._purgeEventQueues();
             }
         }, {
             key: 'broadcastEvent',
@@ -301,11 +291,10 @@ return /******/ (function(modules) { // webpackBootstrap
                 _system.Guard.isDefined(event, 'The event argument should be defined');
                 for (var modelId in this._models) {
                     if (this._models.hasOwnProperty(modelId)) {
-                        var modelRecord = this._models[modelId];
-                        modelRecord.eventQueue.push({ eventType: eventType, event: event });
-                        this._purgeEventQueues();
+                        this._eventQueue(modelId, eventType, event);
                     }
                 }
+                this._purgeEventQueues();
             }
         }, {
             key: 'executeEvent',
@@ -365,6 +354,27 @@ return /******/ (function(modules) { // webpackBootstrap
             value: function createModelRouter(targetModelId) {
                 _system.Guard.isString(targetModelId, 'The targetModelId argument should be a string');
                 return new _ModelRouterJs2['default'](this, targetModelId);
+            }
+        }, {
+            key: '_eventQueue',
+            value: function _eventQueue(modelId, eventType, event) {
+                // don't enqueue a model changed event for the same model that changed
+                if (eventType === 'modelChangedEvent' && event.modelId === modelId) return;
+                var modelRecord = this._models[modelId];
+                if (typeof modelRecord === 'undefined') {
+                    throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
+                } else {
+                    try {
+                        var subjects = this._getModelsEventSubjects(modelId, eventType);
+                        // only enqueue if the model has observers for the given event type
+                        if (subjects.hasOwnProperty(eventType)) {
+                            modelRecord.eventQueue.push({ eventType: eventType, event: event });
+                        }
+                        this._purgeEventQueues();
+                    } catch (err) {
+                        this._halt(err);
+                    }
+                }
             }
         }, {
             key: '_getModelsEventSubjects',

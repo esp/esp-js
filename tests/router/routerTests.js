@@ -63,21 +63,24 @@ describe('Router', () => {
             _updateReceivedCount1 = 0;
             _updateReceivedCount2 = 0;
             _model = {
-                removeAtUpdate: false
+                removeAtPre: false,
+                removeAtUpdate: false,
+                removeAtPost: false,
+                removeAtDispatch: false
             };
             _router.registerModel(
                 'modelId1',
                 _model,
                 {
-                    preEventProcessor: (model, event) => {
+                    preEventProcessor: (model) => {
                         _preProcessorReceivedCount++;
-                        if (event.removeAtPre) {
+                        if (model.removeAtPre) {
                             _router.removeModel('modelId1');
                         }
                     },
-                    postEventProcessor : (model, event) => {
+                    postEventProcessor : (model) => {
                         _postProcessorReceivedCount++;
-                        if(event.removeAtPost) {
+                        if(model.removeAtPost) {
                             _router.removeModel('modelId1');
                         }
                     }
@@ -85,10 +88,9 @@ describe('Router', () => {
             );
             _router.getEventObservable('modelId1', 'Event1').observe((model, event) => {
                 _eventReceivedCount1++;
-                if(event.removeAtDispatch) {
+                if(model.removeAtDispatch) {
                     _router.removeModel('modelId1');
                 }
-                model.removeAtUpdate = event.removeAtUpdate;
             });
             _router.getEventObservable('modelId1', 'Event1').observe(() => {
                 _eventReceivedCount2++;
@@ -142,7 +144,8 @@ describe('Router', () => {
             }
 
             it('should allow a preprocessor to removeModel', () => {
-                _router.publishEvent('modelId1', 'Event1', { removeAtPre: true });
+                _model.removeAtPre = true;
+                _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
                     atEvent1: 0,
@@ -154,7 +157,8 @@ describe('Router', () => {
             });
 
             it('should allow an eventProcessor to removeModel', () => {
-                _router.publishEvent('modelId1', 'Event1', { removeAtDispatch: true });
+                _model.removeAtDispatch = true;
+                _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
                     atEvent1: 1,
@@ -166,7 +170,8 @@ describe('Router', () => {
             });
 
             it('should allow a postprocessor to removeModel', () => {
-                _router.publishEvent('modelId1', 'Event1', { removeAtPost: true });
+                _model.removeAtPost = true;
+                _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
                     atEvent1: 1,
@@ -178,7 +183,8 @@ describe('Router', () => {
             });
 
             it('should allow a model update observer to removeModel', () => {
-                _router.publishEvent('modelId1', 'Event1', { removeAtUpdate: true });
+                _model.removeAtUpdate = true;
+                _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
                     atEvent1: 1,
@@ -242,23 +248,29 @@ describe('Router', () => {
 
         it('should reset the EventContext for each event', () => {
             var testPassed = false;
+            var lastEventDelivered = false;
             _router.registerModel('modelId1', {});
-            _router.getEventObservable('modelId1', 'startEvent').observe(() => {
+            _router.getEventObservable('modelId1', 'startEvent').observe((model, event, eventContext) => {
+                eventContext.commit();
                 _router.publishEvent('modelId1', 'Event1', 'theEvent1');
                 _router.publishEvent('modelId1', 'Event2', 'theEvent2');
                 _router.publishEvent('modelId1', 'Event3', 'theEvent3');
             });
             _router.getEventObservable('modelId1', 'Event1').observe((model, event, eventContext) => {
-                testPassed = eventContext.eventType === "Event1";
+                testPassed = eventContext.isCommitted === false;
+                eventContext.commit();
             });
-            _router.getEventObservable('modelId2', 'Event2').observe((model, event, eventContext) => {
-                testPassed = testPassed && eventContext.eventType === "Event2";
+            _router.getEventObservable('modelId1', 'Event2').observe((model, event, eventContext) => {
+                testPassed = testPassed && eventContext.isCommitted === false;
+                eventContext.commit();
             });
-            _router.getEventObservable('modelId2', 'Event3').observe((model, event, eventContext) => {
-                testPassed = testPassed && eventContext.eventType === "Event3";
+            _router.getEventObservable('modelId1', 'Event3').observe((model, event, eventContext) => {
+                testPassed = testPassed && eventContext.isCommitted === false;
+                lastEventDelivered = true;
             });
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
             expect(testPassed).toBe(true);
+            expect(lastEventDelivered).toBe(true);
         });
 
         it('should copy custom properties on eventContext.custom', () => {
@@ -266,18 +278,86 @@ describe('Router', () => {
         });
     });
 
+    describe('.runAction()', () => {
+        var _model1 = { },
+            _model2 = {},
+            _proto = {
+                init(id) {
+                    this.id = id;
+                    this.counter = 0;
+                    this.preProcessCount = 0;
+                    this.postProcessCount = 0;
+                    return this;
+                },
+                preProcess() {
+                    this.preProcessCount++;
+                },
+                postProcess() {
+                    this.postProcessCount++;
+                }
+            },
+            model1ReceivedCount = 0,
+            model2ReceivedCount = 0;
+
+        beforeEach(() => {
+            _model1 = Object.create(_proto).init('1');
+            _model2 = Object.create(_proto).init('2');
+            _router.registerModel(_model1.id, _model1);
+            _router.registerModel(_model2.id, _model2);
+            _router.getModelObservable(_model1.id).observe(() => {
+                model1ReceivedCount++;
+            });
+            _router.getModelObservable(_model2.id).observe(() => {
+                model2ReceivedCount++;
+            });
+        });
+
+        it('runs action for target model', () => {
+            _router.runAction(_model1.id, () =>{
+                // noop
+            });
+            expect(model1ReceivedCount).toBe(1);
+            expect(model2ReceivedCount).toBe(0);
+        });
+
+        it('runs pre processor when running an action', () => {
+            _router.runAction(_model1.id, () => {
+                // noop
+            });
+            expect(_model1.preProcessCount).toBe(1);
+            expect(_model2.preProcessCount).toBe(0);
+        });
+
+        it('passes correct model to run action function', () => {
+            _router.runAction(_model1.id, model => {
+                model.counter++;
+            });
+            expect(_model1.counter).toBe(1);
+            expect(_model2.counter).toBe(0);
+        });
+
+        it('runs post processor when running an action', () => {
+            _router.runAction(_model1.id, () => {
+                // noop
+            });
+            expect(_model1.postProcessCount).toBe(1);
+            expect(_model2.postProcessCount).toBe(0);
+        });
+    });
+
     describe('eventProcessors', () => {
         var _model1 = {},
             _model2 = {},
             _model3 = {},
+            _model5 = {},
             _testPassed = false,
             _modelsSentForPreProcessing = [],
             _modelsSentForPostProcessing = [],
             _options = {
-                preEventProcessor: (model, event, eventContext) => {
+                preEventProcessor: (model) => {
                     _modelsSentForPreProcessing.push(model);
                 },
-                postEventProcessor: (model, event, eventContext) => {
+                postEventProcessor: (model) => {
                     _modelsSentForPostProcessing.push(model);
                 }
             };
@@ -286,6 +366,16 @@ describe('Router', () => {
             _model1 = { id: 1 };
             _model2 = { id: 2 };
             _model3 = { id: 3};
+            _model5 = {
+                preProcessCount : 0,
+                postProcessCount : 0,
+                preProcess() {
+                    this.preProcessCount++;
+                },
+                postProcess() {
+                    this.postProcessCount++;
+                }
+            };
             _testPassed = false;
             _modelsSentForPreProcessing = [];
             _modelsSentForPostProcessing = [];
@@ -293,12 +383,23 @@ describe('Router', () => {
             _router.registerModel('modelId1', _model1, _options);
             _router.registerModel('modelId2', _model2, _options);
             _router.registerModel('modelId3', _model3, _options);
+            _router.registerModel('modelId5', _model5);
 
             _router.getEventObservable('modelId1', 'startEvent').observe(() => {
                 _router.publishEvent('modelId3', 'Event1', 'theEvent');
                 _router.publishEvent('modelId2', 'Event1', 'theEvent');
                 _router.publishEvent('modelId1', 'Event1', 'theEvent');
             });
+        });
+
+        it('calls preProcess() if the model has this method before processing the first event', () => {
+            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            expect(_model5.preProcessCount).toBe(1);
+        });
+
+        it('calls postProcess() if the model has this method before processing the first event', () => {
+            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            expect(_model5.postProcessCount).toBe(1);
         });
 
         it('calls a models post processors before processing the next models events', () => {
@@ -353,7 +454,7 @@ describe('Router', () => {
                 'modelId4',
                 { version: 1 }, // model
                 {
-                    preEventProcessor : (model, event, eventContext) => { model.version++; },
+                    preEventProcessor : (model) => { model.version++; },
                     postEventProcessor : () => {
                         if(!postProcessorPublished) {
                             postProcessorPublished = true;
@@ -368,20 +469,6 @@ describe('Router', () => {
             _router.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(eventReceived).toBe(true);
             expect(eventWasRaisedInNewEventLoop).toBe(true);
-        });
-
-        it('should cancel the event if a preprocessor calls cancel', () => {
-            var calledCancel = false, processorReceived = false;
-            _router.registerModel('modelId4', _model1, { preEventProcessor : (model, event, eventContext) => {
-                calledCancel = true;
-                eventContext.cancel();
-            }});
-            _router.getEventObservable('modelId4', 'Event1').observe(() => {
-                processorReceived = true;
-            });
-            _router.publishEvent('modelId4', 'Event1', 'theEvent');
-            expect(calledCancel).toEqual(true);
-            expect(processorReceived).toEqual(false);
         });
     });
 
@@ -508,10 +595,10 @@ describe('Router', () => {
                 'modelId1',
                 _model,
                 {
-                    preEventProcessor: (model, event, eventContext) => {
+                    preEventProcessor: (model) => {
                         model.isUnlockedForPreEventProcessor = !model.isLocked;
                     },
-                    postEventProcessor: (model, event, eventContext) => {
+                    postEventProcessor: (model) => {
                         model.isUnlockedForPostEventProcessor = !model.isLocked;
                     }
                 }
@@ -821,19 +908,22 @@ describe('Router', () => {
             _eventReceivedCount =0;
             _updateReceivedCount =0;
             _model = {
-                throwAtUpdate: false
+                throwAtPre: false,
+                throwAtUpdate: false,
+                throwAtPost: false,
+                throwADispatch: false
             };
             _router.registerModel(
                 'modelId1',
                 _model,
                 {
-                    preEventProcessor: (model, event)  => {
-                        if (event.throwAtPre) {
+                    preEventProcessor: (model)  => {
+                        if (model.throwAtPre) {
                             throw new Error("Boom:Pre");
                         }
                     },
-                    postEventProcessor: (model, event) => {
-                        if (event.throwAtPost) {
+                    postEventProcessor: (model) => {
+                        if (model.throwAtPost) {
                             throw new Error("Boom:Post");
                         }
                     }
@@ -842,11 +932,8 @@ describe('Router', () => {
             _router.getEventObservable('modelId1', 'Event1').observe(
                 (model, event) => {
                     _eventReceivedCount++;
-                    if(event.throwADispatch) {
+                    if(model.throwADispatch) {
                         throw new Error("Boom:Dispatch");
-                    }
-                    if(event.throwAtUpdate) {
-                        model.throwAtUpdate = true;
                     }
                 },
                 err => _eventStreamErr = err
@@ -864,8 +951,9 @@ describe('Router', () => {
 
         it('should halt and rethrow if a pre processor errors', () => {
             // halt and rethrow
+            _model.throwAtPre = true;
             expect(() => {
-                _router.publishEvent('modelId1', 'Event1', { throwAtPre: true });
+                _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error("Boom:Pre"));
             // rethrow on reuse
             expect(() => {
@@ -874,9 +962,10 @@ describe('Router', () => {
         });
 
         it('should halt and rethrow if an event stream handler errors ', () => {
+            _model.throwADispatch = true;
             // halt and rethrow
             expect(() => {
-                _router.publishEvent('modelId1', 'Event1', { throwADispatch: true });
+                _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error("Boom:Dispatch"));
             expect(_eventStreamErr).toEqual(new Error("Boom:Dispatch"));
             // rethrow on reuse
@@ -886,9 +975,10 @@ describe('Router', () => {
         });
 
         it('should halt and rethrow if a post processor errors', () => {
+            _model.throwAtPost = true;
             // halt and rethrow
             expect(() => {
-                _router.publishEvent('modelId1', 'Event1', { throwAtPost: true });
+                _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error("Boom:Post"));
             // rethrow on reuse
             expect(() => {
@@ -897,9 +987,10 @@ describe('Router', () => {
         });
 
         it('should halt and rethrow if an update stream handler errors', () => {
+            _model.throwAtUpdate = true;
             // halt and rethrow
             expect(() => {
-                _router.publishEvent('modelId1', 'Event1', { throwAtUpdate: true });
+                _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error("Boom:Update"));
             expect(_modelUpdateStreamErr).toEqual(new Error("Boom:Update"));
             // rethrow on reuse
@@ -910,8 +1001,9 @@ describe('Router', () => {
 
         describe('when isHalted', () => {
             beforeEach(()=> {
+                _model.throwAtPre = true;
                 expect(() => {
-                    _router.publishEvent('modelId1', 'Event1', { throwAtPre: true });
+                    _router.publishEvent('modelId1', 'Event1', { });
                 }).toThrow(new Error("Boom:Pre"));
             });
 
@@ -965,10 +1057,10 @@ describe('Router', () => {
                 modelsSentForPreProcessing : [],
                 modelsSentForPostProcessing : [],
                 options : {
-                    preEventProcessor: (model, event, eventContext) => {
+                    preEventProcessor: (model) => {
                         helper.modelsSentForPreProcessing.push(model);
                     },
-                    postEventProcessor: (model, event, eventContext) => {
+                    postEventProcessor: (model) => {
                         helper.modelsSentForPostProcessing.push(model);
                     }
                 }
@@ -1050,6 +1142,7 @@ describe('Router', () => {
         it('should proxy publishEvent and getEventObservable', ()=> {
             expect(_model.aNumber).toEqual(1);
         });
+
 
         it('should proxy executeEvent to correct model event processor', ()=> {
             _modelRouter.getEventObservable('barEvent').observe((m,e) => {

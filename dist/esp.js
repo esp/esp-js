@@ -311,6 +311,18 @@ return /******/ (function(modules) { // webpackBootstrap
                 });
             }
         }, {
+            key: 'runAction',
+            value: function runAction(modelId, action) {
+                this._throwIfHalted();
+                var modelRecord = this._models[modelId];
+                if (typeof modelRecord === 'undefined') {
+                    throw new Error('Can not run action as model with id [' + modelId + '] not registered');
+                } else {
+                    modelRecord.eventQueue.push({ eventType: '__runAction', action: action });
+                    this._purgeEventQueues();
+                }
+            }
+        }, {
             key: 'getEventObservable',
             value: function getEventObservable(modelId, eventType, stage) {
                 var _this2 = this;
@@ -414,13 +426,18 @@ return /******/ (function(modules) { // webpackBootstrap
                             if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
                                 modelRecord.model.unlock();
                             }
-                            var eventContext = new _EventContext2['default'](modelRecord.modelId, eventRecord.eventType, eventRecord.event);
-                            modelRecord.runPreEventProcessor(modelRecord.model, eventRecord.event, eventContext);
+                            var eventContext = new _EventContext2['default']();
+                            modelRecord.runPreEventProcessor(modelRecord.model);
                             if (!modelRecord.wasRemoved) {
                                 if (!eventContext.isCanceled) {
                                     this._state.moveToEventDispatch();
                                     while (hasEvents) {
-                                        var wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType, eventContext);
+                                        var wasDispatched = true;
+                                        if (eventRecord.eventType === '__runAction') {
+                                            eventRecord.action(modelRecord.model);
+                                        } else {
+                                            wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType, eventContext);
+                                        }
                                         if (modelRecord.wasRemoved) break;
                                         if (!modelRecord.hasChanges && wasDispatched) {
                                             modelRecord.hasChanges = true;
@@ -428,13 +445,13 @@ return /******/ (function(modules) { // webpackBootstrap
                                         hasEvents = modelRecord.eventQueue.length > 0;
                                         if (hasEvents) {
                                             eventRecord = modelRecord.eventQueue.shift();
-                                            eventContext = new _EventContext2['default'](modelRecord.modelId, eventRecord.eventType, eventRecord.event);
+                                            eventContext = new _EventContext2['default']();
                                         }
                                     } // keep looping until any events from the dispatch to processors stage are processed
                                 }
                                 if (!modelRecord.wasRemoved) {
                                     this._state.moveToPostProcessing();
-                                    modelRecord.runPostEventProcessor(modelRecord.model, eventRecord.event, eventContext);
+                                    modelRecord.runPostEventProcessor(modelRecord.model);
                                     if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
                                         modelRecord.model.lock();
                                     }
@@ -572,34 +589,28 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    "use strict";
+    'use strict';
     
-    Object.defineProperty(exports, "__esModule", {
+    Object.defineProperty(exports, '__esModule', {
         value: true
     });
     
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
     
     var _system = __webpack_require__(4);
     
     var EventContext = (function () {
-        function EventContext(modelId, eventType, event) {
+        function EventContext() {
             _classCallCheck(this, EventContext);
     
-            _system.Guard.isString(modelId, "The modelId should be a string");
-            _system.Guard.isString(eventType, "The eventType should be a string");
-            _system.Guard.isDefined(event, "The event should be defined");
-            this._modelId = modelId;
-            this._eventType = eventType;
-            this._event = event;
             this._isCanceled = false;
             this._isCommitted = false;
         }
     
         _createClass(EventContext, [{
-            key: "cancel",
+            key: 'cancel',
             value: function cancel() {
                 if (!this._isCanceled) {
                     this._isCanceled = true;
@@ -608,7 +619,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 }
             }
         }, {
-            key: "commit",
+            key: 'commit',
             value: function commit() {
                 if (!this._isCommitted) {
                     this._isCommitted = true;
@@ -617,37 +628,22 @@ return /******/ (function(modules) { // webpackBootstrap
                 }
             }
         }, {
-            key: "isCanceled",
+            key: 'isCanceled',
             get: function get() {
                 return this._isCanceled;
             }
         }, {
-            key: "isCommitted",
+            key: 'isCommitted',
             get: function get() {
                 return this._isCommitted;
-            }
-        }, {
-            key: "modelId",
-            get: function get() {
-                return this._modelId;
-            }
-        }, {
-            key: "event",
-            get: function get() {
-                return this._event;
-            }
-        }, {
-            key: "eventType",
-            get: function get() {
-                return this._eventType;
             }
         }]);
     
         return EventContext;
     })();
     
-    exports["default"] = EventContext;
-    module.exports = exports["default"];
+    exports['default'] = EventContext;
+    module.exports = exports['default'];
 
 /***/ },
 /* 4 */
@@ -1343,15 +1339,15 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    "use strict";
+    'use strict';
     
-    Object.defineProperty(exports, "__esModule", {
+    Object.defineProperty(exports, '__esModule', {
         value: true
     });
     
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
     
     var _system = __webpack_require__(4);
     
@@ -1366,46 +1362,46 @@ return /******/ (function(modules) { // webpackBootstrap
             this._eventQueue = [];
             this._hasChanges = false;
             this._wasRemoved = false;
-            this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", options ? options.preEventProcessor : undefined);
-            this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", options ? options.postEventProcessor : undefined);
+            this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", 'preProcess', options ? options.preEventProcessor : undefined);
+            this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", 'postProcess', options ? options.postEventProcessor : undefined);
         }
     
         _createClass(ModelRecord, [{
-            key: "_createEventProcessor",
-            value: function _createEventProcessor(name, processor) {
-                if (processor) {
-                    var isValid = typeof processor === 'function' || typeof processor.process === 'function';
-                    _system.Guard.isTrue(isValid, name + " should be a function or an object with a process() function");
-                    return function (model, event, context) {
-                        // I guess it's possible the shape of the processor changed since we validated it, hence the recheck, another option could be to bind the initial value and always use that.
+            key: '_createEventProcessor',
+            value: function _createEventProcessor(name, modelProcessMethod, processor) {
+                return function (model) {
+                    // I guess it's possible the shape of the processor changed since we validated it, hence the recheck, another option could be to bind the initial value and always use that.
+                    if (typeof processor !== 'undefined') {
                         if (typeof processor === 'function') {
-                            processor(model, event, context);
-                        } else if (typeof processor.process === 'function') {
-                            processor.process(model, event, context);
+                            processor(model);
+                        } else if (processor.process && typeof processor.process === 'function') {
+                            processor.process(model);
                         } else {
                             throw new Error(name + " is neither a function or an object with a process() method");
                         }
-                    };
-                }
-                return function () {/* noop processor */};
+                    }
+                    if (model[modelProcessMethod] && typeof model[modelProcessMethod] === 'function') {
+                        model[modelProcessMethod]();
+                    }
+                };
             }
         }, {
-            key: "modelId",
+            key: 'modelId',
             get: function get() {
                 return this._modelId;
             }
         }, {
-            key: "model",
+            key: 'model',
             get: function get() {
                 return this._model;
             }
         }, {
-            key: "eventQueue",
+            key: 'eventQueue',
             get: function get() {
                 return this._eventQueue;
             }
         }, {
-            key: "hasChanges",
+            key: 'hasChanges',
             get: function get() {
                 return this._hasChanges;
             },
@@ -1413,7 +1409,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 this._hasChanges = value;
             }
         }, {
-            key: "wasRemoved",
+            key: 'wasRemoved',
             get: function get() {
                 return this._wasRemoved;
             },
@@ -1421,12 +1417,12 @@ return /******/ (function(modules) { // webpackBootstrap
                 this._wasRemoved = value;
             }
         }, {
-            key: "runPreEventProcessor",
+            key: 'runPreEventProcessor',
             get: function get() {
                 return this._runPreEventProcessor;
             }
         }, {
-            key: "runPostEventProcessor",
+            key: 'runPostEventProcessor',
             get: function get() {
                 return this._runPostEventProcessor;
             }
@@ -1435,8 +1431,8 @@ return /******/ (function(modules) { // webpackBootstrap
         return ModelRecord;
     })();
     
-    exports["default"] = ModelRecord;
-    module.exports = exports["default"];
+    exports['default'] = ModelRecord;
+    module.exports = exports['default'];
 
 /***/ },
 /* 13 */

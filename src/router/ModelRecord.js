@@ -26,8 +26,8 @@ class ModelRecord {
         this._eventQueue = [];
         this._hasChanges = false;
         this._wasRemoved = false;
-        this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", options ? options.preEventProcessor : undefined);
-        this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", options ? options.postEventProcessor : undefined);
+        this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", 'preProcess', options ? options.preEventProcessor : undefined);
+        this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", 'postProcess', options ? options.postEventProcessor : undefined);
     }
     get modelId() {
         return this._modelId;
@@ -56,22 +56,22 @@ class ModelRecord {
     get runPostEventProcessor() {
         return this._runPostEventProcessor;
     }
-    _createEventProcessor(name, processor) {
-        if(processor) {
-            let isValid = typeof processor === 'function' || (typeof processor.process === 'function');
-            Guard.isTrue(isValid, name + " should be a function or an object with a process() function");
-            return (model, event, context) => {
-                // I guess it's possible the shape of the processor changed since we validated it, hence the recheck, another option could be to bind the initial value and always use that.
-                if(typeof processor === 'function') {
-                    processor(model, event, context);
-                } else if(typeof processor.process === 'function') {
-                    processor.process(model, event, context);
+    _createEventProcessor(name, modelProcessMethod, processor) {
+        return (model) => {
+            // I guess it's possible the shape of the processor changed since we validated it, hence the recheck, another option could be to bind the initial value and always use that.
+            if(typeof processor !== 'undefined') {
+                if (typeof processor === 'function') {
+                    processor(model);
+                } else if (processor.process && typeof processor.process === 'function') {
+                    processor.process(model);
                 } else {
                     throw new Error(name + " is neither a function or an object with a process() method");
                 }
-            };
-        }
-        return () => { /* noop processor */  };
+            }
+            if(model[modelProcessMethod] && (typeof model[modelProcessMethod] === 'function')) {
+                model[modelProcessMethod]();
+            }
+        };
     }
 }
 

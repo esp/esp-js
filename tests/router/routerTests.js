@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import esp from '../../';
+import esp from '../../src/index';
 
 describe('Router', () => {
 
@@ -33,10 +33,10 @@ describe('Router', () => {
             expect(() => {_router.registerModel('foo', {}, 'not a function'); }).toThrow();
             expect(() => {_router.registerModel({ },{ }); }).toThrow(new Error('The modelId argument should be a string'));
             expect(() => {_router.registerModel("modelId", { },"notSomeOptions"); }).toThrow(new Error('The options argument should be an object'));
-            expect(() => {_router.registerModel("modelId", { }, { preEventProcessor: {} }); }).toThrow(new Error('preEventProcessor should be a function or an object with a process() function'));
-            expect(() => {_router.registerModel("modelId", { }, { preEventProcessor: "boo" }); }).toThrow(new Error('preEventProcessor should be a function or an object with a process() function'));
-            expect(() => {_router.registerModel("modelId", { }, { postEventProcessor:{}}); }).toThrow(new Error('postEventProcessor should be a function or an object with a process() function'));
-            expect(() => {_router.registerModel("modelId", { }, { postEventProcessor:"boo"}); }).toThrow(new Error('postEventProcessor should be a function or an object with a process() function'));
+            expect(() => {_router.registerModel("modelId", { }, { preEventProcessor: {} }); }).toThrow(new Error('preEventProcessor on the options parameter is neither a function nor an object with a process() method'));
+            expect(() => {_router.registerModel("modelId", { }, { preEventProcessor: "boo" }); }).toThrow(new Error('preEventProcessor on the options parameter is neither a function nor an object with a process() method'));
+            expect(() => {_router.registerModel("modelId", { }, { postEventProcessor:{}}); }).toThrow(new Error('postEventProcessor on the options parameter is neither a function nor an object with a process() method'));
+            expect(() => {_router.registerModel("modelId", { }, { postEventProcessor:"boo"}); }).toThrow(new Error('postEventProcessor on the options parameter is neither a function nor an object with a process() method'));
         });
 
         it('should throw if model already registered', () => {
@@ -389,6 +389,9 @@ describe('Router', () => {
                 _router.publishEvent('modelId3', 'Event1', 'theEvent');
                 _router.publishEvent('modelId2', 'Event1', 'theEvent');
                 _router.publishEvent('modelId1', 'Event1', 'theEvent');
+            });
+            _router.getEventObservable('modelId5', 'startEvent').observe(() => {
+               /* noop */
             });
         });
 

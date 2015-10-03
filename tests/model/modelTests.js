@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import esp from '../../';
+import esp from '../../src/index';
 
 class NumericalInput extends esp.model.ModelBase {
     constructor() {

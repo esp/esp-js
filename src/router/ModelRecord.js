@@ -56,21 +56,29 @@ class ModelRecord {
     get runPostEventProcessor() {
         return this._runPostEventProcessor;
     }
-    _createEventProcessor(name, modelProcessMethod, processor) {
-        return (model) => {
-            // I guess it's possible the shape of the processor changed since we validated it, hence the recheck, another option could be to bind the initial value and always use that.
-            if(typeof processor !== 'undefined') {
-                if (typeof processor === 'function') {
-                    processor(model);
-                } else if (processor.process && typeof processor.process === 'function') {
-                    processor.process(model);
-                } else {
-                    throw new Error(name + " is neither a function or an object with a process() method");
-                }
+    _createEventProcessor(name, modelProcessMethod, externalProcessor) {
+        var externalProcessor1 = () => { /*noop */ };
+        if(typeof externalProcessor !== 'undefined') {
+            if(typeof externalProcessor === 'function') {
+                externalProcessor1 = model => {
+                    externalProcessor(model);
+                };
+            } else if (typeof externalProcessor.process === 'function') {
+                externalProcessor1 = model => {
+                    externalProcessor.process(model);
+                };
+            } else {
+                throw new Error(name + " on the options parameter is neither a function nor an object with a process() method");
             }
+        }
+        var modelProcessor = model => {
             if(model[modelProcessMethod] && (typeof model[modelProcessMethod] === 'function')) {
                 model[modelProcessMethod]();
             }
+        };
+        return (model) => {
+            externalProcessor1(model);
+            modelProcessor(model);
         };
     }
 }

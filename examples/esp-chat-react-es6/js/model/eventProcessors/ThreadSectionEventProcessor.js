@@ -17,7 +17,7 @@ ThreadSectionEventProcessor.prototype.start = function () {
 
 ThreadSectionEventProcessor.prototype.observeMessagesReceived = function () {
     this.addDisposable(modelRouter
-        .getEventObservable("messagesReceived", esp.EventStage.commited)
+        .getEventObservable("messagesReceived", esp.ObservationStage.commited)
         .observe(function (model, event) {
             for (var i = 0; i < event.rawMessages.length; i++) {
                 var rawMessage = event.rawMessages[i];
@@ -53,7 +53,7 @@ ThreadSectionEventProcessor.prototype.observeMessagesReceived = function () {
 
 ThreadSectionEventProcessor.prototype.observeThreadSelected = function () {
     this.addDisposable(modelRouter
-        .getEventObservable("threadSelected", esp.EventStage.commited)
+        .getEventObservable("threadSelected", esp.ObservationStage.commited)
         .observe(function (model) {
             model.threadSection.threadsById[model.selectedThreadId].isRead = true;
             this._updateActiveFlags(model);

@@ -20,7 +20,7 @@ MessageSectionEventProcessor.prototype.start = function () {
 
 MessageSectionEventProcessor.prototype.observeMessagesReceived = function () {
     this.addDisposable(modelRouter
-        .getEventObservable("messagesReceived", esp.EventStage.commited)
+        .getEventObservable("messagesReceived", esp.ObservationStage.commited)
         .observe(function (model) {
             this._updateMessages(model);
             model.messageSection.hasChanges = true;
@@ -30,7 +30,7 @@ MessageSectionEventProcessor.prototype.observeMessagesReceived = function () {
 
 MessageSectionEventProcessor.prototype.observeThreadSelected = function () {
     this.addDisposable(modelRouter
-        .getEventObservable("threadSelected", esp.EventStage.commited)
+        .getEventObservable("threadSelected", esp.ObservationStage.commited)
         .observe(function (model, event) {
             this._updateMessages(model);
             model.messageSection.threadName = event.threadName;

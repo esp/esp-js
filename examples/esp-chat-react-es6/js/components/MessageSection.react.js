@@ -1,49 +1,47 @@
-"use strict";
+import MessageComposer from './MessageComposer.react';
+import MessageListItem from './MessageListItem.react';
+import React from 'react';
+import router from '../router';
 
-var MessageComposer = require('./MessageComposer.react');
-var MessageListItem = require('./MessageListItem.react');
-var React = require('react');
-var modelRouter = require('../model/modelRouter');
+export default class MessageSection extends React.Component {
 
-var MessageSection = React.createClass({
+    constructor( ) {
+        this._subscription = null;
+    }
 
-    _subscription: null,
-
-    componentWillMount: function () {
-        this._subscription = modelRouter
+    componentWillMount() {
+        this._subscription = router
             .getModelObservable()
-            .where(function (model) { return model.messageSection.hasChanges; })
-            .observe(function (model) {
+            .where(model => model.messageSection.hasChanges)
+            .observe(model => {
                 this.setState(model.messageSection);
-            }.bind(this));
-    },
+            };
+    }
 
-    componentDidMount: function () {
+    componentDidMount () {
         this._scrollToBottom();
-    },
+    }
 
-    componentDidUpdate: function() {
+    componentDidUpdate() {
         this._scrollToBottom();
-    },
+    }
 
-    componentWillUnmount: function () {
+    componentWillUnmount() {
         this._subscription.dispose();
-    },
+    }
 
-    _scrollToBottom: function() {
+    _scrollToBottom() {
         if (this.state === null) {
             return null;
         }
-
         var ul = this.refs.messageList.getDOMNode();
         ul.scrollTop = ul.scrollHeight;
-    },
+    }
 
-    render: function () {
+    render() {
         if (this.state === null) {
             return null;
         }
-
         var messageListItems = this.state.sortedMessages.map(function (message) {
             return (
                 <li key={message.id}>
@@ -61,6 +59,4 @@ var MessageSection = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = MessageSection;
+}

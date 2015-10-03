@@ -1,20 +1,18 @@
-"use strict";
-
-var React = require('react');
-var modelRouter = require('../model/modelRouter');
+import React from 'react';
+import router from '../router';
 
 var ENTER_KEY = 13;
 
-var MessageComposer = React.createClass({
-    getInitialState: function () {
+export default class MessageComposer extends React.Component {
+    getInitialState() {
         return {text: ''};
-    },
+    }
 
-    onChange: function (event) {
+    onChange(event) {
         this.setState({text: event.target.value});
-    },
+    }
 
-    onKeyDown: function (event) {
+    onKeyDown(event) {
         if (event.keyCode === ENTER_KEY) {
             event.preventDefault();
             var text = this.state.text.trim();
@@ -23,9 +21,9 @@ var MessageComposer = React.createClass({
             }
             this.setState({text: ''});
         }
-    },
+    }
 
-    render: function () {
+    render() {
         return (
             <textarea
                 className="message-composer"
@@ -36,6 +34,4 @@ var MessageComposer = React.createClass({
             />
         );
     }
-});
-
-module.exports = MessageComposer;
+}

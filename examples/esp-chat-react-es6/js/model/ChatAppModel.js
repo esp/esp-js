@@ -1,4 +1,6 @@
 import esp from 'esp-js';
+import MessageSection from './MessageSection';
+import ThreadSection from './ThreadSection';
 
 export default class ChatAppModel extends esp.model.DisposableBase {
     constructor(messageService, router) {
@@ -7,20 +9,8 @@ export default class ChatAppModel extends esp.model.DisposableBase {
         this._router = router;
         this._rawMessagesByThreadId = {};
         this._selectedThreadId = null;
-        this._threadSection = {
-            threadsById: {},
-            sortedThreads: [],
-            unreadCount: {
-                value: 0,
-                isVisible: false
-            },
-            hasChanges: false
-        };
-        this._messageSection = {
-            sortedMessages: [],
-            threadName: null,
-            hasChanges: false
-        };
+        this._threadSection = new ThreadSection(router);
+        this._messageSection = new MessageSection(router);
     }
     get rawMessagesByThreadId() {
         return this._rawMessagesByThreadId;
@@ -37,9 +27,7 @@ export default class ChatAppModel extends esp.model.DisposableBase {
     initialise() {
         this.messageSubscription = new MessageSubscription();
         this.addDisposable(this._messageService);
-
-
-        this.addDisposable(_router.observeEventsOn(this));
+        this.addDisposable(this._router.observeEventsOn(this));
     }
     preProcess() {
         this.messageSection.hasChanges = false;

@@ -1,22 +1,20 @@
-"use strict";
+import React from 'react';
+import cx from 'react/lib/cx';
+import router from '../router';
+import Thread from '../model/Thread';
 
-var React = require('react');
-var cx = require('react/lib/cx');
-var modelRouter = require('../model/modelRouter');
-var Thread = require('../model/entities/Thread');
+export default class ThreadListItem extends React.Component {
 
-var ThreadListItem = React.createClass({
-
-    propTypes: {
+    static propTypes = {
         model: React.PropTypes.instanceOf(Thread)
-    },
+    }
 
-    _onClick: function() {
+    _onClick() {
         var thread = this.props.model;
         modelRouter.publishEvent("threadSelected", { threadId: thread.id, threadName: this.props.model.name });
-    },
+    }
 
-    render: function () {
+    render () {
         var thread = this.props.model;
         return (
             <div
@@ -36,6 +34,4 @@ var ThreadListItem = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = ThreadListItem;
+}

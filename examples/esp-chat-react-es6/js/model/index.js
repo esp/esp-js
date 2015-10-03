@@ -1,11 +1,11 @@
 "use strict";
 
-var entities = require('./entities');
-var eventProcessors = require('./eventProcessors');
-var ModelBootstrapper = require('./ModelBootstrapper');
+var ChatAppModel = require('./ChatAppModel');
+var Message = require('./Message');
+var Thread = require('./Thread');
 
 module.exports = {
-    entities: entities,
-    eventProcessors: eventProcessors,
-    ModelBootstrapper: ModelBootstrapper
+    ChatAppModel: ChatAppModel,
+    Message: Message,
+    Thread: Thread
 };

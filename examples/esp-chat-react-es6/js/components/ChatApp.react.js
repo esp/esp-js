@@ -1,12 +1,9 @@
-"use strict";
+import React from 'react';
+import MessageSection from './MessageSection.react';
+import ThreadSection from './ThreadSection.react';
 
-var MessageSection = require('./MessageSection.react');
-var React = require('react');
-var ThreadSection = require('./ThreadSection.react');
-var modelRouter = require('../model/modelRouter');
-
-var ChatApp = React.createClass({
-    render: function () {
+export default class ChatApp extends React.Component {
+    render() {
         return (
             <div className="chatapp">
                 <ThreadSection />
@@ -14,6 +11,4 @@ var ChatApp = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = ChatApp;
+}

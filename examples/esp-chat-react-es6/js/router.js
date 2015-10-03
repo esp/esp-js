@@ -1,6 +1,6 @@
-"use strict";
-var esp = require("esp-js");
-var entities = require('./entities/index');
+import esp from 'esp-js';
+
+var entities = require('./model/index');
 var ChatAppPreEventProcessor = require('./eventProcessors/ChatAppPreEventProcessor');
 
 var router = new esp.Router();

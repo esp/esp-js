@@ -1,15 +1,13 @@
-"use strict";
+import React from 'react';
+import Message from '../model/Message';
 
-var React = require('react');
-var Message = require('../model/entities/Message');
+export default class MessageListItem extends React.Component {
 
-var MessageListItem = React.createClass({
-
-    propTypes: {
+    static propTypes = {
         model: React.PropTypes.instanceOf(Message)
-    },
+    }
 
-    render: function () {
+    render() {
         var message = this.props.model;
         return (
             <div className="message-list-item">
@@ -22,6 +20,4 @@ var MessageListItem = React.createClass({
         );
     }
 
-});
-
-module.exports = MessageListItem;
+}

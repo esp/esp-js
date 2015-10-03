@@ -1,31 +1,30 @@
-"use strict";
+import React from 'react';
+import router from '../router';
+import ThreadListItem from './ThreadListItem.react';
 
-var React = require('react');
-var ThreadListItem = require('../components/ThreadListItem.react');
-var modelRouter = require('../model/modelRouter');
+export default class ThreadSection extends React.Component {
 
-var ThreadSection = React.createClass({
+    constructor() {
+        this._subscription = null;
+    }
 
-    _subscription: null,
-
-    componentWillMount: function () {
-        this._subscription = modelRouter
+    componentWillMount() {
+        this._subscription = router
             .getModelObservable()
-            .where(function (model) { return model.threadSection.hasChanges; })
-            .observe(function (model) {
+            .where(model => model.threadSection.hasChanges)
+            .observe(model => {
                 this.setState(model.threadSection);
-            }.bind(this));
-    },
+            };
+    }
 
-    componentWillUnmount: function () {
+    componentWillUnmount() {
         this._subscription.dispose();
-    },
+    }
 
-    render: function () {
+    render() {
         if (this.state === null) {
             return null;
         }
-
         var threadListItems = this.state.sortedThreads.map(function (thread) {
                 return (
                     <li key={thread.id}>
@@ -48,7 +47,4 @@ var ThreadSection = React.createClass({
             </div>
         );
     }
-
-});
-
-module.exports = ThreadSection;
+}

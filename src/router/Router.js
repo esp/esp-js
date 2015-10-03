@@ -111,6 +111,16 @@ export default class Router {
             );
         });
     }
+    runAction(modelId, action) {
+        this._throwIfHalted();
+        let modelRecord = this._models[modelId];
+        if (typeof modelRecord === 'undefined') {
+            throw new Error('Can not run action as model with id [' + modelId + '] not registered');
+        } else {
+            modelRecord.eventQueue.push({eventType: '__runAction', action: action});
+            this._purgeEventQueues();
+        }
+    }
     getEventObservable(modelId, eventType, stage) {
         return Observable.create(o => {
             this._throwIfHalted();
@@ -200,13 +210,18 @@ export default class Router {
                     if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
                         modelRecord.model.unlock();
                     }
-                    var eventContext = new EventContext(modelRecord.modelId, eventRecord.eventType, eventRecord.event);
-                    modelRecord.runPreEventProcessor(modelRecord.model, eventRecord.event, eventContext);
+                    var eventContext = new EventContext();
+                    modelRecord.runPreEventProcessor(modelRecord.model);
                     if (!modelRecord.wasRemoved) {
                         if (!eventContext.isCanceled) {
                             this._state.moveToEventDispatch();
                             while (hasEvents) {
-                                let wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType, eventContext);
+                                let wasDispatched = true;
+                                if(eventRecord.eventType === '__runAction') {
+                                    eventRecord.action(modelRecord.model);
+                                } else {
+                                    wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType, eventContext);
+                                }
                                 if (modelRecord.wasRemoved) break;
                                 if (!modelRecord.hasChanges && wasDispatched) {
                                     modelRecord.hasChanges = true;
@@ -214,13 +229,13 @@ export default class Router {
                                 hasEvents = modelRecord.eventQueue.length > 0;
                                 if (hasEvents) {
                                     eventRecord = modelRecord.eventQueue.shift();
-                                    eventContext = new EventContext(modelRecord.modelId, eventRecord.eventType, eventRecord.event);
+                                    eventContext = new EventContext();
                                 }
                             } // keep looping until any events from the dispatch to processors stage are processed
                         }
                         if (!modelRecord.wasRemoved) {
                             this._state.moveToPostProcessing();
-                            modelRecord.runPostEventProcessor(modelRecord.model, eventRecord.event, eventContext);
+                            modelRecord.runPostEventProcessor(modelRecord.model);
                             if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
                                 modelRecord.model.lock();
                             }

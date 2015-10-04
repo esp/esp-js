@@ -11,7 +11,7 @@ export default class ThreadListItem extends React.Component {
 
     _onClick() {
         var thread = this.props.model;
-        modelRouter.publishEvent("threadSelected", { threadId: thread.id, threadName: this.props.model.name });
+        this.props.router.publishEvent("threadSelected", { threadId: thread.id, threadName: this.props.model.name });
     }
 
     render () {

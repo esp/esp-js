@@ -1,5 +1,4 @@
 import React from 'react';
-import router from '../router';
 
 var ENTER_KEY = 13;
 
@@ -17,7 +16,7 @@ export default class MessageComposer extends React.Component {
             event.preventDefault();
             var text = this.state.text.trim();
             if (text) {
-                modelRouter.publishEvent("messageSent", { text: text });
+                this.props.router.publishEvent("messageSent", { text: text });
             }
             this.setState({text: ''});
         }

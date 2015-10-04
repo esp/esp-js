@@ -10,7 +10,7 @@ export default class MessageSection extends React.Component {
     }
 
     componentWillMount() {
-        this._subscription = router
+        this._subscription = this.props.router
             .getModelObservable()
             .where(model => model.messageSection.hasChanges)
             .observe(model => {
@@ -49,13 +49,14 @@ export default class MessageSection extends React.Component {
                 </li>
             );
         });
+        var router = this.props.router;
         return (
             <div className="message-section">
                 <h3 className="message-thread-heading">{this.state.threadName}</h3>
                 <ul className="message-list" ref="messageList">
                 {messageListItems}
                 </ul>
-                <MessageComposer />
+                <MessageComposer router={router} />
             </div>
         );
     }

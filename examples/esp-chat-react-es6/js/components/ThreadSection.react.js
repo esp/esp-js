@@ -9,7 +9,7 @@ export default class ThreadSection extends React.Component {
     }
 
     componentWillMount() {
-        this._subscription = router
+        this._subscription = this.props.router
             .getModelObservable()
             .where(model => model.threadSection.hasChanges)
             .observe(model => {
@@ -25,10 +25,11 @@ export default class ThreadSection extends React.Component {
         if (this.state === null) {
             return null;
         }
+        var router = this.props.router;
         var threadListItems = this.state.sortedThreads.map(function (thread) {
                 return (
                     <li key={thread.id}>
-                        <ThreadListItem model={thread} />
+                        <ThreadListItem model={thread} router={router} />
                     </li>
                 );
             }, this);

@@ -14,9 +14,13 @@ var modelRouter = require('../modelRouter');
 // poor mans rx api: don't want to pull in rx just to get a nice PUSH API,
 // we'll just model the same observable API here for demo purposes.
 export default class MessageService {
+    constructor() {
+        this._observers = [];
+    }
     getMessagesStream() {
         return {
             subscribe(observer) {
+                this._observers.push(observer)
                 // simulate retrieving data from a database
                 var rawMessages = JSON.parse(localStorage.getItem("messages"));
                 // simulate success callback
@@ -43,7 +47,13 @@ export default class MessageService {
                 localStorage.setItem("messages", JSON.stringify(rawMessages));
                 // simulate success callback
                 setTimeout(function () {
-                    observer({ rawMessages: [ rawMessage ] });
+                    // simulate an ack to the caller
+                    observer({success:true});
+                    // simulate some results from the server
+                    for (var i = 0, len = this._observers.length; i < len; i++) {
+                        var observer1 = this._observers[i];
+                        observer1({ rawMessages: [ rawMessage ] });
+                    }
                 }, 0);
             }
         }

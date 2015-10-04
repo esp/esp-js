@@ -1,11 +1,4 @@
-"use strict";
-
-var ChatAppModel = require('./ChatAppModel');
-var Message = require('./Message');
-var Thread = require('./Thread');
-
-module.exports = {
-    ChatAppModel: ChatAppModel,
-    Message: Message,
-    Thread: Thread
-};
+import ChatApp from './ChatApp';
+import MessageSection from './MessageSection';
+import ThreadSection from './ThreadSection';
+export default { ChatApp, MessageSection, ThreadSection };

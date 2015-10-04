@@ -1,4 +1,5 @@
 import esp from 'esp-js';
+import Message from './Message';
 
 export default class MessageSection extends esp.model.DisposableBase {
     constructor(router, messageService) {
@@ -18,27 +19,30 @@ export default class MessageSection extends esp.model.DisposableBase {
     get hasChanges() {
         return this._hasChanges;
     }
-    _observeThreadSelected_commited(model, event) {
+    initialise() {
+        this.addDisposable(this._router.observeEventsOn(this));
+    }
+    _observe_ThreadSelected_commited(model, event) {
         this._updateMessages(model);
-        model.messageSection.threadName = event.threadName;
-        model.messageSection.hasChanges = true;
+        this._threadName = event.threadName;
+        this._hasChanges = true;
     };
-    _observeMessageSent(model, event) {
+    _observe_MessageSent(model, event) {
         this.addDisposable(
             this._messageService.sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
-                .subscribe(results => {
-                    this._router.runAction(() => {
-                        this._updateMessages(model);
-                        model.messageSection.hasChanges = true;
-                        this._router.publishEvent("messagesReceived", { rawMessages: [ rawMessage ] });
-                    });
+                .subscribe(ack => {
+                    /* ack received from send operation */
                 })
         );
     };
+    _observe_MessagesReceived(model) {
+        this._updateMessages(model);
+        this._hasChanges = true;
+    }
     _updateMessages(model) {
         var rawMessages = model.rawMessagesByThreadId[model.selectedThreadId];
-        var messages = rawMessages.map(function (rawMessage) {
-            return new entities.Message(
+        var messages = rawMessages.map(rawMessage => {
+            return new Message(
                 rawMessage.id,
                 rawMessage.authorName,
                 rawMessage.text,
@@ -46,6 +50,6 @@ export default class MessageSection extends esp.model.DisposableBase {
         }).sort(function (a, b) {
             return a.time < b.time ? -1 : a.time > b.time ? 1 : 0;
         });
-        model.messageSection.sortedMessages = messages;
+        this._sortedMessages = messages;
     };
 }

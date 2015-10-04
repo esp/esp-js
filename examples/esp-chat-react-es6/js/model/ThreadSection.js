@@ -23,7 +23,10 @@ export default class ThreadSection {
     get hasChanges() {
         return this._hasChanges;
     }
-    _observeMessagesReceived_commited(model, event) {
+    initialise() {
+        this.addDisposable(this._router.observeEventsOn(this));
+    }
+    _observe_MessagesReceived(model, event) {
         for (var i = 0; i < event.rawMessages.length; i++) {
             var rawMessage = event.rawMessages[i];
             var thread = this._threadsById[rawMessage.threadId];
@@ -53,7 +56,7 @@ export default class ThreadSection {
         this._updateUnreadCount(model);
         this._hasChanges = true;
     };
-    _observeThreadSelected_commited(model) {
+    _observe_ThreadSelected_commited(model) {
         this._threadsById[model.selectedThreadId].isRead = true;
         this._updateActiveFlags(model);
         this._updateUnreadCount(model);
@@ -65,7 +68,7 @@ export default class ThreadSection {
             thread.isActive = thread.id === model.selectedThreadId;
         }
     };
-    _updateUnreadCount(model) {
+    _updateUnreadCount() {
         var unreadCount = this._sortedThreads.reduce(function (total, thread) { return thread.isRead ? total : total + 1; }, 0);
         this._unreadCount.value = unreadCount;
         this._unreadCount.isVisible = unreadCount > 0;

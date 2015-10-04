@@ -1,18 +1,26 @@
-"use strict";
+import esp from 'esp-js'
+import React from 'react';
 
-// This file bootstraps the entire application.
-var ChatApp = require('./components/ChatApp.react');
-var ChatExampleData = require('./ChatExampleData');
-var model = require('./model');
-var modelRouter = require('./modelRouter');
-var React = require('react');
-window.React = React; // export for http://fb.me/react-devtools
+import ChatExampleData from './ChatExampleData';
+import model from './model';
+import components from './components';
+import services from './services';
 
-ChatExampleData.init(); // load example data into localstorage
+// export for http://fb.me/react-devtools
+window.React = React;
+
+// load some fake data into localstorage
+ChatExampleData.init();
+
+var router = new esp.SingleModelRouter();
+var messageService = new services.MessageService();
+var model = new model.ChatApp(messageService, router);
+router.setModel(model);
+model.initialise();
 
 React.render(
-    <ChatApp />,
+    <components.ChatApp router={router} />,
     document.getElementById('react')
 );
 
-modelRouter.publishEvent("initEvent", {});
+router.publishEvent("initEvent", {});

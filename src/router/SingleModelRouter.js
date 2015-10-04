@@ -58,6 +58,10 @@ export default class SingleModelRouter {
         this._ensureModelIsSet();
         return this._underlying.getModelObservable(this._targetModelId);
     }
+    observeEventsOn(object, methodPrefix='_observe_') {
+        this._ensureModelIsSet();
+        return this._underlying.observeEventsOn(this._targetModelId, object, methodPrefix);
+    }
     _ensureModelIsSet() {
         Guard.isTrue(this._modelSet, 'You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');
     }

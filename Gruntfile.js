@@ -20,6 +20,7 @@
 
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt, {pattern: ['grunt-*']});
+    grunt.loadNpmTasks('grunt-mkdir');
 
     var webpack = require('webpack');
 
@@ -81,6 +82,13 @@ module.exports = function(grunt) {
                 background: false,
                 singleRun: true
             }
+        },
+        mkdir: {
+          all: {
+            options: {
+              create: ['dist']
+            },
+          },
         },
         webpack: {
             options: {
@@ -154,7 +162,7 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('build', ['jshint', 'webpack', 'usebanner:dist']);
+    grunt.registerTask('build', ['mkdir', 'jshint', 'webpack', 'usebanner:dist']);
     grunt.registerTask('test', ['build', 'karma:release']);
     grunt.registerTask('dev', ['karma:unit:start', 'watch']);
     grunt.registerTask('updateEs6License', ['usebanner:es6Src']);

@@ -12,7 +12,7 @@
     "router",
     "event router"
   ],
-  "main": "dist/esp.js",
+  "main": "index.js",
   "author": "Keith Woods",
   "license": "Apache 2",
   "repository": "https://github.com/esp/esp-js",
@@ -27,6 +27,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-jsdoc": "^0.6.10",
     "grunt-karma": "^0.12.1",
+    "grunt-mkdir": "^0.1.2",
     "grunt-webpack": "^1.0.8",
     "inject-loader": "^2.0.1",
     "karma": "^0.13.10",

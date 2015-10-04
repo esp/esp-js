@@ -94,6 +94,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
     exports.ObservationStage = __webpack_require__(1);
     exports.Router = __webpack_require__(2);
+    exports.SingleModelRouter = __webpack_require__(15);
     exports.model = __webpack_require__(27);
 
 /***/ },
@@ -210,15 +211,17 @@ return /******/ (function(modules) { // webpackBootstrap
     
     var _StatusJs2 = _interopRequireDefault(_StatusJs);
     
-    var _ModelRouterJs = __webpack_require__(15);
+    var _SingleModelRouterJs = __webpack_require__(15);
     
-    var _ModelRouterJs2 = _interopRequireDefault(_ModelRouterJs);
+    var _SingleModelRouterJs2 = _interopRequireDefault(_SingleModelRouterJs);
     
     var _reactiveIndex = __webpack_require__(16);
     
     var _modelEventsIndex = __webpack_require__(24);
     
     var _system = __webpack_require__(4);
+    
+    var _systemDisposablesIndex = __webpack_require__(5);
     
     var _log = _system.logger.create('Router');
     
@@ -365,7 +368,49 @@ return /******/ (function(modules) { // webpackBootstrap
             key: 'createModelRouter',
             value: function createModelRouter(targetModelId) {
                 _system.Guard.isString(targetModelId, 'The targetModelId argument should be a string');
-                return new _ModelRouterJs2['default'](this, targetModelId);
+                return new _SingleModelRouterJs2['default'](this, targetModelId);
+            }
+        }, {
+            key: 'observeEventsOn',
+            value: function observeEventsOn(modelId, object) {
+                var _this4 = this;
+    
+                var methodPrefix = arguments.length <= 2 || arguments[2] === undefined ? '_observe_' : arguments[2];
+    
+                var disposables = new _systemDisposablesIndex.CompositeDisposable();
+    
+                var _loop = function (prop) {
+                    if (object.hasOwnProperty(prop) && prop.startsWith(methodPrefix)) {
+                        var stage = _ObservationStage2['default'].normal;
+                        var eventName = prop.replace(methodPrefix, '');
+                        var observationStageSplitIndex = eventName.lastIndexOf('_');
+                        if (observationStageSplitIndex > 0) {
+                            var stageSubstring = eventName.substring(observationStageSplitIndex + 1);
+                            var stageSpecified = false;
+                            if (stageSubstring === _ObservationStage2['default'].preview) {
+                                stage = _ObservationStage2['default'].preview;
+                                stageSpecified = true;
+                            } else if (stageSubstring === _ObservationStage2['default'].normal) {
+                                stage = _ObservationStage2['default'].normal;
+                                stageSpecified = true;
+                            } else if (stageSubstring === _ObservationStage2['default'].committed) {
+                                stage = _ObservationStage2['default'].committed;
+                                stageSpecified = true;
+                            }
+                            if (stageSpecified) {
+                                eventName = eventName.substring(0, observationStageSplitIndex);
+                            }
+                        }
+                        disposables.add(_this4.getEventObservable(modelId, eventName, stage).observe(function (m, e, c) {
+                            object[prop](m, e, c);
+                        }));
+                    }
+                };
+    
+                for (var prop in object) {
+                    _loop(prop);
+                }
+                return disposables;
             }
         }, {
             key: '_eventQueue',
@@ -1648,7 +1693,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 15 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
     // notice_start
     /*
@@ -1668,51 +1713,90 @@ return /******/ (function(modules) { // webpackBootstrap
      */
     // notice_end
     
-    "use strict";
+    'use strict';
     
-    Object.defineProperty(exports, "__esModule", {
+    Object.defineProperty(exports, '__esModule', {
         value: true
     });
     
-    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+    var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
     
-    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
     
-    var ModelRouter = (function () {
-        function ModelRouter(underlyingRouter, targetModelId) {
-            _classCallCheck(this, ModelRouter);
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
     
-            this._underlying = underlyingRouter;
-            this._targetModelId = targetModelId;
+    var _Router = __webpack_require__(2);
+    
+    var _Router2 = _interopRequireDefault(_Router);
+    
+    var _system = __webpack_require__(4);
+    
+    var SingleModelRouter = (function () {
+        function SingleModelRouter() {
+            _classCallCheck(this, SingleModelRouter);
+    
+            if (arguments.length === 0) {
+                this._underlying = new _Router2['default']();
+                this._targetModelId = "modelId";
+            } else if (arguments.length === 2 && arguments[0] instanceof _Router2['default']) {
+                this._modelSet = true;
+                this._underlying = arguments[0];
+                this._targetModelId = arguments[1];
+            } else {
+                throw new Error("Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.");
+            }
         }
     
-        _createClass(ModelRouter, [{
-            key: "publishEvent",
+        _createClass(SingleModelRouter, [{
+            key: 'setModel',
+            value: function setModel(model) {
+                _system.Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');
+                _system.Guard.isFalsey(this._modelSet, 'Model is already set.');
+                this._underlying.registerModel(this._targetModelId, model);
+                this._modelSet = true;
+            }
+        }, {
+            key: 'publishEvent',
             value: function publishEvent(eventType, event) {
+                this._ensureModelIsSet();
                 this._underlying.publishEvent(this._targetModelId, eventType, event);
             }
         }, {
-            key: "executeEvent",
+            key: 'executeEvent',
             value: function executeEvent(eventType, event) {
+                this._ensureModelIsSet();
                 this._underlying.executeEvent(eventType, event);
             }
         }, {
-            key: "getEventObservable",
+            key: 'runAction',
+            value: function runAction(action) {
+                this._ensureModelIsSet();
+                this._underlying.runAction(this._targetModelId, action);
+            }
+        }, {
+            key: 'getEventObservable',
             value: function getEventObservable(eventType, stage) {
+                this._ensureModelIsSet();
                 return this._underlying.getEventObservable(this._targetModelId, eventType, stage);
             }
         }, {
-            key: "getModelObservable",
+            key: 'getModelObservable',
             value: function getModelObservable() {
+                this._ensureModelIsSet();
                 return this._underlying.getModelObservable(this._targetModelId);
+            }
+        }, {
+            key: '_ensureModelIsSet',
+            value: function _ensureModelIsSet() {
+                _system.Guard.isTrue(this._modelSet, 'You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');
             }
         }]);
     
-        return ModelRouter;
+        return SingleModelRouter;
     })();
     
-    exports["default"] = ModelRouter;
-    module.exports = exports["default"];
+    exports['default'] = SingleModelRouter;
+    module.exports = exports['default'];
 
 /***/ },
 /* 16 */

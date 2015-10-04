@@ -21095,27 +21095,27 @@ return /******/ (function(modules) { // webpackBootstrap
             _get(Object.getPrototypeOf(ChatApp.prototype), 'constructor', this).call(this);
             this._messageService = messageService;
             this._router = router;
-            this._rawMessagesByThreadId = {};
-            this._selectedThreadId = null;
-            this._threadSection = new _ThreadSection2['default'](router);
-            this.addDisposable(this._threadSection);
-            this._messageSection = new _MessageSection2['default'](router);
-            this.addDisposable(this._threadSection);
+            this.rawMessagesByThreadId = {};
+            this.selectedThreadId = null;
+            this.threadSection = new _ThreadSection2['default'](router);
+            this.addDisposable(this.threadSection);
+            this.messageSection = new _MessageSection2['default'](router);
+            this.addDisposable(this.threadSection);
         }
     
         _createClass(ChatApp, [{
             key: 'initialise',
             value: function initialise() {
-                this._threadSection.initialise();
-                this._messageSection.initialise();
+                this.threadSection.initialise();
+                this.messageSection.initialise();
                 this._observeInitEvent();
                 this._observeThreadSelected();
             }
         }, {
             key: 'preProcess',
             value: function preProcess() {
-                this._messageSection.preProcess();
-                this._threadSection.preProcess();
+                this.messageSection.preProcess();
+                this.threadSection.preProcess();
             }
         }, {
             key: '_observeInitEvent',
@@ -21132,7 +21132,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 var _this2 = this;
     
                 this.addDisposable(this._router.getEventObservable('ThreadSelected').observe(function (model, event, context) {
-                    _this2._selectedThreadId = event.threadId;
+                    _this2.selectedThreadId = event.threadId;
                     context.commit();
                 }));
             }
@@ -21148,37 +21148,17 @@ return /******/ (function(modules) { // webpackBootstrap
                     _this3._router.runAction(function () {
                         for (var i = 0; i < results.rawMessages.length; i++) {
                             var rawMessage = results.rawMessages[i];
-                            var threadRawMessages = _this3._rawMessagesByThreadId[rawMessage.threadId] || [];
+                            var threadRawMessages = _this3.rawMessagesByThreadId[rawMessage.threadId] || [];
                             threadRawMessages.push(rawMessage);
-                            _this3._rawMessagesByThreadId[rawMessage.threadId] = threadRawMessages;
+                            _this3.rawMessagesByThreadId[rawMessage.threadId] = threadRawMessages;
                         }
-                        if (_this3._selectedThreadId === null && results.rawMessages.length > 0) {
-                            _this3._selectedThreadId = results.rawMessages[0].threadId;
+                        if (_this3.selectedThreadId === null && results.rawMessages.length > 0) {
+                            _this3.selectedThreadId = results.rawMessages[0].threadId;
                         }
     
                         _this3._router.publishEvent("MessagesReceived", { rawMessages: results.rawMessages });
                     });
                 });
-            }
-        }, {
-            key: 'rawMessagesByThreadId',
-            get: function get() {
-                return this._rawMessagesByThreadId;
-            }
-        }, {
-            key: 'selectedThreadId',
-            get: function get() {
-                return this._selectedThreadId;
-            }
-        }, {
-            key: 'threadSection',
-            get: function get() {
-                return this._threadSection;
-            }
-        }, {
-            key: 'messageSection',
-            get: function get() {
-                return this._messageSection;
             }
         }]);
     
@@ -21225,9 +21205,9 @@ return /******/ (function(modules) { // webpackBootstrap
             _get(Object.getPrototypeOf(MessageSection.prototype), 'constructor', this).call(this);
             this._router = router;
             this._messageService = messageService;
-            this._sortedMessages = [];
-            this._threadName = null;
-            this._hasChanges = false;
+            this.sortedMessages = [];
+            this.threadName = null;
+            this.hasChanges = false;
         }
     
         _createClass(MessageSection, [{
@@ -21240,7 +21220,7 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: 'preProcess',
             value: function preProcess() {
-                this._hasChanges = false;
+                this.hasChanges = false;
             }
         }, {
             key: '_observeThreadSelected',
@@ -21249,8 +21229,8 @@ return /******/ (function(modules) { // webpackBootstrap
     
                 this.addDisposable(this._router.getEventObservable('InitEvent', _espJs2['default'].ObservationStage.committed).observe(function (model, event) {
                     _this._updateMessages(model);
-                    _this._threadName = event.threadName;
-                    _this._hasChanges = true;
+                    _this.threadName = event.threadName;
+                    _this.hasChanges = true;
                 }));
             }
         }, {
@@ -21271,7 +21251,7 @@ return /******/ (function(modules) { // webpackBootstrap
     
                 this.addDisposable(this._router.getEventObservable('MessagesReceived').observe(function (model) {
                     _this3._updateMessages(model);
-                    _this3._hasChanges = true;
+                    _this3.hasChanges = true;
                 }));
             }
         }, {
@@ -21283,22 +21263,7 @@ return /******/ (function(modules) { // webpackBootstrap
                 }).sort(function (a, b) {
                     return a.time < b.time ? -1 : a.time > b.time ? 1 : 0;
                 });
-                this._sortedMessages = messages;
-            }
-        }, {
-            key: 'sortedMessages',
-            get: function get() {
-                return this._sortedMessages;
-            }
-        }, {
-            key: 'threadName',
-            get: function get() {
-                return this._threadName;
-            }
-        }, {
-            key: 'hasChanges',
-            get: function get() {
-                return this._hasChanges;
+                this.sortedMessages = messages;
             }
         }]);
     
@@ -21368,13 +21333,13 @@ return /******/ (function(modules) { // webpackBootstrap
     
             _get(Object.getPrototypeOf(ThreadSection.prototype), 'constructor', this).call(this);
             this._router = router;
-            this._threadsById = {};
-            this._sortedThreads = [];
-            this._unreadCount = {
+            this.threadsById = {};
+            this.sortedThreads = [];
+            this.unreadCount = {
                 value: 0,
                 isVisible: false
             };
-            this._hasChanges = false;
+            this.hasChanges = false;
         }
     
         _createClass(ThreadSection, [{
@@ -21386,7 +21351,7 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: 'preProcess',
             value: function preProcess() {
-                this._hasChanges = false;
+                this.hasChanges = false;
             }
         }, {
             key: '_observeMessagesReceived',
@@ -21395,12 +21360,12 @@ return /******/ (function(modules) { // webpackBootstrap
                 this.addDisposable(this._router.getEventObservable('MessagesReceived').observe(function (model, event) {
                     for (var i = 0; i < event.rawMessages.length; i++) {
                         var rawMessage = event.rawMessages[i];
-                        var thread = _this._threadsById[rawMessage.threadId];
+                        var thread = _this.threadsById[rawMessage.threadId];
                         var messageTime = new Date(rawMessage.timestamp);
                         if (thread === undefined) {
                             thread = new _Thread2['default'](rawMessage.threadId, rawMessage.threadName, messageTime, rawMessage.text);
-                            _this._threadsById[rawMessage.threadId] = thread;
-                            _this._sortedThreads.push(thread);
+                            _this.threadsById[rawMessage.threadId] = thread;
+                            _this.sortedThreads.push(thread);
                         } else {
                             if (thread.lastMessageTime <= messageTime) {
                                 thread.lastMessageTime = messageTime;
@@ -21411,61 +21376,42 @@ return /******/ (function(modules) { // webpackBootstrap
                             thread.isRead = true;
                         }
                     }
-                    _this._sortedThreads.sort(function (a, b) {
+                    _this.sortedThreads.sort(function (a, b) {
                         return a.lastMessageTime > b.lastMessageTime ? -1 : a.lastMessageTime < b.lastMessageTime ? 1 : 0;
                     });
                     _this._updateActiveFlags(model);
                     _this._updateUnreadCount(model);
-                    _this._hasChanges = true;
+                    _this.hasChanges = true;
                 }));
             }
         }, {
             key: '_observeThreadSelected',
             value: function _observeThreadSelected() {
-                var _this = this;
+                var _this2 = this;
+    
                 this.addDisposable(this._router.getEventObservable('ThreadSelected', _espJs2['default'].ObservationStage.committed).observe(function (model) {
-                    _this._threadsById[model.selectedThreadId].isRead = true;
-                    _this._updateActiveFlags(model);
-                    _this._updateUnreadCount(model);
-                    _this._threadSection.hasChanges = true;
+                    _this2.threadsById[model.selectedThreadId].isRead = true;
+                    _this2._updateActiveFlags(model);
+                    _this2._updateUnreadCount(model);
+                    _this2.hasChanges = true;
                 }));
             }
         }, {
             key: '_updateActiveFlags',
             value: function _updateActiveFlags(model) {
-                for (var i = 0; i < this._sortedThreads.length; i++) {
-                    var thread = this._sortedThreads[i];
+                for (var i = 0; i < this.sortedThreads.length; i++) {
+                    var thread = this.sortedThreads[i];
                     thread.isActive = thread.id === model.selectedThreadId;
                 }
             }
         }, {
             key: '_updateUnreadCount',
             value: function _updateUnreadCount() {
-                var unreadCount = this._sortedThreads.reduce(function (total, thread) {
+                var unreadCount = this.sortedThreads.reduce(function (total, thread) {
                     return thread.isRead ? total : total + 1;
                 }, 0);
-                this._unreadCount.value = unreadCount;
-                this._unreadCount.isVisible = unreadCount > 0;
-            }
-        }, {
-            key: 'threadsById',
-            get: function get() {
-                return this._threadsById;
-            }
-        }, {
-            key: 'sortedThreads',
-            get: function get() {
-                return this._sortedThreads;
-            }
-        }, {
-            key: 'unreadCount',
-            get: function get() {
-                return this._unreadCount;
-            }
-        }, {
-            key: 'hasChanges',
-            get: function get() {
-                return this._hasChanges;
+                this.unreadCount.value = unreadCount;
+                this.unreadCount.isVisible = unreadCount > 0;
             }
         }]);
     
@@ -21736,14 +21682,10 @@ return /******/ (function(modules) { // webpackBootstrap
             _classCallCheck(this, MessageComposer);
     
             _get(Object.getPrototypeOf(MessageComposer.prototype), 'constructor', this).call(this);
+            this.state = { text: '' };
         }
     
         _createClass(MessageComposer, [{
-            key: 'getInitialState',
-            value: function getInitialState() {
-                return { text: '' };
-            }
-        }, {
             key: 'onChange',
             value: function onChange(event) {
                 this.setState({ text: event.target.value });
@@ -22000,6 +21942,8 @@ return /******/ (function(modules) { // webpackBootstrap
             _classCallCheck(this, ThreadListItem);
     
             _get(Object.getPrototypeOf(ThreadListItem.prototype), 'constructor', this).call(this);
+            // http://reactjsnews.com/es6-gotchas/
+            this._onClick = this._onClick.bind(this);
         }
     
         _createClass(ThreadListItem, [{

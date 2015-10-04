@@ -9,6 +9,8 @@ class ThreadListItem extends React.Component {
     //}
     constructor() {
         super();
+        // http://reactjsnews.com/es6-gotchas/
+        this._onClick = this._onClick.bind(this)
     }
     _onClick() {
         var thread = this.props.model;

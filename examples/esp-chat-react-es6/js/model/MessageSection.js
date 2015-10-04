@@ -6,18 +6,9 @@ export default class MessageSection extends esp.model.DisposableBase {
         super();
         this._router = router;
         this._messageService = messageService;
-        this._sortedMessages = [];
-        this._threadName = null;
-        this._hasChanges = false;
-    }
-    get sortedMessages() {
-        return this._sortedMessages;
-    }
-    get threadName() {
-        return this._threadName;
-    }
-    get hasChanges() {
-        return this._hasChanges;
+        this.sortedMessages = [];
+        this.threadName = null;
+        this.hasChanges = false;
     }
     initialise() {
         this._observeThreadSelected();
@@ -25,14 +16,14 @@ export default class MessageSection extends esp.model.DisposableBase {
         this._observeMessagesReceived();
     }
     preProcess() {
-        this._hasChanges = false;
+        this.hasChanges = false;
     }
     _observeThreadSelected() {
         this.addDisposable(
             this._router.getEventObservable('InitEvent', esp.ObservationStage.committed).observe((model, event) => {
                 this._updateMessages(model);
-                this._threadName = event.threadName;
-                this._hasChanges = true;
+                this.threadName = event.threadName;
+                this.hasChanges = true;
             })
         );
     }
@@ -51,7 +42,7 @@ export default class MessageSection extends esp.model.DisposableBase {
         this.addDisposable(
             this._router.getEventObservable('MessagesReceived').observe((model) => {
                 this._updateMessages(model);
-                this._hasChanges = true;
+                this.hasChanges = true;
             })
         );
     }
@@ -66,6 +57,6 @@ export default class MessageSection extends esp.model.DisposableBase {
         }).sort(function (a, b) {
             return a.time < b.time ? -1 : a.time > b.time ? 1 : 0;
         });
-        this._sortedMessages = messages;
+        this.sortedMessages = messages;
     };
 }

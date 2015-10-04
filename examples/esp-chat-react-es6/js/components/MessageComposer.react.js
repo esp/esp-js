@@ -5,9 +5,7 @@ var ENTER_KEY = 13;
 export default class MessageComposer extends React.Component {
     constructor() {
         super();
-    }
-    getInitialState() {
-        return {text: ''};
+        this.state = {text: ''};
     }
     onChange(event) {
         this.setState({text: event.target.value});

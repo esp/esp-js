@@ -1166,15 +1166,19 @@ describe('Router', () => {
     });
 
     describe('single model router', () => {
-        var _model, _modelRouter, _dispatchedModels;
+        var _model, _modelRouter, _dispatchedModels, _fooEventReceivedCount;
 
         beforeEach(() => {
             _model = {
                 id:'theModel',
                 aNumber:0,
                 anotherNumber:0,
-                executePassed: false
+                executePassed: false,
+                _observe_fooEvent(m, e, c) {
+                    _fooEventReceivedCount++;
+                },
             };
+            _fooEventReceivedCount = 0;
             _dispatchedModels = [];
             _modelRouter = new esp.SingleModelRouter();
             _modelRouter.setModel(_model);
@@ -1224,6 +1228,12 @@ describe('Router', () => {
         it('should proxy getModelObservable to correct models change stream', ()=> {
             expect(_dispatchedModels.length).toEqual(1);
             expect(_dispatchedModels[0].aNumber).toEqual(1);
+        });
+
+        it('should proxy observeEventsOn', ()=> {
+            _modelRouter.observeEventsOn(_model);
+            _modelRouter.publishEvent('fooEvent', {});
+            expect(_fooEventReceivedCount).toEqual(1);
         });
     });
 

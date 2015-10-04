@@ -1786,6 +1786,14 @@ return /******/ (function(modules) { // webpackBootstrap
                 return this._underlying.getModelObservable(this._targetModelId);
             }
         }, {
+            key: 'observeEventsOn',
+            value: function observeEventsOn(object) {
+                var methodPrefix = arguments.length <= 1 || arguments[1] === undefined ? '_observe_' : arguments[1];
+    
+                this._ensureModelIsSet();
+                return this._underlying.observeEventsOn(this._targetModelId, object, methodPrefix);
+            }
+        }, {
             key: '_ensureModelIsSet',
             value: function _ensureModelIsSet() {
                 _system.Guard.isTrue(this._modelSet, 'You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');

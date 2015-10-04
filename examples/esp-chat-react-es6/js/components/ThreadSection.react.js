@@ -1,32 +1,28 @@
 import React from 'react';
-import router from '../router';
 import ThreadListItem from './ThreadListItem.react';
 
 export default class ThreadSection extends React.Component {
-
     constructor() {
+        super();
         this._subscription = null;
     }
-
     componentWillMount() {
         this._subscription = this.props.router
             .getModelObservable()
             .where(model => model.threadSection.hasChanges)
             .observe(model => {
                 this.setState(model.threadSection);
-            };
+            });
     }
-
     componentWillUnmount() {
         this._subscription.dispose();
     }
-
     render() {
         if (this.state === null) {
             return null;
         }
         var router = this.props.router;
-        var threadListItems = this.state.sortedThreads.map(function (thread) {
+        var threadListItems = this.state.sortedThreads.map(thread => {
                 return (
                     <li key={thread.id}>
                         <ThreadListItem model={thread} router={router} />

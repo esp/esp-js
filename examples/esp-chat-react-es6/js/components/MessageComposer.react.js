@@ -3,25 +3,25 @@ import React from 'react';
 var ENTER_KEY = 13;
 
 export default class MessageComposer extends React.Component {
+    constructor() {
+        super();
+    }
     getInitialState() {
         return {text: ''};
     }
-
     onChange(event) {
         this.setState({text: event.target.value});
     }
-
     onKeyDown(event) {
         if (event.keyCode === ENTER_KEY) {
             event.preventDefault();
             var text = this.state.text.trim();
             if (text) {
-                this.props.router.publishEvent("messageSent", { text: text });
+                this.props.router.publishEvent("MessageSent", { text: text });
             }
             this.setState({text: ''});
         }
     }
-
     render() {
         return (
             <textarea

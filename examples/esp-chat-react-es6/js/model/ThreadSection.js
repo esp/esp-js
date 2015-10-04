@@ -1,7 +1,9 @@
+import esp from 'esp-js';
 import Thread from './Thread'
 
-export default class ThreadSection {
+export default class ThreadSection extends esp.model.DisposableBase {
     constructor(router) {
+        super();
         this._router = router;
         this._threadsById = {};
         this._sortedThreads = [];
@@ -24,43 +26,57 @@ export default class ThreadSection {
         return this._hasChanges;
     }
     initialise() {
-        this.addDisposable(this._router.observeEventsOn(this));
+        this._observeMessagesReceived();
+        this._observeThreadSelected();
     }
-    _observe_MessagesReceived(model, event) {
-        for (var i = 0; i < event.rawMessages.length; i++) {
-            var rawMessage = event.rawMessages[i];
-            var thread = this._threadsById[rawMessage.threadId];
-            var messageTime = new Date(rawMessage.timestamp);
-            if (thread === undefined) {
-                thread = new Thread(
-                    rawMessage.threadId,
-                    rawMessage.threadName,
-                    messageTime,
-                    rawMessage.text);
-                this._threadsById[rawMessage.threadId] = thread;
-                this._sortedThreads.push(thread);
-            } else {
-                if (thread.lastMessageTime <= messageTime) {
-                    thread.lastMessageTime = messageTime;
-                    thread.lastMessageText = rawMessage.text;
+    preProcess() {
+        this._hasChanges = false;
+    }
+    _observeMessagesReceived() {
+        var _this = this;
+        this.addDisposable(
+            this._router.getEventObservable('MessagesReceived').observe((model, event) => {
+                for (var i = 0; i < event.rawMessages.length; i++) {
+                    var rawMessage = event.rawMessages[i];
+                    var thread = _this._threadsById[rawMessage.threadId];
+                    var messageTime = new Date(rawMessage.timestamp);
+                    if (thread === undefined) {
+                        thread = new Thread(
+                            rawMessage.threadId,
+                            rawMessage.threadName,
+                            messageTime,
+                            rawMessage.text);
+                        _this._threadsById[rawMessage.threadId] = thread;
+                        _this._sortedThreads.push(thread);
+                    } else {
+                        if (thread.lastMessageTime <= messageTime) {
+                            thread.lastMessageTime = messageTime;
+                            thread.lastMessageText = rawMessage.text;
+                        }
+                    }
+                    if (thread.id === model.selectedThreadId) {
+                        thread.isRead = true;
+                    }
                 }
-            }
-            if (thread.id === model.selectedThreadId) {
-                thread.isRead = true;
-            }
-        }
-        this._sortedThreads.sort(function (a, b) {
-            return a.lastMessageTime > b.lastMessageTime ? -1 : a.lastMessageTime < b.lastMessageTime ? 1 : 0;
-        });
-        this._updateActiveFlags(model);
-        this._updateUnreadCount(model);
-        this._hasChanges = true;
+                _this._sortedThreads.sort(function (a, b) {
+                    return a.lastMessageTime > b.lastMessageTime ? -1 : a.lastMessageTime < b.lastMessageTime ? 1 : 0;
+                });
+                _this._updateActiveFlags(model);
+                _this._updateUnreadCount(model);
+                _this._hasChanges = true;
+            })
+        );
     };
-    _observe_ThreadSelected_commited(model) {
-        this._threadsById[model.selectedThreadId].isRead = true;
-        this._updateActiveFlags(model);
-        this._updateUnreadCount(model);
-        this._threadSection.hasChanges = true;
+    _observeThreadSelected() {
+        var _this = this;
+        this.addDisposable(
+            this._router.getEventObservable('ThreadSelected', esp.ObservationStage.committed).observe((model) => {
+                _this._threadsById[model.selectedThreadId].isRead = true;
+                _this._updateActiveFlags(model);
+                _this._updateUnreadCount(model);
+                _this._threadSection.hasChanges = true;
+            })
+        );
     };
     _updateActiveFlags(model) {
         for (var i = 0; i < this._sortedThreads.length; i++) {

@@ -3,7 +3,7 @@
 
 module.exports = {
 
-    init: function () {
+    populateLocalStorage: function () {
         localStorage.clear();
         localStorage.setItem('messages', JSON.stringify([
             {

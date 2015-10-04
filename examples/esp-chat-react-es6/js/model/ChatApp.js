@@ -27,41 +27,49 @@ export default class ChatApp extends esp.model.DisposableBase {
         return this._messageSection;
     }
     initialise() {
-        this.addDisposable(this._router.observeEventsOn(this));
         this._threadSection.initialise();
         this._messageSection.initialise();
+        this._observeInitEvent();
+        this._observeThreadSelected();
     }
     preProcess() {
-        this._messageSection.hasChanges = false;
-        this._threadSection.hasChanges = false;
+        this._messageSection.preProcess();
+        this._threadSection.preProcess();
     }
-    _observe_InitEvent() {
-        this._observeRawMessageStream();
+    _observeInitEvent() {
+        this.addDisposable(
+            this._router.getEventObservable('InitEvent').observe((model, event, context) => {
+                this._observeRawMessageStream();
+            })
+        );
     }
-    _observe_ThreadSelected(model, event, eventContext) {
-        this._selectedThreadId = event.threadId;
-        eventContext.commit();
+    _observeThreadSelected() {
+        this.addDisposable(
+            this._router.getEventObservable('ThreadSelected').observe((model, event, context) => {
+                this._selectedThreadId = event.threadId;
+                context.commit();
+            })
+        );
     }
     _observeRawMessageStream() {
-        this.addDisposable(
-            this._messageService.getMessagesStream()
-                .subscribe(rawMessages => {
-                    // Push the results onto the routers dispatch loop.
-                    // This will ensures that the router knows about changes to state.
-                    // It will allow the router to run pre-processors, any actions, post-processors, any subsequently raised events (as below), and finally dispatch the model to model observers.
-                    this._router.runAction(() => {
-                        for (var i = 0; i < rawMessages.length; i++) {
-                            var rawMessage = rawMessages[i];
-                            var threadRawMessages = this._rawMessagesByThreadId[rawMessage.threadId] || [];
-                            threadRawMessages.push(rawMessage);
-                            this._rawMessagesByThreadId[rawMessage.threadId] = threadRawMessages;
-                        }
-                        if (this._selectedThreadId === null && rawMessages.length > 0) {
-                            this._selectedThreadId = rawMessages[0].threadId;
-                        }
-                        this._router.publishEvent("messagesReceived", { rawMessages: [ rawMessage ] });
-                    });
-                })
-        );
+        this._messageService.getMessagesStream()
+            .subscribe(results => {
+                // Push the results onto the routers dispatch loop.
+                // This will ensures that the router knows about changes to state.
+                // It will allow the router to run pre-processors, any actions, post-processors, any subsequently raised events (as below), and finally dispatch the model to model observers.
+                this._router.runAction(() => {
+                    for (var i = 0; i < results.rawMessages.length; i++) {
+                        var rawMessage = results.rawMessages[i];
+                        var threadRawMessages = this._rawMessagesByThreadId[rawMessage.threadId] || [];
+                        threadRawMessages.push(rawMessage);
+                        this._rawMessagesByThreadId[rawMessage.threadId] = threadRawMessages;
+                    }
+                    if (this._selectedThreadId === null && results.rawMessages.length > 0) {
+                        this._selectedThreadId = results.rawMessages[0].threadId;
+                    }
+
+                    this._router.publishEvent("MessagesReceived", { rawMessages: results.rawMessages });
+                });
+            });
     }
 }

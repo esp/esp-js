@@ -1,8 +1,5 @@
 /*global localStorage*/
-"use strict";
-
-var esp = require("esp-js");
-var modelRouter = require('../modelRouter');
+import chatExampleData from './chatExampleData';
 
 // !!! Please Note !!!
 // We are using localStorage as an example, but in a real-world scenario, this
@@ -16,21 +13,25 @@ var modelRouter = require('../modelRouter');
 export default class MessageService {
     constructor() {
         this._observers = [];
+        // load some fake data into localstorage
+        chatExampleData.populateLocalStorage();
     }
     getMessagesStream() {
+        var messageService = this;
         return {
             subscribe(observer) {
-                this._observers.push(observer)
+                messageService._observers.push(observer)
                 // simulate retrieving data from a database
                 var rawMessages = JSON.parse(localStorage.getItem("messages"));
                 // simulate success callback
                 setTimeout(function () {
-                    observer({rawMessages: rawMessages});
+                    observer({rawMessages: rawMessages, isStateOfTheWorld:true});
                 }, 0);
             }
         }
     }
     sendMessage(text, threadId, threadName) {
+        var messageService = this;
         return {
             subscribe(observer) {
                 // simulate writing to a database
@@ -50,9 +51,9 @@ export default class MessageService {
                     // simulate an ack to the caller
                     observer({success:true});
                     // simulate some results from the server
-                    for (var i = 0, len = this._observers.length; i < len; i++) {
-                        var observer1 = this._observers[i];
-                        observer1({ rawMessages: [ rawMessage ] });
+                    for (var i = 0, len = messageService._observers.length; i < len; i++) {
+                        var observer1 = messageService._observers[i];
+                        observer1({ rawMessages: [ rawMessage ], isStateOfTheWorld:false });
                     }
                 }, 0);
             }

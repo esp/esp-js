@@ -1,12 +1,14 @@
 import React from 'react';
 import Message from '../model/Message';
 
-export default class MessageListItem extends React.Component {
-
-    static propTypes = {
-        model: React.PropTypes.instanceOf(Message)
+class MessageListItem extends React.Component {
+    // ES7 or babel with the playground flag
+    //static propTypes = {
+    //    model: React.PropTypes.instanceOf(Message)
+    //}
+    constructor() {
+        super();
     }
-
     render() {
         var message = this.props.model;
         return (
@@ -19,5 +21,8 @@ export default class MessageListItem extends React.Component {
             </div>
         );
     }
-
 }
+MessageListItem.propTypes = {
+    model: React.PropTypes.instanceOf(Message)
+}
+export default MessageListItem

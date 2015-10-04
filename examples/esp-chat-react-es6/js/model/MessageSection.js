@@ -20,24 +20,40 @@ export default class MessageSection extends esp.model.DisposableBase {
         return this._hasChanges;
     }
     initialise() {
-        this.addDisposable(this._router.observeEventsOn(this));
+        this._observeThreadSelected();
+        this._observeMessageSent();
+        this._observeMessagesReceived();
     }
-    _observe_ThreadSelected_commited(model, event) {
-        this._updateMessages(model);
-        this._threadName = event.threadName;
-        this._hasChanges = true;
-    };
-    _observe_MessageSent(model, event) {
+    preProcess() {
+        this._hasChanges = false;
+    }
+    _observeThreadSelected() {
         this.addDisposable(
-            this._messageService.sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
-                .subscribe(ack => {
-                    /* ack received from send operation */
-                })
+            this._router.getEventObservable('InitEvent', esp.ObservationStage.committed).observe((model, event) => {
+                this._updateMessages(model);
+                this._threadName = event.threadName;
+                this._hasChanges = true;
+            })
         );
-    };
-    _observe_MessagesReceived(model) {
-        this._updateMessages(model);
-        this._hasChanges = true;
+    }
+    _observeMessageSent() {
+        this.addDisposable(
+            this._router.getEventObservable('MessageSent').observe((model, event) => {
+                this._messageService
+                    .sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
+                    .subscribe(ack => {
+                        /* ack received from send operation */
+                });
+            })
+        );
+    }
+    _observeMessagesReceived(model) {
+        this.addDisposable(
+            this._router.getEventObservable('MessagesReceived').observe((model) => {
+                this._updateMessages(model);
+                this._hasChanges = true;
+            })
+        );
     }
     _updateMessages(model) {
         var rawMessages = model.rawMessagesByThreadId[model.selectedThreadId];

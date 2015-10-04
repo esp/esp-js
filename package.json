@@ -38,7 +38,5 @@
     "webpack": "^1.8.11",
     "webpack-dev-server": "^1.8.2"
   },
-  "dependencies": {
-    "node-uuid": "^1.4.3"
-  }
+  "dependencies": {}
 }

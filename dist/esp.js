@@ -378,9 +378,10 @@ return /******/ (function(modules) { // webpackBootstrap
                 var methodPrefix = arguments.length <= 2 || arguments[2] === undefined ? '_observe_' : arguments[2];
     
                 var disposables = new _systemDisposablesIndex.CompositeDisposable();
+                // note this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
     
                 var _loop = function (prop) {
-                    if (object.hasOwnProperty(prop) && prop.startsWith(methodPrefix)) {
+                    if (prop.startsWith(methodPrefix)) {
                         var stage = _ObservationStage2['default'].normal;
                         var eventName = prop.replace(methodPrefix, '');
                         var observationStageSplitIndex = eventName.lastIndexOf('_');

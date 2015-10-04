@@ -1335,5 +1335,29 @@ describe('Router', () => {
             expect(normal2InvokeCount).toBe(2);
             expect(committedInvokeCount).toBe(2);
         });
+
+        it('should observe events via prototype chain', ()=> {
+            var model2 = Object.create(_model);
+            subscription = _router.observeEventsOn('modelId', model2);
+            _router.publishEvent('modelId', 'fooEvent', 1);
+            expect(previewInvokeCount).toBe(1);
+            expect(normalInvokeCount).toBe(1);
+            expect(normal2InvokeCount).toBe(1);
+            expect(committedInvokeCount).toBe(1);
+        });
+
+        // this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
+        //it('should observe events via ctor function', ()=> {
+        //    var invokeCount = 0;
+        //    class Model {
+        //        _observe_fooEvent(m, e, c) {
+        //            invokeCount++;
+        //        }
+        //    }
+        //    var model = new Model();
+        //    subscription = _router.observeEventsOn('modelId', model);
+        //    _router.publishEvent('modelId', 'fooEvent', 1);
+        //    expect(invokeCount).toBe(1);
+        //});
     });
 });

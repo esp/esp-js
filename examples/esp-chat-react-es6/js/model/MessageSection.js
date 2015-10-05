@@ -50,10 +50,11 @@ export default class MessageSection extends esp.model.DisposableBase {
     }
     _observeThreadSelected() {
         var _this = this;
-        this.addDisposable(this._router.getEventObservable("ThreadSelected", esp.ObservationStage.commited).observe((model, event) => {
-            _this._updateMessages(model);
-            _this.threadName = event.threadName;
-            _this.hasChanges = true;
+        this.addDisposable(
+            this._router.getEventObservable('ThreadSelected', esp.ObservationStage.committed).observe((model, event) => {
+                _this._updateMessages(model);
+                _this.threadName = event.threadName;
+                _this.hasChanges = true;
         }));
     };
     _updateMessages(model) {

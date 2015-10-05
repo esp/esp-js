@@ -23373,43 +23373,41 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: '_observeInitEvent',
             value: function _observeInitEvent() {
-                var _this = this;
+                var _this2 = this;
     
                 this.addDisposable(this._router.getEventObservable('InitEvent').observe(function (model, event, context) {
-                    _this._observeRawMessageStream();
+                    _this2._observeRawMessageStream();
                 }));
             }
         }, {
             key: '_observeThreadSelected',
             value: function _observeThreadSelected() {
-                var _this2 = this;
+                var _this3 = this;
     
                 this.addDisposable(this._router.getEventObservable('ThreadSelected').observe(function (model, event, context) {
-                    _this2.selectedThreadId = event.threadId;
+                    _this3.selectedThreadId = event.threadId;
                     context.commit();
                 }));
             }
         }, {
             key: '_observeRawMessageStream',
             value: function _observeRawMessageStream() {
-                var _this3 = this;
-    
+                var _this = this;
                 this._messageService.getMessagesStream().subscribe(function (results) {
                     // Push the results onto the routers dispatch loop.
                     // This will ensures that the router knows about changes to state.
                     // It will allow the router to run pre-processors, any actions, post-processors, any subsequently raised events (as below), and finally dispatch the model to model observers.
-                    _this3._router.runAction(function () {
+                    _this._router.runAction(function () {
                         for (var i = 0; i < results.rawMessages.length; i++) {
                             var rawMessage = results.rawMessages[i];
-                            var threadRawMessages = _this3.rawMessagesByThreadId[rawMessage.threadId] || [];
+                            var threadRawMessages = _this.rawMessagesByThreadId[rawMessage.threadId] || [];
                             threadRawMessages.push(rawMessage);
-                            _this3.rawMessagesByThreadId[rawMessage.threadId] = threadRawMessages;
+                            _this.rawMessagesByThreadId[rawMessage.threadId] = threadRawMessages;
                         }
-                        if (_this3.selectedThreadId === null && results.rawMessages.length > 0) {
-                            _this3.selectedThreadId = results.rawMessages[0].threadId;
+                        if (_this.selectedThreadId === null && results.rawMessages.length > 0) {
+                            _this.selectedThreadId = results.rawMessages[0].threadId;
                         }
-    
-                        _this3._router.publishEvent("MessagesReceived", { rawMessages: results.rawMessages });
+                        _this._router.publishEvent("MessagesReceived", { rawMessages: results.rawMessages });
                     });
                 });
             }
@@ -23511,7 +23509,7 @@ return /******/ (function(modules) { // webpackBootstrap
             key: '_observeThreadSelected',
             value: function _observeThreadSelected() {
                 var _this = this;
-                this.addDisposable(this._router.getEventObservable("ThreadSelected", _espJs2['default'].ObservationStage.commited).observe(function (model, event) {
+                this.addDisposable(this._router.getEventObservable('ThreadSelected', _espJs2['default'].ObservationStage.committed).observe(function (model, event) {
                     _this._updateMessages(model);
                     _this.threadName = event.threadName;
                     _this.hasChanges = true;

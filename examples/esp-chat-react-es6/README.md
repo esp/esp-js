@@ -1,4 +1,4 @@
-# Evented State Processor (ESP) React Facebook Chat Example
+# Evented State Processor (ESP) React Facebook Chat Example (ES6)
 
 This is a port of [Flux Chat]
 (https://github.com/facebook/flux/tree/master/examples/flux-chat) to [ESP 
@@ -12,6 +12,12 @@ interdependent logic into manageable chunks. It's great for big, complex
 applications with complex state transitions and real-time events (e.g.
 streaming data).
 
+This example is similar to the esp-chat-react app (also a port of the 
+[Flux Chat](https://github.com/facebook/flux/tree/master/examples/flux-chat)) however 
+it is written in ES6 and uses the 
+[reactive model](http://esp.readthedocs.org/en/latest/modeling-approaches/reactive-domain-model.html) 
+approach.
+
 ## Learning ESP
 
 - [Documentation](https://github.com/esp/esp-js)
@@ -23,7 +29,6 @@ streaming data).
 - [GitHub Issues](https://github.com/esp/esp-js/issues)
 
 *Let us [know](https://github.com/esp/esp-js/issues) if you discover anything worth sharing!*
-
 
 ## Running
 
@@ -38,13 +43,8 @@ To build the project, first run this command:
 
 `npm start`
 
-This will perform an initial build and start a watcher process that will
-update bundle.js with any changes you wish to make.  This watcher is
-based on [Browserify](http://browserify.org/) and
-[Watchify](https://github.com/substack/watchify), and it transforms
-React's JSX syntax into standard JavaScript with
-[Reactify](https://github.com/andreypopp/reactify).
+This will perform an initial build and bundle using webpack and babel.
+Webpack has babel and JSX support built in so the final bundle is ready for consumption via a script tag.
 
-After starting the watcher, you can open `index.html` in your browser to
-open the app.
+After running the build, you can open `index.html` in your browser to run the app.
 

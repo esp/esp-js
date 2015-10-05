@@ -56,12 +56,13 @@ export default class ThreadSection extends esp.model.DisposableBase {
         );
     };
     _observeThreadSelected() {
+        var _this = this;
         this.addDisposable(
             this._router.getEventObservable('ThreadSelected', esp.ObservationStage.committed).observe((model) => {
-                this.threadsById[model.selectedThreadId].isRead = true;
-                this._updateActiveFlags(model);
-                this._updateUnreadCount(model);
-                this.hasChanges = true;
+                _this.threadsById[model.selectedThreadId].isRead = true;
+                _this._updateActiveFlags(model);
+                _this._updateUnreadCount(model);
+                _this.hasChanges = true;
             })
         );
     };

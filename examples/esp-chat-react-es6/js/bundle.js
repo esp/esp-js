@@ -23352,7 +23352,7 @@ return /******/ (function(modules) { // webpackBootstrap
             this.selectedThreadId = null;
             this.threadSection = new _ThreadSection2['default'](router);
             this.addDisposable(this.threadSection);
-            this.messageSection = new _MessageSection2['default'](router);
+            this.messageSection = new _MessageSection2['default'](router, messageService);
             this.addDisposable(this.threadSection);
         }
     
@@ -23490,10 +23490,9 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: '_observeMessageSent',
             value: function _observeMessageSent() {
-                var _this3 = this;
-    
+                var _this = this;
                 this.addDisposable(this._router.getEventObservable('MessageSent').observe(function (model, event) {
-                    _this3._messageService.sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName).subscribe(function (ack) {
+                    _this._messageService.sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName).subscribe(function (ack) {
                         /* ack received from send operation */
                     });
                 }));
@@ -23501,11 +23500,11 @@ return /******/ (function(modules) { // webpackBootstrap
         }, {
             key: '_observeMessagesReceived',
             value: function _observeMessagesReceived(model) {
-                var _this4 = this;
+                var _this3 = this;
     
                 this.addDisposable(this._router.getEventObservable('MessagesReceived').observe(function (model) {
-                    _this4._updateMessages(model);
-                    _this4.hasChanges = true;
+                    _this3._updateMessages(model);
+                    _this3.hasChanges = true;
                 }));
             }
         }, {
@@ -23946,16 +23945,18 @@ return /******/ (function(modules) { // webpackBootstrap
     
             _get(Object.getPrototypeOf(MessageComposer.prototype), 'constructor', this).call(this);
             this.state = { text: '' };
+            this._onChange = this._onChange.bind(this);
+            this._onKeyDown = this._onKeyDown.bind(this);
         }
     
         _createClass(MessageComposer, [{
-            key: 'onChange',
-            value: function onChange(event) {
+            key: '_onChange',
+            value: function _onChange(event) {
                 this.setState({ text: event.target.value });
             }
         }, {
-            key: 'onKeyDown',
-            value: function onKeyDown(event) {
+            key: '_onKeyDown',
+            value: function _onKeyDown(event) {
                 if (event.keyCode === ENTER_KEY) {
                     event.preventDefault();
                     var text = this.state.text.trim();
@@ -23972,8 +23973,8 @@ return /******/ (function(modules) { // webpackBootstrap
                     className: 'message-composer',
                     name: 'message',
                     value: this.state.text,
-                    onChange: this.onChange,
-                    onKeyDown: this.onKeyDown
+                    onChange: this._onChange,
+                    onKeyDown: this._onKeyDown
                 });
             }
         }]);
@@ -24365,6 +24366,8 @@ return /******/ (function(modules) { // webpackBootstrap
     // poor mans rx api: don't want to pull in rx just to get a nice PUSH API,
     // we'll just model the same observable API here for demo purposes.
     
+    var messageId = 0;
+    
     var MessageService = (function () {
         function MessageService() {
             _classCallCheck(this, MessageService);
@@ -24399,7 +24402,7 @@ return /******/ (function(modules) { // webpackBootstrap
                         // simulate writing to a database
                         var rawMessages = JSON.parse(localStorage.getItem("messages"));
                         var rawMessage = {
-                            id: uuid.v4(),
+                            id: ++messageId,
                             threadId: threadId,
                             threadName: threadName,
                             authorName: "Bill", // hard coded for the example

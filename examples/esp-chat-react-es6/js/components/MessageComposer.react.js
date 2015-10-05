@@ -6,11 +6,13 @@ export default class MessageComposer extends React.Component {
     constructor() {
         super();
         this.state = {text: ''};
+        this._onChange = this._onChange.bind(this)
+        this._onKeyDown = this._onKeyDown.bind(this)
     }
-    onChange(event) {
+    _onChange(event) {
         this.setState({text: event.target.value});
     }
-    onKeyDown(event) {
+    _onKeyDown(event) {
         if (event.keyCode === ENTER_KEY) {
             event.preventDefault();
             var text = this.state.text.trim();
@@ -26,8 +28,8 @@ export default class MessageComposer extends React.Component {
                 className="message-composer"
                 name="message"
                 value={this.state.text}
-                onChange={this.onChange}
-                onKeyDown={this.onKeyDown}
+                onChange={this._onChange}
+                onKeyDown={this._onKeyDown}
             />
         );
     }

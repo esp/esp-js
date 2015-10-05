@@ -29,9 +29,10 @@ export default class MessageSection extends esp.model.DisposableBase {
         );
     }
     _observeMessageSent() {
+        var _this = this;
         this.addDisposable(
             this._router.getEventObservable('MessageSent').observe((model, event) => {
-                this._messageService
+                _this._messageService
                     .sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
                     .subscribe(ack => {
                         /* ack received from send operation */

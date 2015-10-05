@@ -11,7 +11,7 @@ export default class ChatApp extends esp.model.DisposableBase {
         this.selectedThreadId = null;
         this.threadSection = new ThreadSection(router);
         this.addDisposable(this.threadSection);
-        this.messageSection = new MessageSection(router);
+        this.messageSection = new MessageSection(router, messageService);
         this.addDisposable(this.threadSection);
     }
     initialise() {

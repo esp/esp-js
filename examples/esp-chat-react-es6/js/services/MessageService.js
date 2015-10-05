@@ -10,6 +10,8 @@ import chatExampleData from './chatExampleData';
 
 // poor mans rx api: don't want to pull in rx just to get a nice PUSH API,
 // we'll just model the same observable API here for demo purposes.
+
+var messageId = 0;
 export default class MessageService {
     constructor() {
         this._observers = [];
@@ -37,7 +39,7 @@ export default class MessageService {
                 // simulate writing to a database
                 var rawMessages = JSON.parse(localStorage.getItem("messages"));
                 var rawMessage = {
-                    id: uuid.v4(),
+                    id: ++messageId,
                     threadId: threadId,
                     threadName: threadName,
                     authorName: "Bill", // hard coded for the example

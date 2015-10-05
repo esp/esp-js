@@ -21,10 +21,11 @@ import ObservationStage from './ObservationStage';
 import ModelRecord from './ModelRecord';
 import State from './State.js';
 import Status from './Status.js';
-import ModelRouter from './ModelRouter.js';
+import SingleModelRouter from './SingleModelRouter.js';
 import { Subject, Observable } from '../reactive/index';
 import { ModelChangedEvent } from '../model/events/index';
 import { Guard, utils, logger } from '../system';
+import { CompositeDisposable } from '../system/disposables/index';
 
 var _log = logger.create('Router');
 
@@ -154,7 +155,39 @@ export default class Router {
     }
     createModelRouter(targetModelId) {
         Guard.isString(targetModelId, 'The targetModelId argument should be a string');
-        return new ModelRouter(this, targetModelId);
+        return new SingleModelRouter(this, targetModelId);
+    }
+    observeEventsOn(modelId, object, methodPrefix='_observe_') {
+        var disposables = new CompositeDisposable();
+        // note this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
+        for (let prop in object) {
+            if (prop.startsWith(methodPrefix)) {
+                let stage = ObservationStage.normal;
+                let eventName = prop.replace(methodPrefix, '');
+                let observationStageSplitIndex = eventName.lastIndexOf('_');
+                if(observationStageSplitIndex > 0) {
+                    let stageSubstring = eventName.substring(observationStageSplitIndex + 1);
+                    let stageSpecified = false;
+                    if(stageSubstring === ObservationStage.preview) {
+                        stage = ObservationStage.preview;
+                        stageSpecified = true;
+                    } else if (stageSubstring === ObservationStage.normal) {
+                        stage = ObservationStage.normal;
+                        stageSpecified = true;
+                    } else if (stageSubstring === ObservationStage.committed) {
+                        stage = ObservationStage.committed;
+                        stageSpecified = true;
+                    }
+                    if(stageSpecified){
+                        eventName = eventName.substring(0, observationStageSplitIndex);
+                    }
+                }
+                disposables.add(this.getEventObservable(modelId, eventName, stage).observe((m, e, c) => {
+                    object[prop](m, e, c);
+                }));
+            }
+        }
+        return disposables;
     }
     _eventQueue(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed

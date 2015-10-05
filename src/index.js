@@ -18,5 +18,6 @@
 
 exports.ObservationStage = require('./router/ObservationStage');
 exports.Router = require('./router/Router');
+exports.SingleModelRouter = require('./router/SingleModelRouter');
 exports.model = require('./model');
 

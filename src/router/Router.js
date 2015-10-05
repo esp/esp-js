@@ -157,6 +157,12 @@ export default class Router {
         Guard.isString(targetModelId, 'The targetModelId argument should be a string');
         return new SingleModelRouter(this, targetModelId);
     }
+    createModelRouter(targetModelId, modelFactory) {
+        let singleRouter = this.createModelRouter(targetModelId);
+        let model = modelFactory(singleRouter);
+        this.registerModel(targetModelId, model);
+        return {model, router: singleRouter};
+    }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
         var disposables = new CompositeDisposable();
         // note this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives

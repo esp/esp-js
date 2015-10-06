@@ -44,6 +44,8 @@ export default class Router {
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
         this._models[modelId] = new ModelRecord(modelId, model, options);
+        let updateSubject = this._getModelUpdateSubjects(modelId);
+        updateSubject.onNext(model);
     }  
     removeModel(modelId){
         Guard.isString(modelId, 'The modelId argument should be a string');
@@ -144,12 +146,7 @@ export default class Router {
         return Observable.create(o => {
             this._throwIfHalted();
             Guard.isString(modelId, 'The modelId should be a string');
-
-            let updateSubject = this._modelUpdateSubjects[modelId];
-            if (typeof updateSubject === 'undefined') {
-                updateSubject = new Subject();
-                this._modelUpdateSubjects[modelId] = updateSubject;
-            }
+            let updateSubject = this._getModelUpdateSubjects(modelId);
             return updateSubject.observe(o);
         });
     }
@@ -231,6 +228,14 @@ export default class Router {
             modelEventSubject[eventType] = subjects;
         }
         return subjects;
+    }
+    _getModelUpdateSubjects(modelId) {
+        let updateSubject = this._modelUpdateSubjects[modelId];
+        if (typeof updateSubject === 'undefined') {
+            updateSubject = new Subject(true);
+            this._modelUpdateSubjects[modelId] = updateSubject;
+        }
+        return updateSubject;
     }
     _purgeEventQueues() {
         if (this._state.currentStatus === Status.Idle) {

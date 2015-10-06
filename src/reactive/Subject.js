@@ -20,12 +20,15 @@ import { utils } from '../system';
 import Observable from './Observable';
 
 class Subject extends Observable  {
-    constructor() {
+    constructor(cacheLastValue = false) {
         super(undefined);
-        this._observe = observe.bind(this);
+        this._cacheLastValue = cacheLastValue;
+        this._lastValue = undefined;
         this._observers = [];
         this._hasComplete = false;
         this._hasError = false;
+        // the base object Observable requires _observe to be bound to this.
+        this._observe = observe.bind(this);
     }
     get hasError() {
         return this._hasError;
@@ -38,6 +41,9 @@ class Subject extends Observable  {
     // given this, and that we only ever push a max of 3 args, it makes sense to hard code them.
     onNext(arg1, arg2, arg3) {
         if(!this._hasComplete) {
+            if(this._cacheLastValue) {
+                this._lastValue = {arg1: arg1, arg2: arg2, arg3: arg3};
+            }
             var os = this._observers.slice(0);
             for (var i = 0, len = os.length; i < len; i++) {
                 if(this._hasError) break;
@@ -75,10 +81,13 @@ class Subject extends Observable  {
     getObserverCount() {
         return this._observers.length;
     }
+
 }
 function observe(observer) {
-    /*jshint validthis:true */
     this._observers.push(observer);
+    if(this._cacheLastValue && typeof this._lastValue !== 'undefined') {
+        observer.onNext(this._lastValue.arg1, this._lastValue.arg2, this._lastValue.arg3);
+    }
     return {
         dispose: () => {
             utils.removeAll(this._observers, observer);

@@ -1,6 +1,6 @@
 {
   "name": "esp-js",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",
@@ -22,10 +22,10 @@
     "babel-loader": "^5.3.2",
     "grunt": "^0.4.5",
     "grunt-babel": "^5.0.3",
-    "grunt-banner": "^0.5.0",
+    "grunt-banner": "^0.6.0",
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-jsdoc": "^0.6.10",
+    "grunt-jsdoc": "^1.0.0",
     "grunt-karma": "^0.12.1",
     "grunt-mkdir": "^0.1.2",
     "grunt-webpack": "^1.0.8",

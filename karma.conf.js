@@ -40,7 +40,7 @@ module.exports = function (config) {
         port: 5010,
         colors: true,
         logLevel: config.LOG_INFO,
-        autoWatch: true,
+        autoWatch: false,
         browsers: ['Chrome'],
         singleRun: false,
         plugins: [

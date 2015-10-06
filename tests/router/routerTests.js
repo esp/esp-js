@@ -56,12 +56,6 @@ describe('Router', () => {
         var _model;
 
         beforeEach(()=> {
-            _preProcessorReceivedCount = 0;
-            _eventReceivedCount1 =0;
-            _eventReceivedCount2 =0;
-            _postProcessorReceivedCount  =0;
-            _updateReceivedCount1 = 0;
-            _updateReceivedCount2 = 0;
             _model = {
                 removeAtPre: false,
                 removeAtUpdate: false,
@@ -104,6 +98,13 @@ describe('Router', () => {
             _router.getModelObservable('modelId1').observe(() => {
                 _updateReceivedCount2++;
             });
+            // the model gets pumped on initial observe so reset these here
+            _preProcessorReceivedCount = 0;
+            _eventReceivedCount1 =0;
+            _eventReceivedCount2 =0;
+            _postProcessorReceivedCount  =0;
+            _updateReceivedCount1 = 0;
+            _updateReceivedCount2 = 0;
         });
 
         it('throws if arguments incorrect', () => {
@@ -310,6 +311,9 @@ describe('Router', () => {
             _router.getModelObservable(_model2.id).observe(() => {
                 model2ReceivedCount++;
             });
+            // reset these as observing the model above would have bumped them to 1
+            model1ReceivedCount = 0;
+            model2ReceivedCount = 0;
         });
 
         it('runs action for target model', () => {
@@ -815,8 +819,8 @@ describe('Router', () => {
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
             _router.publishEvent('modelId2', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(1);
-            expect(model2UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
+            expect(model2UpdateCount).toBe(2);
         });
 
         it('doesn\'t dispatch to disposed update observers', () => {
@@ -826,10 +830,10 @@ describe('Router', () => {
                 model1UpdateCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
             disposable.dispose();
             _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
         });
 
         it('purges all model event queues before dispatching updates', () => {
@@ -840,6 +844,7 @@ describe('Router', () => {
             _router.getModelObservable('modelId2').observe(() => {
                 modelUpdateCount++;
             });
+            expect(modelUpdateCount).toBe(2);
             _router.getEventObservable('modelId1', 'StartEvent').observe(() => {
                 _router.publishEvent('modelId1', 'Event1', 1);
                 _router.publishEvent('modelId2', 'Event1', 2);
@@ -854,7 +859,7 @@ describe('Router', () => {
             });
             _router.publishEvent('modelId1', 'StartEvent', 'payload');
             expect(eventCount).toBe(4);
-            expect(modelUpdateCount).toBe(2);
+            expect(modelUpdateCount).toBe(4);
         });
 
         it('processes events published during model dispatch', () => {
@@ -883,19 +888,29 @@ describe('Router', () => {
             _router.getModelObservable('modelId1').observe(() => {
                 model1UpdateCount++;
             });
+            expect(model1UpdateCount).toBe(1);
             _router.getEventObservable('modelId2', 'Event1').observe(() => { /*noop*/  });
             _router.getModelObservable('modelId2').observe(() => {
                 model2UpdateCount++;
             });
-            _router.publishEvent('modelId2', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toBe(0);
             expect(model2UpdateCount).toBe(1);
+            _router.publishEvent('modelId2', 'StartEvent', 'payload');
+            expect(model1UpdateCount).toBe(1);
+            expect(model2UpdateCount).toBe(2);
         });
 
         it('should dispatch change to models if event if only one event was processed', () => {
         	// there is a condition whereby the first processors processes the event flagging the model as dirty,
             // but the second event doesn't get processed which un flags the prior event
             pending();
+        });
+
+        it('should pump the last model on initial observation', () => {
+            var model1UpdateCount = 0;
+            _router.getModelObservable('modelId1').observe(() => {
+                model1UpdateCount++;
+            });
+            expect(model1UpdateCount).toBe(1);
         });
     });
 
@@ -1096,12 +1111,14 @@ describe('Router', () => {
             _router.getModelObservable(_model.id).observe(() => {
                 model1UpdateCount++;
             });
+            expect(model1UpdateCount).toEqual(1);
             _router.getModelObservable(_model2.id).observe(() => {
                 model2UpdateCount++;
             });
-            _router.publishEvent(_model2.id, "fooEvent", 1);
-            expect(model1UpdateCount).toEqual(0);
             expect(model2UpdateCount).toEqual(1);
+            _router.publishEvent(_model2.id, "fooEvent", 1);
+            expect(model1UpdateCount).toEqual(1);
+            expect(model2UpdateCount).toEqual(2);
         });
 
         it('should raise a model changed when child\'s event workflow done', () => {
@@ -1121,7 +1138,7 @@ describe('Router', () => {
     });
 
     describe('.createModelRouter()', () => {
-        var _model, _modelRouter, _dispatchedModels;
+        var _model, _modelRouter, _dispatchedModelNumbers;
 
         beforeEach(() => {
             _model = {
@@ -1130,14 +1147,14 @@ describe('Router', () => {
                 anotherNumber:0,
                 executePassed: false
             };
-            _dispatchedModels = [];
+            _dispatchedModelNumbers = [];
             _router.registerModel(_model.id, _model);
             _modelRouter = _router.createModelRouter(_model.id);
             _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
                 m.aNumber = e;
             });
             _modelRouter.getModelObservable().observe(m => {
-                _dispatchedModels.push(m);
+                _dispatchedModelNumbers.push(m.aNumber);
             });
             _modelRouter.publishEvent('fooEvent', 1);
         });
@@ -1145,7 +1162,6 @@ describe('Router', () => {
         it('should proxy publishEvent and getEventObservable', ()=> {
             expect(_model.aNumber).toEqual(1);
         });
-
 
         it('should proxy executeEvent to correct model event processor', ()=> {
             _modelRouter.getEventObservable('barEvent').observe((m,e) => {
@@ -1160,13 +1176,14 @@ describe('Router', () => {
         });
 
         it('should proxy getModelObservable to correct models change stream', ()=> {
-            expect(_dispatchedModels.length).toEqual(1);
-            expect(_dispatchedModels[0].aNumber).toEqual(1);
+            expect(_dispatchedModelNumbers.length).toEqual(2);
+            expect(_dispatchedModelNumbers[0]).toEqual(0);
+            expect(_dispatchedModelNumbers[1]).toEqual(1);
         });
     });
 
     describe('single model router', () => {
-        var _model, _modelRouter, _dispatchedModels, _fooEventReceivedCount;
+        var _model, _modelRouter, _dispatchedModelNumbers, _fooEventReceivedCount;
 
         beforeEach(() => {
             _model = {
@@ -1179,14 +1196,14 @@ describe('Router', () => {
                 },
             };
             _fooEventReceivedCount = 0;
-            _dispatchedModels = [];
             _modelRouter = new esp.SingleModelRouter();
             _modelRouter.setModel(_model);
+            _dispatchedModelNumbers = [];
             _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
                 m.aNumber = e;
             });
             _modelRouter.getModelObservable().observe(m => {
-                _dispatchedModels.push(m);
+                _dispatchedModelNumbers.push(m.aNumber);
             });
             _modelRouter.publishEvent('fooEvent', 1);
         });
@@ -1226,10 +1243,14 @@ describe('Router', () => {
         });
 
         it('should proxy getModelObservable to correct models change stream', ()=> {
-            expect(_dispatchedModels.length).toEqual(1);
-            expect(_dispatchedModels[0].aNumber).toEqual(1);
+            expect(_dispatchedModelNumbers.length).toEqual(2);
+            expect(_dispatchedModelNumbers[0]).toEqual(0);
+            expect(_dispatchedModelNumbers[1]).toEqual(1);
         });
-        //
+
+        // not running these as the functionality doesn't work well with Es6 classes.
+        // the issues is ES6 functions are not enumerable so you can't eaisly reflect
+        // over the names. Need to do something with directives.
         //it('should proxy observeEventsOn', ()=> {
         //    _modelRouter.observeEventsOn(_model);
         //    _modelRouter.publishEvent('fooEvent', {});
@@ -1237,127 +1258,130 @@ describe('Router', () => {
         //});
     });
 
-    describe('.observeEventsOn()', () => {
-        var previewInvokeCount = 0;
-        var normalInvokeCount = 0;
-        var normal2InvokeCount = 0;
-        var committedInvokeCount = 0;
-        var _model;
-        var subscription;
-
-        beforeEach(() => {
-            previewInvokeCount = 0;
-            normalInvokeCount = 0;
-            normal2InvokeCount = 0;
-            committedInvokeCount = 0;
-            _model = {
-                // standard evnets
-                _observe_fooEvent_preview(m, e, c) {
-                    previewInvokeCount++;
-                },
-                _observe_fooEvent_normal(m, e, c) {
-                    normalInvokeCount++;
-                    c.commit();
-                },
-                _observe_fooEvent(m, e, c) {
-                    normal2InvokeCount++;
-                },
-                _observe_fooEvent_committed(m, e, c) {
-                    committedInvokeCount++;
-                },
-                // events with underscores
-                _observe_bar_Event_preview(m, e, c) {
-                    previewInvokeCount++;
-                },
-                _observe_bar_Event_normal(m, e, c) {
-                    normalInvokeCount++;
-                    c.commit();
-                },
-                _observe_bar_Event(m, e, c) {
-                    normal2InvokeCount++;
-                },
-                _observe_bar_Event_committed(m, e, c) {
-                    committedInvokeCount++;
-                },
-                // custom prefix
-                _customPrefix_bar_Event_preview(m, e, c) {
-                    previewInvokeCount++;
-                },
-                _customPrefix_bar_Event_normal(m, e, c) {
-                    normalInvokeCount++;
-                    c.commit();
-                },
-                _customPrefix_bar_Event(m, e, c) {
-                    normal2InvokeCount++;
-                },
-                _customPrefix_bar_Event_committed(m, e, c) {
-                    committedInvokeCount++;
-                }
-            };
-            _router.registerModel('modelId', _model);
-        });
-
-        it('should observe events event name and stage', ()=> {
-            subscription = _router.observeEventsOn('modelId', _model);
-            _router.publishEvent('modelId', 'fooEvent', 1);
-            expect(previewInvokeCount).toBe(1);
-            expect(normalInvokeCount).toBe(1);
-            expect(normal2InvokeCount).toBe(1);
-            expect(committedInvokeCount).toBe(1);
-        });
-
-        it('should observe events with underscores in event name ', ()=> {
-            subscription = _router.observeEventsOn('modelId', _model);
-            _router.publishEvent('modelId', 'bar_Event', 1);
-            expect(previewInvokeCount).toBe(1);
-            expect(normalInvokeCount).toBe(1);
-            expect(normal2InvokeCount).toBe(1);
-            expect(committedInvokeCount).toBe(1);
-        });
-
-        it('should observe events with custom prefix in event name ', ()=> {
-            subscription = _router.observeEventsOn('modelId', _model, '_customPrefix_');
-            _router.publishEvent('modelId', 'bar_Event', 1);
-            expect(previewInvokeCount).toBe(1);
-            expect(normalInvokeCount).toBe(1);
-            expect(normal2InvokeCount).toBe(1);
-            expect(committedInvokeCount).toBe(1);
-        });
-
-        it('should stop observing events when disposable disposed', ()=> {
-            subscription = _router.observeEventsOn('modelId', _model);
-            _router.publishEvent('modelId', 'fooEvent', 1);
-            _router.publishEvent('modelId', 'fooEvent', 1);
-            subscription.dispose();
-            _router.publishEvent('modelId', 'fooEvent', 1);
-            expect(previewInvokeCount).toBe(2);
-            expect(normalInvokeCount).toBe(2);
-            expect(normal2InvokeCount).toBe(2);
-            expect(committedInvokeCount).toBe(2);
-        });
-
-        it('should observe events via prototype chain', ()=> {
-            var model2 = Object.create(_model);
-            subscription = _router.observeEventsOn('modelId', model2);
-            _router.publishEvent('modelId', 'fooEvent', 1);
-            expect(previewInvokeCount).toBe(1);
-            expect(normalInvokeCount).toBe(1);
-            expect(normal2InvokeCount).toBe(1);
-            expect(committedInvokeCount).toBe(1);
-        });
-
-        // this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
-        //it('should observe events via ctor function', ()=> {
-        //    var invokeCount = 0;
-        //    class Model {
-        //        _observe_fooEvent(m, e, c) {
-        //            invokeCount++;
-        //        }
-        //    }
-        //    var model = new Model();
-        //    subscription = _router.observeEventsOn('modelId', model);
-        //    _router.publishEvent('modelId', 'fooEvent', 1);
-        //    expect(invokeCount).toBe(1);
-        //});
-    });
+    // not running these as the functionality doesn't work well with Es6 classes.
+    // the issues is ES6 functions are not enumerable so you can't eaisly reflect
+    // over the names. Need to do something with directives.
+    //describe('.observeEventsOn()', () => {
+    //    var previewInvokeCount = 0;
+    //    var normalInvokeCount = 0;
+    //    var normal2InvokeCount = 0;
+    //    var committedInvokeCount = 0;
+    //    var _model;
+    //    var subscription;
+    //
+    //    beforeEach(() => {
+    //        previewInvokeCount = 0;
+    //        normalInvokeCount = 0;
+    //        normal2InvokeCount = 0;
+    //        committedInvokeCount = 0;
+    //        _model = {
+    //            // standard evnets
+    //            _observe_fooEvent_preview(m, e, c) {
+    //                previewInvokeCount++;
+    //            },
+    //            _observe_fooEvent_normal(m, e, c) {
+    //                normalInvokeCount++;
+    //                c.commit();
+    //            },
+    //            _observe_fooEvent(m, e, c) {
+    //                normal2InvokeCount++;
+    //            },
+    //            _observe_fooEvent_committed(m, e, c) {
+    //                committedInvokeCount++;
+    //            },
+    //            // events with underscores
+    //            _observe_bar_Event_preview(m, e, c) {
+    //                previewInvokeCount++;
+    //            },
+    //            _observe_bar_Event_normal(m, e, c) {
+    //                normalInvokeCount++;
+    //                c.commit();
+    //            },
+    //            _observe_bar_Event(m, e, c) {
+    //                normal2InvokeCount++;
+    //            },
+    //            _observe_bar_Event_committed(m, e, c) {
+    //                committedInvokeCount++;
+    //            },
+    //            // custom prefix
+    //            _customPrefix_bar_Event_preview(m, e, c) {
+    //                previewInvokeCount++;
+    //            },
+    //            _customPrefix_bar_Event_normal(m, e, c) {
+    //                normalInvokeCount++;
+    //                c.commit();
+    //            },
+    //            _customPrefix_bar_Event(m, e, c) {
+    //                normal2InvokeCount++;
+    //            },
+    //            _customPrefix_bar_Event_committed(m, e, c) {
+    //                committedInvokeCount++;
+    //            }
+    //        };
+    //        _router.registerModel('modelId', _model);
+    //    });
+    //
+    //    it('should observe events event name and stage', ()=> {
+    //        subscription = _router.observeEventsOn('modelId', _model);
+    //        _router.publishEvent('modelId', 'fooEvent', 1);
+    //        expect(previewInvokeCount).toBe(1);
+    //        expect(normalInvokeCount).toBe(1);
+    //        expect(normal2InvokeCount).toBe(1);
+    //        expect(committedInvokeCount).toBe(1);
+    //    });
+    //
+    //    it('should observe events with underscores in event name ', ()=> {
+    //        subscription = _router.observeEventsOn('modelId', _model);
+    //        _router.publishEvent('modelId', 'bar_Event', 1);
+    //        expect(previewInvokeCount).toBe(1);
+    //        expect(normalInvokeCount).toBe(1);
+    //        expect(normal2InvokeCount).toBe(1);
+    //        expect(committedInvokeCount).toBe(1);
+    //    });
+    //
+    //    it('should observe events with custom prefix in event name ', ()=> {
+    //        subscription = _router.observeEventsOn('modelId', _model, '_customPrefix_');
+    //        _router.publishEvent('modelId', 'bar_Event', 1);
+    //        expect(previewInvokeCount).toBe(1);
+    //        expect(normalInvokeCount).toBe(1);
+    //        expect(normal2InvokeCount).toBe(1);
+    //        expect(committedInvokeCount).toBe(1);
+    //    });
+    //
+    //    it('should stop observing events when disposable disposed', ()=> {
+    //        subscription = _router.observeEventsOn('modelId', _model);
+    //        _router.publishEvent('modelId', 'fooEvent', 1);
+    //        _router.publishEvent('modelId', 'fooEvent', 1);
+    //        subscription.dispose();
+    //        _router.publishEvent('modelId', 'fooEvent', 1);
+    //        expect(previewInvokeCount).toBe(2);
+    //        expect(normalInvokeCount).toBe(2);
+    //        expect(normal2InvokeCount).toBe(2);
+    //        expect(committedInvokeCount).toBe(2);
+    //    });
+    //
+    //    it('should observe events via prototype chain', ()=> {
+    //        var model2 = Object.create(_model);
+    //        subscription = _router.observeEventsOn('modelId', model2);
+    //        _router.publishEvent('modelId', 'fooEvent', 1);
+    //        expect(previewInvokeCount).toBe(1);
+    //        expect(normalInvokeCount).toBe(1);
+    //        expect(normal2InvokeCount).toBe(1);
+    //        expect(committedInvokeCount).toBe(1);
+    //    });
+    //
+    //    // this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
+    //    //it('should observe events via ctor function', ()=> {
+    //    //    var invokeCount = 0;
+    //    //    class Model {
+    //    //        _observe_fooEvent(m, e, c) {
+    //    //            invokeCount++;
+    //    //        }
+    //    //    }
+    //    //    var model = new Model();
+    //    //    subscription = _router.observeEventsOn('modelId', model);
+    //    //    _router.publishEvent('modelId', 'fooEvent', 1);
+    //    //    expect(invokeCount).toBe(1);
+    //    //});
+    //});
 });

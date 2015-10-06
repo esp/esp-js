@@ -72,9 +72,8 @@ module.exports = function(grunt) {
         karma: {
             options: {
                 configFile: 'karma.conf.js',
-                runnerPort: 5020
             },
-            unit    : {
+            unit: {
                 background: true,
                 singleRun: false
             },
@@ -158,7 +157,7 @@ module.exports = function(grunt) {
                 atBegin: true
             },
             files: ['<%= jshint.src.files.src %>', '<%= jshint.tests.files.src %>', 'index.js'],
-            tasks: ['jshint', 'karma:unit:run', 'webpack', 'usebanner:dist']
+            tasks: ['jshint', 'karma:unit:run', 'usebanner:dist']
         }
     });
 

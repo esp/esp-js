@@ -21,16 +21,20 @@ import { Guard } from '../system';
 
 export default class SingleModelRouter {
     constructor() {
-        if(arguments.length === 0) {
-            this._underlying = new Router();
-            this._targetModelId = "modelId";
-        } else if(arguments.length === 2 && (arguments[0] instanceof Router)) {
-            this._modelSet = true;
-            this._underlying = arguments[0];
-            this._targetModelId = arguments[1];
-        } else {
-            throw new Error("Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.");
-        }
+    }
+    static createWithModel(model) {
+        let router = new SingleModelRouter();
+        router._underlying = new Router();
+        router._targetModelId = "modelId";
+        router.setModel(model);
+        return router;
+    }
+    static createWithRouter(underlyingRouter, modelId) {
+        let router = new SingleModelRouter();
+        router._modelSet = true;
+        router._underlying = underlyingRouter;
+        router._targetModelId = modelId;
+        return router;
     }
     setModel(model) {
         Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');

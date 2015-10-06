@@ -1196,8 +1196,7 @@ describe('Router', () => {
                 },
             };
             _fooEventReceivedCount = 0;
-            _modelRouter = new esp.SingleModelRouter();
-            _modelRouter.setModel(_model);
+            _modelRouter = esp.SingleModelRouter.createWithModel(_model);
             _dispatchedModelNumbers = [];
             _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
                 m.aNumber = e;
@@ -1206,24 +1205,6 @@ describe('Router', () => {
                 _dispatchedModelNumbers.push(m.aNumber);
             });
             _modelRouter.publishEvent('fooEvent', 1);
-        });
-
-        it('should throw if arguments incorrect', ()=> {
-            expect(() => {
-                new esp.SingleModelRouter({}, {}, {});
-            }).toThrow(new Error('Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.'));
-        });
-
-        it('should throw if arguments incorrect', ()=> {
-            expect(() => {
-                new esp.SingleModelRouter({});
-            }).toThrow(new Error('Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.'));
-        });
-
-        it('should throw if arguments incorrect', ()=> {
-            expect(() => {
-                new esp.SingleModelRouter({}, '');
-            }).toThrow(new Error('Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.'));
         });
 
         it('should proxy publishEvent and getEventObservable', ()=> {

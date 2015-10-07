@@ -1,0 +1,7 @@
+node_modules/
+examples/
+.idea
+docs
+*.log
+.travis.yml
+NOTICE

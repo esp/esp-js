@@ -157,8 +157,10 @@ export default class Router {
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
         var disposables = new CompositeDisposable();
         // note this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
-        for (let prop in object) {
-            if (prop.startsWith(methodPrefix)) {
+        var props = utils.getPropertyNames(object);
+        for (var i = 0; i < props.length; i ++) {
+            let prop = props[i];
+            if(utils.startsWith(prop, methodPrefix)) {
                 let stage = ObservationStage.normal;
                 let eventName = prop.replace(methodPrefix, '');
                 let observationStageSplitIndex = eventName.lastIndexOf('_');

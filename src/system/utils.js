@@ -38,3 +38,23 @@ export function format(formatString) {
     });
     return message;
 }
+
+export function startsWith(string, searchString, position) {
+    position = position || 0;
+    return string.indexOf(searchString, position) === position;
+}
+
+export function getPropertyNames(object) {
+    var props = [];
+    Object.getOwnPropertyNames(object).forEach( function( key ){
+        props.push(key);
+    });
+    var proto = Object.getPrototypeOf(object);
+    if(proto !== null && typeof proto === 'object') {
+        var childProps = getPropertyNames(proto);
+        for (var i = 0; i < childProps.length; i++) {
+            props.push(childProps[i]);
+        }
+    }
+    return props;
+}

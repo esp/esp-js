@@ -36,17 +36,18 @@ module.exports = function (config) {
                 ]
             }
         },
-        reporters: ['progress'],
+        reporters: ['progress', 'spec'],
         port: 5010,
         colors: true,
-        logLevel: config.LOG_INFO,
-        autoWatch: false,
+        logLevel: config.LOG_DEBUG,
+        autoWatch: true,
         browsers: ['Chrome'],
         singleRun: false,
         plugins: [
             require("karma-jasmine"),
             require("karma-chrome-launcher"),
-            require("karma-webpack")
+            require("karma-webpack"),
+            require("karma-spec-reporter")
         ],
         customLaunchers: {
             Chrome_travis_ci: {

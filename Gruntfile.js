@@ -32,6 +32,7 @@ module.exports = function(grunt) {
                 node: true,
                 laxbreak: true,
                 esnext: true,
+                debug: true,
                 globals: {
                     console: true
                 }
@@ -157,7 +158,7 @@ module.exports = function(grunt) {
                 atBegin: true
             },
             files: ['<%= jshint.src.files.src %>', '<%= jshint.tests.files.src %>', 'index.js'],
-            tasks: ['jshint', 'karma:unit:run', 'usebanner:dist']
+            tasks: ['jshint', 'karma:unit:run']
         }
     });
 

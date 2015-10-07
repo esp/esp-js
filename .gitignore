@@ -6,3 +6,4 @@ dist
 # other
 **/.idea
 www/app/*
+*.orig

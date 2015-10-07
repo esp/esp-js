@@ -1196,8 +1196,7 @@ describe('Router', () => {
                 },
             };
             _fooEventReceivedCount = 0;
-            _modelRouter = new esp.SingleModelRouter();
-            _modelRouter.setModel(_model);
+            _modelRouter = esp.SingleModelRouter.createWithModel(_model);
             _dispatchedModelNumbers = [];
             _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
                 m.aNumber = e;
@@ -1208,23 +1207,24 @@ describe('Router', () => {
             _modelRouter.publishEvent('fooEvent', 1);
         });
 
-        it('should throw if arguments incorrect', ()=> {
-            expect(() => {
-                new esp.SingleModelRouter({}, {}, {});
-            }).toThrow(new Error('Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.'));
+        it('should throw if model undefined', () => {      
+            expect(() => {     
+                esp.SingleModelRouter.createWithModel();
+            }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));      
+        });        
+
+        it('should throw if underlyingRouter is not a Router', () => {      
+            expect(() => {     
+                esp.SingleModelRouter.createWithRouter({}, 'ID');
+            }).toThrow(new Error('underlyingRouter must be of type Router.'));      
         });
 
-        it('should throw if arguments incorrect', ()=> {
-            expect(() => {
-                new esp.SingleModelRouter({});
-            }).toThrow(new Error('Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.'));
-        });
+        it('should throw if modelId is not a string', () => {      
+            expect(() => {     
+                esp.SingleModelRouter.createWithRouter(_router, 1);
+            }).toThrow(new Error('The modelId should be a string.'));      
+        });        
 
-        it('should throw if arguments incorrect', ()=> {
-            expect(() => {
-                new esp.SingleModelRouter({}, '');
-            }).toThrow(new Error('Incorrect usage. SingleModelRouter can take either: no params (in which case you need to call .setModel()), or an existing router and existing modelid.'));
-        });
 
         it('should proxy publishEvent and getEventObservable', ()=> {
             expect(_model.aNumber).toEqual(1);

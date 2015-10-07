@@ -152,7 +152,7 @@ export default class Router {
     }
     createModelRouter(targetModelId) {
         Guard.isString(targetModelId, 'The targetModelId argument should be a string');
-        return new SingleModelRouter(this, targetModelId);
+        return SingleModelRouter.createWithRouter(this, targetModelId);
     }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
         var disposables = new CompositeDisposable();

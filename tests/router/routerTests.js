@@ -1207,6 +1207,25 @@ describe('Router', () => {
             _modelRouter.publishEvent('fooEvent', 1);
         });
 
+        it('should throw if model undefined', () => {      
+            expect(() => {     
+                esp.SingleModelRouter.createWithModel();
+            }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));      
+        });        
+
+        it('should throw if underlyingRouter is not a Router', () => {      
+            expect(() => {     
+                esp.SingleModelRouter.createWithRouter({}, 'ID');
+            }).toThrow(new Error('underlyingRouter must be of type Router.'));      
+        });
+
+        it('should throw if modelId is not a string', () => {      
+            expect(() => {     
+                esp.SingleModelRouter.createWithRouter(_router, 1);
+            }).toThrow(new Error('The modelId should be a string.'));      
+        });        
+
+
         it('should proxy publishEvent and getEventObservable', ()=> {
             expect(_model.aNumber).toEqual(1);
         });

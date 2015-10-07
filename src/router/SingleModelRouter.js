@@ -23,6 +23,8 @@ export default class SingleModelRouter {
     constructor() {
     }
     static createWithModel(model) {
+        Guard.isDefined(model, 'Model passed to to createWithModel must not be undefined.');
+
         let router = new SingleModelRouter();
         router._underlying = new Router();
         router._targetModelId = "modelId";
@@ -30,6 +32,11 @@ export default class SingleModelRouter {
         return router;
     }
     static createWithRouter(underlyingRouter, modelId) {
+        Guard.isString(modelId, 'The modelId should be a string.');
+        if(!(underlyingRouter instanceof Router)) {
+            throw new Error('underlyingRouter must be of type Router.');
+        }
+
         let router = new SingleModelRouter();
         router._modelSet = true;
         router._underlying = underlyingRouter;

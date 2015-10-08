@@ -298,7 +298,7 @@ export default class Router {
             let wasDispatched = false;
             if (subject.getObserverCount() > 0) {
                 // note: if the model was removed by an observer the subject will be completed so subsequent observers won't get the event
-                subject.onNext(model1, event1, context);
+                subject.onNext(event1, context, model1);
                 if(subject.hasError) {
                     throw subject.error;
                 }

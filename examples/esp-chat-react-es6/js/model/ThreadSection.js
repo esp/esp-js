@@ -23,7 +23,7 @@ export default class ThreadSection extends esp.model.DisposableBase {
     _observeMessagesReceived(event, context, model) {
         for (var i = 0; i < event.rawMessages.length; i++) {
             var rawMessage = event.rawMessages[i];
-            var thread = _this.threadsById[rawMessage.threadId];
+            var thread = this.threadsById[rawMessage.threadId];
             var messageTime = new Date(rawMessage.timestamp);
             if (thread === undefined) {
                 thread = new Thread(
@@ -31,8 +31,8 @@ export default class ThreadSection extends esp.model.DisposableBase {
                     rawMessage.threadName,
                     messageTime,
                     rawMessage.text);
-                _this.threadsById[rawMessage.threadId] = thread;
-                _this.sortedThreads.push(thread);
+                this.threadsById[rawMessage.threadId] = thread;
+                this.sortedThreads.push(thread);
             } else {
                 if (thread.lastMessageTime <= messageTime) {
                     thread.lastMessageTime = messageTime;
@@ -43,19 +43,19 @@ export default class ThreadSection extends esp.model.DisposableBase {
                 thread.isRead = true;
             }
         }
-        _this.sortedThreads.sort(function (a, b) {
+        this.sortedThreads.sort(function (a, b) {
             return a.lastMessageTime > b.lastMessageTime ? -1 : a.lastMessageTime < b.lastMessageTime ? 1 : 0;
         });
-        _this._updateActiveFlags(model);
-        _this._updateUnreadCount(model);
-        _this.hasChanges = true;
+        this._updateActiveFlags(model);
+        this._updateUnreadCount(model);
+        this.hasChanges = true;
     };
     @esp.observeEvent('ThreadSelected', esp.ObservationStage.committed)
     _observeThreadSelected(event, context, model) {
-        _this.threadsById[model.selectedThreadId].isRead = true;
-        _this._updateActiveFlags(model);
-        _this._updateUnreadCount(model);
-        _this.hasChanges = true;
+        this.threadsById[model.selectedThreadId].isRead = true;
+        this._updateActiveFlags(model);
+        this._updateUnreadCount(model);
+        this.hasChanges = true;
     };
     _updateActiveFlags(model) {
         for (var i = 0; i < this.sortedThreads.length; i++) {

@@ -21,10 +21,16 @@ import { Guard } from '../system';
 
 export default class SingleModelRouter {
     constructor() {
+        this._modelSet = false;
+    }
+    static create() {
+        let router = new SingleModelRouter();
+        router._underlying = new Router();
+        router._targetModelId = "modelId";
+        return router;
     }
     static createWithModel(model) {
         Guard.isDefined(model, 'Model passed to to createWithModel must not be undefined.');
-
         let router = new SingleModelRouter();
         router._underlying = new Router();
         router._targetModelId = "modelId";
@@ -46,8 +52,8 @@ export default class SingleModelRouter {
     setModel(model) {
         Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');
         Guard.isFalsey(this._modelSet, 'Model is already set.');
-        this._underlying.registerModel(this._targetModelId, model);
         this._modelSet = true;
+        this._underlying.registerModel(this._targetModelId, model);
     }
     publishEvent(eventType, event) {
         this._ensureModelIsSet();

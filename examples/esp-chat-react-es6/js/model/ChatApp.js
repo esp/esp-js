@@ -15,29 +15,22 @@ export default class ChatApp extends esp.model.DisposableBase {
         this.addDisposable(this.threadSection);
     }
     initialise() {
+        this.addDisposable(this._router.observeEventsOn(this));
         this.threadSection.initialise();
         this.messageSection.initialise();
-        this._observeInitEvent();
-        this._observeThreadSelected();
     }
     preProcess() {
         this.messageSection.preProcess();
         this.threadSection.preProcess();
     }
+    @esp.observeEvent('InitEvent')
     _observeInitEvent() {
-        this.addDisposable(
-            this._router.getEventObservable('InitEvent').observe((model, event, context) => {
-                this._observeRawMessageStream();
-            })
-        );
+        this._observeRawMessageStream();
     }
-    _observeThreadSelected() {
-        this.addDisposable(
-            this._router.getEventObservable('ThreadSelected').observe((model, event, context) => {
-                this.selectedThreadId = event.threadId;
-                context.commit();
-            })
-        );
+    @esp.observeEvent('ThreadSelected')
+    _observeThreadSelected(event, context) {
+        this.selectedThreadId = event.threadId;
+        context.commit();
     }
     _observeRawMessageStream() {
         var _this = this;

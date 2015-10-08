@@ -11,51 +11,36 @@ export default class MessageSection extends esp.model.DisposableBase {
         this.hasChanges = false;
     }
     initialise() {
-        this._observeThreadSelected();
-        this._observeMessageSent();
-        this._observeMessagesReceived();
-        this._observeThreadSelected();
+        this.addDisposable(this._router.observeEventsOn(this));
     }
     preProcess() {
         this.hasChanges = false;
     }
-    _observeThreadSelected() {
-        this.addDisposable(
-            this._router.getEventObservable('InitEvent', esp.ObservationStage.committed).observe((model, event) => {
-                this._updateMessages(model);
-                this.threadName = event.threadName;
-                this.hasChanges = true;
-            })
+    @esp.observeEvent('InitEvent', esp.ObservationStage.committed)
+    _observeThreadSelected(event, context, model) {
+        this._updateMessages(model);
+        this.threadName = event.threadName;
+        this.hasChanges = true;
+    }
+    @esp.observeEvent('MessageSent')
+    _observeMessageSent(event, context, model) {
+        _this._messageService
+            .sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
+            .subscribe(ack => {
+                /* ack received from send operation */
+            }
         );
     }
-    _observeMessageSent() {
-        var _this = this;
-        this.addDisposable(
-            this._router.getEventObservable('MessageSent').observe((model, event) => {
-                _this._messageService
-                    .sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
-                    .subscribe(ack => {
-                        /* ack received from send operation */
-                });
-            })
-        );
+    @esp.observeEvent('MessagesReceived')
+    _observeMessagesReceived(event, context, model) {
+        this._updateMessages(model);
+        this.hasChanges = true;
     }
-    _observeMessagesReceived(model) {
-        this.addDisposable(
-            this._router.getEventObservable('MessagesReceived').observe((model) => {
-                this._updateMessages(model);
-                this.hasChanges = true;
-            })
-        );
-    }
-    _observeThreadSelected() {
-        var _this = this;
-        this.addDisposable(
-            this._router.getEventObservable('ThreadSelected', esp.ObservationStage.committed).observe((model, event) => {
-                _this._updateMessages(model);
-                _this.threadName = event.threadName;
-                _this.hasChanges = true;
-        }));
+    @esp.observeEvent('ThreadSelected',  esp.ObservationStage.committed)
+    _observeThreadSelected(event, context, model) {
+        _this._updateMessages(model);
+        _this.threadName = event.threadName;
+        _this.hasChanges = true;
     };
     _updateMessages(model) {
         var rawMessages = model.rawMessagesByThreadId[model.selectedThreadId];

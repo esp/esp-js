@@ -9,7 +9,7 @@
   "main": "js/app.js",
   "private": true,
   "dependencies": {
-    "esp-js": "^0.1.1",
+    "esp-js": "^0.3.1",
     "react": "^0.13.3"
   },
   "devDependencies": {

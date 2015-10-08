@@ -35,7 +35,10 @@ module.exports = function(grunt) {
                 debug: true,
                 globals: {
                     console: true
-                }
+                },
+                ignoreDelimiters: [
+                    { start: "start-non-standard", end: "end-non-standard" },
+                ]
             },
             src: {
                 files: {
@@ -105,7 +108,7 @@ module.exports = function(grunt) {
                 module: {
                     loaders: [
                         // {test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel-loader?experimental&optional=runtime'}
-                        {test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel-loader'}
+                        {test: /\.jsx?$/, exclude: /node_modules/, loader: 'babel-loader?stage=0'}
                     ]
                 }
             },

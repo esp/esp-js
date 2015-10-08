@@ -155,38 +155,11 @@ export default class Router {
         return SingleModelRouter.createWithRouter(this, targetModelId);
     }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
-        var disposables = new CompositeDisposable();
-        // note this won't work with ES6 methods as they're not enumerable!!. Will perhaps need to use directives
-        var props = utils.getPropertyNames(object);
-        for (var i = 0; i < props.length; i ++) {
-            let prop = props[i];
-            if(utils.startsWith(prop, methodPrefix)) {
-                let stage = ObservationStage.normal;
-                let eventName = prop.replace(methodPrefix, '');
-                let observationStageSplitIndex = eventName.lastIndexOf('_');
-                if(observationStageSplitIndex > 0) {
-                    let stageSubstring = eventName.substring(observationStageSplitIndex + 1);
-                    let stageSpecified = false;
-                    if(stageSubstring === ObservationStage.preview) {
-                        stage = ObservationStage.preview;
-                        stageSpecified = true;
-                    } else if (stageSubstring === ObservationStage.normal) {
-                        stage = ObservationStage.normal;
-                        stageSpecified = true;
-                    } else if (stageSubstring === ObservationStage.committed) {
-                        stage = ObservationStage.committed;
-                        stageSpecified = true;
-                    }
-                    if(stageSpecified){
-                        eventName = eventName.substring(0, observationStageSplitIndex);
-                    }
-                }
-                disposables.add(this.getEventObservable(modelId, eventName, stage).observe((m, e, c) => {
-                    object[prop](m, e, c);
-                }));
-            }
+        if(object._espDecoratorMetadata) {
+            return this._observeEventsUsingDirectives(modelId, object, methodPrefix);
+        } else {
+            return this._observeEventsUsingConventions(modelId, object, methodPrefix);
         }
-        return disposables;
     }
     _eventQueue(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
@@ -359,6 +332,49 @@ export default class Router {
             }
         }
         return nextModel;
+    }
+    _observeEventsUsingDirectives(modelId, object){
+        var disposables = new CompositeDisposable();
+        for (var i = 0; i < object._espDecoratorMetadata.events.length; i ++) {
+            let details = object._espDecoratorMetadata.events[i];
+            disposables.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
+                object[details.functionName](e, c, m);
+            }));
+        }
+        return disposables;
+    }
+    _observeEventsUsingConventions(modelId, object, methodPrefix) {
+        var disposables = new CompositeDisposable();
+        var props = utils.getPropertyNames(object);
+        for (var i = 0; i < props.length; i ++) {
+            let prop = props[i];
+            if(utils.startsWith(prop, methodPrefix)) {
+                let stage = ObservationStage.normal;
+                let eventName = prop.replace(methodPrefix, '');
+                let observationStageSplitIndex = eventName.lastIndexOf('_');
+                if(observationStageSplitIndex > 0) {
+                    let stageSubstring = eventName.substring(observationStageSplitIndex + 1);
+                    let stageSpecified = false;
+                    if(stageSubstring === ObservationStage.preview) {
+                        stage = ObservationStage.preview;
+                        stageSpecified = true;
+                    } else if (stageSubstring === ObservationStage.normal) {
+                        stage = ObservationStage.normal;
+                        stageSpecified = true;
+                    } else if (stageSubstring === ObservationStage.committed) {
+                        stage = ObservationStage.committed;
+                        stageSpecified = true;
+                    }
+                    if(stageSpecified){
+                        eventName = eventName.substring(0, observationStageSplitIndex);
+                    }
+                }
+                disposables.add(this.getEventObservable(modelId, eventName, stage).observe((e, c, m) => {
+                    object[prop](e, c, m);
+                }));
+            }
+        }
+        return disposables;
     }
     _throwIfHalted() {
         if (this._state.currentStatus === Status.Halted) {

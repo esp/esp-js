@@ -16,6 +16,5 @@
  */
  // notice_end
 
-import AsyncWorkCompleteEvent from './AsyncWorkCompleteEvent';
 import ModelChangedEvent from './ModelChangedEvent';
-export default { AsyncWorkCompleteEvent, ModelChangedEvent };
+export default { ModelChangedEvent };

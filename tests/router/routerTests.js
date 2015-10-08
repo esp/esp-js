@@ -80,7 +80,7 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').observe((model, event) => {
+            _router.getEventObservable('modelId1', 'Event1').observe((event, context, model) => {
                 _eventReceivedCount1++;
                 if(model.removeAtDispatch) {
                     _router.removeModel('modelId1');
@@ -208,10 +208,10 @@ describe('Router', () => {
             var model1ProcessorReceived = 0, model2ProcessorReceived = 0;
             _router.registerModel('modelId1', {});
             _router.registerModel('modelId2', {});
-            _router.getEventObservable('modelId1', 'Event1').observe((model, event) => {
+            _router.getEventObservable('modelId1', 'Event1').observe((event) => {
                 model1ProcessorReceived+=event;
             });
-            _router.getEventObservable('modelId2', 'Event1').observe((model, event) => {
+            _router.getEventObservable('modelId2', 'Event1').observe((event) => {
                 model2ProcessorReceived+=event;
             });
             _router.broadcastEvent('Event1', 10);
@@ -251,21 +251,21 @@ describe('Router', () => {
             var testPassed = false;
             var lastEventDelivered = false;
             _router.registerModel('modelId1', {});
-            _router.getEventObservable('modelId1', 'startEvent').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId1', 'startEvent').observe((event, eventContext) => {
                 eventContext.commit();
                 _router.publishEvent('modelId1', 'Event1', 'theEvent1');
                 _router.publishEvent('modelId1', 'Event2', 'theEvent2');
                 _router.publishEvent('modelId1', 'Event3', 'theEvent3');
             });
-            _router.getEventObservable('modelId1', 'Event1').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId1', 'Event1').observe((event, eventContext) => {
                 testPassed = eventContext.isCommitted === false;
                 eventContext.commit();
             });
-            _router.getEventObservable('modelId1', 'Event2').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId1', 'Event2').observe((event, eventContext) => {
                 testPassed = testPassed && eventContext.isCommitted === false;
                 eventContext.commit();
             });
-            _router.getEventObservable('modelId1', 'Event3').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId1', 'Event3').observe((event, eventContext) => {
                 testPassed = testPassed && eventContext.isCommitted === false;
                 lastEventDelivered = true;
             });
@@ -469,7 +469,7 @@ describe('Router', () => {
                         }
                     }
                 });
-            _router.getEventObservable('modelId4', 'Event1').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId4', 'Event1').observe((event, eventContext, model) => {
                 eventReceived = true;
                 eventWasRaisedInNewEventLoop = model.version ===2;
             });
@@ -510,7 +510,7 @@ describe('Router', () => {
             _router.getEventObservable('myModel', 'TriggerExecuteEvent').observe(()=> {
                 _router.executeEvent('ExecutedEvent', "b");
             });
-            _router.getEventObservable('myModel', 'ExecutedEvent').observe((model, event, eventContext) => {
+            _router.getEventObservable('myModel', 'ExecutedEvent').observe((event, eventContext, model) => {
                 model.value += event;
             });
             _router.getModelObservable('myModel').observe(() => {
@@ -538,7 +538,7 @@ describe('Router', () => {
 
         it('should execute the event against the current event loops model', () => {
             var actualModel;
-            _router.getEventObservable('modelId1', 'ExecutedEvent').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent').observe((event, eventContext, model) => {
                 actualModel = model;
             });
             raiseStartEvent();
@@ -566,7 +566,7 @@ describe('Router', () => {
             _router.getEventObservable('modelId1', 'ExecutedEvent', 'preview').observe(() => {
                 previewReceived = true;
             });
-            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').observe((model, event, eventContext) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').observe((event, eventContext, model) => {
                 normalReceived = true;
                 eventContext.commit();
             });
@@ -610,7 +610,7 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').observe((model, event) => {
+            _router.getEventObservable('modelId1', 'Event1').observe((event, context, model) => {
                 model.isUnlockedForEventProcessor = !model.isLocked;
             });
             _router.getModelObservable('modelId1').observe((model) => {
@@ -709,17 +709,17 @@ describe('Router', () => {
                 };
                 _router.registerModel('modelId1', {});
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.preview)
-                    .observe((model, event, eventContext) => {
+                    .observe((event, eventContext) => {
                         receivedAtPreview = true;
                         actOnEventContext(eventContext, esp.ObservationStage.preview);
                     });
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.normal)
-                    .observe((model, event, eventContext) => {
+                    .observe((event, eventContext) => {
                         receivedAtNormal = true;
                         actOnEventContext(eventContext, esp.ObservationStage.normal);
                     });
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.committed)
-                    .observe((model, event, eventContext) => {
+                    .observe((event, eventContext) => {
                         receivedAtCommitted = true;
                         actOnEventContext(eventContext, esp.ObservationStage.committed);
                     });
@@ -785,7 +785,7 @@ describe('Router', () => {
                 eventContextActions.shouldCommit = true;
                 eventContextActions.commitStage = esp.ObservationStage.committed;
                 _router.getEventObservable('modelId1', 'Event1')
-                    .observe((model, event, eventContext) => {
+                    .observe((event, eventContext, model) => {
                         eventContext.commit();
                     });
                 expect(() => {
@@ -814,7 +814,7 @@ describe('Router', () => {
                 model1UpdateCount++;
             });
             _router.getEventObservable('modelId2', 'Event1').observe(() => { /*noop*/  });
-            _router.getModelObservable('modelId2').observe(model => {
+            _router.getModelObservable('modelId2').observe(() => {
                 model2UpdateCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
@@ -948,7 +948,7 @@ describe('Router', () => {
                 }
             );
             _router.getEventObservable('modelId1', 'Event1').observe(
-                (model, event) => {
+                (event, context, model) => {
                     _eventReceivedCount++;
                     if(model.throwADispatch) {
                         throw new Error("Boom:Dispatch");
@@ -1088,10 +1088,10 @@ describe('Router', () => {
 
         it('should deliver correct model and event to target event observers', () => {
             var receivedModel2, receivedEvent2, model1ReceivedEvent = false;
-            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => {
+            _router.getEventObservable(_model.id, "fooEvent").observe(() => {
                 model1ReceivedEvent = true;
             });
-            _router.getEventObservable(_model2.id, "fooEvent").observe((model, event) => {
+            _router.getEventObservable(_model2.id, "fooEvent").observe((event, context, model) => {
                 receivedModel2 = model;
                 receivedEvent2 = event;
             });
@@ -1106,8 +1106,8 @@ describe('Router', () => {
 
         it('should dispatch updates for the child model only', () => {
             var model1UpdateCount = 0, model2UpdateCount = 0;
-            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model2.id, "fooEvent").observe((model, event) => { /* noop */});
+            _router.getEventObservable(_model.id, "fooEvent").observe((event, context, model) => { /* noop */});
+            _router.getEventObservable(_model2.id, "fooEvent").observe((event, context, model) => { /* noop */});
             _router.getModelObservable(_model.id).observe(() => {
                 model1UpdateCount++;
             });
@@ -1123,8 +1123,8 @@ describe('Router', () => {
 
         it('should raise a model changed when child\'s event workflow done', () => {
             var receivedModel, receivedEvent, workflowDone;
-            _router.getEventObservable(_model.id, "fooEvent").observe((model, event) => { /* noop */});
-            _router.getEventObservable(_model2.id, "modelChangedEvent").observe((model, event) => {
+            _router.getEventObservable(_model.id, "fooEvent").observe((event, context, model) => { /* noop */});
+            _router.getEventObservable(_model2.id, "modelChangedEvent").observe((event, context, model) => {
                 receivedModel = model;
                 receivedEvent = event;
                 workflowDone = _model1OptionsHelper.modelsSentForPostProcessing.length === 1;
@@ -1150,7 +1150,7 @@ describe('Router', () => {
             _dispatchedModelNumbers = [];
             _router.registerModel(_model.id, _model);
             _modelRouter = _router.createModelRouter(_model.id);
-            _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
+            _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
                 m.aNumber = e;
             });
             _modelRouter.getModelObservable().observe(m => {
@@ -1164,10 +1164,10 @@ describe('Router', () => {
         });
 
         it('should proxy executeEvent to correct model event processor', ()=> {
-            _modelRouter.getEventObservable('barEvent').observe((m,e) => {
+            _modelRouter.getEventObservable('barEvent').observe((e, c, m) => {
                 m.executePassed = m.anotherNumber === 0;
             });
-            _modelRouter.getEventObservable('fooEvent2').observe((m,e) => {
+            _modelRouter.getEventObservable('fooEvent2').observe((e, c, m) => {
                 _modelRouter.executeEvent('barEvent', 'theBar');
                 m.anotherNumber = 1;
             });
@@ -1198,7 +1198,7 @@ describe('Router', () => {
             _fooEventReceivedCount = 0;
             _modelRouter = esp.SingleModelRouter.createWithModel(_model);
             _dispatchedModelNumbers = [];
-            _modelRouter.getEventObservable('fooEvent').observe((m,e) => {
+            _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
                 m.aNumber = e;
             });
             _modelRouter.getModelObservable().observe(m => {
@@ -1231,10 +1231,10 @@ describe('Router', () => {
         });
 
         it('should proxy executeEvent to correct model event processor', ()=> {
-            _modelRouter.getEventObservable('barEvent').observe((m,e) => {
+            _modelRouter.getEventObservable('barEvent').observe((e, c, m) => {
                 m.executePassed = m.anotherNumber === 0;
             });
-            _modelRouter.getEventObservable('fooEvent2').observe((m,e) => {
+            _modelRouter.getEventObservable('fooEvent2').observe((e, c, m) => {
                 _modelRouter.executeEvent('barEvent', 'theBar');
                 m.anotherNumber = 1;
             });
@@ -1263,45 +1263,45 @@ describe('Router', () => {
         var subscription;
         var _model = {
             // standard events
-            _observe_fooEvent_preview(m, e, c) {
+            _observe_fooEvent_preview(e, c, m) {
                 previewInvokeCount++;
             },
-            _observe_fooEvent_normal(m, e, c) {
+            _observe_fooEvent_normal(e, c, m) {
                 normalInvokeCount++;
                 c.commit();
             },
-            _observe_fooEvent(m, e, c) {
+            _observe_fooEvent(e, c, m) {
                 normal2InvokeCount++;
             },
-            _observe_fooEvent_committed(m, e, c) {
+            _observe_fooEvent_committed(e, c, m) {
                 committedInvokeCount++;
             },
             // events with underscores
-            _observe_bar_Event_preview(m, e, c) {
+            _observe_bar_Event_preview(e, c, m) {
                 previewInvokeCount++;
             },
-            _observe_bar_Event_normal(m, e, c) {
+            _observe_bar_Event_normal(e, c, m) {
                 normalInvokeCount++;
                 c.commit();
             },
-            _observe_bar_Event(m, e, c) {
+            _observe_bar_Event(e, c, m) {
                 normal2InvokeCount++;
             },
-            _observe_bar_Event_committed(m, e, c) {
+            _observe_bar_Event_committed(e, c, m) {
                 committedInvokeCount++;
             },
             // custom prefix
-            _customPrefix_bar_Event_preview(m, e, c) {
+            _customPrefix_bar_Event_preview(e, c, m) {
                 previewInvokeCount++;
             },
-            _customPrefix_bar_Event_normal(m, e, c) {
+            _customPrefix_bar_Event_normal(e, c, m) {
                 normalInvokeCount++;
                 c.commit();
             },
-            _customPrefix_bar_Event(m, e, c) {
+            _customPrefix_bar_Event(e, c, m) {
                 normal2InvokeCount++;
             },
-            _customPrefix_bar_Event_committed(m, e, c) {
+            _customPrefix_bar_Event_committed(e, c, m) {
                 committedInvokeCount++;
             }
         };

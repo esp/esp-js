@@ -24,7 +24,7 @@ export default class MessageSection extends esp.model.DisposableBase {
     }
     @esp.observeEvent('MessageSent')
     _observeMessageSent(event, context, model) {
-        _this._messageService
+        this._messageService
             .sendMessage(event.text, model.selectedThreadId, model.messageSection.threadName)
             .subscribe(ack => {
                 /* ack received from send operation */
@@ -38,9 +38,9 @@ export default class MessageSection extends esp.model.DisposableBase {
     }
     @esp.observeEvent('ThreadSelected',  esp.ObservationStage.committed)
     _observeThreadSelected(event, context, model) {
-        _this._updateMessages(model);
-        _this.threadName = event.threadName;
-        _this.hasChanges = true;
+        this._updateMessages(model);
+        this.threadName = event.threadName;
+        this.hasChanges = true;
     };
     _updateMessages(model) {
         var rawMessages = model.rawMessagesByThreadId[model.selectedThreadId];

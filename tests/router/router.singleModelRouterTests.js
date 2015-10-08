@@ -35,12 +35,15 @@ describe('Router', () => {
                 aNumber:0,
                 anotherNumber:0,
                 executePassed: false,
-                _observe_fooEvent(m, e, c) {
+                _observe_fooEvent() {
                     _fooEventReceivedCount++;
                 },
             };
             _fooEventReceivedCount = 0;
             _modelRouter = esp.SingleModelRouter.createWithModel(_model);
+            //_modelRouter = esp.SingleModelRouter.create();
+            //_modelRouter.setModel(_model);
+
             _dispatchedModelNumbers = [];
             _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
                 m.aNumber = e;
@@ -50,25 +53,6 @@ describe('Router', () => {
             });
             _modelRouter.publishEvent('fooEvent', 1);
         });
-
-        it('should throw if model undefined', () => {
-            expect(() => {
-                esp.SingleModelRouter.createWithModel();
-            }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));
-        });
-
-        it('should throw if underlyingRouter is not a Router', () => {
-            expect(() => {
-                esp.SingleModelRouter.createWithRouter({}, 'ID');
-            }).toThrow(new Error('underlyingRouter must be of type Router.'));
-        });
-
-        it('should throw if modelId is not a string', () => {
-            expect(() => {
-                esp.SingleModelRouter.createWithRouter(_router, 1);
-            }).toThrow(new Error('The modelId should be a string.'));
-        });
-
 
         it('should proxy publishEvent and getEventObservable', ()=> {
             expect(_model.aNumber).toEqual(1);
@@ -96,6 +80,77 @@ describe('Router', () => {
             _modelRouter.observeEventsOn(_model);
             _modelRouter.publishEvent('fooEvent', {});
             expect(_fooEventReceivedCount).toEqual(1);
+        });
+
+        describe('errors', () => {
+
+            describe('static create', () => {
+                var _expectedError = new Error('You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');
+
+                it('should throw if publishEvent used without setting model', () => {
+                    var router = esp.SingleModelRouter.create();
+                    expect(() => {
+                        router.publishEvent("foo", {});
+                    }).toThrow(_expectedError);
+                });
+                it('should throw if executeEvent used without setting model', () => {
+                    var router = esp.SingleModelRouter.create();
+                    expect(() => {
+                        router.executeEvent("foo", {});
+                    }).toThrow(_expectedError);
+                });
+                it('should throw if runAction used without setting model', () => {
+                    var router = esp.SingleModelRouter.create();
+                    expect(() => {
+                        router.runAction(() => {});
+                    }).toThrow(_expectedError);
+                });
+                it('should throw if getEventObservable used without setting model', () => {
+                    var router = esp.SingleModelRouter.create();
+                    expect(() => {
+                        router.getEventObservable('FooEvent');
+                    }).toThrow(_expectedError);
+                });
+                it('should throw if getModelObservable used without setting model', () => {
+                    var router = esp.SingleModelRouter.create();
+                    expect(() => {
+                        router.getModelObservable();
+                    }).toThrow(_expectedError);
+                });
+                it('should throw if observeEventsOn used without setting model', () => {
+                    var router = esp.SingleModelRouter.create();
+                    expect(() => {
+                        router.observeEventsOn({});
+                    }).toThrow(_expectedError);
+                });
+            });
+
+            describe('static  createWithModel', () => {
+                it('should throw if model undefined', () => {
+                    expect(() => {
+                        esp.SingleModelRouter.createWithModel();
+                    }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));
+                });
+                it('should throw if model undefined', () => {
+                    expect(() => {
+                        esp.SingleModelRouter.createWithModel();
+                    }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));
+                });
+            });
+
+            describe('static  createWithRouter', () => {
+                it('should throw if underlyingRouter is not a Router', () => {
+                    expect(() => {
+                        esp.SingleModelRouter.createWithRouter({}, 'ID');
+                    }).toThrow(new Error('underlyingRouter must be of type Router.'));
+                });
+
+                it('should throw if modelId is not a string', () => {
+                    expect(() => {
+                        esp.SingleModelRouter.createWithRouter(_router, 1);
+                    }).toThrow(new Error('The modelId should be a string.'));
+                });
+            });
         });
     });
 });

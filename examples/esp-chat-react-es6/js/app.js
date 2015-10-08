@@ -8,9 +8,7 @@ import services from './services';
 // export for http://fb.me/react-devtools
 window.React = React;
 
-
-
-var router = new esp.SingleModelRouter();
+var router = esp.SingleModelRouter.create();
 var messageService = new services.MessageService();
 var chatAppModel = new model.ChatApp(messageService, router);
 router.setModel(chatAppModel);

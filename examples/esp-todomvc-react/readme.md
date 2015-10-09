@@ -14,7 +14,7 @@ This React example integrates ESP (Evented State Processing) for its model.
 
 ## Learning ESP
 
-- [Documentation](https://github.com/esp/esp-js)
+- [Documentation](http://esp.readthedocs.org)
 
 ### Get help from other users:
 

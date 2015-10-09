@@ -1,11 +1,10 @@
-# ReadMe.md Examples
+# API Examples
 
-This example contains the code that is used in main esp-js ReadMe.md. 
-
+This example contains the code showing the lower level APIs in the ESP `Router`.
 
 ## Learning ESP
 
-- [Documentation](https://github.com/esp/esp-js)
+- [Documentation](http://esp.readthedocs.org)
 
 ### Get help from other users:
 

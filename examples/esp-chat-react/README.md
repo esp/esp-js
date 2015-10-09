@@ -14,7 +14,7 @@ streaming data).
 
 ## Learning ESP
 
-- [Documentation](https://github.com/esp/esp-js)
+- [Documentation](http://esp.readthedocs.org)
 
 ### Get help from other users:
 

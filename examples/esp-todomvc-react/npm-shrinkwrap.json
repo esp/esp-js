@@ -680,16 +680,9 @@
       "resolved": "https://registry.npmjs.org/director/-/director-1.2.8.tgz"
     },
     "esp-js": {
-      "version": "0.0.9",
-      "from": "esp-js@0.0.9",
-      "resolved": "https://registry.npmjs.org/esp-js/-/esp-js-0.0.9.tgz",
-      "dependencies": {
-        "node-uuid": {
-          "version": "1.4.3",
-          "from": "node-uuid@>=1.4.3 <2.0.0",
-          "resolved": "https://registry.npmjs.org/node-uuid/-/node-uuid-1.4.3.tgz"
-        }
-      }
+      "version": "0.3.1",
+      "from": "esp-js@0.3.1",
+      "resolved": "https://registry.npmjs.org/esp-js/-/esp-js-0.3.1.tgz"
     },
     "react": {
       "version": "0.13.3",

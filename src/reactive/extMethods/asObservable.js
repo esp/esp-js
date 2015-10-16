@@ -25,7 +25,6 @@ Observable.prototype.asObservable = function() {
             (arg1, arg2, arg3) => {
                 observer.onNext(arg1, arg2, arg3);
             },
-            observer.onError.bind(observer),
             () => observer.onCompleted()
         );
     };

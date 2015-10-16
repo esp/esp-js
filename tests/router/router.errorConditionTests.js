@@ -31,8 +31,6 @@ describe('Router', () => {
         var _eventReceivedCount = 0;
         var _updateReceivedCount = 0;
         var _model;
-        var _eventStreamErr;
-        var _modelUpdateStreamErr;
 
         beforeEach(()=> {
             _eventReceivedCount =0;
@@ -65,8 +63,7 @@ describe('Router', () => {
                     if(model.throwADispatch) {
                         throw new Error("Boom:Dispatch");
                     }
-                },
-                    err => _eventStreamErr = err
+                }
             );
             _router.getModelObservable('modelId1').observe(
                     model => {
@@ -74,8 +71,7 @@ describe('Router', () => {
                     if(model.throwAtUpdate) {
                         throw new Error("Boom:Update");
                     }
-                },
-                    err => _modelUpdateStreamErr = err
+                }
             );
         });
 
@@ -97,7 +93,6 @@ describe('Router', () => {
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error("Boom:Dispatch"));
-            expect(_eventStreamErr).toEqual(new Error("Boom:Dispatch"));
             // rethrow on reuse
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', 'payload');
@@ -122,7 +117,6 @@ describe('Router', () => {
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error("Boom:Update"));
-            expect(_modelUpdateStreamErr).toEqual(new Error("Boom:Update"));
             // rethrow on reuse
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', 'payload');

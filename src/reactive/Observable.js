@@ -37,9 +37,8 @@ class Observable {
         } else {
             Guard.lengthIsAtLeast(arguments, 1, "Incorrect args count of " + arguments.length);
             var onNext = arguments[0];
-            var onError = arguments.length >= 1 ? arguments[1] : undefined;
-            var onCompleted = arguments.length >= 2 ? arguments[2] : undefined;
-            observer = new Observer(onNext, onError, onCompleted);
+            var onCompleted = arguments.length >= 1 ? arguments[1] : undefined;
+            observer = new Observer(onNext, onCompleted);
         }
         Guard.isDefined(this._observe, '_observe not set');
         return this._observe(observer);

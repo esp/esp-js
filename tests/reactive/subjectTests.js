@@ -50,15 +50,13 @@ describe('subject', () => {
         expect(receivedItems2[1]).toBe(2);
     });
 
-    it('calls onError then observer throws', () => {
-        var error;
+    it('calls onError bubbles exception', () => {
         subject.observe(i => {
-            throw 'Boom';
-        }, ex => {
-            error = ex;
+            throw new Error('Boom');
         });
-        subject.onNext(1);
-        expect(error).toBe('Boom');
+        expect(() => {
+            subject.onNext(1);
+        }).toThrow(new Error('Boom'));
     });
 
 
@@ -78,12 +76,10 @@ describe('subject', () => {
         var didComplete1 = false, didComplete2 = false;
         subject.observe(
             () => { },
-            () => {},
             () => didComplete1 = true
         );
         subject.observe(
             () => { },
-            () => {},
             () => didComplete2 = true
         );
         subject.onCompleted();
@@ -97,7 +93,6 @@ describe('subject', () => {
             () => {
                 onNextCount++;
             },
-            () => {},
             () => { }
         );
         subject.onNext(1);
@@ -106,24 +101,10 @@ describe('subject', () => {
         expect(onNextCount).toEqual(1);
     });
 
-    it('.observe propagate errors', () => {
-        var error;
-        var disposable = subject
-            .where(i => {
-                return true; })
-            .observe(
-                i => { throw 'Boom'; },
-                ex =>{ error = ex;});
-
-        subject.onNext('a');
-        expect(error).toBe('Boom');
-    });
-
     it('.observe propagates onCompleted', () => {
         var onCompleteCalled = false;
         subject.observe(
             () => { },
-            () =>{ },
             () => onCompleteCalled = true
         );
         subject.onCompleted();

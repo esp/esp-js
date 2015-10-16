@@ -439,9 +439,6 @@ var runErrorFlowsExample = () => {
         .observe(
             () => {
                 console.log("This never run");
-            },
-            err => {
-                console.log("Error in stream: " + err.message);
             }
         );
     try {

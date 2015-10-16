@@ -40,7 +40,6 @@ Observable.prototype.take = function(number) {
                     observer.onCompleted();
                 }
             },
-            observer.onError.bind(observer),
             () => observer.onCompleted()
         );
     };

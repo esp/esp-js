@@ -29,7 +29,6 @@ describe('.asObservable', () => {
         var onCompleteCalled = false;
         subject.asObservable().observe(
             () => { },
-            () =>{ },
             () => onCompleteCalled = true
         );
         subject.onCompleted();

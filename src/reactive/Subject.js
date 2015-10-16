@@ -26,15 +26,8 @@ class Subject extends Observable  {
         this._lastValue = undefined;
         this._observers = [];
         this._hasComplete = false;
-        this._hasError = false;
         // the base object Observable requires _observe to be bound to this.
         this._observe = observe.bind(this);
-    }
-    get hasError() {
-        return this._hasError;
-    }
-    get error() {
-        return this._error;
     }
     // The reactivate implementation can push 3 arguments through the stream, initially this was setup to
     // pass all arguments using .apply, however it's performance is about 40% slower than direct method calls
@@ -48,18 +41,12 @@ class Subject extends Observable  {
             for (var i = 0, len = os.length; i < len; i++) {
                 if(this._hasError) break;
                 var observer = os[i];
-                try {
-                    observer.onNext(arg1, arg2, arg3);
-                } catch (err) {
-                    this._hasError = true;
-                    this._error = err;
-                    observer.onError(err);
-                }
+                observer.onNext(arg1, arg2, arg3);
             }
         }
     }
     onCompleted() {
-        if(!this._hasComplete && !this._hasError) {
+        if(!this._hasComplete) {
             this._hasComplete = true;
             var os = this._observers.slice(0);
             for (var i = 0, len = os.length; i < len; i++) {
@@ -68,20 +55,9 @@ class Subject extends Observable  {
             }
         }
     }
-    onError(err) {
-        if(!this._hasError) {
-            this._hasError = true;
-            var os = this._observers.slice(0);
-            for (var i = 0, len = os.length; i < len; i++) {
-                var observer = os[i];
-                observer.onError(err);
-            }
-        }
-    }
     getObserverCount() {
         return this._observers.length;
     }
-
 }
 function observe(observer) {
     this._observers.push(observer);

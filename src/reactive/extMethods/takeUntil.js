@@ -35,7 +35,6 @@ Observable.prototype.takeUntil = function(predicate, inclusive) {
                     observer.onCompleted();
                 }
             },
-            observer.onError.bind(observer),
             () => observer.onCompleted()
         );
     };

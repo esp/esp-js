@@ -67,17 +67,32 @@ describe('.where', () => {
         expect(receivedItems).toBe(2);
     });
 
-    it('should propagate errors', () => {
+    it('should bubble errors', () => {
         var error;
         var disposable = subject
             .where(i => {
-                throw 'Boom'; })
+                throw new Error('Boom'); })
             .observe(
-                i => { },
-                ex =>{ error = ex;});
+                i => { });
 
-        subject.onNext('a');
-        expect(error).toBe('Boom');
+        expect(() => {
+            subject.onNext('a');
+        }).toThrow(new Error('Boom'));
+    });
+
+    it('should bubble errors in observer', () => {
+        var error;
+        var disposable = subject
+            .where(i => {
+                return true; })
+            .observe(
+                i => {
+                    throw new Error('Boom');
+                });
+
+        expect(() => {
+            subject.onNext('a');
+        }).toThrow(new Error('Boom'));
     });
 
     it('should propagat onCompleted', () => {
@@ -86,7 +101,6 @@ describe('.where', () => {
             .where(i => i > 0)
             .observe(
                 () => { },
-                () =>{ },
                 () => onCompleteCalled = true
             );
 

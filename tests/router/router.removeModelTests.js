@@ -96,7 +96,6 @@ describe('Router', () => {
             var didComplete = false;
             _router.getEventObservable('modelId1', 'Event1').observe(
                 () => {},
-                () => {},
                 () => didComplete = true
             );
             _router.removeModel('modelId1');
@@ -106,7 +105,6 @@ describe('Router', () => {
         it('should onComplete all update streams when the model is removed', () => {
             var didComplete = false;
             _router.getModelObservable('modelId1').observe(
-                () => {},
                 () => {},
                 () => didComplete = true
             );

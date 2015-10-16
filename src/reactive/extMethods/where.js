@@ -29,7 +29,6 @@ Observable.prototype.where = function(predicate) {
                     observer.onNext(arg1, arg2, arg3);
                 }
             },
-            observer.onError.bind(observer),
             () => observer.onCompleted()
         );
     };

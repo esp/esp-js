@@ -82,7 +82,7 @@ describe('Router', () => {
             normalInvokeCount = 0;
             normal2InvokeCount = 0;
             committedInvokeCount = 0;
-            _router.registerModel('modelId', _model);
+            _router.addModel('modelId', _model);
         });
 
         it('should observe events by event name and stage', ()=> {
@@ -192,7 +192,7 @@ describe('Router', () => {
             normal2InvokeCount = 0;
             committedInvokeCount = 0;
             _model = new Model('modelId', _router);
-            _router.registerModel('modelId', _model);
+            _router.addModel('modelId', _model);
         });
 
         it('should observe events by event name and stage', ()=> {

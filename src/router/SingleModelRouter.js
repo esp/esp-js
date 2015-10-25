@@ -53,7 +53,7 @@ export default class SingleModelRouter {
         Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');
         Guard.isFalsey(this._modelSet, 'Model is already set.');
         this._modelSet = true;
-        this._underlying.registerModel(this._targetModelId, model);
+        this._underlying.addModel(this._targetModelId, model);
     }
     publishEvent(eventType, event) {
         this._ensureModelIsSet();

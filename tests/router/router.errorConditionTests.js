@@ -41,7 +41,7 @@ describe('Router', () => {
                 throwAtPost: false,
                 throwADispatch: false
             };
-            _router.registerModel(
+            _router.addModel(
                 'modelId1',
                 _model,
                 {
@@ -149,9 +149,9 @@ describe('Router', () => {
                 }).toThrow(new Error("Event router halted due to previous error [Error: Boom:Pre]"));
             });
 
-            it('should throw on registerModel()', () => {
+            it('should throw on addModel()', () => {
                 expect(() => {
-                    _router.registerModel('modelId2', {});
+                    _router.addModel('modelId2', {});
                 }).toThrow(new Error("Event router halted due to previous error [Error: Boom:Pre]"));
             });
 

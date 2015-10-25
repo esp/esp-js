@@ -35,8 +35,8 @@ describe('Router', () => {
             _model2 = { id : " model2" };
             _model1OptionsHelper = createOptionsHelper();
             _model2OptionsHelper = createOptionsHelper();
-            _router.registerModel(_model.id, _model, _model1OptionsHelper.options);
-            _router.registerModel(_model2.id, _model2, _model2OptionsHelper.options);
+            _router.addModel(_model.id, _model, _model1OptionsHelper.options);
+            _router.addModel(_model2.id, _model2, _model2OptionsHelper.options);
         });
 
         function createOptionsHelper() {

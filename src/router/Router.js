@@ -37,7 +37,7 @@ export default class Router {
         this._haltingException = undefined;
         this._state = new State();
     }
-    registerModel(modelId, model, options) {
+    addModel(modelId, model, options) {
         this._throwIfHalted();
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isDefined(model, 'THe model argument must be defined');

@@ -36,8 +36,8 @@ describe('Router', () => {
 
         it('queues and processes events received during event loop by model id', () => {
             var model1ProcessorReceived = 0, testPassed = false;
-            _router.registerModel('modelId1', {});
-            _router.registerModel('modelId2', {});
+            _router.addModel('modelId1', {});
+            _router.addModel('modelId2', {});
             _router.getEventObservable('modelId1', 'startEvent').observe(() => {
                 // publish an event for modelId2 while processing modelId1, thus queuing them
                 _router.publishEvent('modelId2', 'Event1', 'theEvent'); // should be processed second
@@ -56,7 +56,7 @@ describe('Router', () => {
         it('should reset the EventContext for each event', () => {
             var testPassed = false;
             var lastEventDelivered = false;
-            _router.registerModel('modelId1', {});
+            _router.addModel('modelId1', {});
             _router.getEventObservable('modelId1', 'startEvent').observe((event, eventContext) => {
                 eventContext.commit();
                 _router.publishEvent('modelId1', 'Event1', 'theEvent1');

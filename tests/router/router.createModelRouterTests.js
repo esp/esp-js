@@ -37,7 +37,7 @@ describe('Router', () => {
                 executePassed: false
             };
             _dispatchedModelNumbers = [];
-            _router.registerModel(_model.id, _model);
+            _router.addModel(_model.id, _model);
             _modelRouter = _router.createModelRouter(_model.id);
             _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
                 m.aNumber = e;

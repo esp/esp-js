@@ -29,8 +29,8 @@ describe('Router', () => {
     describe('.getModelObservable()', () => {
 
         beforeEach(() => {
-            _router.registerModel('modelId1', {number:0});
-            _router.registerModel('modelId2', {number:0});
+            _router.addModel('modelId1', {number:0});
+            _router.addModel('modelId2', {number:0});
         });
 
         it('throws if arguments incorrect', () => {

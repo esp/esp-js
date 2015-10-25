@@ -9,7 +9,7 @@
 
 	ModelBootstrapper.prototype.start = function () {
 		var model = new app.model.TodoList('esp-todomvc-react');
-		this.router.registerModel(this.modelId, model, { postEventProcessor: app.model.TodoListPostEventProcessor });
+		this.router.addModel(this.modelId, model, { postEventProcessor: app.model.TodoListPostEventProcessor });
 		var todoListEventProcessor = new app.model.TodoListEventProcessor(this.router, this.modelId);
 		todoListEventProcessor.start();
 	};

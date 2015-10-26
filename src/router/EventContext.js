@@ -17,11 +17,18 @@
  // notice_end
 
 import { Guard } from '../system';
+import ObservationStage from './ObservationStage';
 
 class EventContext {
-    constructor() {
+    constructor(modelId, eventType) {
+        this._modelId = modelId;
+        this._eventType = eventType;
         this._isCanceled = false;
         this._isCommitted = false;
+        this._currentStage = ObservationStage.preview; // initial state
+    }
+    get currentStage() {
+        return this._currentStage;
     }
     get isCanceled() {
         return this._isCanceled;
@@ -33,14 +40,14 @@ class EventContext {
         if(!this._isCanceled) {
             this._isCanceled = true;
         } else {
-            throw new Error('event is already cancelled');
+            throw new Error('event [' + this._eventType + '] for model [' + this._modelId + '] is already cancelled');
         }
     }
     commit() {
         if(!this._isCommitted) {
             this._isCommitted = true;
         } else {
-            throw 'event is already committed';
+            throw 'event [' + this._eventType + '] for model [' + this._modelId + '] is already committed';
         }
     }
 }

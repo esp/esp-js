@@ -34,8 +34,8 @@ describe('Router', () => {
 
         it('should deliver the event to all models', () => {
             var model1ProcessorReceived = 0, model2ProcessorReceived = 0;
-            _router.registerModel('modelId1', {});
-            _router.registerModel('modelId2', {});
+            _router.addModel('modelId1', {});
+            _router.addModel('modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').observe((event) => {
                 model1ProcessorReceived+=event;
             });

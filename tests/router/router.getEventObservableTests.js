@@ -41,8 +41,8 @@ describe('Router', () => {
 
         it('dispatches events to processors by modelid', () => {
             var model1ProcessorReceived = false, model2ProcessorReceived = false;
-            _router.registerModel('modelId1', {});
-            _router.registerModel('modelId2', {});
+            _router.addModel('modelId1', {});
+            _router.addModel('modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').observe(() => {
                 model1ProcessorReceived = true;
             });
@@ -55,7 +55,7 @@ describe('Router', () => {
         });
 
         it('doesn\'t dispatch to disposed update ubscribers', () => {
-            _router.registerModel('modelId1', {});
+            _router.addModel('modelId1', {});
             var eventReeivedCount =0;
             var disposable = _router.getEventObservable('modelId1', 'Event1').observe(() => {
                 eventReeivedCount++;
@@ -97,7 +97,7 @@ describe('Router', () => {
                     shouldCancel: false,
                     commitStage: ''
                 };
-                _router.registerModel('modelId1', {});
+                _router.addModel('modelId1', {});
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.preview)
                     .observe((event, eventContext) => {
                         receivedAtPreview = true;

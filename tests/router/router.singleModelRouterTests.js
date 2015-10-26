@@ -71,9 +71,8 @@ describe('Router', () => {
         });
 
         it('should proxy getModelObservable to correct models change stream', ()=> {
-            expect(_dispatchedModelNumbers.length).toEqual(2);
-            expect(_dispatchedModelNumbers[0]).toEqual(0);
-            expect(_dispatchedModelNumbers[1]).toEqual(1);
+            expect(_dispatchedModelNumbers.length).toEqual(1);
+            expect(_dispatchedModelNumbers[0]).toEqual(1);
         });
 
         it('should proxy observeEventsOn', ()=> {

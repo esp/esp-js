@@ -37,8 +37,8 @@ describe('Router', () => {
         beforeEach(() => {
             _model1 = {};
             _model2 = {};
-            _router.registerModel('modelId1', _model1);
-            _router.registerModel('modelId2', _model2);
+            _router.addModel('modelId1', _model1);
+            _router.addModel('modelId2', _model2);
             _router.getEventObservable('modelId1', 'triggerExecuteEvent').observe(() => {
                 _router.executeEvent('ExecutedEvent', {});
             });
@@ -46,7 +46,7 @@ describe('Router', () => {
 
         it('should only allow execute during processor and event dispatch stages', () => {
             var model1 = { value: ""}, updateStreamTestRan = false;
-            _router.registerModel(
+            _router.addModel(
                 'myModel',
                 model1,
                 {

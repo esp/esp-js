@@ -44,7 +44,7 @@ describe('Router', () => {
                 }
             };
             _modelWasLockedForChangeDispatch = false;
-            _router.registerModel(
+            _router.addModel(
                 'modelId1',
                 _model,
                 {

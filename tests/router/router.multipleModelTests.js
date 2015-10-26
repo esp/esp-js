@@ -35,8 +35,8 @@ describe('Router', () => {
             _model2 = { id : " model2" };
             _model1OptionsHelper = createOptionsHelper();
             _model2OptionsHelper = createOptionsHelper();
-            _router.registerModel(_model.id, _model, _model1OptionsHelper.options);
-            _router.registerModel(_model2.id, _model2, _model2OptionsHelper.options);
+            _router.addModel(_model.id, _model, _model1OptionsHelper.options);
+            _router.addModel(_model2.id, _model2, _model2OptionsHelper.options);
         });
 
         function createOptionsHelper() {
@@ -80,14 +80,14 @@ describe('Router', () => {
             _router.getModelObservable(_model.id).observe(() => {
                 model1UpdateCount++;
             });
-            expect(model1UpdateCount).toEqual(1);
+            expect(model1UpdateCount).toEqual(0);
             _router.getModelObservable(_model2.id).observe(() => {
                 model2UpdateCount++;
             });
-            expect(model2UpdateCount).toEqual(1);
+            expect(model2UpdateCount).toEqual(0);
             _router.publishEvent(_model2.id, "fooEvent", 1);
-            expect(model1UpdateCount).toEqual(1);
-            expect(model2UpdateCount).toEqual(2);
+            expect(model1UpdateCount).toEqual(0);
+            expect(model2UpdateCount).toEqual(1);
         });
 
         it('should raise a model changed when child\'s event workflow done', () => {

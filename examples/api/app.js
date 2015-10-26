@@ -156,7 +156,7 @@ var runBasicExample =  () => {
 
     // Kick it all off
     var router = new esp.Router();
-    router.registerModel('myModelId', new Car(), { postEventProcessor : new CarPostEventProcessor() });
+    router.addModel('myModelId', new Car(), { postEventProcessor : new CarPostEventProcessor() });
 
     var carEventProcessor = new CarEventProcessor(router);
     var carScreenController = new CarScreenController(router);
@@ -217,7 +217,7 @@ var runEventWorkflowExample = () => {
         var router = new esp.Router();
 
         var store = new FruitStore();
-        router.registerModel(
+        router.addModel(
             'model1',
             store,
             {
@@ -237,7 +237,7 @@ var runEventWorkflowExample = () => {
         var router = new esp.Router();
 
         var store = new FruitStore();
-        router.registerModel('model1', store);
+        router.addModel('model1', store);
 
         router
             .getEventObservable('model1', 'fruitExpiredEvent', esp.ObservationStage.normal)
@@ -286,7 +286,7 @@ var runEventWorkflowExample = () => {
         var router = new esp.Router();
 
         var store = new FruitStore();
-        router.registerModel('model1', store);
+        router.addModel('model1', store);
 
         var buyFruitEventSubscription = router
             .getEventObservable('model1', 'buyFruitEvent') // i.e. stage = esp.ObservationStage.normal
@@ -314,7 +314,7 @@ var runEventWorkflowExample = () => {
         var router = new esp.Router();
 
         var store = new FruitStore();
-        router.registerModel('model1', store);
+        router.addModel('model1', store);
 
         router
             .getEventObservable('model1', 'buyFruitEvent')
@@ -358,7 +358,7 @@ var runEventWorkflowExample = () => {
 
 var runModelObserveExample = () => {
     var router = new esp.Router();
-    router.registerModel("modelId", { foo: 1 });
+    router.addModel("modelId", { foo: 1 });
     router
         .getEventObservable('modelId', 'fooChanged')
         .observe((event, eventContext, model)=> {
@@ -379,7 +379,7 @@ var runObserveApiBasicExample = () => {
     var router = new esp.Router();
 
     // add a basic model
-    router.registerModel(
+    router.addModel(
         "modelId",
         {
             staticData:
@@ -432,7 +432,7 @@ var runObserveApiBasicExample = () => {
 
 var runErrorFlowsExample = () => {
     var router = new esp.Router();
-    router.registerModel("modelId", { });
+    router.addModel("modelId", { });
     router
         .getEventObservable('modelId', 'boomEvent')
         .do(() => {throw new Error("Boom");})
@@ -509,7 +509,7 @@ var runAcyncOperationWithWorkItemExample = () => {
     }
 
     var router = new esp.Router();
-    router.registerModel("modelId", { staticData:[]});
+    router.addModel("modelId", { staticData:[]});
     var staticDataEventProcessor = new StaticDataEventProcessor(router);
     staticDataEventProcessor.initialise();
     console.log("Sending initialiseEvent");
@@ -522,7 +522,7 @@ var runAcyncOperationWithRunActionExample = () => {
         backgroundOperations: 0
     };
     var router = new esp.Router();
-    router.registerModel('myModelId', myModel);
+    router.addModel('myModelId', myModel);
     router.getEventObservable('myModelId', 'getAsyncDataEvent').observe((e, c, m) => {
         console.log('About to do async work');
         m.backgroundOperations++;
@@ -613,7 +613,7 @@ var runModelRouter = () => {
         foo:0
     };
     var router = new esp.Router();
-    router.registerModel('myModel', myModel);
+    router.addModel('myModel', myModel);
     var modelRouter = router.createModelRouter('myModel');
 
     modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {

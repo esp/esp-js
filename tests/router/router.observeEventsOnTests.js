@@ -82,7 +82,7 @@ describe('Router', () => {
             normalInvokeCount = 0;
             normal2InvokeCount = 0;
             committedInvokeCount = 0;
-            _router.registerModel('modelId', _model);
+            _router.addModel('modelId', _model);
         });
 
         it('should observe events by event name and stage', ()=> {
@@ -153,7 +153,6 @@ describe('Router', () => {
         var normalInvokeCount = 0;
         var normal2InvokeCount = 0;
         var committedInvokeCount = 0;
-        var subscription;
         var _model;
 
         class Model extends esp.model.DisposableBase {
@@ -161,27 +160,38 @@ describe('Router', () => {
                 super();
                 this._id = id;
                 this._router = router;
+                this.receivedBarEvents = [];
             }
             observeEvents() {
                 this.addDisposable(this._router.observeEventsOn(this._id, this));
             }
             //start-non-standard
             @esp.observeEvent('fooEvent', esp.ObservationStage.preview)
-            _observeFooEventAtPreview(e, c, m) {
+            _fooEventAtPreview(e, c, m) {
                 previewInvokeCount++;
             }
             @esp.observeEvent('fooEvent', esp.ObservationStage.normal)
-            _observeFooEventAtNormal1(e, c, m) {
+            _fooEventAtNormal1(e, c, m) {
                 normalInvokeCount++;
                 c.commit();
             }
             @esp.observeEvent('fooEvent')
-            _observeFooEventAtNormal2(e, c, m) {
+            _fooEventAtNormal2(e, c, m) {
                 normal2InvokeCount++;
             }
             @esp.observeEvent('fooEvent', esp.ObservationStage.committed)
-            _observeFooEventAtCommitted(e, c, m) {
+            _fooEventAtCommitted(e, c, m) {
                 committedInvokeCount++;
+            }
+            @esp.observeEvent('barEvent_1')
+            _barEvent_1(e, c, m) {
+                c.commit();
+            }
+            @esp.observeEvent('barEvent_1', esp.ObservationStage.committed)
+            @esp.observeEvent('barEvent_2')
+            @esp.observeEvent('barEvent_3', esp.ObservationStage.preview)
+            _allBarEvents(e, c, m) {
+                this.receivedBarEvents.push({event: e, stage: c.currentStage});
             }
             //end-non-standard
         }
@@ -192,7 +202,7 @@ describe('Router', () => {
             normal2InvokeCount = 0;
             committedInvokeCount = 0;
             _model = new Model('modelId', _router);
-            _router.registerModel('modelId', _model);
+            _router.addModel('modelId', _model);
         });
 
         it('should observe events by event name and stage', ()=> {
@@ -214,6 +224,32 @@ describe('Router', () => {
             expect(normalInvokeCount).toBe(2);
             expect(normal2InvokeCount).toBe(2);
             expect(committedInvokeCount).toBe(2);
+        });
+
+        it('should observe multiple events', ()=> {
+            _model.observeEvents();
+
+            _router.publishEvent('modelId', 'barEvent_1', 1);
+            expect(_model.receivedBarEvents.length).toBe(1);
+            expect(_model.receivedBarEvents[0].event).toBe(1);
+            expect(_model.receivedBarEvents[0].stage).toBe(esp.ObservationStage.committed);
+
+            _router.publishEvent('modelId', 'barEvent_2', 2);
+            expect(_model.receivedBarEvents.length).toBe(2);
+            expect(_model.receivedBarEvents[1].event).toBe(2);
+            expect(_model.receivedBarEvents[1].stage).toBe(esp.ObservationStage.normal);
+
+            _router.publishEvent('modelId', 'barEvent_3', 3);
+            expect(_model.receivedBarEvents.length).toBe(3);
+            expect(_model.receivedBarEvents[2].event).toBe(3);
+            expect(_model.receivedBarEvents[2].stage).toBe(esp.ObservationStage.preview);
+
+            _model.dispose();
+            _router.publishEvent('modelId', 'barEvent_1', 1);
+            _router.publishEvent('modelId', 'barEvent_2', 1);
+            _router.publishEvent('modelId', 'barEvent_3', 1);
+
+            expect(_model.receivedBarEvents.length).toBe(3);
         });
     });
 });

@@ -50,8 +50,8 @@ describe('Router', () => {
         beforeEach(() => {
             _model1 = Object.create(_proto).init('1');
             _model2 = Object.create(_proto).init('2');
-            _router.registerModel(_model1.id, _model1);
-            _router.registerModel(_model2.id, _model2);
+            _router.addModel(_model1.id, _model1);
+            _router.addModel(_model2.id, _model2);
             _router.getModelObservable(_model1.id).observe(() => {
                 model1ReceivedCount++;
             });

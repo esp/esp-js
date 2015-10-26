@@ -61,10 +61,10 @@ describe('Router', () => {
             _modelsSentForPreProcessing = [];
             _modelsSentForPostProcessing = [];
 
-            _router.registerModel('modelId1', _model1, _options);
-            _router.registerModel('modelId2', _model2, _options);
-            _router.registerModel('modelId3', _model3, _options);
-            _router.registerModel('modelId5', _model5);
+            _router.addModel('modelId1', _model1, _options);
+            _router.addModel('modelId2', _model2, _options);
+            _router.addModel('modelId3', _model3, _options);
+            _router.addModel('modelId5', _model5);
 
             _router.getEventObservable('modelId1', 'startEvent').observe(() => {
                 _router.publishEvent('modelId3', 'Event1', 'theEvent');
@@ -118,7 +118,7 @@ describe('Router', () => {
         });
 
         it('should allow a preEventProcessor to publish an event', () => {
-            _router.registerModel('modelId4', _model1, { preEventProcessor : () => {_router.publishEvent('modelId4', 'Event2', 'theEvent'); } });
+            _router.addModel('modelId4', _model1, { preEventProcessor : () => {_router.publishEvent('modelId4', 'Event2', 'theEvent'); } });
             var wasPublished = false;
             _router.getEventObservable('modelId4', 'Event2').observe(() => {
                 wasPublished = true;
@@ -134,7 +134,7 @@ describe('Router', () => {
             var eventReceived = false,
                 eventWasRaisedInNewEventLoop = false,
                 postProcessorPublished = false;
-            _router.registerModel(
+            _router.addModel(
                 'modelId4',
                 { version: 1 }, // model
                 {

@@ -37,7 +37,7 @@ describe('Router', () => {
                 executePassed: false
             };
             _dispatchedModelNumbers = [];
-            _router.registerModel(_model.id, _model);
+            _router.addModel(_model.id, _model);
             _modelRouter = _router.createModelRouter(_model.id);
             _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
                 m.aNumber = e;
@@ -65,9 +65,8 @@ describe('Router', () => {
         });
 
         it('should proxy getModelObservable to correct models change stream', ()=> {
-            expect(_dispatchedModelNumbers.length).toEqual(2);
-            expect(_dispatchedModelNumbers[0]).toEqual(0);
-            expect(_dispatchedModelNumbers[1]).toEqual(1);
+            expect(_dispatchedModelNumbers.length).toEqual(1);
+            expect(_dispatchedModelNumbers[0]).toEqual(1);
         });
     });
 });

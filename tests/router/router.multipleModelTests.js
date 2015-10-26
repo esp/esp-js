@@ -80,14 +80,14 @@ describe('Router', () => {
             _router.getModelObservable(_model.id).observe(() => {
                 model1UpdateCount++;
             });
-            expect(model1UpdateCount).toEqual(1);
+            expect(model1UpdateCount).toEqual(0);
             _router.getModelObservable(_model2.id).observe(() => {
                 model2UpdateCount++;
             });
-            expect(model2UpdateCount).toEqual(1);
+            expect(model2UpdateCount).toEqual(0);
             _router.publishEvent(_model2.id, "fooEvent", 1);
-            expect(model1UpdateCount).toEqual(1);
-            expect(model2UpdateCount).toEqual(2);
+            expect(model1UpdateCount).toEqual(0);
+            expect(model2UpdateCount).toEqual(1);
         });
 
         it('should raise a model changed when child\'s event workflow done', () => {

@@ -50,8 +50,8 @@ describe('Router', () => {
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
             _router.publishEvent('modelId2', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(2);
-            expect(model2UpdateCount).toBe(2);
+            expect(model1UpdateCount).toBe(1);
+            expect(model2UpdateCount).toBe(1);
         });
 
         it('doesn\'t dispatch to disposed update observers', () => {
@@ -61,10 +61,10 @@ describe('Router', () => {
                 model1UpdateCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(2);
+            expect(model1UpdateCount).toBe(1);
             disposable.dispose();
             _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(2);
+            expect(model1UpdateCount).toBe(1);
         });
 
         it('purges all model event queues before dispatching updates', () => {
@@ -75,7 +75,7 @@ describe('Router', () => {
             _router.getModelObservable('modelId2').observe(() => {
                 modelUpdateCount++;
             });
-            expect(modelUpdateCount).toBe(2);
+            expect(modelUpdateCount).toBe(0);
             _router.getEventObservable('modelId1', 'StartEvent').observe(() => {
                 _router.publishEvent('modelId1', 'Event1', 1);
                 _router.publishEvent('modelId2', 'Event1', 2);
@@ -90,7 +90,7 @@ describe('Router', () => {
             });
             _router.publishEvent('modelId1', 'StartEvent', 'payload');
             expect(eventCount).toBe(4);
-            expect(modelUpdateCount).toBe(4);
+            expect(modelUpdateCount).toBe(2);
         });
 
         it('processes events published during model dispatch', () => {
@@ -119,15 +119,15 @@ describe('Router', () => {
             _router.getModelObservable('modelId1').observe(() => {
                 model1UpdateCount++;
             });
-            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(0);
             _router.getEventObservable('modelId2', 'Event1').observe(() => { /*noop*/  });
             _router.getModelObservable('modelId2').observe(() => {
                 model2UpdateCount++;
             });
-            expect(model2UpdateCount).toBe(1);
+            expect(model2UpdateCount).toBe(0);
             _router.publishEvent('modelId2', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toBe(1);
-            expect(model2UpdateCount).toBe(2);
+            expect(model1UpdateCount).toBe(0);
+            expect(model2UpdateCount).toBe(1);
         });
 
         it('should dispatch change to models if event if only one event was processed', () => {
@@ -137,9 +137,16 @@ describe('Router', () => {
         });
 
         it('should pump the last model on initial observation', () => {
-            var model1UpdateCount = 0;
+            var model1UpdateCount = 0, model1UpdateCount2 = 0;
+            _router.getEventObservable('modelId1', 'Event1').observe(() => { /*noop*/  });
             _router.getModelObservable('modelId1').observe(() => {
                 model1UpdateCount++;
+            });
+            expect(model1UpdateCount).toBe(0);
+            _router.publishEvent('modelId1', 'Event1', 'payload');
+            expect(model1UpdateCount).toBe(1);
+            _router.getModelObservable('modelId1').observe(() => {
+                model1UpdateCount2++;
             });
             expect(model1UpdateCount).toBe(1);
         });

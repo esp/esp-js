@@ -304,12 +304,10 @@ export default class Router {
             }
         }
         for (let i = 0, len = updates.length; i < len; i++) {
-            modelUpdateSubject = this._modelUpdateSubjects[updates[i].modelId];
-            if (typeof modelUpdateSubject !== 'undefined') {
-                modelUpdateSubject.onNext(updates[i].model);
-                if(modelUpdateSubject.hasError) {
-                    throw modelUpdateSubject.error;
-                }
+            modelUpdateSubject = this._getModelUpdateSubjects(updates[i].modelId);
+            modelUpdateSubject.onNext(updates[i].model);
+            if(modelUpdateSubject.hasError) {
+                throw modelUpdateSubject.error;
             }
         }
     }

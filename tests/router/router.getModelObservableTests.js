@@ -136,7 +136,7 @@ describe('Router', () => {
             pending();
         });
 
-        it('should pump the last model on initial observation', () => {
+        it('should pump the last model on observation', () => {
             var model1UpdateCount = 0, model1UpdateCount2 = 0;
             _router.getEventObservable('modelId1', 'Event1').observe(() => { /*noop*/  });
             _router.getModelObservable('modelId1').observe(() => {
@@ -147,6 +147,21 @@ describe('Router', () => {
             expect(model1UpdateCount).toBe(1);
             _router.getModelObservable('modelId1').observe(() => {
                 model1UpdateCount2++;
+            });
+            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount2).toBe(1);
+        });
+
+        it('should pump the last model on first observation after first event', () => {
+            // this is a different edge case to the 'should pump the last model on observation'
+            // it appears that there was a bug whereby if there are no model observers and an event loop completes,
+            // the router/subject doesn't set the streams model as there are no observers.
+            var model1UpdateCount = 0, model1UpdateCount2 = 0;
+            _router.getEventObservable('modelId1', 'Event1').observe(() => { /*noop*/  });
+            expect(model1UpdateCount).toBe(0);
+            _router.publishEvent('modelId1', 'Event1', 'payload');
+            _router.getModelObservable('modelId1').observe(() => {
+                model1UpdateCount++;
             });
             expect(model1UpdateCount).toBe(1);
         });

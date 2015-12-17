@@ -13,7 +13,7 @@
     "event router"
   ],
   "main": "dist/esp.js",
-  "author": "Keith Woods",
+  "author": "Dev Shop Limited",
   "license": "Apache 2",
   "repository": "https://github.com/esp/esp-js",
   "devDependencies": {

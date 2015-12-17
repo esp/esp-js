@@ -1,6 +1,6 @@
 // notice_start
 /*
- * Copyright 2015 Keith Woods
+ * Copyright 2015 Dev Shop Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

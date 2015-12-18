@@ -16,8 +16,10 @@
  */
  // notice_end
 
-exports.ObservationStage = require('./router/ObservationStage');
-exports.Router = require('./router/Router');
-exports.SingleModelRouter = require('./router/SingleModelRouter');
-exports.model = require('./model');
-exports.observeEvent = require('./decorators/observeEvent');
+import ObservationStage from './router/ObservationStage';
+import Router from './router/Router';
+import SingleModelRouter from './router/SingleModelRouter';
+import model from './model';
+import observeEvent from './decorators/observeEvent';
+
+export default { ObservationStage, Router, SingleModelRouter, model, observeEvent };

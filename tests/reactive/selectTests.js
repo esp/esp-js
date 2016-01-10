@@ -18,58 +18,27 @@
 
 import * as reactive from '../../src/reactive/index';
  
-describe('.where', () => {
+describe('.select', () => {
     var subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
     });
 
-    it('should pass yielded item to observer', () => {
+    it('yields the selected item', () => {
         var receivedItems = [];
         subject
-            .where(i => {
-                receivedItems.push(i);
-                return true; })
-            .observe(i => { });
+            .select(i => i.child)
+            .observe(child => receivedItems.push(child));
 
-        subject.onNext(1);
+        subject.onNext({child:5});
         expect(receivedItems.length).toBe(1);
-        expect(receivedItems[0]).toBe(1);
-    });
-
-    it('should propagate items based on the predicate result', () => {
-        var receivedItems = [];
-        subject
-            .where(i => {
-                return i > 5; })
-            .observe(i => { receivedItems.push(i); });
-
-        subject.onNext(1);
-        expect(receivedItems.length).toBe(0);
-        subject.onNext(6);
-        expect(receivedItems.length).toBe(1);
-        expect(receivedItems[0]).toBe(6);
-    });
-
-    it('doesn\'t propagate to disposed streams', () => {
-        var receivedItems = 0;
-        var disposable = subject
-            .where(i => {
-                return true; })
-            .observe(i => { receivedItems++; });
-
-        subject.onNext('a');
-        subject.onNext('b');
-        expect(receivedItems).toBe(2);
-        disposable.dispose();
-        subject.onNext('c');
-        expect(receivedItems).toBe(2);
+        expect(receivedItems[0]).toBe(5);
     });
 
     it('should bubble errors', () => {
         var disposable = subject
-            .where(i => {
+            .select(i => {
                 throw new Error('Boom'); })
             .observe(
                 i => { });
@@ -80,9 +49,8 @@ describe('.where', () => {
     });
 
     it('should bubble errors in observer', () => {
-        var disposable = subject
-            .where(i => {
-                return true; })
+        var select = subject
+            .where(i => i)
             .observe(
                 i => {
                     throw new Error('Boom');
@@ -96,7 +64,7 @@ describe('.where', () => {
     it('should propagate onCompleted', () => {
         var onCompleteCalled = false;
         subject
-            .where(i => i > 0)
+            .select(i => i)
             .observe(
                 () => { },
                 () => onCompleteCalled = true

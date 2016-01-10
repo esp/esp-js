@@ -16,13 +16,21 @@
  */
  // notice_end
 
-// these scripts have no exports, they add functionality to Observable
-import './extMethods/where';
-import './extMethods/asObservable';
-import './extMethods/take';
-import './extMethods/do';
-import './extMethods/select';
+import Observable from '../Observable';
+import { Guard } from '../../system';
 
-export { default as Observable } from './Observable';
-export { default as Observer } from './Observer';
-export { default as Subject } from './Subject';
+Observable.prototype.select = function(selector) {
+    Guard.isDefined(selector, 'selector Required');
+    var source = this;
+    var observe =  observer => {
+        return source.observe(
+            (arg1, arg2, arg3) => {
+                var selection = selector(arg1, arg2, arg3);
+                // we only pass one value on, the result of the selection
+                observer.onNext(selection);
+            },
+            () => observer.onCompleted()
+        );
+    };
+    return new Observable(observe);
+};

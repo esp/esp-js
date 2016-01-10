@@ -18,7 +18,7 @@
 
 import * as reactive from '../../src/reactive/index';
  
-describe('.select', () => {
+describe('.map', () => {
     var subject;
 
     beforeEach(() => {
@@ -28,7 +28,7 @@ describe('.select', () => {
     it('yields the selected item', () => {
         var receivedItems = [];
         subject
-            .select(i => i.child)
+            .map(i => i.child)
             .observe(child => receivedItems.push(child));
 
         subject.onNext({child:5});
@@ -38,7 +38,7 @@ describe('.select', () => {
 
     it('should bubble errors', () => {
         var disposable = subject
-            .select(i => {
+            .map(i => {
                 throw new Error('Boom'); })
             .observe(
                 i => { });
@@ -50,7 +50,7 @@ describe('.select', () => {
 
     it('should bubble errors in observer', () => {
         var select = subject
-            .where(i => i)
+            .map(i => i)
             .observe(
                 i => {
                     throw new Error('Boom');
@@ -64,7 +64,7 @@ describe('.select', () => {
     it('should propagate onCompleted', () => {
         var onCompleteCalled = false;
         subject
-            .select(i => i)
+            .map(i => i)
             .observe(
                 () => { },
                 () => onCompleteCalled = true

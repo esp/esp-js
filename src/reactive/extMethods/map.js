@@ -19,7 +19,7 @@
 import Observable from '../Observable';
 import { Guard } from '../../system';
 
-Observable.prototype.select = function(selector) {
+Observable.prototype.map = function(selector) {
     Guard.isDefined(selector, 'selector Required');
     var source = this;
     var observe =  observer => {

@@ -21,7 +21,7 @@ import './extMethods/where';
 import './extMethods/asObservable';
 import './extMethods/take';
 import './extMethods/do';
-import './extMethods/select';
+import './extMethods/map';
 
 export { default as Observable } from './Observable';
 export { default as Observer } from './Observer';

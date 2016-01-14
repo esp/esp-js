@@ -21,6 +21,7 @@ import ObservationStage from './ObservationStage';
 import ModelRecord from './ModelRecord';
 import State from './State.js';
 import Status from './Status.js';
+import diagnostic from './diagnostic';
 import SingleModelRouter from './SingleModelRouter.js';
 import { Subject, Observable } from '../reactive/index';
 import { ModelChangedEvent } from '../model/events/index';
@@ -36,6 +37,7 @@ export default class Router {
         this._modelEventSubjects = {};
         this._haltingException = undefined;
         this._state = new State();
+        this._dispatchLoopDiagnostic = new diagnostic.DispatchLoopDiagnosticNoop();
     }
     addModel(modelId, model, options) {
         this._throwIfHalted();
@@ -79,15 +81,17 @@ export default class Router {
         if (this._state.currentStatus === Status.EventExecution) {
             throw new Error('You can not publish further events when performing an event execution. modelId1: [' + modelId + '], eventType:[' + eventType + ']');
         }
-        this._eventQueue(modelId, eventType, event);
+        this._dispatchLoopDiagnostic.publishEvent(modelId, eventType);
+        this._tryEnqueueEvent(modelId, eventType, event);
         this._purgeEventQueues();
     }
     broadcastEvent(eventType, event) {
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument should be defined');
+        this._dispatchLoopDiagnostic.broadcastEvent(eventType);
         for (let modelId in this._models) {
             if (this._models.hasOwnProperty(modelId)) {
-                this._eventQueue(modelId, eventType, event);
+                this._tryEnqueueEvent(modelId, eventType, event);
             }
         }
         this._purgeEventQueues();
@@ -96,7 +100,7 @@ export default class Router {
         this._throwIfHalted();
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument should be defined');
-
+        this._dispatchLoopDiagnostic.executingEvent(eventType);
         this._state.executeEvent(() => {
             this._dispatchEventToEventProcessors(
                 this._state.currentModelId,
@@ -108,6 +112,7 @@ export default class Router {
     }
     runAction(modelId, action) {
         this._throwIfHalted();
+        this._dispatchLoopDiagnostic.runAction(modelId);
         let modelRecord = this._models[modelId];
         if (typeof modelRecord === 'undefined') {
             throw new Error('Can not run action as model with id [' + modelId + '] not registered');
@@ -122,7 +127,6 @@ export default class Router {
             Guard.isString(modelId, 'The modelId argument should be a string');
             Guard.isDefined(modelId, 'The modelId argument should be defined');
             Guard.isDefined(eventType, 'The eventType argument should be defined');
-
             if(stage) {
                 Guard.isString(stage, 'The stage argument should be a string');
                 Guard.isTrue(stage === ObservationStage.preview || stage === ObservationStage.normal || stage === ObservationStage.committed, 'The stage argument value of [' + stage + '] is incorrect. It should be preview, normal or committed.');
@@ -153,7 +157,16 @@ export default class Router {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);
         }
     }
-    _eventQueue(modelId, eventType, event) {
+    getDispatchLoopDiagnostics () {
+        return this._dispatchLoopDiagnostic.getSummary();
+    }
+    enableDiagnostics() {
+        this._dispatchLoopDiagnostic = new diagnostic.DispatchLoopDiagnostic();
+    }
+    disableDiagnostics() {
+        this._dispatchLoopDiagnostic = new diagnostic.DispatchLoopDiagnosticNoop();
+    }
+    _tryEnqueueEvent(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
         if(eventType === 'modelChangedEvent' && event.modelId === modelId)
             return; 
@@ -171,8 +184,11 @@ export default class Router {
                     }
                 }
                 if(shouldEnqueue) {
+                    this._dispatchLoopDiagnostic.eventEnqueued(modelId, eventType);
                     modelRecord.eventQueue.push({eventType: eventType, event: event});
                     this._purgeEventQueues();
+                } else {
+                    this._dispatchLoopDiagnostic.eventIgnored(modelId, eventType);
                 }
             } catch (err) {
                 this._halt(err);
@@ -208,33 +224,40 @@ export default class Router {
         if (this._state.currentStatus === Status.Idle) {
             let modelRecord = this._getNextModelRecordWithQueuedEvents();
             let hasEvents = typeof modelRecord !== 'undefined';
+            this._dispatchLoopDiagnostic.dispatchLoopStart();
             while (hasEvents) {
                 while (hasEvents) {
-                    this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);
                     let eventRecord = modelRecord.eventQueue.shift();
+                    this._dispatchLoopDiagnostic.startingModelEventLoop(modelRecord.modelId, eventRecord.eventType);
+                    this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);
                     if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
                         modelRecord.model.unlock();
                     }
+                    this._dispatchLoopDiagnostic.preProcessingModel();
                     modelRecord.runPreEventProcessor(modelRecord.model);
                     if (!modelRecord.wasRemoved) {
-                            this._state.moveToEventDispatch();
-                            while (hasEvents) {
-                                let wasDispatched = true;
-                                if(eventRecord.eventType === '__runAction') {
-                                    eventRecord.action(modelRecord.model);
-                                } else {
-                                    wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType);
-                                }
-                                if (modelRecord.wasRemoved) break;
-                                if (!modelRecord.hasChanges && wasDispatched) {
-                                    modelRecord.hasChanges = true;
-                                }
-                                hasEvents = modelRecord.eventQueue.length > 0;
-                                if (hasEvents) {
-                                    eventRecord = modelRecord.eventQueue.shift();
-                                }
-                            } // keep looping until any events from the dispatch to processors stage are processed
+                        this._state.moveToEventDispatch();
+                        this._dispatchLoopDiagnostic.dispatchingEvents();
+                        while (hasEvents) {
+                            let wasDispatched = true;
+                            if(eventRecord.eventType === '__runAction') {
+                                this._dispatchLoopDiagnostic.dispatchingAction(modelRecord.modelId);
+                                eventRecord.action(modelRecord.model);
+                            } else {
+                                wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType);
+                            }
+                            if (modelRecord.wasRemoved) break;
+                            if (!modelRecord.hasChanges && wasDispatched) {
+                                modelRecord.hasChanges = true;
+                            }
+                            hasEvents = modelRecord.eventQueue.length > 0;
+                            if (hasEvents) {
+                                eventRecord = modelRecord.eventQueue.shift();
+                            }
+                        } // keep looping until any events from the dispatch to processors stage are processed
+                        this._dispatchLoopDiagnostic.finishDispatchingEvent();
                         if (!modelRecord.wasRemoved) {
+                            this._dispatchLoopDiagnostic.postProcessingModel();
                             this._state.moveToPostProcessing();
                             modelRecord.runPostEventProcessor(modelRecord.model);
                             if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
@@ -245,6 +268,7 @@ export default class Router {
                     this.broadcastEvent('modelChangedEvent', new ModelChangedEvent(modelRecord.modelId, eventRecord.eventType));
                     modelRecord = this._getNextModelRecordWithQueuedEvents();
                     hasEvents = typeof modelRecord !== 'undefined';
+                    this._dispatchLoopDiagnostic.endingModelEventLoop();
                 }  // keep looping until any events raised during post event processing OR event that have come in for other models are processed
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
@@ -252,13 +276,15 @@ export default class Router {
                 hasEvents = typeof modelRecord !== 'undefined';
             } // keep looping until any events from the dispatch updates stages are processed
             this._state.moveToIdle();
+            this._dispatchLoopDiagnostic.dispatchLoopEnd();
         }
     }
     _dispatchEventToEventProcessors(modelId, model, event, eventType) {
-        let dispatchEvent = (model1, event1, context, subject) => {
+        let dispatchEvent = (model1, event1, context, subject, stage) => {
             let wasDispatched = false;
             if (subject.getObserverCount() > 0) {
                 // note: if the model was removed by an observer the subject will be completed so subsequent observers won't get the event
+                this._dispatchLoopDiagnostic.dispatchingEvent(eventType, stage);
                 subject.onNext(event1, context, model1);
                 if(subject.hasError) {
                     throw subject.error;
@@ -272,19 +298,19 @@ export default class Router {
             eventType
         );
         let eventSubjects = this._getModelsEventSubjects(modelId, eventType);
-        let wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.preview);
+        let wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.preview, ObservationStage.preview);
         if (eventContext.isCommitted) {
             throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
         }
         if (!eventContext.isCanceled) {
             eventContext._currentStage = ObservationStage.normal;
-            wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.normal);
+            wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.normal, ObservationStage.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
             }
             if (wasDispatched && eventContext.isCommitted) {
                 eventContext._currentStage = ObservationStage.committed;
-                dispatchEvent(model, event, eventContext, eventSubjects.committed);
+                dispatchEvent(model, event, eventContext, eventSubjects.committed, ObservationStage.committed);
                 if (eventContext.isCanceled) {
                     throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
                 }
@@ -304,7 +330,9 @@ export default class Router {
             }
         }
         for (let i = 0, len = updates.length; i < len; i++) {
-            modelUpdateSubject = this._getModelUpdateSubjects(updates[i].modelId);
+            let modelId = updates[i].modelId;
+            modelUpdateSubject = this._getModelUpdateSubjects(modelId);
+            this._dispatchLoopDiagnostic.dispatchingModelUpdates(modelId);
             modelUpdateSubject.onNext(updates[i].model);
             if(modelUpdateSubject.hasError) {
                 throw modelUpdateSubject.error;
@@ -329,6 +357,9 @@ export default class Router {
         for (var i = 0; i < object._espDecoratorMetadata.events.length; i ++) {
             let details = object._espDecoratorMetadata.events[i];
             disposables.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
+                // note if the code is uglifyied then details.functionName isn't going to mean much.
+                // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
+                this._dispatchLoopDiagnostic.dispatchingViaDirective(details.functionName);
                 object[details.functionName](e, c, m);
             }));
         }
@@ -361,6 +392,7 @@ export default class Router {
                     }
                 }
                 disposables.add(this.getEventObservable(modelId, eventName, stage).observe((e, c, m) => {
+                    this._dispatchLoopDiagnostic.dispatchingViaConvention(prop);
                     object[prop](e, c, m);
                 }));
             }
@@ -375,6 +407,7 @@ export default class Router {
     }
     _halt(err) {
         this._state.moveToHalted();
+        this._dispatchLoopDiagnostic.halted(err);
         _log.error('Router halted error: [{0}]', err);
         this._haltingException = err;
         throw err;

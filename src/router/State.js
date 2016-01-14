@@ -38,8 +38,8 @@ export default class State {
         this._clear();
     }
     moveToPreProcessing(modelId, model) {
-        Guard.isString(modelId, 'The modelId should be a string');
-        Guard.isDefined(model, 'The model should be defined');
+        Guard.isString(modelId, 'modelId should be a string');
+        Guard.isDefined(model, 'model should be defined');
         this._currentModelId = modelId;
         this._currentModel = model;
         this._currentStatus = Status.PreEventProcessing;

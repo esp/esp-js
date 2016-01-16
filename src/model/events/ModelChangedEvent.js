@@ -17,12 +17,16 @@
  // notice_end
 
 class ModelChangedEvent {
-    constructor(modelId, eventType) {
+    constructor(modelId, model, eventType) {
         this._modelId = modelId;
+        this._model = model;
         this._eventType = eventType;
     }
     get modelId() {
         return this._modelId;
+    }
+    get model() {
+        return this._model;
     }
     get eventType() {
         return this._eventType;

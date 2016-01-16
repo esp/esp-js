@@ -83,7 +83,7 @@ export default class Router {
         }
         this._dispatchLoopDiagnostic.publishEvent(modelId, eventType);
         this._tryEnqueueEvent(modelId, eventType, event);
-        this._purgeEventQueues();
+       // this._purgeEventQueues();
     }
     broadcastEvent(eventType, event) {
         Guard.isString(eventType, 'The eventType argument should be a string');

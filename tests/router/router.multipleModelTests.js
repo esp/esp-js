@@ -101,6 +101,8 @@ describe('Router', () => {
             _router.publishEvent(_model.id, "fooEvent", 1);
             expect(receivedModel).toBe(_model2);
             expect(receivedEvent).toBeDefined();
+            expect(receivedEvent.model).toBeDefined();
+            expect(receivedEvent.model.id).toBe(_model.id);
             expect(receivedEvent.modelId).toBe(_model.id);
             expect(workflowDone).toEqual(true);
         });

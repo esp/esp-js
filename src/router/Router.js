@@ -265,7 +265,7 @@ export default class Router {
                             }
                         }
                     }
-                    this.broadcastEvent('modelChangedEvent', new ModelChangedEvent(modelRecord.modelId, eventRecord.eventType));
+                    this.broadcastEvent('modelChangedEvent', new ModelChangedEvent(modelRecord.modelId, modelRecord.model, eventRecord.eventType));
                     modelRecord = this._getNextModelRecordWithQueuedEvents();
                     hasEvents = typeof modelRecord !== 'undefined';
                     this._dispatchLoopDiagnostic.endingModelEventLoop();

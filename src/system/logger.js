@@ -18,7 +18,7 @@
 
 import Guard from './Guard';
 
-var levels = {
+let levels = {
     verbose:0,
     debug:1,
     info:2,
@@ -26,9 +26,9 @@ var levels = {
     error:4
 };
 
-var _currentLevel = levels.debug;
+let _currentLevel = levels.debug;
 
-var _sink = logEvent => {
+let _sink = logEvent => {
     console.log('[' + logEvent.logger + '] [' + logEvent.level + ']: ' + logEvent.message);
 };
 
@@ -86,19 +86,24 @@ class Logger {
     }
 }
 
-export function create(name) {
+function create(name) {
     Guard.isDefined(name, "The name argument should be defined");
     Guard.isString(name, "The name argument should be a string");
     return new Logger(name);
 }
 
-export function setLevel(level) {
+function setLevel(level) {
     _currentLevel = level;
 }
 
-export function setSink(sink) {
+function setSink(sink) {
     Guard.isFunction(sink, "Logging sink argument must be a function");
     _sink = sink;
 }
 
-export { levels };
+export default {
+    create,
+    setLevel,
+    setSink,
+    levels
+}

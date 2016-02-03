@@ -16,5 +16,5 @@
  */
  // notice_end
 
-var testsContext = require.context(".", true, /Tests.js$/);
+var testsContext = require.context('.', true, /Tests.js$/);
 testsContext.keys().forEach(testsContext);

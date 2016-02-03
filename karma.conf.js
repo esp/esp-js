@@ -16,6 +16,8 @@
  */
  // notice_end
 
+var path = require('path');
+
 module.exports = function (config) {
     var configuration = {
         basePath: '',
@@ -29,10 +31,23 @@ module.exports = function (config) {
         },
         webpack: {
             watch: false,
-            devtool: "inline-source-map",
+            devtool: "both",
             module: {
                 loaders: [
-                    {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader?sourceMap=true&stage=0'}
+                    {
+                        loader: "babel-loader",
+
+                        // Skip any files outside of your project's `src` directory
+                        include: [
+                            path.resolve(__dirname, "src"),
+                            path.resolve(__dirname, "tests"),
+                        ],
+                        test: /\.jsx?$/,
+                        query: {
+                            presets: ['es2015', 'stage-0'],
+                            plugins: ['transform-runtime', 'transform-decorators-legacy']
+                        }
+                    }
                 ]
             }
         },

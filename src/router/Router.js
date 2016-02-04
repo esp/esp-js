@@ -45,6 +45,7 @@ export default class Router {
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
         this._models[modelId] = new ModelRecord(modelId, model, options);
+        this._dispatchLoopDiagnostic.addModel(modelId);
     }
     removeModel(modelId){
         Guard.isString(modelId, 'The modelId argument should be a string');

@@ -19,7 +19,7 @@
     "build:dev": "webpack --config webpack.dev.config.js",
     "build:prod": "webpack -p --config webpack.prod.config.js"
   },
-  "main": "dist/esp.js",
+  "main": "dist/esp.debug.js",
   "author": "Dev Shop Limited",
   "license": "Apache 2",
   "repository": "https://github.com/esp/esp-js",

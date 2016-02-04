@@ -28,11 +28,6 @@ module.exports = {
         path: './dist/',
         filename: 'esp.debug.js'
     },
-    resolve: {
-        alias: {
-            system: __dirname + '/src/system',
-        }
-    },
     devtool: 'source-map',
     debug:true,
     module: {

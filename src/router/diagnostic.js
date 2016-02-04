@@ -3,10 +3,19 @@ import { logging } from '../system';
 var _log = logging.Logger.create('DispatchLoopDiagnostic');
 
 export class DispatchLoopDiagnosticNoop {
+
+    addModel(modelId){
+        if(window && window.__espAnalyticsMonitor) {
+            window.__espAnalyticsMonitor.modelAdded(modelId);
+        }
+    }
     getSummary() {
         return 'Enable router.enableDiagnostics() to enable diagnostics';
     }
-    publishEvent() {
+    publishEvent(modelId, eventType) {
+        if(window && window.__espAnalyticsMonitor) {
+            window.__espAnalyticsMonitor.eventPublished(modelId, eventType);
+        }
     }
     broadcastEvent() {
     }

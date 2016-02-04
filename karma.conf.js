@@ -32,11 +32,6 @@ module.exports = function (config) {
         webpack: {
             watch: false,
             devtool: 'source-map',
-            //resolve: {
-            //    alias: {
-            //        system: __dirname + '/src/system',
-            //    }
-            //},
             module: {
                 loaders: [
                     {

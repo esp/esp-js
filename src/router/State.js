@@ -17,10 +17,10 @@
  // notice_end
 
 import { Guard } from '../system';
-import { Status } from './Status.js';
+import Status from './Status.js';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
-export class State {
+export default class State {
     constructor() {
         this._currentStatus = Status.Idle;
     }

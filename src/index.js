@@ -17,15 +17,21 @@
 // notice_end
 
 import * as model from './model';
-import { ObservationStage as ObservationStage } from './router/ObservationStage';
-import { Router as Router } from './router/Router';
-import { SingleModelRouter as SingleModelRouter } from './router/SingleModelRouter';
-import { observeEvent as observeEvent } from './decorators/observeEvent';
+import { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
+
+import { default as observeEvent } from './decorators/observeEvent';
 import { logging as logging } from './system';
 
-export { ObservationStage };
-export { Router };
-export { SingleModelRouter };
+// we export both a default object and individual items, this allows for both the following cases:
+// 1) import the entire namespace
+// import esp from 'esp';
+// let eventContext = new esp.EventContext();
+//
+// 1) import single items
+// import { EventContext } from 'esp';
+// let eventContext = new EventContext()
+
+export { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
 export { model };
 export { observeEvent };
 export { logging };
@@ -36,5 +42,6 @@ export default {
     SingleModelRouter,
     model,
     observeEvent,
-    logging
+    logging,
+    EventContext
 }

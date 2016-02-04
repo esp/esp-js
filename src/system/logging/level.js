@@ -16,7 +16,7 @@
  */
 // notice_end
 
-export let level = {
+export default {
     verbose:0,
     debug:1,
     info:2,

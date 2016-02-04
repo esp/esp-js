@@ -16,6 +16,6 @@
  */
 // notice_end
 
-export function sink(logEvent) {
+export default function (logEvent) {
     console.log('[' + logEvent.logger + '] [' + logEvent.level + ']: ' + logEvent.message);
 };

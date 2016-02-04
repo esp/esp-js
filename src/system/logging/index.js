@@ -16,6 +16,6 @@
  */
 // notice_end
 //
-export { level as level } from './level';
-export { sink as sink } from './defaultSink';
-export { Logger as Logger } from './logger';
+export { default as level } from './level';
+export { default as sink } from './defaultSink';
+export { default as Logger } from './logger';

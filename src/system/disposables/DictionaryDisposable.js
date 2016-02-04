@@ -16,9 +16,9 @@
  */
  // notice_end
 
-import { DisposableWrapper } from './DisposableWrapper';
+import DisposableWrapper from './DisposableWrapper';
 
-export class DictionaryDisposable {
+export default class DictionaryDisposable {
     constructor() {
         this._isDisposed = false;
     }

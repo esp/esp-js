@@ -16,8 +16,8 @@
  */
  // notice_end
 
-import { ModelBase } from '../../src/model/ModelBase';
-import { ModelRootBase } from '../../src/model/ModelRootBase';
+import ModelBase from '../../src/model/ModelBase';
+import ModelRootBase from '../../src/model/ModelRootBase';
 
 class NumericalInput extends ModelBase {
     constructor() {

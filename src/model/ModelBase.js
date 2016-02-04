@@ -21,7 +21,7 @@
  *
  * You don't need to derive from this to use the router, provided as a convenience
  */
-export class ModelBase {
+export default class ModelBase {
     constructor() {
         this._checkIsLocked = () => true;
     }

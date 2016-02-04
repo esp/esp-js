@@ -16,4 +16,4 @@
  */
  // notice_end
 
-export { ModelChangedEvent as ModelChangedEvent } from './ModelChangedEvent';
+export { default as ModelChangedEvent } from './ModelChangedEvent';

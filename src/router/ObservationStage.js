@@ -16,8 +16,7 @@
  */
  // notice_end
 
-
-export class ObservationStage {
+export default class ObservationStage {
     static get preview() { return  'preview'; }
     static get normal() { return  'normal'; }
     static get committed() { return  'committed'; }

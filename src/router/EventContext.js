@@ -17,9 +17,9 @@
  // notice_end
 
 import { Guard } from '../system';
-import { ObservationStage } from './ObservationStage';
+import ObservationStage from './ObservationStage';
 
-export class EventContext {
+export default class EventContext {
     constructor(modelId, eventType) {
         this._modelId = modelId;
         this._eventType = eventType;

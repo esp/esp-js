@@ -16,9 +16,9 @@
  */
  // notice_end
 
-import { Guard } from '../Guard';
+import Guard from '../Guard';
 
-export class DisposableWrapper {
+export default class DisposableWrapper {
     constructor(disposable) {
         Guard.isDefined(disposable, "disposable must be defined");
         var innerDisposable;

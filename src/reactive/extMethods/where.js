@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import { Observable } from '../Observable';
+import Observable from '../Observable';
 import { Guard } from '../../system';
 
 Observable.prototype.where = function(predicate) {

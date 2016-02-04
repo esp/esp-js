@@ -16,7 +16,7 @@
  */
  // notice_end
 
-export class Status {
+export default class Status {
     static get Idle() { return 'idle'; }
     static get PreEventProcessing() { return 'preEventProcessorDispatch'; }
     static get EventProcessorDispatch() { return 'eventProcessorDispatch'; }

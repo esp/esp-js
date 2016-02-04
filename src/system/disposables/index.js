@@ -16,6 +16,6 @@
  */
 // notice_end
 
-export { CompositeDisposable as CompositeDisposable } from './CompositeDisposable';
-export { DictionaryDisposable as DictionaryDisposable } from './DictionaryDisposable';
-export { DisposableWrapper as DisposableWrapper } from './DisposableWrapper';
+export { default as CompositeDisposable } from './CompositeDisposable';
+export { default as DictionaryDisposable } from './DictionaryDisposable';
+export { default as DisposableWrapper } from './DisposableWrapper';

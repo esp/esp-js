@@ -18,7 +18,7 @@
 
 import { Guard } from '../system';
 
-export class Observer {
+export default class Observer {
     constructor(onNext, onCompleted) {
         Guard.isDefined(onNext, 'onObserve Required');
         this._hasCompleted = false;

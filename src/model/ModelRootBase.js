@@ -16,14 +16,14 @@
  */
  // notice_end
 
-import { ModelBase } from './ModelBase';
+import ModelBase from './ModelBase';
 
 /**
  * A base class for the root model entity.
  *
  * You don't need to derive from this to use the router, provided as a convenience
  */
-export class ModelRootBase extends ModelBase {
+export default class ModelRootBase extends ModelBase {
     constructor() {
         super();
         this._isLocked = true;

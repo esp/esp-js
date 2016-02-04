@@ -16,20 +16,20 @@
  */
  // notice_end
 
-import { EventContext } from './EventContext';
-import { ObservationStage } from './ObservationStage';
-import { ModelRecord } from './ModelRecord';
-import { State } from './State.js';
-import { Status } from './Status.js';
+import EventContext from './EventContext';
+import ObservationStage from './ObservationStage';
+import ModelRecord from './ModelRecord';
+import State from './State.js';
+import Status from './Status.js';
 import { DispatchLoopDiagnosticNoop, DispatchLoopDiagnostic } from './diagnostic';
-import { SingleModelRouter } from './SingleModelRouter.js';
+import { default as SingleModelRouter } from './SingleModelRouter.js';
 import { events } from '../model';
 import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, disposables } from '../system';
 
 var _log = logging.Logger.create('Router');
 
-export class Router {
+export default class Router {
     constructor() {
         this._models = {};
         this._modelUpdateSubjects = {};

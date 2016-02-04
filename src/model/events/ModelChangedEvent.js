@@ -16,7 +16,7 @@
  */
  // notice_end
 
-export class ModelChangedEvent {
+export default class ModelChangedEvent {
     constructor(modelId, model, eventType) {
         this._modelId = modelId;
         this._model = model;

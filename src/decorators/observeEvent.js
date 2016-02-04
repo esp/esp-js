@@ -1,6 +1,6 @@
-import { ObservationStage } from '../router/ObservationStage';
+import ObservationStage from '../router/ObservationStage';
 
-export function observeEvent(eventName, observationStage) {
+export default function (eventName, observationStage) {
     return function (target, name, descriptor) {
         if(!target._espDecoratorMetadata) {
             target._espDecoratorMetadata = {

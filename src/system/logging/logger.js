@@ -16,14 +16,14 @@
  */
 // notice_end
 
-import { Guard } from '../Guard';
-import { level } from './level';
-import { sink as defaultSink } from './defaultSink';
+import Guard from '../Guard';
+import level from './level';
+import defaultSink from './defaultSink';
 
 let _currentLevel = level.debug;
 let _sink = defaultSink;
 
-export class Logger {
+export default class Logger {
     constructor(name) {
         this._name = name;
     }

@@ -18,7 +18,7 @@
 
 import { disposables } from '../system';
 
-export class DisposableBase {
+export default class DisposableBase {
     constructor() {
         this._disposables = new disposables.CompositeDisposable();
     }

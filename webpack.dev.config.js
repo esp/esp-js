@@ -26,7 +26,7 @@ module.exports = {
         sourcePrefix: '    ',
         library: 'esp',
         path: './dist/',
-        filename: 'esp.debug.js'
+        filename: 'esp.js'
     },
     devtool: 'source-map',
     debug:true,

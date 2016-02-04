@@ -1,6 +1,6 @@
 {
   "name": "esp-js",
-  "version": "0.5.6",
+  "version": "0.5.9-beta",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",
@@ -19,7 +19,7 @@
     "build:dev": "webpack --config webpack.dev.config.js",
     "build:prod": "webpack -p --config webpack.prod.config.js"
   },
-  "main": "dist/esp.debug.js",
+  "main": "dist/esp.js",
   "author": "Dev Shop Limited",
   "license": "Apache 2",
   "repository": "https://github.com/esp/esp-js",

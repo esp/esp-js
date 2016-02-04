@@ -26,7 +26,7 @@ module.exports = {
         sourcePrefix: '    ',
         library: 'esp',
         path: './dist/',
-        filename: 'esp.js'
+        filename: 'esp.min.js'
     },
     devtool: 'source-map',
     debug:false,

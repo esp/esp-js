@@ -16,8 +16,8 @@
     "start": "npm run test",
     "test": "karma start --autowatch --no-single-run",
     "build": "npm run build:dev && npm run build:prod",
-    "build:dev": "webpack -p --config webpack.prod.config.js",
-    "build:prod": "webpack --config webpack.dev.config.js"
+    "build:dev": "webpack --config webpack.dev.config.js",
+    "build:prod": "webpack -p --config webpack.prod.config.js"
   },
   "main": "dist/esp.js",
   "author": "Dev Shop Limited",

@@ -16,7 +16,7 @@
  */
  // notice_end
 
-class ModelChangedEvent {
+export class ModelChangedEvent {
     constructor(modelId, model, eventType) {
         this._modelId = modelId;
         this._model = model;
@@ -32,4 +32,3 @@ class ModelChangedEvent {
         return this._eventType;
     }
 }
-export default ModelChangedEvent;

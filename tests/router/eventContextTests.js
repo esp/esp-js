@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import EventContext from '../../src/router/EventContext';
+import { EventContext } from '../../src/router/EventContext';
 
 describe('EventContext', () => {
     var ec;

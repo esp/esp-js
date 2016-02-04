@@ -14,66 +14,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-import Guard from './Guard';
+import { Guard } from '../Guard';
+import { level } from './level';
+import { sink as defaultSink } from './defaultSink';
 
-let levels = {
-    verbose:0,
-    debug:1,
-    info:2,
-    warn:3,
-    error:4
-};
+let _currentLevel = level.debug;
+let _sink = defaultSink;
 
-let _currentLevel = levels.debug;
-
-let _sink = logEvent => {
-    console.log('[' + logEvent.logger + '] [' + logEvent.level + ']: ' + logEvent.message);
-};
-
-class Logger {
+export class Logger {
     constructor(name) {
         this._name = name;
     }
 
+    static create(name) {
+        Guard.isDefined(name, "The name argument should be defined");
+        Guard.isString(name, "The name argument should be a string");
+        return new Logger(name);
+    }
+
+    static setLevel(level) {
+        _currentLevel = level;
+    }
+
+    static setSink(sink) {
+        Guard.isFunction(sink, "Logging sink argument must be a function");
+        _sink = sink;
+    }
+
     verbose(format) {
-        if (_currentLevel <= levels.verbose) {
+        if (_currentLevel <= level.verbose) {
             var args = Array.prototype.slice.call(arguments, 1);
             this._log("VERBOSE", format, args);
         }
     }
 
     debug(format) {
-        if (_currentLevel <= levels.debug) {
+        if (_currentLevel <= level.debug) {
             var args = Array.prototype.slice.call(arguments, 1);
             this._log("DEBUG", format, args);
         }
     }
 
     info(format) {
-        if (_currentLevel <= levels.info) {
+        if (_currentLevel <= level.info) {
             var args = Array.prototype.slice.call(arguments, 1);
             this._log("INFO", format, args);
         }
     }
 
     warn(format) {
-        if (_currentLevel <= levels.warn) {
+        if (_currentLevel <= level.warn) {
             var args = Array.prototype.slice.call(arguments, 1);
             this._log("WARN", format, args);
         }
     }
 
     error(format) {
-        if (_currentLevel <= levels.error) {
+        if (_currentLevel <= level.error) {
             var args = Array.prototype.slice.call(arguments, 1);
             this._log("ERROR", format, args);
         }
     }
+
     _log(level, format, args) {
         Guard.isString(format, "First argument to a log function should be a string, but got [" + format + "]");
-        var message = format.replace(/{(\d+)}/g, function (match, number) {
+        var message = format.replace(/{(\d+)}/g, (match, number) => {
             return typeof args[number] != 'undefined'
                 ? args[number]
                 : match;
@@ -84,26 +91,4 @@ class Logger {
             message: message
         });
     }
-}
-
-function create(name) {
-    Guard.isDefined(name, "The name argument should be defined");
-    Guard.isString(name, "The name argument should be a string");
-    return new Logger(name);
-}
-
-function setLevel(level) {
-    _currentLevel = level;
-}
-
-function setSink(sink) {
-    Guard.isFunction(sink, "Logging sink argument must be a function");
-    _sink = sink;
-}
-
-export default {
-    create,
-    setLevel,
-    setSink,
-    levels
 }

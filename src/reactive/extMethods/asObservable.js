@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import Observable from '../Observable';
+import { Observable } from '../Observable';
 
 Observable.prototype.asObservable = function() {
     var source = this;

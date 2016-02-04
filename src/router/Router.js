@@ -16,28 +16,27 @@
  */
  // notice_end
 
-import EventContext from './EventContext';
-import ObservationStage from './ObservationStage';
-import ModelRecord from './ModelRecord';
-import State from './State.js';
-import Status from './Status.js';
-import diagnostic from './diagnostic';
-import SingleModelRouter from './SingleModelRouter.js';
+import { EventContext } from './EventContext';
+import { ObservationStage } from './ObservationStage';
+import { ModelRecord } from './ModelRecord';
+import { State } from './State.js';
+import { Status } from './Status.js';
+import { DispatchLoopDiagnosticNoop, DispatchLoopDiagnostic } from './diagnostic';
+import { SingleModelRouter } from './SingleModelRouter.js';
+import { events } from '../model';
 import { Subject, Observable } from '../reactive/index';
-import { ModelChangedEvent } from '../model/events/index';
-import { Guard, utils, logger } from '../system';
-import { CompositeDisposable } from '../system/disposables/index';
+import { Guard, utils, logging, disposables } from '../system';
 
-var _log = logger.create('Router');
+var _log = logging.Logger.create('Router');
 
-export default class Router {
+export class Router {
     constructor() {
         this._models = {};
         this._modelUpdateSubjects = {};
         this._modelEventSubjects = {};
         this._haltingException = undefined;
         this._state = new State();
-        this._dispatchLoopDiagnostic = new diagnostic.DispatchLoopDiagnosticNoop();
+        this._dispatchLoopDiagnostic = new DispatchLoopDiagnosticNoop();
     }
     addModel(modelId, model, options) {
         this._throwIfHalted();
@@ -161,10 +160,10 @@ export default class Router {
         return this._dispatchLoopDiagnostic.getSummary();
     }
     enableDiagnostics() {
-        this._dispatchLoopDiagnostic = new diagnostic.DispatchLoopDiagnostic();
+        this._dispatchLoopDiagnostic = new DispatchLoopDiagnostic();
     }
     disableDiagnostics() {
-        this._dispatchLoopDiagnostic = new diagnostic.DispatchLoopDiagnosticNoop();
+        this._dispatchLoopDiagnostic = new DispatchLoopDiagnosticNoop();
     }
     _tryEnqueueEvent(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
@@ -265,7 +264,7 @@ export default class Router {
                             }
                         }
                     }
-                    this.broadcastEvent('modelChangedEvent', new ModelChangedEvent(modelRecord.modelId, modelRecord.model, eventRecord.eventType));
+                    this.broadcastEvent('modelChangedEvent', new events.ModelChangedEvent(modelRecord.modelId, modelRecord.model, eventRecord.eventType));
                     modelRecord = this._getNextModelRecordWithQueuedEvents();
                     hasEvents = typeof modelRecord !== 'undefined';
                     this._dispatchLoopDiagnostic.endingModelEventLoop();
@@ -353,20 +352,20 @@ export default class Router {
         return nextModel;
     }
     _observeEventsUsingDirectives(modelId, object){
-        var disposables = new CompositeDisposable();
+        var compositeDisposable = new disposables.CompositeDisposable();
         for (var i = 0; i < object._espDecoratorMetadata.events.length; i ++) {
             let details = object._espDecoratorMetadata.events[i];
-            disposables.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
+            compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
                 this._dispatchLoopDiagnostic.dispatchingViaDirective(details.functionName);
                 object[details.functionName](e, c, m);
             }));
         }
-        return disposables;
+        return compositeDisposable;
     }
     _observeEventsUsingConventions(modelId, object, methodPrefix) {
-        var disposables = new CompositeDisposable();
+        var compositeDisposable = new disposables.CompositeDisposable();
         var props = utils.getPropertyNames(object);
         for (var i = 0; i < props.length; i ++) {
             let prop = props[i];
@@ -391,13 +390,13 @@ export default class Router {
                         eventName = eventName.substring(0, observationStageSplitIndex);
                     }
                 }
-                disposables.add(this.getEventObservable(modelId, eventName, stage).observe((e, c, m) => {
+                compositeDisposable.add(this.getEventObservable(modelId, eventName, stage).observe((e, c, m) => {
                     this._dispatchLoopDiagnostic.dispatchingViaConvention(prop);
                     object[prop](e, c, m);
                 }));
             }
         }
-        return disposables;
+        return compositeDisposable;
     }
     _throwIfHalted() {
         if (this._state.currentStatus === Status.Halted) {

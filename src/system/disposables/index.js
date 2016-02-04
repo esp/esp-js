@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-import CompositeDisposable from './CompositeDisposable';
-import DictionaryDisposable from './DictionaryDisposable';
-import DisposableWrapper from './DisposableWrapper';
-export default { CompositeDisposable, DictionaryDisposable, DisposableWrapper };
+export { CompositeDisposable as CompositeDisposable } from './CompositeDisposable';
+export { DictionaryDisposable as DictionaryDisposable } from './DictionaryDisposable';
+export { DisposableWrapper as DisposableWrapper } from './DisposableWrapper';

@@ -18,7 +18,7 @@
 
 import { Guard } from '../system';
 
-class Observer {
+export class Observer {
     constructor(onNext, onCompleted) {
         Guard.isDefined(onNext, 'onObserve Required');
         this._hasCompleted = false;
@@ -41,4 +41,3 @@ class Observer {
         }
     }
 }
-export default Observer;

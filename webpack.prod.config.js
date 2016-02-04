@@ -28,6 +28,11 @@ module.exports = {
         path: './dist/',
         filename: 'esp.js'
     },
+    resolve: {
+        alias: {
+            system: __dirname + '/src/system',
+        }
+    },
     devtool: 'source-map',
     debug:false,
     module: {

@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import system from '../../../src/system';
+import * as system from '../../../src/system';
 
 describe('DictionaryDisposable', () => {
     var disposables;

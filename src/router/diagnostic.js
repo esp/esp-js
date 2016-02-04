@@ -1,8 +1,8 @@
-import { logger } from '../system';
+import { logging } from '../system';
 
-var _log = logger.create('DispatchLoopDiagnostic');
+var _log = logging.Logger.create('DispatchLoopDiagnostic');
 
-class DispatchLoopDiagnosticNoop {
+export class DispatchLoopDiagnosticNoop {
     getSummary() {
         return 'Enable router.enableDiagnostics() to enable diagnostics';
     }
@@ -48,7 +48,7 @@ class DispatchLoopDiagnosticNoop {
     }
 }
 
-class DispatchLoopDiagnostic {
+export class DispatchLoopDiagnostic {
     constructor() {
         this._currentDepth = -1;
         this._steps = [];
@@ -156,5 +156,3 @@ class DispatchLoopDiagnostic {
         return spaces;
     }
 }
-
-export default { DispatchLoopDiagnosticNoop, DispatchLoopDiagnostic };

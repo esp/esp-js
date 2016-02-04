@@ -17,9 +17,9 @@
  // notice_end
 
 import { utils } from '../system';
-import Observable from './Observable';
+import { Observable } from './Observable';
 
-class Subject extends Observable  {
+export class Subject extends Observable  {
     constructor(cacheLastValue = false) {
         super(undefined);
         this._cacheLastValue = cacheLastValue;
@@ -70,4 +70,3 @@ function observe(observer) {
         }
     };
 }
-export default Subject;

@@ -16,10 +16,10 @@
  */
 // notice_end
 
-import Router from './Router';
+import { Router } from './Router';
 import { Guard } from '../system';
 
-export default class SingleModelRouter {
+export class SingleModelRouter {
     constructor() {
         this._modelSet = false;
     }

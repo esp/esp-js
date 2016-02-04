@@ -16,9 +16,10 @@
  */
  // notice_end
 
-import esp from '../../src/index';
+import { ModelBase } from '../../src/model/ModelBase';
+import { ModelRootBase } from '../../src/model/ModelRootBase';
 
-class NumericalInput extends esp.model.ModelBase {
+class NumericalInput extends ModelBase {
     constructor() {
         super();
         this._notional = 0;
@@ -32,7 +33,7 @@ class NumericalInput extends esp.model.ModelBase {
     }
 }
 
-class Leg extends esp.model.ModelBase {
+class Leg extends ModelBase {
     constructor(number) {
         super();
         this._number = number;
@@ -54,7 +55,7 @@ class Leg extends esp.model.ModelBase {
     }
 }
 
-class Tile extends esp.model.ModelRootBase {
+class Tile extends ModelRootBase {
     constructor() {
         super();
         this._leg1 = new Leg(1);

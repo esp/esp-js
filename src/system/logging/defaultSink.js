@@ -14,23 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-/**
- * A base class for model entities.
- *
- * You don't need to derive from this to use the router, provided as a convenience
- */
-export class ModelBase {
-    constructor() {
-        this._checkIsLocked = () => true;
-    }
-    ensureLocked() {
-        if(this._checkIsLocked()) {
-            throw new Error("Model is locked, can't edit");
-        }
-    }
-    get isLocked() {
-        return this._checkIsLocked();
-    }
-}
+export function sink(logEvent) {
+    console.log('[' + logEvent.logger + '] [' + logEvent.level + ']: ' + logEvent.message);
+};

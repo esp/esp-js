@@ -16,10 +16,10 @@
  */
  // notice_end
 
-import Guard from '../Guard';
-import DisposableWrapper from './DisposableWrapper';
+import { Guard } from '../Guard';
+import { DisposableWrapper } from './DisposableWrapper';
 
-export default class CompositeDisposable {
+export class CompositeDisposable {
     constructor() {
         this._disposables = [];
         this._isDisposed = false;

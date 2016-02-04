@@ -14,12 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-import ObservationStage from './router/ObservationStage';
-import Router from './router/Router';
-import SingleModelRouter from './router/SingleModelRouter';
-import model from './model';
-import observeEvent from './decorators/observeEvent';
+import * as model from './model';
+import { ObservationStage as ObservationStage } from './router/ObservationStage';
+import { Router as Router } from './router/Router';
+import { SingleModelRouter as SingleModelRouter } from './router/SingleModelRouter';
+import { observeEvent as observeEvent } from './decorators/observeEvent';
+import { logging as logging } from './system';
 
-export default { ObservationStage, Router, SingleModelRouter, model, observeEvent };
+export { ObservationStage };
+export { Router };
+export { SingleModelRouter };
+export { model };
+export { observeEvent };
+export { logging };
+
+export default {
+    ObservationStage,
+    Router,
+    SingleModelRouter,
+    model,
+    observeEvent,
+    logging
+}

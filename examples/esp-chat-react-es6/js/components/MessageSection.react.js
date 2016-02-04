@@ -28,7 +28,7 @@ export default class MessageSection extends React.Component {
         if (this.state === null) {
             return null;
         }
-        var ul = this.refs.messageList.getDOMNode();
+        var ul = this.refs.messageList;
         ul.scrollTop = ul.scrollHeight;
     }
     render() {

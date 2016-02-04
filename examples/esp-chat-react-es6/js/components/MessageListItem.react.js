@@ -2,10 +2,6 @@ import React from 'react';
 import Message from '../model/Message';
 
 class MessageListItem extends React.Component {
-    // ES7 or babel with the playground flag
-    //static propTypes = {
-    //    model: React.PropTypes.instanceOf(Message)
-    //}
     constructor() {
         super();
     }

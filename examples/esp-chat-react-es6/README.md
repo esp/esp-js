@@ -43,8 +43,8 @@ To build the project, first run this command:
 
 `npm start`
 
-This will perform an initial build and bundle using webpack and babel.
+This will perform an initial build and bundle using webpack and babel, it's then start webpacks dev server.
 Webpack has babel and JSX support built in so the final bundle is ready for consumption via a script tag.
 
-After running the build, you can open `index.html` in your browser to run the app.
+Browser to http://localhost:8080/webpack-dev-server to view the app.
 

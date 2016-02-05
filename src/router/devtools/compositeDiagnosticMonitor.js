@@ -40,9 +40,9 @@ export default class CompositeDiagnosticMonitor extends DisposableBase {
         this._currentLoggingDiagnosticMonitor.addModel(modelId);
         this._devToolsDiagnostic.addModel(modelId);
     }
-    publishEvent(modelId, eventType) {
+    publishEvent(modelId, eventType, event) {
         this._currentLoggingDiagnosticMonitor.publishEvent(modelId, eventType);
-        this._devToolsDiagnostic.publishEvent(modelId, eventType);
+        this._devToolsDiagnostic.publishEvent(modelId, eventType, event);
     }
     broadcastEvent(eventType) {
         this._currentLoggingDiagnosticMonitor.broadcastEvent(eventType);

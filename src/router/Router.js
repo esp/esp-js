@@ -83,7 +83,7 @@ export default class Router extends DisposableBase {
         if (this._state.currentStatus === Status.EventExecution) {
             throw new Error('You can not publish further events when performing an event execution. modelId1: [' + modelId + '], eventType:[' + eventType + ']');
         }
-        this._diagnosticMonitor.publishEvent(modelId, eventType);
+        this._diagnosticMonitor.publishEvent(modelId, eventType, event);
         this._tryEnqueueEvent(modelId, eventType, event);
        // this._purgeEventQueues();
     }

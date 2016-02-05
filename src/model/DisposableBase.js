@@ -16,11 +16,11 @@
  */
  // notice_end
 
-import system from '../system';
+import { disposables } from '../system';
 
-class DisposableBase {
+export default class DisposableBase {
     constructor() {
-        this._disposables = new system.disposables.CompositeDisposable();
+        this._disposables = new disposables.CompositeDisposable();
     }
     get isDisposed() {
         return this._disposables.isDisposed;
@@ -32,4 +32,3 @@ class DisposableBase {
         this._disposables.dispose();
     }
 }
-export default DisposableBase;

@@ -16,8 +16,9 @@
  */
  // notice_end
 
-import events from './events';
-import DisposableBase from './DisposableBase';
-import ModelBase from './ModelBase';
-import ModelRootBase from './ModelRootBase';
-export default { events, DisposableBase, ModelBase, ModelRootBase };
+import * as events from './events';
+
+export { events };
+export { default as DisposableBase } from './DisposableBase';
+export { default as ModelBase } from './ModelBase';
+export { default as ModelRootBase } from './ModelRootBase';

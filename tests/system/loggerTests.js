@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import * as Logger from '../../src/system/logger';
+import * as system from '../../src/system';
 
 describe('Logger', () => {
     var _lastLevel;
@@ -28,13 +28,13 @@ describe('Logger', () => {
         _lastLevel = undefined;
         _lasMessage = undefined;
         _lastLoggerName = undefined;
-        Logger.setSink(logEvent => {
+        system.logging.Logger.setSink(logEvent => {
             _lastLevel = logEvent.level;
             _lasMessage = logEvent.message;
             _lastLoggerName = logEvent.logger;
         });
-        _log = Logger.create("TestLogger");
-        Logger.setLevel(Logger.levels.verbose);
+        _log = system.logging.Logger.create("TestLogger");
+        system.logging.Logger.setLevel(system.logging.level.verbose);
     });
 
     it('should log out the level and message', () => {

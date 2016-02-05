@@ -1,6 +1,6 @@
 import ObservationStage from '../router/ObservationStage';
 
-var observeEvent = function(eventName, observationStage) {
+export default function (eventName, observationStage) {
     return function (target, name, descriptor) {
         if(!target._espDecoratorMetadata) {
             target._espDecoratorMetadata = {
@@ -15,4 +15,3 @@ var observeEvent = function(eventName, observationStage) {
         return descriptor;
     };
 };
-export default observeEvent;

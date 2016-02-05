@@ -19,7 +19,7 @@
 import { Guard } from '../system';
 import ObservationStage from './ObservationStage';
 
-class EventContext {
+export default class EventContext {
     constructor(modelId, eventType) {
         this._modelId = modelId;
         this._eventType = eventType;
@@ -51,5 +51,3 @@ class EventContext {
         }
     }
 }
-
-export default EventContext;

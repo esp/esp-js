@@ -1,5 +1,5 @@
 import React from 'react';
-import cx from 'react/lib/cx';
+import classnames from 'classnames';
 import Thread from '../model/Thread';
 
 class ThreadListItem extends React.Component {
@@ -20,7 +20,7 @@ class ThreadListItem extends React.Component {
         var thread = this.props.model;
         return (
             <div
-                className={cx({
+                className={classnames({
                 'thread-list-item': true,
                 'active': thread.isActive
                 })}

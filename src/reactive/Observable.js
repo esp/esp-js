@@ -19,7 +19,7 @@
 import { Guard } from '../system';
 import Observer from './Observer';
 
-class Observable {
+export default class Observable {
     static create(onObserve) {
         Guard.lengthIs(arguments, 1, "Incorrect argument count on Observable, expect 1 onObserve function");
         var observe =  observer => {
@@ -44,5 +44,3 @@ class Observable {
         return this._observe(observer);
     }
 }
-
-export default Observable;

@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-var testsContext = require.context('.', true, /Tests.js$/);
-testsContext.keys().forEach(testsContext);
+export { default as DevToolsDiagnosticMonitor } from './devToolsDiagnosticMonitor';
+export { default as LoggingDiagnosticMonitor } from './loggingDiagnosticMonitor';
+export { default as NoopDiagnosticMonitor } from './noopDiagnosticMonitor';
+export { default as CompositeDiagnosticMonitor } from './compositeDiagnosticMonitor';

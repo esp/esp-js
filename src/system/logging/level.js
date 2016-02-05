@@ -14,7 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-var testsContext = require.context('.', true, /Tests.js$/);
-testsContext.keys().forEach(testsContext);
+export default {
+    verbose:0,
+    debug:1,
+    info:2,
+    warn:3,
+    error:4
+};

@@ -23,7 +23,7 @@ import ModelBase from './ModelBase';
  *
  * You don't need to derive from this to use the router, provided as a convenience
  */
-class ModelRootBase extends ModelBase {
+export default class ModelRootBase extends ModelBase {
     constructor() {
         super();
         this._isLocked = true;
@@ -53,5 +53,3 @@ class ModelRootBase extends ModelBase {
         }
     }
 }
-
-export default ModelRootBase;

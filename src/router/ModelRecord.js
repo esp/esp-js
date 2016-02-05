@@ -18,7 +18,7 @@
 
 import { Guard } from '../system';
 
-class ModelRecord {
+export default class ModelRecord {
     // parentModelId is undefined if it's the root
     constructor(modelId, model, options) {
         this._modelId = modelId;
@@ -82,5 +82,3 @@ class ModelRecord {
         };
     }
 }
-
-export default ModelRecord;

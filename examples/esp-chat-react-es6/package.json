@@ -11,8 +11,8 @@
   "dependencies": {
     "babel-plugin-transform-runtime": "^6.4.3",
     "classnames": "^2.2.3",
-    "esp-js": "^0.5.6",
-    "esp-js-devtools": "^1.0.0",
+    "esp-js": "^0.5.13",
+    "esp-js-devtools": "^0.0.6",
     "react": "^0.14.7",
     "react-dom": "^0.14.7"
   },

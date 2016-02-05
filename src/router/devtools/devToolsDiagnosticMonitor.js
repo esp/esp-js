@@ -24,34 +24,34 @@ import { DisposableBase } from '../../model';
 export default class DevToolsDiagnosticMonitor extends DisposableBase {
     constructor() {
         super();
-        this._diagnosticEnabled = this._evualateDiagnosticEnabled();
-        this._tryRegisterWithDevtools();
+        this._isRegisteredWithDevtools = false;
+        this._ensureDiagnosticEnabled();
     }
     getSummary() {
         return this._steps.join('\r\n');
     }
     addModel(modelId){
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.addModel(modelId);
         }
     }
     publishEvent(modelId, eventType) {
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.publishEvent(modelId, eventType);
         }
     }
     broadcastEvent(eventType) {
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.broadcastEvent(eventType);
         }
     }
     executingEvent(eventType) {
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.executingEvent(eventType);
         }
     }
     runAction(modelId) {
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.runAction(modelId);
         }
     }
@@ -82,28 +82,31 @@ export default class DevToolsDiagnosticMonitor extends DisposableBase {
     endingModelEventLoop() {
     }
     dispatchingModelUpdates(modelId) {
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.dispatchingModelUpdates(modelId);
         }
     }
     dispatchLoopEnd() {
     }
     halted(modelIds, err) {
-        if(this._diagnosticEnabled) {
+        if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.halted(modelIds, err);
         }
     }
-    _evualateDiagnosticEnabled() {
-        return this._diagnosticEnabled = typeof window !== 'undefined' && typeof window.__espAnalyticsMonitor !== 'undefined';
-    }
-    _tryRegisterWithDevtools() {
-        if( this._evualateDiagnosticEnabled()) {
+    /**
+     * Checks for a global hook and if found registers this monitor with that hook
+     */
+    _ensureDiagnosticEnabled() {
+        var isDiagnosticEnabled = typeof window !== 'undefined' && typeof window.__espAnalyticsMonitor !== 'undefined';
+        if(isDiagnosticEnabled && !this._isRegisteredWithDevtools) {
+            this._isRegisteredWithDevtools = true;
             window.__espAnalyticsMonitor.registerMonitor(this);
             this.addDisposable(() => {
-                if(this._evualateDiagnosticEnabled()) {
+                if(this._ensureDiagnosticEnabled()) {
                     window.__espAnalyticsMonitor.unregisterMonitor(this);
                 }
             });
         }
+        return isDiagnosticEnabled;
     }
 }

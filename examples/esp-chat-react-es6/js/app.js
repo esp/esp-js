@@ -9,6 +9,7 @@ import services from './services';
 
 // export for http://fb.me/react-devtools
 window.React = React;
+espDevTools.registerDevTools();
 
 var router = esp.SingleModelRouter.create();
 var messageService = new services.MessageService();
@@ -16,7 +17,7 @@ var chatAppModel = new model.ChatApp(messageService, router);
 router.setModel(chatAppModel);
 chatAppModel.initialise();
 
-espDevTools.registerDevTools();
+
 
 ReactDOM.render(
     <components.ChatApp router={router} />,

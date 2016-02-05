@@ -46,5 +46,5 @@ To build the project, first run this command:
 This will perform an initial build and bundle using webpack and babel, it's then start webpacks dev server.
 Webpack has babel and JSX support built in so the final bundle is ready for consumption via a script tag.
 
-Browser to http://localhost:8080/webpack-dev-server to view the app.
+Browser to [http://localhost:4000](http://localhost:4000) to view the app.
 

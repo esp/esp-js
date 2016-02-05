@@ -161,5 +161,41 @@ describe('Router', () => {
                 }).toThrow(new Error("Event router halted due to previous error [Error: Boom:Pre]"));
             });
         });
+
+        describe('when disposed', () => {
+            beforeEach(()=> {
+                _router.dispose();
+            });
+
+            it('should throw on publish', () => {
+                expect(() => {
+                    _router.publishEvent('modelId1', 'Event1', 'payload');
+                }).toThrow(new Error("ESP router has been disposed"));
+            });
+
+            it('should throw on getEventObservable()', () => {
+                expect(() => {
+                    _router.getModelObservable('modelId1').observe(() => {});
+                }).toThrow(new Error("ESP router has been disposed"));
+            });
+
+            it('should throw on executeEvent()', () => {
+                expect(() => {
+                    _router.executeEvent('myEventType', {});
+                }).toThrow(new Error("ESP router has been disposed"));
+            });
+
+            it('should throw on addModel()', () => {
+                expect(() => {
+                    _router.addModel('modelId2', {});
+                }).toThrow(new Error("ESP router has been disposed"));
+            });
+
+            it('should throw on getModelObservable()', () => {
+                expect(() => {
+                    _router.getModelObservable('modelId1').observe(() => {});
+                }).toThrow(new Error("ESP router has been disposed"));
+            });
+        });
     });
 });

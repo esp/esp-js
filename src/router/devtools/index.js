@@ -16,13 +16,7 @@
  */
 // notice_end
 
-import * as devtools from './devtools';
-
-export { devtools };
-export { default as EventContext } from './EventContext';
-export { default as ModelRecord } from './ModelRecord';
-export { default as ObservationStage } from './ObservationStage';
-export { default as Router } from './Router';
-export { default as SingleModelRouter } from './SingleModelRouter';
-export { default as State } from './State';
-export { default as Status } from './Status';
+export { default as DevToolsDiagnosticMonitor } from './devToolsDiagnosticMonitor';
+export { default as LoggingDiagnosticMonitor } from './loggingDiagnosticMonitor';
+export { default as NoopDiagnosticMonitor } from './noopDiagnosticMonitor';
+export { default as CompositeDiagnosticMonitor } from './compositeDiagnosticMonitor';

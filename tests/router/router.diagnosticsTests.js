@@ -45,7 +45,7 @@ describe('Router', () => {
             _router.publishEvent('modelId1', 'startEvent', {});
             _router.disableDiagnostics();
             _router.publishEvent('modelId1', 'startEvent', {});
-            expect(_router.getDispatchLoopDiagnostics()).toEqual('Enable router.enableDiagnostics() to enable diagnostics');
+            expect(_router.getDispatchLoopDiagnostics()).toEqual('Call router.enableDiagnostics() to enable diagnostics. If in a browser use esp-js-devtools.');
         });
     });
 });

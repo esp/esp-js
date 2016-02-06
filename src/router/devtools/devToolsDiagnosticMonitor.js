@@ -97,12 +97,13 @@ export default class DevToolsDiagnosticMonitor extends DisposableBase {
      * Checks for a global hook and if found registers this monitor with that hook
      */
     _ensureDiagnosticEnabled() {
-        var isDiagnosticEnabled = typeof window !== 'undefined' && typeof window.__espAnalyticsMonitor !== 'undefined';
+        let checkIsEnabled = () => typeof window !== 'undefined' && (typeof window.__espAnalyticsMonitor !== 'undefined' && window.__espAnalyticsMonitor !== null);
+        let isDiagnosticEnabled = checkIsEnabled();
         if(isDiagnosticEnabled && !this._isRegisteredWithDevtools) {
             this._isRegisteredWithDevtools = true;
             window.__espAnalyticsMonitor.registerMonitor(this);
             this.addDisposable(() => {
-                if(this._ensureDiagnosticEnabled()) {
+                if(checkIsEnabled()) {
                     window.__espAnalyticsMonitor.unregisterMonitor(this);
                 }
             });

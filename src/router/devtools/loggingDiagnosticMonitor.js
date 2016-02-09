@@ -111,7 +111,7 @@ export default class LoggingDiagnosticMonitor {
         this._pushStep(`[DispatchLoopEnd]`);
     }
     halted(modelIds, err) {
-        this._pushStep(`[Halted]`);
+        this._pushStep(`[Halted] ${modelIds}`);
         this._pushStep(err);
         _log.error('\r\n' + this.getSummary());
     }

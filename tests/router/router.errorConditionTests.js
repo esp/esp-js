@@ -162,6 +162,22 @@ describe('Router', () => {
             });
         });
 
+        describe('runAction errors should halt the router', () => {
+            beforeEach(()=> {
+                expect(() => {
+                    _router.runAction('modelId1', () => {
+                        throw new Error("RunActionError");
+                    });
+                }).toThrow(new Error("RunActionError"));
+            });
+
+            it('should throw on publish', () => {
+                expect(() => {
+                    _router.publishEvent('modelId1', 'Event1', 'payload');
+                }).toThrow(new Error("Event router halted due to previous error [Error: RunActionError]"));
+            });
+        });
+
         describe('when disposed', () => {
             beforeEach(()=> {
                 _router.dispose();

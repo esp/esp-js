@@ -85,7 +85,6 @@ export default class Router extends DisposableBase {
         }
         this._diagnosticMonitor.publishEvent(modelId, eventType, event);
         this._tryEnqueueEvent(modelId, eventType, event);
-       // this._purgeEventQueues();
     }
     broadcastEvent(eventType, event) {
         Guard.isString(eventType, 'The eventType argument should be a string');
@@ -96,7 +95,11 @@ export default class Router extends DisposableBase {
                 this._tryEnqueueEvent(modelId, eventType, event);
             }
         }
-        this._purgeEventQueues();
+        try {
+            this._purgeEventQueues();
+        } catch (err) {
+            this._halt(err);
+        }
     }
     executeEvent(eventType, event) {
         this._throwIfHaltedOrDisposed();
@@ -120,7 +123,11 @@ export default class Router extends DisposableBase {
             throw new Error('Can not run action as model with id [' + modelId + '] not registered');
         } else {
             modelRecord.eventQueue.push({eventType: '__runAction', action: action});
-            this._purgeEventQueues();
+            try {
+                this._purgeEventQueues();
+            } catch (err) {
+                this._halt(err);
+            }
         }
     }
     getEventObservable(modelId, eventType, stage) {

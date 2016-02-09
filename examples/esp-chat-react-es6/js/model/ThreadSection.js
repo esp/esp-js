@@ -23,6 +23,9 @@ export default class ThreadSection extends esp.model.DisposableBase {
     _observeMessagesReceived(event, context, model) {
         for (var i = 0; i < event.rawMessages.length; i++) {
             var rawMessage = event.rawMessages[i];
+            if(rawMessage.text === 'throw error') {
+                throw new Error('fake error thrown');
+            }
             var thread = this.threadsById[rawMessage.threadId];
             var messageTime = new Date(rawMessage.timestamp);
             if (thread === undefined) {

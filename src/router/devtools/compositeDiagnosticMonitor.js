@@ -117,7 +117,7 @@ export default class CompositeDiagnosticMonitor extends DisposableBase {
         this._devToolsDiagnostic.dispatchLoopEnd();
     }
     halted(modelIds, err) {
-        this._currentLoggingDiagnosticMonitor.halted(modelIds);
-        this._devToolsDiagnostic.halted(modelIds);
+        this._currentLoggingDiagnosticMonitor.halted(modelIds, err);
+        this._devToolsDiagnostic.halted(modelIds, err);
     }
 }

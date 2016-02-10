@@ -16,16 +16,12 @@
  */
  // notice_end
 
-import EventContext from './EventContext';
-import ObservationStage from './ObservationStage';
-import ModelRecord from './ModelRecord';
-import State from './State.js';
-import Status from './Status.js';
+import { Const, Status, State, ModelRecord, ObservationStage, EventContext, SingleModelRouter } from './';
 import { CompositeDiagnosticMonitor } from './devtools';
-import { default as SingleModelRouter } from './SingleModelRouter.js';
 import { events, DisposableBase } from '../model';
 import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, disposables } from '../system';
+import { DecoratorTypes } from '../decorators';
 
 var _log = logging.Logger.create('Router');
 
@@ -178,7 +174,7 @@ export default class Router extends DisposableBase {
     }
     _tryEnqueueEvent(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
-        if(eventType === 'modelChangedEvent' && event.modelId === modelId)
+        if(eventType === Const.modelChangedEvent  && event.modelId === modelId)
             return; 
         let modelRecord = this._models[modelId];
         if (typeof modelRecord === 'undefined') {
@@ -275,7 +271,7 @@ export default class Router extends DisposableBase {
                             }
                         }
                     }
-                    this.broadcastEvent('modelChangedEvent', new events.ModelChangedEvent(modelRecord.modelId, modelRecord.model, eventRecord.eventType));
+                    this.broadcastEvent(Const.modelChangedEvent, new events.ModelChangedEvent(modelRecord.modelId, modelRecord.model, eventRecord.eventType));
                     modelRecord = this._getNextModelRecordWithQueuedEvents();
                     hasEvents = typeof modelRecord !== 'undefined';
                     this._diagnosticMonitor.endingModelEventLoop();

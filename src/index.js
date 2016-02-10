@@ -19,7 +19,7 @@
 import * as model from './model';
 import { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
 
-import { default as observeEvent } from './decorators/observeEvent';
+import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 import { logging as logging } from './system';
 
 // we export both a default object and individual items, this allows for both the following cases:
@@ -33,7 +33,7 @@ import { logging as logging } from './system';
 
 export { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
 export { model };
-export { observeEvent };
+export { observeEvent, observeModelChangedEvent };
 export { logging };
 
 export default {
@@ -42,6 +42,7 @@ export default {
     SingleModelRouter,
     model,
     observeEvent,
+    observeModelChangedEvent,
     logging,
     EventContext
 }

@@ -19,6 +19,7 @@
 import { Const, Status, State, ModelRecord, ObservationStage, EventContext, SingleModelRouter } from './';
 import { CompositeDiagnosticMonitor } from './devtools';
 import { events, DisposableBase } from '../model';
+import { ModelChangedEvent } from '../model/events';
 import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, disposables } from '../system';
 import { DecoratorTypes } from '../decorators';
@@ -139,7 +140,7 @@ export default class Router extends DisposableBase {
             } else {
                 stage = ObservationStage.normal;
             }
-            let subjects = this._getModelsEventSubjects(modelId, eventType);
+            let subjects = this._getOrCreateModelsEventSubjects(modelId, eventType);
             let subject = subjects[stage];
             return subject.observe(o);
         });
@@ -183,10 +184,15 @@ export default class Router extends DisposableBase {
             try {
                 let shouldEnqueue = false;
                 let modelEventSubject = this._modelEventSubjects[modelId];
-                // only enqueue if the model has observers for the given event type
+                // only enqueue if we have a model
                 if (typeof modelEventSubject !== 'undefined') {
-                    if(modelEventSubject.hasOwnProperty(eventType)) {
-                        shouldEnqueue = true;
+                    let eventSubjects = modelEventSubject[eventType];
+                    // and that model has event observers for the event in question
+                    if(typeof eventSubjects !== 'undefined') {
+                        // and finally, if any custom predicates registered with the event allows enqueuing
+                        if(eventSubjects.shouldEnqueue(modelId, eventType, event)) {
+                            shouldEnqueue = true;
+                        }
                     }
                 }
                 if(shouldEnqueue) {
@@ -201,22 +207,64 @@ export default class Router extends DisposableBase {
             }
         }
     }
-    _getModelsEventSubjects(modelId, eventType) {
+    _tryGetModelsEventSubjects(modelId, eventType) {
+        let eventSubjects = null;
+        let modelEventSubject = this._modelEventSubjects[modelId];
+        if (typeof modelEventSubject !== 'undefined') {
+            eventSubjects = modelEventSubject[eventType];
+        }
+        return eventSubjects;
+    }
+    _getOrCreateModelsEventSubjects(modelId, eventType) {
+        let { shouldEnqueuePredicate, underlyingEventType } = this._destructEventType(eventType);
         let modelEventSubject = this._modelEventSubjects[modelId];
         if (typeof modelEventSubject === 'undefined') {
             modelEventSubject = {};
             this._modelEventSubjects[modelId] = modelEventSubject;
         }
-        let subjects = modelEventSubject[eventType];
+        let subjects = modelEventSubject[underlyingEventType];
         if (typeof subjects === 'undefined') {
             subjects = {
                 preview: new Subject(),
                 normal: new Subject(),
-                committed: new Subject()
+                committed: new Subject(),
+                shouldEnqueue : shouldEnqueuePredicate
             };
-            modelEventSubject[eventType] = subjects;
+            modelEventSubject[underlyingEventType] = subjects;
         }
         return subjects;
+    }
+    /**
+     * inspects the given eventType to see if there is additional metadata that should be used by the router
+     * when it's dispatching the event in question
+     */
+    _destructEventType(eventType) {
+        let shouldEnqueuePredicate;
+        let underlyingEventType;
+        if(utils.isString(eventType)) {
+            if(eventType === Const.modelChangedEvent) {
+                throw new Error("You can not observe a modelChangedEvent using only the eventType string. You must pass an object identifying the modelId to monitor. E.g. replace the eventType param with: { eventType: 'modelChangedEvent', modelId: 'yourRelatedModelId' }");
+            }
+            // if the proved eventType is a simple string we simply use the string as the underlyingEventType
+            shouldEnqueuePredicate = () => true;
+            underlyingEventType = eventType;
+        } else if (eventType.hasOwnProperty('eventType') && eventType.hasOwnProperty('modelId') && eventType.eventType == Const.modelChangedEvent) {
+            // if the event type is something else
+            underlyingEventType = eventType.eventType;
+            shouldEnqueuePredicate = (modelId, eventType1, event) => {
+                if(eventType1 === Const.modelChangedEvent) {
+                    return event.modelId === eventType.modelId;
+                } else {
+                    return true;
+                }
+            };
+        } else {
+            throw new Error(`Unsupported eventType passed to the router. \'eventType\' must be a string. The only exception is when observing the built in ${Const.modelChangedEvent}, in which case it must be an object of this shape: { eventType: 'modelChangedEvent', modelId: 'yourRelatedModelId' }`);
+        }
+        return {
+            shouldEnqueuePredicate: shouldEnqueuePredicate,
+            underlyingEventType: underlyingEventType
+        };
     }
     _getModelUpdateSubjects(modelId) {
         let updateSubject = this._modelUpdateSubjects[modelId];
@@ -271,7 +319,7 @@ export default class Router extends DisposableBase {
                             }
                         }
                     }
-                    this.broadcastEvent(Const.modelChangedEvent, new events.ModelChangedEvent(modelRecord.modelId, modelRecord.model, eventRecord.eventType));
+                    this.broadcastEvent(Const.modelChangedEvent, new ModelChangedEvent(modelRecord.modelId, modelRecord.model));
                     modelRecord = this._getNextModelRecordWithQueuedEvents();
                     hasEvents = typeof modelRecord !== 'undefined';
                     this._diagnosticMonitor.endingModelEventLoop();
@@ -303,22 +351,25 @@ export default class Router extends DisposableBase {
             modelId,
             eventType
         );
-        let eventSubjects = this._getModelsEventSubjects(modelId, eventType);
-        let wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.preview, ObservationStage.preview);
-        if (eventContext.isCommitted) {
-            throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
-        }
-        if (!eventContext.isCanceled) {
-            eventContext._currentStage = ObservationStage.normal;
-            wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.normal, ObservationStage.normal);
-            if (eventContext.isCanceled) {
-                throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
+        let wasDispatched = false;
+        let eventSubjects =  this._tryGetModelsEventSubjects(modelId, eventType);
+        if (eventSubjects !== null) {
+            wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.preview, ObservationStage.preview);
+            if (eventContext.isCommitted) {
+                throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
             }
-            if (wasDispatched && eventContext.isCommitted) {
-                eventContext._currentStage = ObservationStage.committed;
-                dispatchEvent(model, event, eventContext, eventSubjects.committed, ObservationStage.committed);
+            if (!eventContext.isCanceled) {
+                eventContext._currentStage = ObservationStage.normal;
+                wasDispatched = dispatchEvent(model, event, eventContext, eventSubjects.normal, ObservationStage.normal);
                 if (eventContext.isCanceled) {
-                    throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
+                    throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
+                }
+                if (wasDispatched && eventContext.isCommitted) {
+                    eventContext._currentStage = ObservationStage.committed;
+                    dispatchEvent(model, event, eventContext, eventSubjects.committed, ObservationStage.committed);
+                    if (eventContext.isCanceled) {
+                        throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelId + ']');
+                    }
                 }
             }
         }

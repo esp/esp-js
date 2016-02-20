@@ -42,7 +42,7 @@ module.exports = {
                 test: /\.jsx?$/,
                 query: {
                     presets: ['es2015', 'stage-0'],
-                    plugins: ['transform-runtime', 'transform-decorators-legacy']
+                    plugins: ['transform-runtime', 'transform-decorators-legacy', 'transform-flow-strip-types']
                 }
             }
         ]

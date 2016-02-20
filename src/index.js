@@ -19,8 +19,11 @@
 import * as model from './model';
 import { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
 
-import { default as observeEvent } from './decorators/observeEvent';
+import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 import { logging as logging } from './system';
+
+import { CompositeDisposable, DictionaryDisposable } from './system/disposables';
+import { Observable } from './reactive';
 
 // we export both a default object and individual items, this allows for both the following cases:
 // 1) import the entire namespace
@@ -33,8 +36,11 @@ import { logging as logging } from './system';
 
 export { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
 export { model };
-export { observeEvent };
+export { observeEvent, observeModelChangedEvent };
 export { logging };
+export { CompositeDisposable };
+export { DictionaryDisposable };
+export { Observable };
 
 export default {
     ObservationStage,
@@ -42,6 +48,10 @@ export default {
     SingleModelRouter,
     model,
     observeEvent,
+    observeModelChangedEvent,
     logging,
-    EventContext
+    EventContext,
+    CompositeDisposable,
+    DictionaryDisposable,
+    Observable
 }

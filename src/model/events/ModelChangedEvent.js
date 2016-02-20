@@ -17,18 +17,14 @@
  // notice_end
 
 export default class ModelChangedEvent {
-    constructor(modelId, model, eventType) {
+    constructor(modelId, model) {
         this._modelId = modelId;
         this._model = model;
-        this._eventType = eventType;
     }
     get modelId() {
         return this._modelId;
     }
     get model() {
         return this._model;
-    }
-    get eventType() {
-        return this._eventType;
     }
 }

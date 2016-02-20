@@ -16,4 +16,4 @@
  */
  // notice_end
 
-export * from './src/index'
+export { observeEvent, observeModelChangedEvent, DecoratorTypes } from './observeEvent';

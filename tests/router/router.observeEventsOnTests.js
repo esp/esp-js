@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import esp from '../../src/index';
+import esp from '../../src';
 
 describe('Router', () => {
 

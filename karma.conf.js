@@ -31,7 +31,7 @@ module.exports = function (config) {
         },
         webpack: {
             watch: false,
-            devtool: 'source-map',
+            devtool: '#inline-source-map',
             module: {
                 loaders: [
                     {
@@ -45,7 +45,7 @@ module.exports = function (config) {
                         test: /\.jsx?$/,
                         query: {
                             presets: ['es2015', 'stage-0'],
-                            plugins: ['transform-runtime', 'transform-decorators-legacy']
+                            plugins: ['transform-runtime', 'transform-decorators-legacy', 'transform-flow-strip-types']
                         }
                     }
                 ]
@@ -69,7 +69,7 @@ module.exports = function (config) {
                 base: 'Chrome',
                 flags: ['--no-sandbox']
             }
-        },
+        }
     };
     // http://stackoverflow.com/questions/19255976/how-to-make-travis-execute-angular-tests-on-chrome-please-set-env-variable-chr
     if (process.env.TRAVIS) {

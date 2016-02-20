@@ -35,6 +35,11 @@ export default class DevToolsDiagnosticMonitor extends DisposableBase {
             window.__espAnalyticsMonitor.addModel(modelId);
         }
     }
+    removeModel(modelId){
+        if(this._ensureDiagnosticEnabled()) {
+            window.__espAnalyticsMonitor.removeModel(modelId);
+        }
+    }
     publishEvent(modelId, eventType, event) {
         if(this._ensureDiagnosticEnabled()) {
             window.__espAnalyticsMonitor.publishEvent(modelId, eventType, event);

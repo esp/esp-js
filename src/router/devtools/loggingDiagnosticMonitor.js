@@ -35,6 +35,8 @@ export default class LoggingDiagnosticMonitor {
     }
     addModel(modelId){
     }
+    removeModel(modelId){
+    }
     publishEvent(modelId, eventType) {
         this._pushStep(`[PublishEvent]:${modelId}:${eventType}`);
     }

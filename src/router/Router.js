@@ -53,6 +53,7 @@ export default class Router extends DisposableBase {
         Guard.isString(modelId, 'The modelId argument should be a string');
         let modelRecord = this._models[modelId];
         if(modelRecord){
+            this._diagnosticMonitor.removeModel(modelId);
             modelRecord.wasRemoved = true;
             delete this._models[modelId];
             modelRecord.eventQueue.length = 0;

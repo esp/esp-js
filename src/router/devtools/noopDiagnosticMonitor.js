@@ -19,6 +19,8 @@
 export default class NoopDiagnosticMonitor {
     addModel(){
     }
+    removeModel(){
+    }
     getSummary() {
         return 'Call router.enableDiagnostics() to enable diagnostics. If in a browser use esp-js-devtools.';
     }

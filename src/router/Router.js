@@ -34,6 +34,9 @@ export default class Router extends DisposableBase {
         this._modelEventSubjects = {};
         this._haltingException = undefined;
         this._state = new State();
+
+        this._onErrorHandlers = [];
+
         this._diagnosticMonitor = new CompositeDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
     }
@@ -164,6 +167,18 @@ export default class Router extends DisposableBase {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);
         }
     }
+    addOnErrorHandler(handler) {
+        this._onErrorHandlers.push(handler);
+    }
+    removeOnErrorHandler(handler) {
+        let index = this._onErrorHandlers.indexOf(handler);
+        if(index >= 0) {
+            delete this._onErrorHandlers[index];
+        } else {
+            throw new Error('Unknown error handler.');
+        }
+    }
+
     getDispatchLoopDiagnostics () {
         return this._diagnosticMonitor.getLoggingDiagnosticSummary();
     }
@@ -294,7 +309,7 @@ export default class Router extends DisposableBase {
                         this._diagnosticMonitor.dispatchingEvents();
                         while (hasEvents) {
                             let wasDispatched = true;
-                            if(eventRecord.eventType === '__runAction') {
+                            if (eventRecord.eventType === '__runAction') {
                                 this._diagnosticMonitor.dispatchingAction(modelRecord.modelId);
                                 eventRecord.action(modelRecord.model);
                             } else {
@@ -465,11 +480,29 @@ export default class Router extends DisposableBase {
         }
     }
     _halt(err) {
+        let isInitialHaltingError = this._state.currentStatus !== Status.Halted;
+
         this._state.moveToHalted();
+
         let modelIds = Object.keys(this._models);
         this._diagnosticMonitor.halted(modelIds, err);
         _log.error('Router halted error: [{0}]', err);
         this._haltingException = err;
+
+        // We run the onErrorHandlers after the
+        // router has had time to set it's own state
+        if(isInitialHaltingError) {
+            this._onErrorHandlers.forEach(handler => {
+                try {
+                    handler(err);
+                }
+                catch(handlerError) {
+                    _log.info('Error handler errored. Ignoring and continuing, Error = ', handlerError);
+                }
+
+            })
+        }
+
         throw err;
     }
 }

@@ -38,6 +38,9 @@ export default class DictionaryDisposable {
             delete this[key];
         }
     }
+    containsKey(key) {
+        return this.hasOwnProperty(key);
+    }
     dispose() {
        // if(!this._isDisposed) {
             this._isDisposed = true;

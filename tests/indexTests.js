@@ -7,6 +7,8 @@ import {
     EventContext,
     CompositeDisposable,
     DictionaryDisposable,
+    DisposableBase,
+    ModelChangedEvent,
     Observable,
     observeEvent,
     observeModelChangedEvent,
@@ -45,6 +47,11 @@ describe('index exports', () => {
         expect(DictionaryDisposable).toBeDefined();
     });
 
+    it('should export DisposableBase', () => {
+        expect(esp.DisposableBase).toBeDefined();
+        expect(DisposableBase).toBeDefined();
+    });
+
     it('should export Observable', () => {
         expect(esp.Observable).toBeDefined();
         expect(Observable).toBeDefined();
@@ -60,13 +67,9 @@ describe('index exports', () => {
         expect(observeModelChangedEvent).toBeDefined();
     });
 
-    it('should export model', () => {
-        expect(esp.model).toBeDefined();
-        expect(esp.model.DisposableBase).toBeDefined();
-        expect(esp.model.ModelBase).toBeDefined();
-        expect(esp.model.ModelRootBase).toBeDefined();
-        expect(esp.model.events.ModelChangedEvent).toBeDefined();
-        expect(model).toBeDefined();
+    it('should export ModelChangedEvent', () => {
+        expect(esp.ModelChangedEvent).toBeDefined();
+        expect(ModelChangedEvent).toBeDefined();
     });
 
     it('should export logging', () => {

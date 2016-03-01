@@ -16,37 +16,32 @@
  */
 // notice_end
 
-import * as model from './model';
-import { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
-
-import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
-import { logging as logging } from './system';
-
-import { CompositeDisposable, DictionaryDisposable } from './system/disposables';
-import { Observable } from './reactive';
-
 // we export both a default object and individual items, this allows for both the following cases:
 // 1) import the entire namespace
-// import esp from 'esp';
+// import esp from 'esp-js';
 // let eventContext = new esp.EventContext();
 //
 // 1) import single items
-// import { EventContext } from 'esp';
+// import { EventContext } from 'esp-js';
 // let eventContext = new EventContext()
 
-export { ObservationStage, Router, SingleModelRouter, EventContext } from './router';
-export { model };
-export { observeEvent, observeModelChangedEvent };
-export { logging };
-export { CompositeDisposable };
-export { DictionaryDisposable };
-export { Observable };
+export { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
+export { CompositeDisposable, DictionaryDisposable, DisposableBase } from './system/disposables';
+export { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
+export { logging } from './system';
+export { Observable } from './reactive';
 
+import { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
+import { CompositeDisposable, DictionaryDisposable, DisposableBase } from './system/disposables';
+import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
+import { logging as logging } from './system';
+import { Observable } from './reactive';
 export default {
     ObservationStage,
     Router,
     SingleModelRouter,
-    model,
+    DisposableBase,
+    ModelChangedEvent,
     observeEvent,
     observeModelChangedEvent,
     logging,

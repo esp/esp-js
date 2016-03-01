@@ -18,10 +18,10 @@
 
 import { Const, Status, State, ModelRecord, ObservationStage, EventContext, SingleModelRouter } from './';
 import { CompositeDiagnosticMonitor } from './devtools';
-import { events, DisposableBase } from '../model';
-import { ModelChangedEvent } from '../model/events';
+import { default as ModelChangedEvent } from './ModelChangedEvent';
 import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, disposables } from '../system';
+import { DisposableBase, CompositeDisposable } from '../system/disposables';
 import { DecoratorTypes } from '../decorators';
 
 var _log = logging.Logger.create('Router');
@@ -425,7 +425,7 @@ export default class Router extends DisposableBase {
         return nextModel;
     }
     _observeEventsUsingDirectives(modelId, object){
-        var compositeDisposable = new disposables.CompositeDisposable();
+        var compositeDisposable = new CompositeDisposable();
         for (var i = 0; i < object._espDecoratorMetadata.events.length; i ++) {
             let details = object._espDecoratorMetadata.events[i];
             compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
@@ -438,7 +438,7 @@ export default class Router extends DisposableBase {
         return compositeDisposable;
     }
     _observeEventsUsingConventions(modelId, object, methodPrefix) {
-        var compositeDisposable = new disposables.CompositeDisposable();
+        var compositeDisposable = new CompositeDisposable();
         var props = utils.getPropertyNames(object);
         for (var i = 0; i < props.length; i ++) {
             let prop = props[i];

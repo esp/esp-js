@@ -43,7 +43,7 @@ cd esp-todomvc-react
 npm install
 ```
 
-Optionally run a local web server and visit [localhost:8000](http://localhost:8000/):
+Optionally run a local web server ([`ws`](https://www.npmjs.com/package/local-web-server)) and visit [localhost:8000](http://localhost:8000/):
 
 ```shell
 cd esp-todomvc-react

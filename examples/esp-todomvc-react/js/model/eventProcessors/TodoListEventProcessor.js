@@ -6,12 +6,12 @@
 	var extend = app.Utils.extend;
 
 	var TodoListEventProcessor = function (router, modelId) {
-		esp.model.DisposableBase.call(this);
+		esp.DisposableBase.call(this);
 		this.router = router;
 		this.modelId = modelId;
 	};
 
-	TodoListEventProcessor.prototype = Object.create(esp.model.DisposableBase.prototype);
+	TodoListEventProcessor.prototype = Object.create(esp.DisposableBase.prototype);
 
 	TodoListEventProcessor.prototype.start = function () {
 		this.observeInitEvent();

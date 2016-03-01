@@ -1,7 +1,7 @@
 import esp from 'esp-js';
 import Thread from './Thread'
 
-export default class ThreadSection extends esp.model.DisposableBase {
+export default class ThreadSection extends esp.DisposableBase {
     constructor(router) {
         super();
         this._router = router;

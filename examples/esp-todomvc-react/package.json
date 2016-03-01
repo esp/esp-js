@@ -14,7 +14,7 @@
   "dependencies": {
     "babel-core": "^5.6.18",
     "director": "^1.2.8",
-    "esp-js": "0.3.1",
+    "esp-js": "^0.7.0",
     "react": "^0.13.3",
     "todomvc-app-css": "^2.0.0",
     "todomvc-common": "^1.0.0"

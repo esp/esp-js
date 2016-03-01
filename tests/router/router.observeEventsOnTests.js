@@ -155,7 +155,7 @@ describe('Router', () => {
         var committedInvokeCount = 0;
         var _model;
 
-        class Model extends esp.model.DisposableBase {
+        class Model extends esp.DisposableBase {
             constructor(id, router) {
                 super();
                 this._id = id;

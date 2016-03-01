@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 // notice_end
-import { DisposableBase } from '../../model';
+import { DisposableBase } from '../../system/disposables';
 import DevToolsDiagnosticMonitor from './devToolsDiagnosticMonitor';
 import LoggingDiagnosticMonitor from './loggingDiagnosticMonitor';
 import NoopDiagnosticMonitor from './noopDiagnosticMonitor';

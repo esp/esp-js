@@ -27,3 +27,4 @@ export { default as SingleModelRouter } from './SingleModelRouter';
 export { default as State } from './State';
 export { default as Status } from './Status';
 export { default as Const } from './Const';
+export { default as ModelChangedEvent } from './ModelChangedEvent';

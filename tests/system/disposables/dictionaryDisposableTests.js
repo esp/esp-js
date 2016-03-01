@@ -65,4 +65,12 @@ describe('DictionaryDisposable', () => {
         expect(disposable1.isDisposed).toEqual(true);
         expect(disposable2.isDisposed).toEqual(false);
     });
+
+    it('containsKey returns true when dictionary contains key', () => {
+        var disposable1 = new Disposable();
+        disposables.add("foo", disposable1);
+        expect(disposables.containsKey("foo")).toEqual(true);
+        disposables.remove("foo");
+        expect(disposables.containsKey("foo")).toEqual(false);
+    });
 });

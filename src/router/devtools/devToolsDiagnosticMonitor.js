@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import { DisposableBase } from '../../model';
+import { DisposableBase } from '../../system/disposables';
 
 /**
  * hooks onto a global exposed by esp-js-devtools and forwards diagnostics to that

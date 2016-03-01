@@ -16,4 +16,19 @@
  */
  // notice_end
 
-export { default as ModelChangedEvent } from './ModelChangedEvent';
+import { default as CompositeDisposable } from './CompositeDisposable';
+
+export default class DisposableBase {
+    constructor() {
+        this._disposables = new CompositeDisposable();
+    }
+    get isDisposed() {
+        return this._disposables.isDisposed;
+    }
+    addDisposable (disposable) {
+        this._disposables.add(disposable);
+    }
+    dispose () {
+        this._disposables.dispose();
+    }
+}

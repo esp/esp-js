@@ -1,7 +1,7 @@
 import esp from 'esp-js';
 import Message from './Message';
 
-export default class MessageSection extends esp.model.DisposableBase {
+export default class MessageSection extends esp.DisposableBase {
     constructor(router, messageService) {
         super();
         this._router = router;

@@ -680,9 +680,9 @@
       "resolved": "https://registry.npmjs.org/director/-/director-1.2.8.tgz"
     },
     "esp-js": {
-      "version": "0.3.1",
-      "from": "esp-js@0.3.1",
-      "resolved": "https://registry.npmjs.org/esp-js/-/esp-js-0.3.1.tgz"
+      "version": "0.7.0",
+      "from": "esp-js@0.7.0",
+      "resolved": "https://registry.npmjs.org/esp-js/-/esp-js-0.7.0.tgz"
     },
     "react": {
       "version": "0.13.3",

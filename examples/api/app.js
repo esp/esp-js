@@ -456,7 +456,7 @@ var runErrorFlowsExample = () => {
 
 var runAcyncOperationWithWorkItemExample = () => {
 
-    class GetUserStaticDataWorkItem extends esp.model.DisposableBase {
+    class GetUserStaticDataWorkItem extends esp.DisposableBase {
         constructor(router) {
             super();
             this._router = router;
@@ -473,7 +473,7 @@ var runAcyncOperationWithWorkItemExample = () => {
         }
     }
 
-    class StaticDataEventProcessor extends esp.model.DisposableBase {
+    class StaticDataEventProcessor extends esp.DisposableBase {
         constructor(router) {
             super();
             this._router = router;
@@ -540,74 +540,6 @@ var runAcyncOperationWithRunActionExample = () => {
     });
 };
 
-var runModelLockUnlock = () => {
-    class NumericalInput extends esp.model.ModelBase {
-        constructor() {
-            super();
-            this._notional = 0;
-        }
-        get notional() {
-            return this._notional;
-        }
-        set notional(value) {
-            this.ensureLocked();
-            this._notional = value;
-        }
-    }
-
-    class Leg extends esp.model.ModelBase {
-        constructor(number) {
-            super();
-            this._number = number;
-            this._currencyPair = "";
-            this._notionalField = new NumericalInput();
-        }
-        get number() {
-            return this._number;
-        }
-        get currencyPair() {
-            return this._currencyPair;
-        }
-        set currencyPair(value) {
-            this.ensureLocked();
-            this._currencyPair = value;
-        }
-        get notionalField() {
-            return this._notionalField;
-        }
-    }
-
-    class Tile extends esp.model.ModelRootBase {
-        constructor() {
-            super();
-            this._leg1 = new Leg(1);
-            this._leg2 = new Leg(2);
-        }
-        get leg1() {
-            return this._leg1;
-        }
-        get leg2() {
-            return this._leg2;
-        }
-    }
-
-    var tile = new Tile();
-    // bindLockPredicate() recursively sets a predicate on all instance of ModelBase
-    // that points to the model root, they can use this
-    // in setters to guard against unwarranted changes,
-    // if the model expands/contracts you'd have to call it again
-    tile.bindLockPredicate();
-    tile.lock();
-    try {
-        tile.leg1.notionalField.notional = 4;
-    } catch (err) {
-        console.log("ERROR: " + err.message);
-    }
-    tile.unlock();
-    tile.leg1.notionalField.notional = 4;
-    console.log("Notional is " + tile.leg1.notionalField.notional);
-};
-
 var runModelRouter = () => {
     var myModel = {
         foo:0
@@ -638,8 +570,7 @@ var examples = {
     "5" : { description : "Error flows example", action : runErrorFlowsExample },
     "6" : { description : "Async operation with work item", action : runAcyncOperationWithWorkItemExample },
     "7" : { description : "Async operation with run action", action : runAcyncOperationWithRunActionExample},
-    "8" : { description : "Model Lock/Unlock", action : runModelLockUnlock },
-    "9" : { description : "Model specific routers", action : runModelRouter },
+    "8" : { description : "Model specific routers", action : runModelRouter },
 };
 
 console.log('Which sample do you want to run (enter a number)?');

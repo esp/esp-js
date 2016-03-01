@@ -3,8 +3,8 @@
     "start": "./node_modules/.bin/babel-node app.js"
   },
   "dependencies": {
-    "esp-js": "^0.3.2",
-    "prompt": "^0.2.14"
+    "esp-js": "0.7.0",
+    "prompt": "0.2.14"
   },
   "devDependencies": {
     "babel": "5.8.23"

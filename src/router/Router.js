@@ -295,55 +295,52 @@ export default class Router extends DisposableBase {
             let hasEvents = typeof modelRecord !== 'undefined';
             this._diagnosticMonitor.dispatchLoopStart();
             while (hasEvents) {
-                while (hasEvents) {
-                    let eventRecord = modelRecord.eventQueue.shift();
-                    this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.eventType);
-                    this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);
-                    if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
-                        modelRecord.model.unlock();
-                    }
-                    this._diagnosticMonitor.preProcessingModel();
-                    modelRecord.runPreEventProcessor(modelRecord.model);
+                let eventRecord = modelRecord.eventQueue.shift();
+                this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.eventType);
+                this._state.moveToPreProcessing(modelRecord.modelId, modelRecord.model);
+                if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
+                    modelRecord.model.unlock();
+                }
+                this._diagnosticMonitor.preProcessingModel();
+                modelRecord.runPreEventProcessor(modelRecord.model);
+                if (!modelRecord.wasRemoved) {
+                    this._state.moveToEventDispatch();
+                    this._diagnosticMonitor.dispatchingEvents();
+                    while (hasEvents) {
+                        let wasDispatched = true;
+                        if (eventRecord.eventType === '__runAction') {
+                            this._diagnosticMonitor.dispatchingAction(modelRecord.modelId);
+                            eventRecord.action(modelRecord.model);
+                        } else {
+                            wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType);
+                        }
+                        if (modelRecord.wasRemoved) break;
+                        if (!modelRecord.hasChanges && wasDispatched) {
+                            modelRecord.hasChanges = true;
+                        }
+                        hasEvents = modelRecord.eventQueue.length > 0;
+                        if (hasEvents) {
+                            eventRecord = modelRecord.eventQueue.shift();
+                        }
+                    } // keep looping until any events from the dispatch to processors stage are processed
+                    this._diagnosticMonitor.finishDispatchingEvent();
                     if (!modelRecord.wasRemoved) {
-                        this._state.moveToEventDispatch();
-                        this._diagnosticMonitor.dispatchingEvents();
-                        while (hasEvents) {
-                            let wasDispatched = true;
-                            if (eventRecord.eventType === '__runAction') {
-                                this._diagnosticMonitor.dispatchingAction(modelRecord.modelId);
-                                eventRecord.action(modelRecord.model);
-                            } else {
-                                wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType);
-                            }
-                            if (modelRecord.wasRemoved) break;
-                            if (!modelRecord.hasChanges && wasDispatched) {
-                                modelRecord.hasChanges = true;
-                            }
-                            hasEvents = modelRecord.eventQueue.length > 0;
-                            if (hasEvents) {
-                                eventRecord = modelRecord.eventQueue.shift();
-                            }
-                        } // keep looping until any events from the dispatch to processors stage are processed
-                        this._diagnosticMonitor.finishDispatchingEvent();
-                        if (!modelRecord.wasRemoved) {
-                            this._diagnosticMonitor.postProcessingModel();
-                            this._state.moveToPostProcessing();
-                            modelRecord.runPostEventProcessor(modelRecord.model);
-                            if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
-                                modelRecord.model.lock();
-                            }
+                        this._diagnosticMonitor.postProcessingModel();
+                        this._state.moveToPostProcessing();
+                        modelRecord.runPostEventProcessor(modelRecord.model);
+                        if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
+                            modelRecord.model.lock();
                         }
                     }
-                    this.broadcastEvent(Const.modelChangedEvent, new ModelChangedEvent(modelRecord.modelId, modelRecord.model));
-                    modelRecord = this._getNextModelRecordWithQueuedEvents();
-                    hasEvents = typeof modelRecord !== 'undefined';
-                    this._diagnosticMonitor.endingModelEventLoop();
-                }  // keep looping until any events raised during post event processing OR event that have come in for other models are processed
+                }
+                this.broadcastEvent(Const.modelChangedEvent, new ModelChangedEvent(modelRecord.modelId, modelRecord.model));
+                // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
                 modelRecord = this._getNextModelRecordWithQueuedEvents();
                 hasEvents = typeof modelRecord !== 'undefined';
-            } // keep looping until any events from the dispatch updates stages are processed
+                this._diagnosticMonitor.endingModelEventLoop();
+            }  // keep looping until any events raised during post event processing OR event that have come in for other models are processed
             this._state.moveToIdle();
             this._diagnosticMonitor.dispatchLoopEnd();
         }

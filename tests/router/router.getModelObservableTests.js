@@ -67,15 +67,21 @@ describe('Router', () => {
             expect(model1UpdateCount).toBe(1);
         });
 
-        it('purges all model event queues before dispatching updates', () => {
-            var modelUpdateCount = 0, eventCount = 0;
+        it('dispatches model updates after that models event queue is empty, but before processing next model', () => {
+            var model1UpdateCount = 0,
+                model2UpdateCount = 0,
+                model1EventCount = 0,
+                model2EventCount = 0,
+                check1 = false,
+                check2 = false;
             _router.getModelObservable('modelId1').observe(() => {
-                modelUpdateCount++;
+                model1UpdateCount++;
             });
             _router.getModelObservable('modelId2').observe(() => {
-                modelUpdateCount++;
+                model2UpdateCount++;
             });
-            expect(modelUpdateCount).toBe(0);
+            expect(model1UpdateCount).toBe(0);
+            expect(model2UpdateCount).toBe(0);
             _router.getEventObservable('modelId1', 'StartEvent').observe(() => {
                 _router.publishEvent('modelId1', 'Event1', 1);
                 _router.publishEvent('modelId2', 'Event1', 2);
@@ -83,14 +89,23 @@ describe('Router', () => {
                 _router.publishEvent('modelId2', 'Event1', 4);
             });
             _router.getEventObservable('modelId1', 'Event1').observe(() => {
-                eventCount++;
+                model1EventCount++;
+                // no models should be dispatched any time this is run
+                check1 = model1UpdateCount === 0 && model2UpdateCount ===0;
             });
             _router.getEventObservable('modelId2', 'Event1').observe(() => {
-                eventCount++;
+                // by the time we process this event for model 2, model 1
+                // should have processed both it's events AND have dispatched it's model
+                model2EventCount++;
+                check2 = model1UpdateCount === 1 && model2UpdateCount ===0 && model1EventCount == 2;
             });
             _router.publishEvent('modelId1', 'StartEvent', 'payload');
-            expect(eventCount).toBe(4);
-            expect(modelUpdateCount).toBe(2);
+            expect(model1UpdateCount).toEqual(1);
+            expect(model1EventCount).toEqual(2);
+            expect(model2UpdateCount).toEqual(1);
+            expect(model2EventCount).toEqual(2);
+            expect(check1).toEqual(true);
+            expect(check2).toEqual(true);
         });
 
         it('processes events published during model dispatch', () => {

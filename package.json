@@ -14,14 +14,15 @@
   ],
   "scripts": {
     "start": "npm run test",
-    "test": "karma start --autowatch --no-single-run",
+    "test": "karma start",
+    "test:ci": "karma start --single-run",
     "build": "npm run build:dev && npm run build:prod",
     "build:dev": "webpack --config webpack.dev.config.js",
     "build:prod": "webpack -p --config webpack.prod.config.js"
   },
   "main": "dist/esp.js",
   "author": "Dev Shop Limited",
-  "license": "Apache 2",
+  "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
   "devDependencies": {
     "babel-core": "^6.4.5",

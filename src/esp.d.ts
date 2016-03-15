@@ -28,7 +28,7 @@ declare module esp {
         executeEvent(eventType:String, event:any)  : void;
         runAction(modelId:String, action:() => void) : void;
         runAction<T>(modelId:String, action:(model : T) => void)  : void;
-        getEventObservable<T>(modelId:String, eventType:String, observationStage?: string) : EventObservable<T>;
+        getEventObservable<T, TEvent, TContext>(modelId:String, eventType:String, observationStage?: string) : EventObservable<T, TEvent, TContext>;
         getModelObservable<T>(modelId:String) : ModelObservable<T>;
         createModelRouter<T>(targetModelId:String) : SingleModelRouter<T>;
         addOnErrorHandler(handler : (e : Error) => void) : void;
@@ -50,7 +50,7 @@ declare module esp {
         runAction(action : () => void) : void;
         runAction(action : (model : T) => void) : void;
 
-        getEventObservable(eventType : String, observationStage? : string) : EventObservable<T>;
+        getEventObservable<TEvent, TContext>(eventType : String, observationStage? : string) : EventObservable<T, TEvent, TContext>;
         getModelObservable<T>() : ModelObservable<T>;
         observeEventsOn(object : any, methodPrefix?: String) : Disposable;
     }
@@ -59,14 +59,14 @@ declare module esp {
         dispose():void;
     }
 
-    interface EventObserver<T> {
-        onNext(event: any, context : any, model : T) : void;
+    interface EventObserver<TModel, TEvent, TContext> {
+        onNext(event: TEvent, context : TContext, model : TModel) : void;
         onCompleted() : void;
     }
 
-    interface EventObservable<T> {
-        observe(observer : EventObserver<T>) : Disposable;
-        observe(onNext : (event : any, context : any, model : T) => void, onCompleted : () => void) : Disposable;
+    interface EventObservable<TModel, TEvent, TContext> {
+        observe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
+        observe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted : () => void) : Disposable;
     }
 
     interface ModelObserver<T> {

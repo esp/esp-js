@@ -26,7 +26,8 @@ declare module esp {
         publishEvent(modelId:String, eventType:String, event:any) : void;
         broadcastEvent(eventType:String, event:any)  : void;
         executeEvent(eventType:String, event:any)  : void;
-        runAction(modelId:String, action:() => void)  : void;
+        runAction(modelId:String, action:() => void) : void;
+        runAction<T>(modelId:String, action:(model : T) => void)  : void;
         getEventObservable<T>(modelId:String, eventType:String, observationStage?: string) : EventObservable<T>;
         getModelObservable<T>(modelId:String) : ModelObservable<T>;
         createModelRouter<T>(targetModelId:String) : SingleModelRouter<T>;
@@ -47,6 +48,8 @@ declare module esp {
         publishEvent(eventType : String, event : any) : void;
         executeEvent(eventType : String, event : any) : void;
         runAction(action : () => void) : void;
+        runAction(action : (model : T) => void) : void;
+
         getEventObservable(eventType : String, observationStage? : string) : EventObservable<T>;
         getModelObservable<T>() : ModelObservable<T>;
         observeEventsOn(object : any, methodPrefix?: String) : Disposable;

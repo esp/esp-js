@@ -9,7 +9,7 @@ declare module esp {
         broadcastEvent(eventType:String, event:any)  : void;
         executeEvent(eventType:String, event:any)  : void;
         runAction(modelId:String, action:() => void)  : void;
-        getEventObservable<T>(modelId:String, eventType:String, stage?: string) : EventObservable<T>;
+        getEventObservable<T>(modelId:String, eventType:String, observationStage?: string) : EventObservable<T>;
         getModelObservable<T>(modelId:String) : ModelObservable<T>;
         createModelRouter<T>(targetModelId:String) : SingleModelRouter<T>;
         addOnErrorHandler(handler : (e : Error) => void) : void;
@@ -29,7 +29,7 @@ declare module esp {
         publishEvent(eventType : String, event : any) : void;
         executeEvent(eventType : String, event : any) : void;
         runAction(action : () => void) : void;
-        getEventObservable(eventType : String, stage? : string) : EventObservable<T>;
+        getEventObservable(eventType : String, observationStage? : string) : EventObservable<T>;
         getModelObservable<T>() : ModelObservable<T>;
         observeEventsOn(object : any, methodPrefix?: String) : void;
     }

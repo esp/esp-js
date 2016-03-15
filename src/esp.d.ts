@@ -21,7 +21,7 @@ declare module esp {
     function observeEvent(eventName:String, observationStage?:string): any;
 
     class Router {
-        addModel<T>(modelId:String, model:T, options) : void;
+        addModel<T>(modelId:String, model:T, options? : any) : void;
         removeModel(modelId:String) : void;
         publishEvent(modelId:String, eventType:String, event:any) : void;
         broadcastEvent(eventType:String, event:any)  : void;
@@ -35,7 +35,7 @@ declare module esp {
         getDispatchLoopDiagnostics() : String
         enableDiagnostics() : void;
         disableDiagnostics() : void;
-        observeEventsOn(object : any, methodPrefix?: String) : void;
+        observeEventsOn(object : any, methodPrefix?: String) : Disposable;
     }
 
     class SingleModelRouter<T> {
@@ -49,7 +49,7 @@ declare module esp {
         runAction(action : () => void) : void;
         getEventObservable(eventType : String, observationStage? : string) : EventObservable<T>;
         getModelObservable<T>() : ModelObservable<T>;
-        observeEventsOn(object : any, methodPrefix?: String) : void;
+        observeEventsOn(object : any, methodPrefix?: String) : Disposable;
     }
 
     interface Disposable {

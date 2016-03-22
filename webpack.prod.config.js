@@ -38,7 +38,7 @@ module.exports = {
                 include: [
                     path.resolve(__dirname, "src"),
                 ],
-                test: /\.jsx?$/,
+                test: /\.js$/,
                 query: {
                     presets: ['es2015', 'stage-0'],
                     plugins: ['transform-runtime', 'transform-decorators-legacy', 'transform-flow-strip-types']

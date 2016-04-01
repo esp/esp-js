@@ -16,11 +16,10 @@
  */
 // notice_end
 
-declare module esp {
+declare module 'esp-js' {
+    export function observeEvent(eventName:String, observationStage?:string): any;
 
-    function observeEvent(eventName:String, observationStage?:string): any;
-
-    class Router {
+    export class Router {
         addModel<T>(modelId:String, model:T, options? : any) : void;
         removeModel(modelId:String) : void;
         publishEvent(modelId:String, eventType:String, event:any) : void;
@@ -39,7 +38,7 @@ declare module esp {
         observeEventsOn(object : any, methodPrefix?: String) : Disposable;
     }
 
-    class SingleModelRouter<T> {
+    export class SingleModelRouter<T> {
         static create<TModel>() : SingleModelRouter<TModel>;
         static createWithModel<TModel>(model : TModel) : SingleModelRouter<TModel>;
         static createWithRouter<TModel>(underlyingRouter : Router, modelId : String) : SingleModelRouter<TModel>;
@@ -55,32 +54,27 @@ declare module esp {
         observeEventsOn(object : any, methodPrefix?: String) : Disposable;
     }
 
-    interface Disposable {
+    export interface Disposable {
         dispose():void;
     }
 
-    interface EventObserver<TModel, TEvent, TContext> {
+    export interface EventObserver<TModel, TEvent, TContext> {
         onNext(event: TEvent, context : TContext, model : TModel) : void;
         onCompleted() : void;
     }
 
-    interface EventObservable<TModel, TEvent, TContext> {
+    export interface EventObservable<TModel, TEvent, TContext> {
         observe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
         observe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted : () => void) : Disposable;
     }
 
-    interface ModelObserver<T> {
+    export interface ModelObserver<T> {
         onNext(model : T) : void;
         onCompleted() : void;
     }
 
-    interface ModelObservable<T> {
+    export interface ModelObservable<T> {
         observe(observer : ModelObserver<T>) : Disposable;
         observe(onNext : (model : T) => void, onCompleted : () => void) : Disposable;
     }
-
-}
-
-declare module 'esp-js' {
-    export default esp;
 }

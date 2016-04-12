@@ -75,5 +75,5 @@ export interface ModelObserver<T> {
 
 export interface ModelObservable<T> {
     observe(observer : ModelObserver<T>) : Disposable;
-    observe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
+    observe(onNext : (model : T) => void, onCompleted : () => void) : Disposable;
 }

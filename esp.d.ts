@@ -65,7 +65,7 @@ export interface EventObserver<TModel, TEvent, TContext> {
 
 export interface EventObservable<TModel, TEvent, TContext> {
     observe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
-    observe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted : () => void) : Disposable;
+    observe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted? : () => void) : Disposable;
 }
 
 export interface ModelObserver<T> {
@@ -75,5 +75,5 @@ export interface ModelObserver<T> {
 
 export interface ModelObservable<T> {
     observe(observer : ModelObserver<T>) : Disposable;
-    observe(onNext : (model : T) => void, onCompleted : () => void) : Disposable;
+    observe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
 }

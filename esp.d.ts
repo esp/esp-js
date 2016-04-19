@@ -35,7 +35,7 @@ export class Router {
     getDispatchLoopDiagnostics() : String
     enableDiagnostics() : void;
     disableDiagnostics() : void;
-    observeEventsOn(object : any, methodPrefix?: String) : Disposable;
+    observeEventsOn(modelId: string, object : any, methodPrefix?: String) : Disposable;
 }
 
 export class SingleModelRouter<T> {

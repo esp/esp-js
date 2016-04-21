@@ -1,5 +1,5 @@
 /* notice_start
- * Copyright 2015 Keith Woods
+ * Copyright 2016 Dev Shop Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  notice_end */
  
-import microdi from '../';
+import Container from '../src/Container';
 
 describe('Container', () =>  {
 
     var container;
 
     beforeEach(() => {
-        container = new microdi.Container();
+        container = new Container();
     });
 
     describe('.register()/.resolve() functionality', () =>  {

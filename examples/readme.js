@@ -14,7 +14,7 @@
  * limitations under the License.
  notice_end */
  
-import microdi from '../microdi.js';
+import microdi from 'microdi-js';
 
 var runBasicExample =  () => {
     class Child {

@@ -15,6 +15,6 @@ install:
 before_script:
 
 script:
-  - 'grunt test'
+  - 'npm run test:ci'
 
 after_script:

@@ -20,7 +20,7 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
-    entry: './index.js',
+    entry: './src/index.js',
     output: {
         libraryTarget: 'umd',
         sourcePrefix: '    ',

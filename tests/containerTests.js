@@ -14,14 +14,14 @@
  * limitations under the License.
  notice_end */
  
-import Container from '../src/Container';
+import microid from '../src';
 
 describe('Container', () =>  {
 
     var container;
 
     beforeEach(() => {
-        container = new Container();
+        container = new microid.Container();
     });
 
     describe('.register()/.resolve() functionality', () =>  {

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sonic78/microdi-js.svg?branch=master)](https://travis-ci.org/sonic78/microdi-js)
+[![Build Status](https://travis-ci.org/KeithWoods/microdi-js.svg?branch=master)](https://travis-ci.org/KeithWoods/microdi-js)
 [![npm](https://img.shields.io/npm/v/microdi-js.svg)](https://www.npmjs.com/package/microdi-js)
 
 **[Basic usage](#basic-usage)** |

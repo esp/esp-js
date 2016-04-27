@@ -72,6 +72,12 @@ export default class Container {
         };
         this._instanceCache[name] = instance;
     }
+    isRegistered(name) {
+        this._throwIfDisposed();
+        var registration = this._registrations[name];
+        return !!registration;
+    }
+
     resolve(name, ...additionalDependencies) {
         this._throwIfDisposed();
         var registration = this._registrations[name],

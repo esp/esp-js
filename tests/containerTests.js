@@ -526,6 +526,20 @@ describe('Container', () =>  {
         });
     });
 
+    describe('Should return isRegistered', () => {
+        it('Should return true when a key is registered', () => {
+            container.register('a', {}).singleton();
+            var isRegistered = container.isRegistered('a');
+            expect(isRegistered).toBe(true);
+        });
+
+        it('Should return false when a key is not registered', () => {
+            container.register('a', {}).singleton();
+            var isRegistered = container.isRegistered('b');
+            expect(isRegistered).toBe(false);
+        });
+    })
+
     describe('incorrect argument handling', () =>  {
 
         it('should throw if .registerObject() called with incorrect arguments', () =>  {

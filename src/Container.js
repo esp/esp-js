@@ -72,7 +72,7 @@ export default class Container {
         };
         this._instanceCache[name] = instance;
     }
-    canResolve(name) {
+    isRegistered(name) {
         this._throwIfDisposed();
         var registration = this._registrations[name];
         return !!registration;

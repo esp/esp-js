@@ -20,7 +20,7 @@ export class Container {
     registerInstance<T>(name:String, instance:T, isExternallyOwned?):void;
     resolve<T>(name:String, ...additionalDependencies):T;
     resolveGroup(groupName:String):Array<any>;
-    canResolve(name : string) : boolean;
+    isRegistered(name : string) : boolean;
 
     addResolver<T>(name:String, resolver:Resolver);
     dispose():void;

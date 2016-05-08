@@ -58,6 +58,18 @@ export interface Disposable {
     dispose():void;
 }
 
+export abstract class DisposableBase {
+    get isDisposed() : boolean;
+    addDisposable (disposable : () => void | Disposable);
+    dispose () : void;
+}
+
+export class CompositeDisposable {
+    get isDisposed() : boolean;
+    add(disposable : () => void | Disposable) : void;
+    dispose() : void;
+}
+
 export interface EventObserver<TModel, TEvent, TContext> {
     onNext(event: TEvent, context : TContext, model : TModel) : void;
     onCompleted() : void;

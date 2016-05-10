@@ -59,13 +59,13 @@ export interface Disposable {
 }
 
 export abstract class DisposableBase {
-    get isDisposed() : boolean;
+    isDisposed : boolean;
     addDisposable (disposable : () => void | Disposable);
     dispose () : void;
 }
 
 export class CompositeDisposable {
-    get isDisposed() : boolean;
+    isDisposed : boolean;
     add(disposable : () => void | Disposable) : void;
     dispose() : void;
 }

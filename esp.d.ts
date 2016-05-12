@@ -93,7 +93,6 @@ export interface ModelObservable<T> {
 }
 
 export class ModelChangedEvent<T> {
-    get modelId() : string;
-
-    get model() : T;
+    modelId: string;
+    model: T;
 }

@@ -60,13 +60,15 @@ export interface Disposable {
 
 export abstract class DisposableBase {
     isDisposed : boolean;
-    addDisposable (disposable : () => void | Disposable);
+    addDisposable (disposable : Disposable);
+    addDisposable (disposable : () => void) : void;
     dispose () : void;
 }
 
 export class CompositeDisposable {
     isDisposed : boolean;
-    add(disposable : () => void | Disposable) : void;
+    add(disposable : Disposable) : void;
+    add(disposable : () => void) : void;
     dispose() : void;
 }
 
@@ -88,4 +90,10 @@ export interface ModelObserver<T> {
 export interface ModelObservable<T> {
     observe(observer : ModelObserver<T>) : Disposable;
     observe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
+}
+
+export class ModelChangedEvent<T> {
+    get modelId() : string;
+
+    get model() : T;
 }

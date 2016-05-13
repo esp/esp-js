@@ -19,6 +19,8 @@
 
 export function observeEvent(eventName:String, observationStage?:string): any;
 
+export function observeModelChangedEvent(modelId:String): any;
+
 export class Router {
     addModel<T>(modelId:String, model:T, options? : any) : void;
     removeModel(modelId:String) : void;
@@ -54,6 +56,20 @@ export class SingleModelRouter<T> {
     observeEventsOn(object : any, methodPrefix?: String) : Disposable;
 }
 
+export interface EventContext {
+    currentStage:string;
+    isCanceled:boolean;
+    isCommitted:boolean;
+    cancel() : void;
+    commit() : void;
+}
+
+export class ObservationStage {
+    static get preview() : string;
+    static get normal() : string;
+    static get committed() : string;
+}
+
 export interface Disposable {
     dispose():void;
 }
@@ -80,6 +96,13 @@ export interface EventObserver<TModel, TEvent, TContext> {
 export interface EventObservable<TModel, TEvent, TContext> {
     observe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
     observe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted? : () => void) : Disposable;
+    do(onNext : (event : TEvent) => void) : EventObservable<TModel, TEvent, TContext>;
+    do(onNext : (event : TEvent, context : TContext) => void) : EventObservable<TModel, TEvent, TContext>;
+    do(onNext : (event : TEvent, context : TContext, model : TModel) => void) : EventObservable<TModel, TEvent, TContext>;
+    where(predicate: (event : TEvent) => boolean) : EventObservable<TModel, TEvent, TContext>;
+    where(predicate: (event : TEvent, context : TContext) => boolean) : EventObservable<TModel, TEvent, TContext>;
+    where(predicate: (event : TEvent, context : TContext, model : TModel) => boolean) : EventObservable<TModel, TEvent, TContext>;
+    take(count:number) : EventObservable<TModel, TEvent, TContext>;
 }
 
 export interface ModelObserver<T> {
@@ -90,6 +113,10 @@ export interface ModelObserver<T> {
 export interface ModelObservable<T> {
     observe(observer : ModelObserver<T>) : Disposable;
     observe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
+    do(onNext : (model : T) => void) : ModelObservable<T>;
+    where(predicate: (model : T) => boolean) : ModelObservable<T>;
+    map<TOther>(predicate: (model : T) => TOther) : ModelObservable<TOther>;
+    take(count:number) : ModelObservable<T>;
 }
 
 export class ModelChangedEvent<T> {

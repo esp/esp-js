@@ -35,5 +35,5 @@ export class RegistrationModifier {
 }
 
 export interface Resolver {
-    resolve<T>(container:Container, dependencyKey:String):T
+    resolve<T>(container:Container, dependencyKey:any):T
 }

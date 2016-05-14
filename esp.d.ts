@@ -65,9 +65,9 @@ export interface EventContext {
 }
 
 export class ObservationStage {
-    static get preview() : string;
-    static get normal() : string;
-    static get committed() : string;
+    static preview : string;
+    static normal : string;
+    static committed : string;
 }
 
 export interface Disposable {

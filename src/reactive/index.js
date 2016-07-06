@@ -22,6 +22,8 @@ import './extMethods/asObservable';
 import './extMethods/take';
 import './extMethods/do';
 import './extMethods/map';
+import './extMethods/observeOn';
+import './extMethods/subscribeOn';
 
 export { default as Observable } from './Observable';
 export { default as Observer } from './Observer';

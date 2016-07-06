@@ -20,7 +20,7 @@ import * as utils from './utils';
 
 export default class Guard {
     static isDefined(value, message) {
-        if (typeof value === 'undefined') {
+        if (typeof value === 'undefined' || value === null) {
             doThrow(message);
         }
     }

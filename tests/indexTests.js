@@ -13,7 +13,8 @@ import {
     observeEvent,
     observeModelChangedEvent,
     model,
-    logging
+    logging,
+    DisposableWrapper
 } from '../src';
 
 describe('index exports', () => {
@@ -50,6 +51,11 @@ describe('index exports', () => {
     it('should export DisposableBase', () => {
         expect(esp.DisposableBase).toBeDefined();
         expect(DisposableBase).toBeDefined();
+    });
+
+    it('should export DisposableWrapper', () => {
+        expect(esp.DisposableWrapper).toBeDefined();
+        expect(DisposableWrapper).toBeDefined();
     });
 
     it('should export Observable', () => {

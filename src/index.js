@@ -26,16 +26,17 @@
 // let eventContext = new EventContext()
 
 export { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
-export { CompositeDisposable, DictionaryDisposable, DisposableBase } from './system/disposables';
+export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';
 export { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 export { logging } from './system';
 export { Observable } from './reactive';
 
 import { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
-import { CompositeDisposable, DictionaryDisposable, DisposableBase } from './system/disposables';
+import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';
 import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 import { logging as logging } from './system';
-import { Observable } from './reactive';
+import { Observable, Subject } from './reactive';
+
 export default {
     ObservationStage,
     Router,
@@ -48,5 +49,7 @@ export default {
     EventContext,
     CompositeDisposable,
     DictionaryDisposable,
-    Observable
+    DisposableWrapper,
+    Observable,
+    Subject
 }

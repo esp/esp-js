@@ -10,6 +10,7 @@ import {
     DisposableBase,
     ModelChangedEvent,
     Observable,
+    Subject,
     observeEvent,
     observeModelChangedEvent,
     model,
@@ -61,6 +62,11 @@ describe('index exports', () => {
     it('should export Observable', () => {
         expect(esp.Observable).toBeDefined();
         expect(Observable).toBeDefined();
+    });
+
+    it('should export Subject', () => {
+        expect(esp.Subject).toBeDefined();
+        expect(Subject).toBeDefined();
     });
 
     it('should export observeEvent', () => {

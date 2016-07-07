@@ -110,4 +110,31 @@ describe('subject', () => {
         subject.onCompleted();
         expect(onCompleteCalled).toEqual(true);
     });
+
+    it('can observe using observer function', () => {
+        var onNextCalled = false;
+        subject.observe(
+            () => {
+                onNextCalled = true;
+            }
+        );
+        subject.onNext(1);
+        expect(onNextCalled).toEqual(true);
+    });
+
+    it('can observe using observer', () => {
+        var onCompleteCalled = false;
+        var receivedItems = [];
+        let observer = new reactive.Observer(
+            item => {
+                receivedItems.push(item);
+            },
+            () => onCompleteCalled = true
+        );
+        subject.where(_=>true).observe(observer);
+        subject.onNext(1);
+        subject.onCompleted();
+        expect(onCompleteCalled).toEqual(true);
+        expect(receivedItems).toEqual([1]);
+    });
 });

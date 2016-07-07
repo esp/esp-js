@@ -29,8 +29,11 @@ Observable.prototype.subscribeOn = function(router, modelId) {
             isDisposed:false,
             dispose() {
                 this.isDisposed = true;
-                if(this.subscription) {
-                    this.subscription.dispose();
+                let _subscription = this.subscription;
+                if(_subscription) {
+                    router.runAction(modelId, () => {
+                        _subscription.dispose();
+                    });
                 }
             }
         };

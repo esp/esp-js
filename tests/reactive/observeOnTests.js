@@ -101,7 +101,7 @@ describe('.observeOn', () => {
     });
 
     it('observeOn and subscribeOn run on correct dispatch loop', () => {
-        _testModel1
+        let subscription = _testModel1
             .getPrices()
             .subscribeOn(_router, _testModel1.modelId)
             .observeOn(_router, _testModel2.modelId)
@@ -109,6 +109,11 @@ describe('.observeOn', () => {
                _testModel1.workflowActions.push('observerCalled');
             });
         _testModel1.pushPrice({pair:'EURUSD', price:1});
-        expect(_workflowActions).toEqual(['preProcess-m1', 'obsCreate-m1', 'postProcess-m1', 'preProcess-m2', 'observerCalled', 'postProcess-m2']);
+        subscription.dispose();
+        expect(_workflowActions).toEqual([
+            'preProcess-m1', 'obsCreate-m1', 'postProcess-m1',
+            'preProcess-m2', 'observerCalled', 'postProcess-m2',
+            'preProcess-m1', 'disposed-m1', 'postProcess-m1'
+        ]);
     });
 });

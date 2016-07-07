@@ -22,10 +22,12 @@ import TestModel from './testModel';
 describe('.subscribeOn', () => {
     var _router;
     var _testModel1;
+    var _workflowActions;
 
     beforeEach(() => {
         _router = new esp.Router();
-        _testModel1 = new TestModel('m1', _router);
+        _workflowActions = [];
+        _testModel1 = new TestModel('m1', _router, _workflowActions);
         _testModel1.registerWitRouter();
     });
 
@@ -72,13 +74,30 @@ describe('.subscribeOn', () => {
         expect(receivedPrices).toEqual(['priceReceived-EURUSD-1']);
     });
 
+    it('subscribeOn disposable on the models dispatch loop', () => {
+        let disposable = _testModel1
+            .getPrices()
+            .subscribeOn(_router, _testModel1.modelId)
+            .where(p => p.pair === 'EURUSD')
+            .observe(p => {
+                _workflowActions.push(`priceReceived-${p.pair}-${p.price}`);
+            });
+        _testModel1.pushPrice({pair:'EURUSD', price:1});
+        disposable.dispose();
+        expect(_workflowActions).toEqual([
+            'preProcess-m1', 'obsCreate-m1', 'postProcess-m1',
+            'priceReceived-EURUSD-1',
+            'preProcess-m1', 'disposed-m1', 'postProcess-m1'
+        ]);
+    });
+    
     it('subscribes to the stream on models dispatch loop', () => {
         _testModel1
             .getPrices()
             .subscribeOn(_router, _testModel1.modelId)
             .observe(o => {
-                _testModel1.workflowActions.push('observerCalled');
+                _workflowActions.push('observerCalled');
             });
-        expect(_testModel1.workflowActions).toEqual(['preProcess-m1', 'obsCreate-m1', 'postProcess-m1']);
+        expect(_workflowActions).toEqual(['preProcess-m1', 'obsCreate-m1', 'postProcess-m1']);
     });
 });

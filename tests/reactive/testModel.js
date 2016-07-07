@@ -38,7 +38,11 @@ export default class TestModel {
         return esp.Observable.create(
             observer => {
                 this.workflowActions.push(`obsCreate-${this.modelId}`);
-                return this.priceSubject.observe(observer);
+                var subscription = this.priceSubject.observe(observer);
+                return () => {
+                    this.workflowActions.push(`disposed-${this.modelId}`);
+                    subscription.dispose();
+                };
             }
         );
     }

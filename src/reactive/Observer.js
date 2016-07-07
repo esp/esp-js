@@ -19,6 +19,26 @@
 import { Guard } from '../system';
 
 export default class Observer {
+    /**
+     * Wraps the provided arguments in an Observer
+     * @returns Observer
+     */
+    static wrap() {
+        var observer;
+        if(arguments.length === 1 && arguments[0] instanceof Observer) {
+            observer = arguments[0];
+        } else {
+            Guard.lengthIsAtLeast(arguments, 1, 'Incorrect arg count on observe, should be a single Observer or (onNext:(t)=>[,onCompleted:()=>{}])');
+            var onNext = arguments[0];
+            Guard.isFunction(onNext, 'The first argument to observe must be a function (t=>{})');
+            var onCompleted = arguments.length >= 1 ? arguments[1] : undefined;
+            if(onCompleted) {
+                Guard.isFunction(onCompleted, 'The second argument to observe must be a function (()=>{})');
+            }
+            observer = new Observer(onNext, onCompleted);
+        }
+        return observer;
+    }
     constructor(onNext, onCompleted) {
         Guard.isDefined(onNext, 'onObserve Required');
         this._hasCompleted = false;

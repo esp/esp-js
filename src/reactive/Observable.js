@@ -32,16 +32,8 @@ export default class Observable {
     constructor(observe) {
         this._observe = observe;
     }
-    observe() {
-        var observer;
-        if(arguments.length === 1 && arguments[0] instanceof Observer) {
-            observer = arguments[0];
-        } else {
-            Guard.lengthIsAtLeast(arguments, 1, "Incorrect args count of " + arguments.length);
-            var onNext = arguments[0];
-            var onCompleted = arguments.length >= 1 ? arguments[1] : undefined;
-            observer = new Observer(onNext, onCompleted);
-        }
+    observe(...args) {
+        var observer = Observer.wrap(...args);
         Guard.isDefined(this._observe, '_observe not set');
         return this._observe(observer);
     }

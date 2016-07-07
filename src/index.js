@@ -28,8 +28,8 @@
 export { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';
 export { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
-export { logging } from './system';
-export { Observable } from './reactive';
+export { logging as logging } from './system';
+export { Observable, Subject } from './reactive';
 
 import { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
 import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';

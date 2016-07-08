@@ -17,43 +17,43 @@
 // notice_end
 
 
-export function observeEvent(eventName:String, observationStage?:string): any;
+export function observeEvent(eventName:string, observationStage?:string): any;
 
-export function observeModelChangedEvent(modelId:String): any;
+export function observeModelChangedEvent(modelId:string): any;
 
 export class Router {
-    addModel<T>(modelId:String, model:T, options? : any) : void;
-    removeModel(modelId:String) : void;
-    publishEvent(modelId:String, eventType:String, event:any) : void;
-    broadcastEvent(eventType:String, event:any)  : void;
-    executeEvent(eventType:String, event:any)  : void;
-    runAction(modelId:String, action:() => void) : void;
-    runAction<T>(modelId:String, action:(model : T) => void)  : void;
-    getEventObservable<T, TEvent, TContext>(modelId:String, eventType:String, observationStage?: string) : EventObservable<T, TEvent, TContext>;
-    getModelObservable<T>(modelId:String) : ModelObservable<T>;
-    createModelRouter<T>(targetModelId:String) : SingleModelRouter<T>;
+    addModel<T>(modelId:string, model:T, options? : any) : void;
+    removeModel(modelId:string) : void;
+    publishEvent(modelId:string, eventType:string, event:any) : void;
+    broadcastEvent(eventType:string, event:any)  : void;
+    executeEvent(eventType:string, event:any)  : void;
+    runAction(modelId:string, action:() => void) : void;
+    runAction<T>(modelId:string, action:(model : T) => void)  : void;
+    getEventObservable<T, TEvent, TContext>(modelId:string, eventType:string, observationStage?: string) : EventObservable<T, TEvent, TContext>;
+    getModelObservable<T>(modelId:string) : Observable<T>;
+    createModelRouter<T>(targetModelId:string) : SingleModelRouter<T>;
     addOnErrorHandler(handler : (e : Error) => void) : void;
     removeOnErrorHandler(handler : (e : Error) => void) : void;
-    getDispatchLoopDiagnostics() : String
+    getDispatchLoopDiagnostics() : string
     enableDiagnostics() : void;
     disableDiagnostics() : void;
-    observeEventsOn(modelId: string, object : any, methodPrefix?: String) : Disposable;
+    observeEventsOn(modelId: string, object : any, methodPrefix?: string) : Disposable;
 }
 
 export class SingleModelRouter<T> {
     static create<TModel>() : SingleModelRouter<TModel>;
     static createWithModel<TModel>(model : TModel) : SingleModelRouter<TModel>;
-    static createWithRouter<TModel>(underlyingRouter : Router, modelId : String) : SingleModelRouter<TModel>;
+    static createWithRouter<TModel>(underlyingRouter : Router, modelId : string) : SingleModelRouter<TModel>;
 
     setModel(model : T) : void;
-    publishEvent(eventType : String, event : any) : void;
-    executeEvent(eventType : String, event : any) : void;
+    publishEvent(eventType : string, event : any) : void;
+    executeEvent(eventType : string, event : any) : void;
     runAction(action : () => void) : void;
     runAction(action : (model : T) => void) : void;
 
-    getEventObservable<TEvent, TContext>(eventType : String, observationStage? : string) : EventObservable<T, TEvent, TContext>;
-    getModelObservable<T>() : ModelObservable<T>;
-    observeEventsOn(object : any, methodPrefix?: String) : Disposable;
+    getEventObservable<TEvent, TContext>(eventType : string, observationStage? : string) : EventObservable<T, TEvent, TContext>;
+    getModelObservable<T>() : Observable<T>;
+    observeEventsOn(object : any, methodPrefix?: string) : Disposable;
 }
 
 export interface EventContext {
@@ -105,19 +105,37 @@ export interface EventObservable<TModel, TEvent, TContext> {
     take(count:number) : EventObservable<TModel, TEvent, TContext>;
 }
 
-export interface ModelObserver<T> {
+export interface Observer<T> {
     onNext(model : T) : void;
     onCompleted() : void;
 }
 
-export interface ModelObservable<T> {
-    observe(observer : ModelObserver<T>) : Disposable;
+export interface Observable<T> {
+    observe(observer : Observer<T>) : Disposable;
     observe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
-    do(onNext : (model : T) => void) : ModelObservable<T>;
-    where(predicate: (model : T) => boolean) : ModelObservable<T>;
-    map<TOther>(predicate: (model : T) => TOther) : ModelObservable<TOther>;
-    take(count:number) : ModelObservable<T>;
+    do(onNext : (model : T) => void) : Observable<T>;
+    where(predicate: (model : T) => boolean) : Observable<T>;
+    map<TOther>(predicate: (model : T) => TOther) : Observable<TOther>;
+    take(count:number) : Observable<T>;
+    subscribeOn(router:Router, modelId:string);
+    observeOn(router:Router, modelId:string);
 }
+
+export interface ObservableStatic {
+    create<T>(observer: (observer: Observer<T>) => Disposable | Function): Observable<T>;
+}
+
+export var Observable: ObservableStatic;
+
+export interface Subject<T> extends Observable<T>, Observer<T> {
+    getObserverCount(): number;
+}
+
+interface SubjectStatic {
+    new <T>(cacheLastValue?: boolean): Subject<T>;
+}
+
+export var Subject: SubjectStatic;
 
 export class ModelChangedEvent<T> {
     modelId: string;

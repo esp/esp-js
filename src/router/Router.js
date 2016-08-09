@@ -20,7 +20,7 @@ import { Const, Status, State, ModelRecord, ObservationStage, EventContext, Sing
 import { CompositeDiagnosticMonitor } from './devtools';
 import { default as ModelChangedEvent } from './ModelChangedEvent';
 import { Subject, Observable } from '../reactive/index';
-import { Guard, utils, logging } from '../system';
+import { Guard, utils, logging, WeakMapPollyFill } from '../system';
 import { DisposableBase, CompositeDisposable } from '../system/disposables';
 import { EspDecoratorMetadata } from '../decorators';
 
@@ -39,6 +39,8 @@ export default class Router extends DisposableBase {
 
         this._diagnosticMonitor = new CompositeDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
+
+        this._decoratorObservationRegister = {};
     }
     addModel(modelId, model, options) {
         this._throwIfHaltedOrDisposed();
@@ -422,6 +424,10 @@ export default class Router extends DisposableBase {
         return nextModel;
     }
     _observeEventsUsingDirectives(modelId, object){
+        if (this._decoratorObservationRegister[modelId]) {
+            throw new Error(`observeEvents has already been called for model with id '${modelId}'`);
+        }
+        this._decoratorObservationRegister[modelId] = true;
         var compositeDisposable = new CompositeDisposable();
         var metadata = EspDecoratorMetadata.getMetadata(object);
         var eventsDetails = metadata.getAllEvents();
@@ -434,8 +440,12 @@ export default class Router extends DisposableBase {
                 object[details.functionName](e, c, m);
             }));
         }
+        compositeDisposable.add(() => {
+            delete this._decoratorObservationRegister[modelId];
+        });
         return compositeDisposable;
     }
+
     _observeEventsUsingConventions(modelId, object, methodPrefix) {
         var compositeDisposable = new CompositeDisposable();
         var props = utils.getPropertyNames(object);

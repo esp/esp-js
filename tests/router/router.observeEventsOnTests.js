@@ -305,6 +305,12 @@ describe('Router', () => {
             expect(_model.receivedBarEvents.length).toBe(3);
         });
 
+        it('should observe base events', ()=> {
+            _derivedModel1.observeEvents();
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
+        });
+
         it('should only observe events in a derived objects inheritance hierarchy', ()=> {
             _derivedModel1.observeEvents();
             _router.publishEvent('derivedModel1Id', 'derivedEvent', {});
@@ -319,6 +325,24 @@ describe('Router', () => {
             _router.publishEvent('derivedModel2Id', 'aBaseEvent', {});
             expect(_derivedModel1.baseEventReveivedCount).toBe(1);
             expect(_derivedModel2.baseEventReveivedCount).toBe(1);
+        });
+
+        it('should throw when observeEvents called twice with the same model', ()=> {
+            _derivedModel1.observeEvents();
+            expect(() => {
+                _derivedModel1.observeEvents();
+            }).toThrow(new Error(`observeEvents has already been called for model with id 'derivedModel1Id'`));
+        });
+
+        it('should not throw when observeEvents called after initial observation disposed', ()=> {
+            var subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
+            subscription.dispose();
+            subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
+            subscription.dispose();
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
         });
     });
 });

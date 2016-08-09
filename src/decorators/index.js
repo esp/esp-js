@@ -16,4 +16,10 @@
  */
  // notice_end
 
-export { observeEvent, observeModelChangedEvent, DecoratorTypes } from './observeEvent';
+export {
+    observeEvent,
+    observeModelChangedEvent,
+    DecoratorTypes
+} from './observeEvent';
+
+export { default as EspDecoratorMetadata } from './espDecoratorMetadata';

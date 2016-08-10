@@ -20,9 +20,9 @@ import { Const, Status, State, ModelRecord, ObservationStage, EventContext, Sing
 import { CompositeDiagnosticMonitor } from './devtools';
 import { default as ModelChangedEvent } from './ModelChangedEvent';
 import { Subject, Observable } from '../reactive/index';
-import { Guard, utils, logging, disposables } from '../system';
+import { Guard, utils, logging, WeakMapPollyFill } from '../system';
 import { DisposableBase, CompositeDisposable } from '../system/disposables';
-import { DecoratorTypes } from '../decorators';
+import { EspDecoratorMetadata } from '../decorators';
 
 var _log = logging.Logger.create('Router');
 
@@ -39,6 +39,8 @@ export default class Router extends DisposableBase {
 
         this._diagnosticMonitor = new CompositeDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
+
+        this._decoratorObservationRegister = {};
     }
     addModel(modelId, model, options) {
         this._throwIfHaltedOrDisposed();
@@ -161,7 +163,7 @@ export default class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter(this, targetModelId);
     }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
-        if(object._espDecoratorMetadata) {
+        if(EspDecoratorMetadata.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object, methodPrefix);
         } else {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);
@@ -187,6 +189,11 @@ export default class Router extends DisposableBase {
     }
     disableDiagnostics() {
         this._diagnosticMonitor.disableLoggingDiagnostic();
+    }
+    isOnDispatchLoopFor(modelId) {
+        Guard.isString(modelId, 'modelId must be a string');
+        Guard.isFalsey(modelId === '', 'modelId must not be empty');
+        return this._state.currentModelId === modelId;
     }
     _tryEnqueueEvent(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
@@ -422,9 +429,15 @@ export default class Router extends DisposableBase {
         return nextModel;
     }
     _observeEventsUsingDirectives(modelId, object){
+        if (this._decoratorObservationRegister[modelId]) {
+            throw new Error(`observeEvents has already been called for model with id '${modelId}'`);
+        }
+        this._decoratorObservationRegister[modelId] = true;
         var compositeDisposable = new CompositeDisposable();
-        for (var i = 0; i < object._espDecoratorMetadata.events.length; i ++) {
-            let details = object._espDecoratorMetadata.events[i];
+        var metadata = EspDecoratorMetadata.getMetadata(object);
+        var eventsDetails = metadata.getAllEvents();
+        for (var i = 0; i < eventsDetails.length; i ++) {
+            let details = eventsDetails[i];
             compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
@@ -432,8 +445,12 @@ export default class Router extends DisposableBase {
                 object[details.functionName](e, c, m);
             }));
         }
+        compositeDisposable.add(() => {
+            delete this._decoratorObservationRegister[modelId];
+        });
         return compositeDisposable;
     }
+
     _observeEventsUsingConventions(modelId, object, methodPrefix) {
         var compositeDisposable = new CompositeDisposable();
         var props = utils.getPropertyNames(object);

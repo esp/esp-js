@@ -153,7 +153,7 @@ describe('Router', () => {
         var normalInvokeCount = 0;
         var normal2InvokeCount = 0;
         var committedInvokeCount = 0;
-        var _model;
+        var _model, _derivedModel1, _derivedModel2;
 
         class Model extends esp.DisposableBase {
             constructor(id, router) {
@@ -196,13 +196,66 @@ describe('Router', () => {
             //end-non-standard
         }
 
+        class BaseModel extends esp.DisposableBase {
+            constructor(id, router) {
+                super();
+                this._id = id;
+                this._router = router;
+                this.baseEventReveivedCount = 0;
+            }
+            observeEvents() {
+                this.addDisposable(this._router.observeEventsOn(this._id, this));
+            }
+            @esp.observeEvent('aBaseEvent')
+            _aBaseEvent(e, c, m) {
+                this.baseEventReveivedCount++;
+            }
+        }
+
+        class DerivedModel1 extends BaseModel {
+            constructor(id, router) {
+                super(id, router);
+                this.reveivedCount = 0;
+            }
+            @esp.observeEvent('derivedEvent')
+            _derivedEvent(e, c, m) {
+                this.reveivedCount++;
+            }
+            // override
+            observeEvents() {
+                this.addDisposable(this._router.observeEventsOn(this._id, this));
+            }
+        }
+
+        class DerivedModel2 extends BaseModel {
+            constructor(id, router) {
+                super(id, router);
+                this.reveivedCount = 0;
+            }
+            @esp.observeEvent('derivedEvent')
+            _derivedEvent(e, c, m) {
+                this.reveivedCount++;
+            }
+            // override
+            observeEvents() {
+                this.addDisposable(this._router.observeEventsOn(this._id, this));
+            }
+        }
+
         beforeEach(() => {
             previewInvokeCount = 0;
             normalInvokeCount = 0;
             normal2InvokeCount = 0;
             committedInvokeCount = 0;
+
             _model = new Model('modelId', _router);
             _router.addModel('modelId', _model);
+
+            _derivedModel1 = new DerivedModel1('derivedModel1Id', _router);
+            _router.addModel('derivedModel1Id', _derivedModel1);
+
+            _derivedModel2 = new DerivedModel2('derivedModel2Id', _router);
+            _router.addModel('derivedModel2Id', _derivedModel2);
         });
 
         it('should observe events by event name and stage', ()=> {
@@ -250,6 +303,46 @@ describe('Router', () => {
             _router.publishEvent('modelId', 'barEvent_3', 1);
 
             expect(_model.receivedBarEvents.length).toBe(3);
+        });
+
+        it('should observe base events', ()=> {
+            _derivedModel1.observeEvents();
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
+        });
+
+        it('should only observe events in a derived objects inheritance hierarchy', ()=> {
+            _derivedModel1.observeEvents();
+            _router.publishEvent('derivedModel1Id', 'derivedEvent', {});
+            expect(_derivedModel1.reveivedCount).toBe(1);
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
+
+            _derivedModel2.observeEvents();
+            _router.publishEvent('derivedModel2Id', 'derivedEvent', {});
+            expect(_derivedModel1.reveivedCount).toBe(1);
+            expect(_derivedModel2.reveivedCount).toBe(1);
+            _router.publishEvent('derivedModel2Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
+            expect(_derivedModel2.baseEventReveivedCount).toBe(1);
+        });
+
+        it('should throw when observeEvents called twice with the same model', ()=> {
+            _derivedModel1.observeEvents();
+            expect(() => {
+                _derivedModel1.observeEvents();
+            }).toThrow(new Error(`observeEvents has already been called for model with id 'derivedModel1Id'`));
+        });
+
+        it('should not throw when observeEvents called after initial observation disposed', ()=> {
+            var subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
+            subscription.dispose();
+            subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
+            subscription.dispose();
+            _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
+            expect(_derivedModel1.baseEventReveivedCount).toBe(1);
         });
     });
 });

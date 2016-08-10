@@ -79,6 +79,10 @@ export default class SingleModelRouter {
         this._ensureModelIsSet();
         return this._underlying.observeEventsOn(this._targetModelId, object, methodPrefix);
     }
+    isOnDispatchLoop() {
+        this._ensureModelIsSet();
+        return this._underlying.isOnDispatchLoopFor(this._targetModelId);
+    }
     _ensureModelIsSet() {
         Guard.isTrue(this._modelSet, 'You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');
     }

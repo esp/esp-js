@@ -81,6 +81,16 @@ describe('Router', () => {
             expect(_fooEventReceivedCount).toEqual(1);
         });
 
+        it('should proxy isOnDispatchLoop', ()=> {
+            _modelRouter.observeEventsOn(_model);
+            var actualIsOnDispatchResult = null;
+            _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
+                actualIsOnDispatchResult = _modelRouter.isOnDispatchLoop();
+            });
+            _modelRouter.publishEvent('fooEvent', {});
+            expect(actualIsOnDispatchResult).toEqual(true);
+        });
+
         describe('errors', () => {
 
             describe('static create', () => {

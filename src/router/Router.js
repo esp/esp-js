@@ -190,6 +190,11 @@ export default class Router extends DisposableBase {
     disableDiagnostics() {
         this._diagnosticMonitor.disableLoggingDiagnostic();
     }
+    isOnDispatchLoopFor(modelId) {
+        Guard.isString(modelId, 'modelId must be a string');
+        Guard.isFalsey(modelId === '', 'modelId must not be empty');
+        return this._state.currentModelId === modelId;
+    }
     _tryEnqueueEvent(modelId, eventType, event) {
         // don't enqueue a model changed event for the same model that changed
         if(eventType === Const.modelChangedEvent  && event.modelId === modelId)

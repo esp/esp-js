@@ -29,7 +29,7 @@
 	TodoListEventProcessor.prototype.observeInitEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'initEvent')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var todoItems = app.Utils.store(model.localStorageKey);
 				var todoItemsById = {};
 				if (todoItems) {
@@ -45,7 +45,7 @@
 	TodoListEventProcessor.prototype.observeToggleEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'todoToggled')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var todoItem = model.todoItemsById[event.id];
 				todoItem = extend({}, todoItem, { complete: !todoItem.complete });
 				model.todoItemsById[todoItem.id] = todoItem;
@@ -57,7 +57,7 @@
 	TodoListEventProcessor.prototype.observeToggleAllEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'toggleAll')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				model.mainSection.filteredTodoItems.forEach(function (todoItem) {
 					todoItem = extend({}, todoItem, { complete: event.checked });
 					model.todoItemsById[todoItem.id] = todoItem;
@@ -70,7 +70,7 @@
 	TodoListEventProcessor.prototype.observeTodoAddedEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'todoAdded')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var id = app.Utils.uuid();
 				var todoItem = new app.model.TodoItem(id, event.title);
 				model.todoItemsById[id] = todoItem;
@@ -82,7 +82,7 @@
 	TodoListEventProcessor.prototype.observeTodoDestroyedEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'todoDestroyed')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				delete model.todoItemsById[event.id];
 				this.save(model);
 			}.bind(this))
@@ -92,7 +92,7 @@
 	TodoListEventProcessor.prototype.observeFilterChangedEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'filterChanged')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				model.footer.filter = event.filter;
 			})
 			);
@@ -101,7 +101,7 @@
 	TodoListEventProcessor.prototype.observeClearCompletedEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'clearCompleted')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var ids = Object.keys(model.todoItemsById);
 				var id;
 				for (var i = 0; i < ids.length; i++) {
@@ -118,7 +118,7 @@
 	TodoListEventProcessor.prototype.observeEditStartedEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'editStarted')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var todoItem = model.todoItemsById[event.id];
 				model.todoItemsById[todoItem.id] = extend({}, todoItem, { editing: true });
 			})
@@ -128,7 +128,7 @@
 	TodoListEventProcessor.prototype.observeEditCancelledEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'editCancelled')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var todoItem = model.todoItemsById[event.id];
 				model.todoItemsById[todoItem.id] = extend({}, todoItem, { editing: false });
 			})
@@ -138,7 +138,7 @@
 	TodoListEventProcessor.prototype.observeEditCompletedEvent = function () {
 		this.addDisposable(this.router
 			.getEventObservable(this.modelId, 'editCompleted')
-			.observe(function (event, context, model) {
+			.subscribe(function (event, context, model) {
 				var todoItem = model.todoItemsById[event.id];
 				model.todoItemsById[todoItem.id] = extend({}, todoItem, { title: event.title, editing: false });
 				this.save(model);

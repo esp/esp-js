@@ -29,7 +29,7 @@ describe('.map', () => {
         var receivedItems = [];
         subject
             .map(i => i.child)
-            .observe(child => receivedItems.push(child));
+            .subscribe(child => receivedItems.push(child));
 
         subject.onNext({child:5});
         expect(receivedItems.length).toBe(1);
@@ -40,7 +40,7 @@ describe('.map', () => {
         var disposable = subject
             .map(i => {
                 throw new Error('Boom'); })
-            .observe(
+            .subscribe(
                 i => { });
 
         expect(() => {
@@ -51,7 +51,7 @@ describe('.map', () => {
     it('should bubble errors in observer', () => {
         var select = subject
             .map(i => i)
-            .observe(
+            .subscribe(
                 i => {
                     throw new Error('Boom');
                 });
@@ -65,7 +65,7 @@ describe('.map', () => {
         var onCompleteCalled = false;
         subject
             .map(i => i)
-            .observe(
+            .subscribe(
                 () => { },
                 () => onCompleteCalled = true
             );

@@ -23,8 +23,8 @@ import { Guard } from '../../system';
 Observable.prototype.do = function(action) {
     Guard.isFunction(action, "provided value isn't a function");
     var source = this;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe =  observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 action(arg1, arg2, arg3);
                 observer.onNext(arg1, arg2, arg3);
@@ -32,5 +32,5 @@ Observable.prototype.do = function(action) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

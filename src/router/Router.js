@@ -147,7 +147,7 @@ export default class Router extends DisposableBase {
             }
             let subjects = this._getOrCreateModelsEventSubjects(modelId, eventType);
             let subject = subjects[stage];
-            return subject.observe(o);
+            return subject.subscribe(o);
         });
     }
     getModelObservable(modelId) {
@@ -155,7 +155,7 @@ export default class Router extends DisposableBase {
             this._throwIfHaltedOrDisposed();
             Guard.isString(modelId, 'The modelId should be a string');
             let updateSubject = this._getModelUpdateSubjects(modelId);
-            return updateSubject.observe(o);
+            return updateSubject.subscribe(o);
         });
     }
     createModelRouter(targetModelId) {
@@ -438,7 +438,7 @@ export default class Router extends DisposableBase {
         var eventsDetails = metadata.getAllEvents();
         for (var i = 0; i < eventsDetails.length; i ++) {
             let details = eventsDetails[i];
-            compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
+            compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((e, c, m) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
                 this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
@@ -477,7 +477,7 @@ export default class Router extends DisposableBase {
                         eventName = eventName.substring(0, observationStageSplitIndex);
                     }
                 }
-                compositeDisposable.add(this.getEventObservable(modelId, eventName, stage).observe((e, c, m) => {
+                compositeDisposable.add(this.getEventObservable(modelId, eventName, stage).subscribe((e, c, m) => {
                     this._diagnosticMonitor.dispatchingViaConvention(prop);
                     object[prop](e, c, m);
                 }));

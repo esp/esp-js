@@ -39,7 +39,7 @@ describe('.observeOn', () => {
             return esp.Observable
                 .create(o => { })
                 .observeOn(undefined, 'foo')
-                .observe(o => {});
+                .subscribe(o => {});
         }).toThrow(new Error('router must be defined'));
     });
 
@@ -48,7 +48,7 @@ describe('.observeOn', () => {
             return esp.Observable
                 .create(o => { })
                 .observeOn(null, 'foo')
-                .observe(o => {});
+                .subscribe(o => {});
         }).toThrow(new Error('router must be defined'));
     });
 
@@ -57,7 +57,7 @@ describe('.observeOn', () => {
             return esp.Observable
                 .create(o => { })
                 .observeOn(_router, undefined)
-                .observe(o => {});
+                .subscribe(o => {});
         }).toThrow(new Error('modelId must be a string'));
     });
 
@@ -66,7 +66,7 @@ describe('.observeOn', () => {
             .getPrices()
             .observeOn(_router, _testModel1.modelId)
             .where(p => p.pair === 'EURUSD')
-            .observe(
+            .subscribe(
                 p => {
                     _workflowActions.push(`priceReceived-${p.pair}-${p.price}`);
                 },
@@ -93,7 +93,7 @@ describe('.observeOn', () => {
         _testModel1
             .getPrices()
             .observeOn(_router, _testModel1.modelId)
-            .observe(o => {
+            .subscribe(o => {
                 _testModel1.workflowActions.push('observerCalled');
             });
         _testModel1.pushPrice({pair:'EURUSD', price:1});
@@ -105,7 +105,7 @@ describe('.observeOn', () => {
             .getPrices()
             .subscribeOn(_router, _testModel1.modelId)
             .observeOn(_router, _testModel2.modelId)
-            .observe(o => {
+            .subscribe(o => {
                _testModel1.workflowActions.push('observerCalled');
             });
         _testModel1.pushPrice({pair:'EURUSD', price:1});

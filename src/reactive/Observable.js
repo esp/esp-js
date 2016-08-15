@@ -29,12 +29,12 @@ export default class Observable {
         };
         return new Observable(observe);
     }
-    constructor(observe) {
-        this._observe = observe;
+    constructor(subscribe) {
+        this._subscribe = subscribe;
     }
-    observe(...args) {
+    subscribe(...args) {
         var observer = Observer.wrap(...args);
-        Guard.isDefined(this._observe, '_observe not set');
-        return this._observe(observer);
+        Guard.isDefined(this._subscribe, '_subscribe not set');
+        return this._subscribe(observer);
     }
 }

@@ -23,7 +23,7 @@ Observable.prototype.subscribeOn = function(router, modelId) {
     Guard.isDefined(router, "router must be defined");
     Guard.isString(modelId, "modelId must be a string");
     var source = this;
-    var observe =  observer => {
+    var subscribe =  observer => {
         let disposable = {
             subscription:null,
             isDisposed:false,
@@ -39,10 +39,10 @@ Observable.prototype.subscribeOn = function(router, modelId) {
         };
         router.runAction(modelId, () => {
             if(!disposable.isDisposed) {
-                disposable.subscription = source.observe(observer);
+                disposable.subscription = source.subscribe(observer);
             }
         });
         return disposable;
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

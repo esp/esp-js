@@ -31,10 +31,10 @@ describe('subject', () => {
     it('onNext pushes item to observers', () => {
         var receivedItems1 = [];
         var receivedItems2 = [];
-        subject.observe(i => {
+        subject.subscribe(i => {
             receivedItems1.push(i);
         });
-        subject.observe(i => {
+        subject.subscribe(i => {
             receivedItems2.push(i);
         });
 
@@ -51,7 +51,7 @@ describe('subject', () => {
     });
 
     it('calls onError bubbles exception', () => {
-        subject.observe(i => {
+        subject.subscribe(i => {
             throw new Error('Boom');
         });
         expect(() => {
@@ -62,7 +62,7 @@ describe('subject', () => {
 
     it('removes observers on dispose', () => {
         var publishCount = 0;
-        var disposable = subject.observe(i => {
+        var disposable = subject.subscribe(i => {
             publishCount++;
         });
         subject.onNext(1);
@@ -74,11 +74,11 @@ describe('subject', () => {
 
     it('should call onCompleted on observers when it completes', () => {
         var didComplete1 = false, didComplete2 = false;
-        subject.observe(
+        subject.subscribe(
             () => { },
             () => didComplete1 = true
         );
-        subject.observe(
+        subject.subscribe(
             () => { },
             () => didComplete2 = true
         );
@@ -89,7 +89,7 @@ describe('subject', () => {
 
     it('should not onNext after completes', () => {
         var onNextCount = 0;
-        subject.observe(
+        subject.subscribe(
             () => {
                 onNextCount++;
             },
@@ -101,9 +101,9 @@ describe('subject', () => {
         expect(onNextCount).toEqual(1);
     });
 
-    it('.observe propagates onCompleted', () => {
+    it('.subscribe propagates onCompleted', () => {
         var onCompleteCalled = false;
-        subject.observe(
+        subject.subscribe(
             () => { },
             () => onCompleteCalled = true
         );
@@ -111,9 +111,9 @@ describe('subject', () => {
         expect(onCompleteCalled).toEqual(true);
     });
 
-    it('can observe using observer function', () => {
+    it('can subscribe using observer function', () => {
         var onNextCalled = false;
-        subject.observe(
+        subject.subscribe(
             () => {
                 onNextCalled = true;
             }
@@ -122,7 +122,7 @@ describe('subject', () => {
         expect(onNextCalled).toEqual(true);
     });
 
-    it('can observe using observer', () => {
+    it('can subscribe using observer', () => {
         var onCompleteCalled = false;
         var receivedItems = [];
         let observer = new reactive.Observer(
@@ -131,7 +131,7 @@ describe('subject', () => {
             },
             () => onCompleteCalled = true
         );
-        subject.where(_=>true).observe(observer);
+        subject.where(_=>true).subscribe(observer);
         subject.onNext(1);
         subject.onCompleted();
         expect(onCompleteCalled).toEqual(true);

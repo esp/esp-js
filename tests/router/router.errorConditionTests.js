@@ -57,7 +57,7 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').observe(
+            _router.getEventObservable('modelId1', 'Event1').subscribe(
                 (event, context, model) => {
                     _eventReceivedCount++;
                     if(model.throwADispatch) {
@@ -65,7 +65,7 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getModelObservable('modelId1').observe(
+            _router.getModelObservable('modelId1').subscribe(
                     model => {
                     _updateReceivedCount++;
                     if(model.throwAtUpdate) {
@@ -139,7 +139,7 @@ describe('Router', () => {
 
             it('should throw on getEventObservable()', () => {
                 expect(() => {
-                    _router.getModelObservable('modelId1').observe(() => {});
+                    _router.getModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error("Event router halted due to previous error [Error: Boom:Pre]"));
             });
 
@@ -157,7 +157,7 @@ describe('Router', () => {
 
             it('should throw on getModelObservable()', () => {
                 expect(() => {
-                    _router.getModelObservable('modelId1').observe(() => {});
+                    _router.getModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error("Event router halted due to previous error [Error: Boom:Pre]"));
             });
         });
@@ -191,7 +191,7 @@ describe('Router', () => {
 
             it('should throw on getEventObservable()', () => {
                 expect(() => {
-                    _router.getModelObservable('modelId1').observe(() => {});
+                    _router.getModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error("ESP router has been disposed"));
             });
 
@@ -209,7 +209,7 @@ describe('Router', () => {
 
             it('should throw on getModelObservable()', () => {
                 expect(() => {
-                    _router.getModelObservable('modelId1').observe(() => {});
+                    _router.getModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error("ESP router has been disposed"));
             });
         });

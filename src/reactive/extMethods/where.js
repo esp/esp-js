@@ -22,8 +22,8 @@ import { Guard } from '../../system';
 Observable.prototype.where = function(predicate) {
     Guard.isDefined(predicate, 'predicate Required');
     var source = this;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe =  observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 if(predicate(arg1, arg2, arg3)) {
                     observer.onNext(arg1, arg2, arg3);
@@ -32,5 +32,5 @@ Observable.prototype.where = function(predicate) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

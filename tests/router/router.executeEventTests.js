@@ -39,7 +39,7 @@ describe('Router', () => {
             _model2 = {};
             _router.addModel('modelId1', _model1);
             _router.addModel('modelId2', _model2);
-            _router.getEventObservable('modelId1', 'triggerExecuteEvent').observe(() => {
+            _router.getEventObservable('modelId1', 'triggerExecuteEvent').subscribe(() => {
                 _router.executeEvent('ExecutedEvent', {});
             });
         });
@@ -54,13 +54,13 @@ describe('Router', () => {
                     postEventProcessor: () => _router.executeEvent('ExecutedEvent', "c")
                 }
             );
-            _router.getEventObservable('myModel', 'TriggerExecuteEvent').observe(()=> {
+            _router.getEventObservable('myModel', 'TriggerExecuteEvent').subscribe(()=> {
                 _router.executeEvent('ExecutedEvent', "b");
             });
-            _router.getEventObservable('myModel', 'ExecutedEvent').observe((event, eventContext, model) => {
+            _router.getEventObservable('myModel', 'ExecutedEvent').subscribe((event, eventContext, model) => {
                 model.value += event;
             });
-            _router.getModelObservable('myModel').observe(() => {
+            _router.getModelObservable('myModel').subscribe(() => {
                 updateStreamTestRan = true;
                 expect(() => {
                     _router.executeEvent('ExecutedEvent', {});
@@ -73,7 +73,7 @@ describe('Router', () => {
 
         it('should throw if an execute handler raises another event', () => {
             var didTest = false;
-            _router.getEventObservable('modelId1', 'ExecutedEvent').observe(() => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe(() => {
                 didTest = true;
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event3', {});
@@ -85,7 +85,7 @@ describe('Router', () => {
 
         it('should execute the event against the current event loops model', () => {
             var actualModel;
-            _router.getEventObservable('modelId1', 'ExecutedEvent').observe((event, eventContext, model) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe((event, eventContext, model) => {
                 actualModel = model;
             });
             raiseStartEvent();
@@ -95,12 +95,12 @@ describe('Router', () => {
 
         it('should execute the event immediately', () => {
             var counter = 0, testPassed = false;
-            _router.getEventObservable('modelId1', 'triggerExecuteEvent2').observe(() => {
+            _router.getEventObservable('modelId1', 'triggerExecuteEvent2').subscribe(() => {
                 counter = 1;
                 _router.executeEvent('ExecutedEvent', {});
                 counter = 2;
             });
-            _router.getEventObservable('modelId1', 'ExecutedEvent').observe(() => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe(() => {
                 testPassed = counter === 1;
             });
             _router.publishEvent('modelId1', 'triggerExecuteEvent2', 'theEvent');
@@ -110,14 +110,14 @@ describe('Router', () => {
 
         it('should execute the event against all stages', () => {
             var previewReceived = false, normalReceived = false, committedReceived = false;
-            _router.getEventObservable('modelId1', 'ExecutedEvent', 'preview').observe(() => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent', 'preview').subscribe(() => {
                 previewReceived = true;
             });
-            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').observe((event, eventContext, model) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').subscribe((event, eventContext, model) => {
                 normalReceived = true;
                 eventContext.commit();
             });
-            _router.getEventObservable('modelId1', 'ExecutedEvent', 'committed').observe(() => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent', 'committed').subscribe(() => {
                 committedReceived = true;
             });
             raiseStartEvent();

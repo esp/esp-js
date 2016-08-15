@@ -36,7 +36,7 @@ describe('.subscribeOn', () => {
             return esp.Observable
                 .create(o => { })
                 .subscribeOn(undefined, 'foo')
-                .observe(o => {});
+                .subscribe(o => {});
         }).toThrow(new Error('router must be defined'));
     });
 
@@ -45,7 +45,7 @@ describe('.subscribeOn', () => {
             return esp.Observable
                 .create(o => { })
                 .subscribeOn(null, 'foo')
-                .observe(o => {});
+                .subscribe(o => {});
         }).toThrow(new Error('router must be defined'));
     });
 
@@ -54,7 +54,7 @@ describe('.subscribeOn', () => {
             return esp.Observable
                 .create(o => { })
                 .subscribeOn(_router, undefined)
-                .observe(o => {});
+                .subscribe(o => {});
         }).toThrow(new Error('modelId must be a string'));
     });
 
@@ -64,7 +64,7 @@ describe('.subscribeOn', () => {
             .getPrices()
             .subscribeOn(_router, _testModel1.modelId)
             .where(p => p.pair === 'EURUSD')
-            .observe(p => {
+            .subscribe(p => {
                 receivedPrices.push(`priceReceived-${p.pair}-${p.price}`);
             });
         _testModel1.pushPrice({pair:'EURUSD', price:1});
@@ -79,7 +79,7 @@ describe('.subscribeOn', () => {
             .getPrices()
             .subscribeOn(_router, _testModel1.modelId)
             .where(p => p.pair === 'EURUSD')
-            .observe(p => {
+            .subscribe(p => {
                 _workflowActions.push(`priceReceived-${p.pair}-${p.price}`);
             });
         _testModel1.pushPrice({pair:'EURUSD', price:1});
@@ -95,7 +95,7 @@ describe('.subscribeOn', () => {
         _testModel1
             .getPrices()
             .subscribeOn(_router, _testModel1.modelId)
-            .observe(o => {
+            .subscribe(o => {
                 _workflowActions.push('observerCalled');
             });
         expect(_workflowActions).toEqual(['preProcess-m1', 'obsCreate-m1', 'postProcess-m1']);

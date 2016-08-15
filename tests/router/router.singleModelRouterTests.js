@@ -45,10 +45,10 @@ describe('Router', () => {
             //_modelRouter.setModel(_model);
 
             _dispatchedModelNumbers = [];
-            _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
+            _modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {
                 m.aNumber = e;
             });
-            _modelRouter.getModelObservable().observe(m => {
+            _modelRouter.getModelObservable().subscribe(m => {
                 _dispatchedModelNumbers.push(m.aNumber);
             });
             _modelRouter.publishEvent('fooEvent', 1);
@@ -59,10 +59,10 @@ describe('Router', () => {
         });
 
         it('should proxy executeEvent to correct model event processor', ()=> {
-            _modelRouter.getEventObservable('barEvent').observe((e, c, m) => {
+            _modelRouter.getEventObservable('barEvent').subscribe((e, c, m) => {
                 m.executePassed = m.anotherNumber === 0;
             });
-            _modelRouter.getEventObservable('fooEvent2').observe((e, c, m) => {
+            _modelRouter.getEventObservable('fooEvent2').subscribe((e, c, m) => {
                 _modelRouter.executeEvent('barEvent', 'theBar');
                 m.anotherNumber = 1;
             });
@@ -84,7 +84,7 @@ describe('Router', () => {
         it('should proxy isOnDispatchLoop', ()=> {
             _modelRouter.observeEventsOn(_model);
             var actualIsOnDispatchResult = null;
-            _modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
+            _modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {
                 actualIsOnDispatchResult = _modelRouter.isOnDispatchLoop();
             });
             _modelRouter.publishEvent('fooEvent', {});

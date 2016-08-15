@@ -66,14 +66,14 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').observe(
+            _router.getEventObservable('modelId1', 'Event1').subscribe(
                 (event, context, model) => {
                     if(model.throwADispatch) {
                         throw new Error("Boom:Dispatch");
                     }
                 }
             );
-            _router.getModelObservable('modelId1').observe(
+            _router.getModelObservable('modelId1').subscribe(
                 model => {
                     if(model.throwAtUpdate) {
                         throw new Error("Boom:Update");
@@ -155,7 +155,7 @@ describe('Router', () => {
             });
 
             it('should not call onErrorHandler on getEventObservable()', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').observe(() => {}));
+                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
@@ -170,7 +170,7 @@ describe('Router', () => {
             });
 
             it('should not call onErrorHandler on getModelObservable()', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').observe(() => {}));
+                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });
@@ -202,7 +202,7 @@ describe('Router', () => {
             });
 
             it('should not call onErrorHandler getEventObservable()', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').observe(() => {}));
+                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
@@ -217,7 +217,7 @@ describe('Router', () => {
             });
 
             it('should not call onErrorHandler on getModelObservable()', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').observe(() => {}));
+                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });

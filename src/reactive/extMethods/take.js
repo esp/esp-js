@@ -25,8 +25,8 @@ Observable.prototype.take = function(number) {
     var source = this;
     var itemsReceived = 0;
     var hasCompleted = false;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe = observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 // there is possibly some strange edge cases if the observer also pumps a new value, this 'should' cover that (no tests yet)
                 itemsReceived++;
@@ -43,5 +43,5 @@ Observable.prototype.take = function(number) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

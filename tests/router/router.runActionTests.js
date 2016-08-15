@@ -52,10 +52,10 @@ describe('Router', () => {
             _model2 = Object.create(_proto).init('2');
             _router.addModel(_model1.id, _model1);
             _router.addModel(_model2.id, _model2);
-            _router.getModelObservable(_model1.id).observe(() => {
+            _router.getModelObservable(_model1.id).subscribe(() => {
                 model1ReceivedCount++;
             });
-            _router.getModelObservable(_model2.id).observe(() => {
+            _router.getModelObservable(_model2.id).subscribe(() => {
                 model2ReceivedCount++;
             });
             // reset these as observing the model above would have bumped them to 1

@@ -56,10 +56,10 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').observe((event, context, model) => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe((event, context, model) => {
                 model.isUnlockedForEventProcessor = !model.isLocked;
             });
-            _router.getModelObservable('modelId1').observe((model) => {
+            _router.getModelObservable('modelId1').subscribe((model) => {
                 _modelWasLockedForChangeDispatch = model.isLocked;
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');

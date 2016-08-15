@@ -31,7 +31,7 @@ describe('.where', () => {
             .where(i => {
                 receivedItems.push(i);
                 return true; })
-            .observe(i => { });
+            .subscribe(i => { });
 
         subject.onNext(1);
         expect(receivedItems.length).toBe(1);
@@ -43,7 +43,7 @@ describe('.where', () => {
         subject
             .where(i => {
                 return i > 5; })
-            .observe(i => { receivedItems.push(i); });
+            .subscribe(i => { receivedItems.push(i); });
 
         subject.onNext(1);
         expect(receivedItems.length).toBe(0);
@@ -57,7 +57,7 @@ describe('.where', () => {
         var disposable = subject
             .where(i => {
                 return true; })
-            .observe(i => { receivedItems++; });
+            .subscribe(i => { receivedItems++; });
 
         subject.onNext('a');
         subject.onNext('b');
@@ -71,7 +71,7 @@ describe('.where', () => {
         var disposable = subject
             .where(i => {
                 throw new Error('Boom'); })
-            .observe(
+            .subscribe(
                 i => { });
 
         expect(() => {
@@ -83,7 +83,7 @@ describe('.where', () => {
         var disposable = subject
             .where(i => {
                 return true; })
-            .observe(
+            .subscribe(
                 i => {
                     throw new Error('Boom');
                 });
@@ -97,7 +97,7 @@ describe('.where', () => {
         var onCompleteCalled = false;
         subject
             .where(i => i > 0)
-            .observe(
+            .subscribe(
                 () => { },
                 () => onCompleteCalled = true
             );

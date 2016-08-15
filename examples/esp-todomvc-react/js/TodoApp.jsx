@@ -13,7 +13,7 @@ window.app = window.app || {};
 		componentWillMount: function () {
 			this.props.router
 				.getModelObservable(this.props.modelId)
-				.observe(function (model) {
+				.subscribe(function (model) {
 					this.setState({ model: model });
 				}.bind(this));
 		},

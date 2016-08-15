@@ -76,14 +76,14 @@ var runBasicExample =  () => {
         _listenForCarMakeChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'carMakeChangedEvent')
-                .observe((event, eventContext, model)=> {
+                .subscribe((event, eventContext, model)=> {
                     model.make = event.make;
                 });
         }
         _listenForIsSportModelChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'isSportModelChangedEvent')
-                .observe((event, eventContext, model) => {
+                .subscribe((event, eventContext, model) => {
                     model.isSportModel = event.isSportModel;
                     if(model.isSportModel) {
                         model.cost = 30000;
@@ -95,7 +95,7 @@ var runBasicExample =  () => {
         _listenForColorModelChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'colorChangedEvent')
-                .observe((event, eventContext, model) => {
+                .subscribe((event, eventContext, model) => {
                     model.color = event.color;
                 });
         }
@@ -147,7 +147,7 @@ var runBasicExample =  () => {
         _listenForModelChanges() {
             this._router
                 .getModelObservable('myModelId')
-                .observe(model => {
+                .subscribe(model => {
                     // you'd sync your view here, for now just dump the description to the console
                     console.log(model.description);
                 });
@@ -241,14 +241,14 @@ var runEventWorkflowExample = () => {
 
         router
             .getEventObservable('model1', 'fruitExpiredEvent', esp.ObservationStage.normal)
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 console.log("Setting hasExpired to " + event);
                 model.hasExpired = event;
             });
 
         router
             .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.preview)
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 if(model.hasExpired) {
                     console.log("Cancelling buyFruitEvent event as all fruit has expired");
                     eventContext.cancel();
@@ -257,7 +257,7 @@ var runEventWorkflowExample = () => {
 
         router
             .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.normal)
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 console.log("Buying fruit, quantity: " + event.quantity);
                 model.stockCount -= event.quantity;
             });
@@ -290,7 +290,7 @@ var runEventWorkflowExample = () => {
 
         var buyFruitEventSubscription = router
             .getEventObservable('model1', 'buyFruitEvent') // i.e. stage = esp.ObservationStage.normal
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 console.log("Buying fruit, quantity: " + event.quantity);
                 model.stockCount -= event.quantity;
             });
@@ -318,7 +318,7 @@ var runEventWorkflowExample = () => {
 
         router
             .getEventObservable('model1', 'buyFruitEvent')
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 console.log("Buying fruit, quantity: " + event.quantity);
                 model.stockCount -= event.quantity;
                 eventContext.commit();
@@ -326,7 +326,7 @@ var runEventWorkflowExample = () => {
 
         router
             .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.committed)
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 // reacting to the buyFruitEvent we check if the shelf quantity requires refilling
                 var shouldRefreshFromStore = model.stockCount < 3;
                 console.log("Checking if we should refresh from store. Should refresh: " + shouldRefreshFromStore);
@@ -335,7 +335,7 @@ var runEventWorkflowExample = () => {
 
         router
             .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.committed)
-            .observe((event, eventContext, model) => {
+            .subscribe((event, eventContext, model) => {
                 // given we've sold something we flip a dirty flag which could be used by another
                 // // periodic event to determine if we should recalculate inventory
                 console.log("Flagging inventory recalculate");
@@ -361,12 +361,12 @@ var runModelObserveExample = () => {
     router.addModel("modelId", { foo: 1 });
     router
         .getEventObservable('modelId', 'fooChanged')
-        .observe((event, eventContext, model)=> {
+        .subscribe((event, eventContext, model)=> {
             model.foo = event.newFoo;
         });
     router
         .getModelObservable('modelId')
-        .observe(model => {
+        .subscribe(model => {
             console.log("Foo is " + model.foo);
         });
     router.publishEvent('modelId', 'fooChanged', { newFoo: 2 });
@@ -394,7 +394,7 @@ var runObserveApiBasicExample = () => {
     // create an event stream that listens for static data
     var staticDataSubscriptionDisposable = router
         .getEventObservable('modelId', 'staticDataReceivedEvent')
-        .observe((event, eventContext, model) => {
+        .subscribe((event, eventContext, model) => {
             console.log("Static data received");
             model.staticData.initialised = true;
             model.staticData.clientMargin = event.clientMargin;
@@ -408,7 +408,7 @@ var runObserveApiBasicExample = () => {
         .do((event, eventContext, model) => console.log("Price received"))
         // only procure the event if the condition matches
         .where((event, eventContext, model) => model.staticData.initialised)
-        .observe((event, eventContext, model) => {
+        .subscribe((event, eventContext, model) => {
             model.newPrice =
                 event.price +
                 model.staticData.clientMargin;
@@ -436,7 +436,7 @@ var runErrorFlowsExample = () => {
     router
         .getEventObservable('modelId', 'boomEvent')
         .do(() => {throw new Error("Boom");})
-        .observe(
+        .subscribe(
             () => {
                 console.log("This never run");
             }
@@ -486,7 +486,7 @@ var runAcyncOperationWithWorkItemExample = () => {
             this.addDisposable(this._router
                 .getEventObservable('modelId', 'initialiseEvent')
                 .take(1)
-                .observe(() => {
+                .subscribe(() => {
                     console.log("Starting work item to get static data");
                     var getUserStaticWorkItem = new GetUserStaticDataWorkItem(this._router);
                     this.addDisposable(getUserStaticWorkItem);
@@ -500,7 +500,7 @@ var runAcyncOperationWithWorkItemExample = () => {
             // open if you were to later expect events matching its eventType
             this.addDisposable(this._router
                 .getEventObservable('modelId', 'userStaticReceivedEvent')
-                .observe((event, eventContext, model) => {
+                .subscribe((event, eventContext, model) => {
                     console.log("Adding static data [" + event + "] to model");
                     model.staticData.push(event);
                 })
@@ -523,7 +523,7 @@ var runAcyncOperationWithRunActionExample = () => {
     };
     var router = new esp.Router();
     router.addModel('myModelId', myModel);
-    router.getEventObservable('myModelId', 'getAsyncDataEvent').observe((e, c, m) => {
+    router.getEventObservable('myModelId', 'getAsyncDataEvent').subscribe((e, c, m) => {
         console.log('About to do async work');
         m.backgroundOperations++;
         setTimeout(() => {
@@ -535,7 +535,7 @@ var runAcyncOperationWithRunActionExample = () => {
         }, 2000);
     });
     router.publishEvent('myModelId', 'getAsyncDataEvent', { request: "someRequest" });
-    router.getModelObservable('myModelId').observe(m => {
+    router.getModelObservable('myModelId').subscribe(m => {
         console.log('Update, background operation count is: %s. foo is %s', m.backgroundOperations, m.foo);
     });
 };
@@ -548,10 +548,10 @@ var runModelRouter = () => {
     router.addModel('myModel', myModel);
     var modelRouter = router.createModelRouter('myModel');
 
-    modelRouter.getEventObservable('fooEvent').observe((e, c, m) => {
+    modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {
         m.foo = e.theFoo;
     });
-    modelRouter.getModelObservable().observe(m => {
+    modelRouter.getModelObservable().subscribe(m => {
         console.log('Update, foo is: %s', m.foo);
     });
     modelRouter.publishEvent('fooEvent', { theFoo: 1});

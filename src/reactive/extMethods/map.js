@@ -22,8 +22,8 @@ import { Guard } from '../../system';
 Observable.prototype.map = function(selector) {
     Guard.isDefined(selector, 'selector Required');
     var source = this;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe =  observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 var selection = selector(arg1, arg2, arg3);
                 // we only pass one value on, the result of the selection
@@ -32,5 +32,5 @@ Observable.prototype.map = function(selector) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

@@ -10,7 +10,7 @@ export default class ThreadSection extends React.Component {
         this._subscription = this.props.router
             .getModelObservable()
             .where(model => model.threadSection.hasChanges)
-            .observe(model => {
+            .subscribe(model => {
                 this.setState(model.threadSection);
             });
     }

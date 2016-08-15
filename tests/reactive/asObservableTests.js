@@ -27,7 +27,7 @@ describe('.asObservable', () => {
 
     it('.asObservable propagates onCompleted', () => {
         var onCompleteCalled = false;
-        subject.asObservable().observe(
+        subject.asObservable().subscribe(
             () => { },
             () => onCompleteCalled = true
         );

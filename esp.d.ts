@@ -119,6 +119,7 @@ export interface Observable<T> {
     take(count:number) : Observable<T>;
     subscribeOn(router:Router, modelId:string);
     observeOn(router:Router, modelId:string);
+    asObservable() : Observable<T>;
 }
 
 export interface ObservableStatic {

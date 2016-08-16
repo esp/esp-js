@@ -23,7 +23,7 @@ import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, WeakMapPollyFill } from '../system';
 import { DisposableBase, CompositeDisposable } from '../system/disposables';
 import { EspDecoratorMetadata } from '../decorators';
-import DecoratorObservationRegister from "./decoratorObservationRegister";
+import DecoratorObservationRegister from "./DecoratorObservationRegister";
 
 var _log = logging.Logger.create('Router');
 

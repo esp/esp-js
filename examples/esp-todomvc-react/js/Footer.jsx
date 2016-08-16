@@ -34,7 +34,7 @@ window.app = window.app || {};
 						<li>
 							<a
 								href='#/'
-								className={React.addons.classSet({selected: footer.filter === app.model.Filter.all})}>
+								className={classNames({selected: footer.filter === app.model.Filter.all})}>
 								All
 							</a>
 						</li>
@@ -42,7 +42,7 @@ window.app = window.app || {};
 						<li>
 							<a
 								href='#/active'
-								className={React.addons.classSet({selected: footer.filter === app.model.Filter.active})}>
+								className={classNames({selected: footer.filter === app.model.Filter.active})}>
 								Active
 							</a>
 						</li>
@@ -50,7 +50,7 @@ window.app = window.app || {};
 						<li>
 							<a
 								href='#/completed'
-								className={React.addons.classSet({selected: footer.filter === app.model.Filter.complete})}>
+								className={classNames({selected: footer.filter === app.model.Filter.complete})}>
 								Completed
 							</a>
 						</li>

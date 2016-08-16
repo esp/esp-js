@@ -82,7 +82,7 @@ window.app = window.app || {};
 			var todoItem = this.props.model;
 
 			return (
-				<li className={React.addons.classSet({
+				<li className={classNames({
 					completed: todoItem.complete,
 					editing: todoItem.editing
 				})}>

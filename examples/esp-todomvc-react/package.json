@@ -13,9 +13,11 @@
   "private": true,
   "dependencies": {
     "babel-core": "^5.6.18",
+    "classnames": "^2.2.5",
     "director": "^1.2.8",
-    "esp-js": "^0.7.0",
-    "react": "^0.13.3",
+    "esp-js": "^1.0.0",
+    "react": "^15.3.0",
+    "react-dom": "^15.3.0",
     "todomvc-app-css": "^2.0.0",
     "todomvc-common": "^1.0.0"
   }

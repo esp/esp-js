@@ -38,6 +38,15 @@ describe('Router', () => {
             expect(() => {_router.getModelObservable({}).subscribe(() =>{}); }).toThrow(new Error('The modelId should be a string'));
         });
 
+        it('dispatches model once registered', () => {
+            var model3UpdateCount = 0;
+            _router.addModel('modelId3', {number:0});
+            _router.getModelObservable('modelId1').subscribe(() => {
+                model3UpdateCount++;
+            });
+            expect(model3UpdateCount).toBe(1);
+        });
+
         it('dispatches model updates to observers by modelid', () => {
             var model1UpdateCount = 0, model2UpdateCount = 0;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
@@ -50,8 +59,8 @@ describe('Router', () => {
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
             _router.publishEvent('modelId2', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(1);
-            expect(model2UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
+            expect(model2UpdateCount).toBe(2);
         });
 
         it('doesn\'t dispatch to disposed update observers', () => {
@@ -61,10 +70,10 @@ describe('Router', () => {
                 model1UpdateCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
             disposable.dispose();
             _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
         });
 
         it('dispatches model updates after that models event queue is empty, but before processing next model', () => {
@@ -80,8 +89,8 @@ describe('Router', () => {
             _router.getModelObservable('modelId2').subscribe(() => {
                 model2UpdateCount++;
             });
-            expect(model1UpdateCount).toBe(0);
-            expect(model2UpdateCount).toBe(0);
+            expect(model1UpdateCount).toBe(1);
+            expect(model2UpdateCount).toBe(1);
             _router.getEventObservable('modelId1', 'StartEvent').subscribe(() => {
                 _router.publishEvent('modelId1', 'Event1', 1);
                 _router.publishEvent('modelId2', 'Event1', 2);
@@ -90,19 +99,19 @@ describe('Router', () => {
             });
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 model1EventCount++;
-                // no models should be dispatched any time this is run
-                check1 = model1UpdateCount === 0 && model2UpdateCount ===0;
+                // each model should have only had an initial update dispatched by this time
+                check1 = model1UpdateCount === 1 && model2UpdateCount ===1;
             });
             _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
                 // by the time we process this event for model 2, model 1
                 // should have processed both it's events AND have dispatched it's model
                 model2EventCount++;
-                check2 = model1UpdateCount === 1 && model2UpdateCount ===0 && model1EventCount == 2;
+                check2 = model1UpdateCount === 2 && model2UpdateCount === 1 && model1EventCount == 2;
             });
             _router.publishEvent('modelId1', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toEqual(1);
+            expect(model1UpdateCount).toEqual(2);
             expect(model1EventCount).toEqual(2);
-            expect(model2UpdateCount).toEqual(1);
+            expect(model2UpdateCount).toEqual(2);
             expect(model2EventCount).toEqual(2);
             expect(check1).toEqual(true);
             expect(check2).toEqual(true);
@@ -125,7 +134,7 @@ describe('Router', () => {
             expect(event2Received).toBe(true);
         });
 
-        it('only dispatches changes for models whos processors received event', () => {
+        it('only dispatches changes for models which processed an event', () => {
             var model1UpdateCount = 0, model2UpdateCount = 0;
             _router.getEventObservable('modelId2', 'StartEvent').subscribe(() => {
                 _router.publishEvent('modelId2', 'Event1', 'payload');
@@ -134,15 +143,15 @@ describe('Router', () => {
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
-            expect(model1UpdateCount).toBe(0);
+            expect(model1UpdateCount).toBe(1);
             _router.getEventObservable('modelId2', 'Event1').subscribe(() => { /*noop*/  });
             _router.getModelObservable('modelId2').subscribe(() => {
                 model2UpdateCount++;
             });
-            expect(model2UpdateCount).toBe(0);
-            _router.publishEvent('modelId2', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toBe(0);
             expect(model2UpdateCount).toBe(1);
+            _router.publishEvent('modelId2', 'StartEvent', 'payload');
+            expect(model1UpdateCount).toBe(1);
+            expect(model2UpdateCount).toBe(2);
         });
 
         it('should dispatch change to models if event if only one event was processed', () => {
@@ -157,13 +166,13 @@ describe('Router', () => {
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
-            expect(model1UpdateCount).toBe(0);
-            _router.publishEvent('modelId1', 'Event1', 'payload');
             expect(model1UpdateCount).toBe(1);
+            _router.publishEvent('modelId1', 'Event1', 'payload');
+            expect(model1UpdateCount).toBe(2);
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount2++;
             });
-            expect(model1UpdateCount).toBe(1);
+            expect(model1UpdateCount).toBe(2);
             expect(model1UpdateCount2).toBe(1);
         });
 

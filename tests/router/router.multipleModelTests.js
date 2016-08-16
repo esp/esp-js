@@ -88,14 +88,14 @@ describe('Router', () => {
             _router.getModelObservable(_model1.id).subscribe(() => {
                 model1UpdateCount++;
             });
-            expect(model1UpdateCount).toEqual(0);
+            expect(model1UpdateCount).toEqual(1);
             _router.getModelObservable(_model2.id).subscribe(() => {
                 model2UpdateCount++;
             });
-            expect(model2UpdateCount).toEqual(0);
-            _router.publishEvent(_model2.id, "fooEvent", 1);
-            expect(model1UpdateCount).toEqual(0);
             expect(model2UpdateCount).toEqual(1);
+            _router.publishEvent(_model2.id, "fooEvent", 1);
+            expect(model1UpdateCount).toEqual(1);
+            expect(model2UpdateCount).toEqual(2);
         });
 
         describe('model changed events', () => {

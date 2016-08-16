@@ -45,10 +45,12 @@ export default class Router extends DisposableBase {
     addModel(modelId, model, options) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
-        Guard.isDefined(model, 'THe model argument must be defined');
+        Guard.isDefined(model, 'The model argument must be defined');
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
         this._models[modelId] = new ModelRecord(modelId, model, options);
+        let modelUpdateSubject = this._getModelUpdateSubjects(modelId);
+        modelUpdateSubject.onNext(model);
         this._diagnosticMonitor.addModel(modelId);
     }
     removeModel(modelId){
@@ -180,7 +182,6 @@ export default class Router extends DisposableBase {
             throw new Error('Unknown error handler.');
         }
     }
-
     getDispatchLoopDiagnostics () {
         return this._diagnosticMonitor.getLoggingDiagnosticSummary();
     }

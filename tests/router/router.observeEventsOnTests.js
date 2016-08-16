@@ -242,6 +242,10 @@ describe('Router', () => {
             }
         }
 
+        function getExpectedObserveEventsOnTwiceError(modelId) {
+            return new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
+        }
+
         beforeEach(() => {
             previewInvokeCount = 0;
             normalInvokeCount = 0;
@@ -327,11 +331,30 @@ describe('Router', () => {
             expect(_derivedModel2.baseEventReveivedCount).toBe(1);
         });
 
-        it('should throw when observeEvents called twice with the same model', ()=> {
+        it('should throw when observeEvents called twice with the same object', ()=> {
             _derivedModel1.observeEvents();
             expect(() => {
                 _derivedModel1.observeEvents();
-            }).toThrow(new Error(`observeEvents has already been called for model with id 'derivedModel1Id'`));
+            }).toThrow(getExpectedObserveEventsOnTwiceError('derivedModel1Id'));
+        });
+
+        it('should allow multiple registrations for the same modelId against different objects', ()=> {
+            _router.addModel('m1', {});
+            class e {
+                @esp.observeEvent('anEvent')
+                _derivedEvent(e, c, m) {
+                }
+            }
+            let eventObserver1 = new e();
+            let eventObserver2 = new e();
+            _router.observeEventsOn('m1', eventObserver1);
+            expect(() => {
+                _router.observeEventsOn('m1', eventObserver1);
+            }).toThrow(getExpectedObserveEventsOnTwiceError('m1'));
+            _router.observeEventsOn('m1', eventObserver2);
+            expect(() => {
+                _router.observeEventsOn('m1', eventObserver2);
+            }).toThrow(getExpectedObserveEventsOnTwiceError('m1'));
         });
 
         it('should not throw when observeEvents called after initial observation disposed', ()=> {

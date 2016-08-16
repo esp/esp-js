@@ -23,6 +23,7 @@ import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, WeakMapPollyFill } from '../system';
 import { DisposableBase, CompositeDisposable } from '../system/disposables';
 import { EspDecoratorMetadata } from '../decorators';
+import DecoratorObservationRegister from "./decoratorObservationRegister";
 
 var _log = logging.Logger.create('Router');
 
@@ -40,7 +41,7 @@ export default class Router extends DisposableBase {
         this._diagnosticMonitor = new CompositeDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
 
-        this._decoratorObservationRegister = {};
+        this._decoratorObservationRegister = new DecoratorObservationRegister();
     }
     addModel(modelId, model, options) {
         this._throwIfHaltedOrDisposed();
@@ -430,10 +431,10 @@ export default class Router extends DisposableBase {
         return nextModel;
     }
     _observeEventsUsingDirectives(modelId, object){
-        if (this._decoratorObservationRegister[modelId]) {
-            throw new Error(`observeEvents has already been called for model with id '${modelId}'`);
+        if (this._decoratorObservationRegister.isRegistered(modelId, object)) {
+            throw new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
         }
-        this._decoratorObservationRegister[modelId] = true;
+        this._decoratorObservationRegister.register(modelId, object);
         var compositeDisposable = new CompositeDisposable();
         var metadata = EspDecoratorMetadata.getMetadata(object);
         var eventsDetails = metadata.getAllEvents();
@@ -447,7 +448,7 @@ export default class Router extends DisposableBase {
             }));
         }
         compositeDisposable.add(() => {
-            delete this._decoratorObservationRegister[modelId];
+            delete this._decoratorObservationRegister.removeRegistration(modelId, object);
         });
         return compositeDisposable;
     }

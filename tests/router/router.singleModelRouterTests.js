@@ -41,8 +41,6 @@ describe('Router', () => {
             };
             _fooEventReceivedCount = 0;
             _modelRouter = esp.SingleModelRouter.createWithModel(_model);
-            //_modelRouter = esp.SingleModelRouter.create();
-            //_modelRouter.setModel(_model);
 
             _dispatchedModelNumbers = [];
             _modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {

@@ -15,7 +15,7 @@ window.app = window.app || {};
 
 			event.preventDefault();
 
-			var inputField = React.findDOMNode(this.refs.newField);
+			var inputField = ReactDOM.findDOMNode(this.refs.newField);
 			var val = inputField.value.trim();
 			if (val) {
 				this.props.router.publishEvent(this.props.modelId, 'todoAdded', { title: val });

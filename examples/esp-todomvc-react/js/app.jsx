@@ -6,7 +6,7 @@
 	var router = new esp.Router();
 	var modelId = 'todoList';
 
-	React.render(
+	ReactDOM.render(
 		<TodoApp
 			router={router}
 			modelId={modelId}

@@ -24,8 +24,8 @@ Observable.prototype.takeUntil = function(predicate, inclusive) {
     Guard.isFunction(predicate, "provided predicate isn't a function");
     var source = this;
     var done = false;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe =  observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 if(done) return;
                 var shouldTake = predicate(arg1, arg2, arg3);
@@ -38,5 +38,5 @@ Observable.prototype.takeUntil = function(predicate, inclusive) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

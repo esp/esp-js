@@ -25,9 +25,9 @@ describe('Router', () => {
     beforeEach(() => {
         _router = new esp.Router();
         _router.addModel('modelId1', {});
-        _router.getEventObservable('modelId1', 'startEvent').observe(() => {
+        _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
         });
-        _router.getModelObservable('modelId1').observe(m => {
+        _router.getModelObservable('modelId1').subscribe(m => {
         });
     });
 

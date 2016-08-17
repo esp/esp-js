@@ -20,13 +20,13 @@ import Observable from '../Observable';
 
 Observable.prototype.asObservable = function() {
     var source = this;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe =  observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 observer.onNext(arg1, arg2, arg3);
             },
             () => observer.onCompleted()
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

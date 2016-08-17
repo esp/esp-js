@@ -20,6 +20,6 @@ import esp from 'esp-js';
 var router = new esp.Router();
 ```
 
-Alternatevely you can reference `dist\esp.js` or `dist\esp.min.js` via a `script` tag. These files expose `esp` using the Universal Module Definition (UMD) format. 
+Alternatively you can reference `dist\esp.js` or `dist\esp.min.js` via a `script` tag. These files expose `esp` using the Universal Module Definition (UMD) format. 
 
 

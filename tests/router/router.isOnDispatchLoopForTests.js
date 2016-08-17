@@ -41,11 +41,11 @@ describe('Router', () => {
                 model2EventHandler_isOnModel2DispatchLoop = null;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
-            _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 model1EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
                 model1EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
             });
-            _router.getEventObservable('modelId2', 'Event1').observe(() => {
+            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
                 model2EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
                 model2EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
             });

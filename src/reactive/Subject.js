@@ -26,10 +26,10 @@ export default class Subject extends Observable  {
         this._lastValue = undefined;
         this._observers = [];
         this._hasComplete = false;
-        // the base object Observable requires _observe to be bound to this.
-        this._observe = observe.bind(this);
+        // the base object Observable requires _subscribe to be bound to this.
+        this._subscribe = subscribe.bind(this);
     }
-    // The reactivate implementation can push 3 arguments through the stream, initially this was setup to
+    // The reactive implementation can push 3 arguments through the stream, initially this was setup to
     // pass all arguments using .apply, however it's performance is about 40% slower than direct method calls
     // given this, and that we only ever push a max of 3 args, it makes sense to hard code them.
     onNext(arg1, arg2, arg3) {
@@ -59,7 +59,7 @@ export default class Subject extends Observable  {
         return this._observers.length;
     }
 }
-function observe(observer) {
+function subscribe(observer) {
     this._observers.push(observer);
     if(this._cacheLastValue && typeof this._lastValue !== 'undefined') {
         observer.onNext(this._lastValue.arg1, this._lastValue.arg2, this._lastValue.arg3);

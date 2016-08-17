@@ -94,8 +94,8 @@ export interface EventObserver<TModel, TEvent, TContext> {
 }
 
 export interface EventObservable<TModel, TEvent, TContext> {
-    observe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
-    observe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted? : () => void) : Disposable;
+    subscribe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
+    subscribe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted? : () => void) : Disposable;
     do(onNext : (event : TEvent) => void) : EventObservable<TModel, TEvent, TContext>;
     do(onNext : (event : TEvent, context : TContext) => void) : EventObservable<TModel, TEvent, TContext>;
     do(onNext : (event : TEvent, context : TContext, model : TModel) => void) : EventObservable<TModel, TEvent, TContext>;
@@ -111,14 +111,15 @@ export interface Observer<T> {
 }
 
 export interface Observable<T> {
-    observe(observer : Observer<T>) : Disposable;
-    observe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
+    subscribe(observer : Observer<T>) : Disposable;
+    subscribe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
     do(onNext : (model : T) => void) : Observable<T>;
     where(predicate: (model : T) => boolean) : Observable<T>;
     map<TOther>(predicate: (model : T) => TOther) : Observable<TOther>;
     take(count:number) : Observable<T>;
     subscribeOn(router:Router, modelId:string);
     observeOn(router:Router, modelId:string);
+    asObservable() : Observable<T>;
 }
 
 export interface ObservableStatic {

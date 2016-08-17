@@ -24,8 +24,8 @@ Observable.prototype.observeOn = function(router, modelId) {
     Guard.isString(modelId, "modelId must be a string");
     var source = this;
     var hasCompleted = false;
-    var observe =  observer => {
-        return source.observe(
+    var subscribe =  observer => {
+        return source.subscribe(
             (arg1, arg2, arg3) => {
                 if(hasCompleted ) {
                     return;
@@ -42,5 +42,5 @@ Observable.prototype.observeOn = function(router, modelId) {
             }
         );
     };
-    return new Observable(observe);
+    return new Observable(subscribe);
 };

@@ -28,25 +28,25 @@ describe('Router', () => {
 
     describe('.getEventObservable()', () => {
 
-        it('throws on observe if arguments incorrect', () => {
-            expect(() => {_router.getEventObservable({}, 'foo').observe(()=>{}); }).toThrow(new Error('The modelId argument should be a string'));
-            expect(() => {_router.getEventObservable(undefined, 'foo').observe(()=>{}); }).toThrow();
-            expect(() => {_router.getEventObservable('foo', undefined).observe(()=>{}); }).toThrow();
+        it('throws on subscribe if arguments incorrect', () => {
+            expect(() => {_router.getEventObservable({}, 'foo').subscribe(()=>{}); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_router.getEventObservable(undefined, 'foo').subscribe(()=>{}); }).toThrow();
+            expect(() => {_router.getEventObservable('foo', undefined).subscribe(()=>{}); }).toThrow();
         });
 
-        it('throws on observe if unknown event stage passed', () => {
-            expect(() => {_router.getEventObservable('foo', 'eventType', 'unknownStage').observe(()=>{}); }).toThrow(new Error('The stage argument value of [unknownStage] is incorrect. It should be preview, normal or committed.'));
-            expect(() => {_router.getEventObservable('foo', 'eventType', {}).observe(()=>{}); }).toThrow(new Error('The stage argument should be a string'));
+        it('throws on subscribe if unknown event stage passed', () => {
+            expect(() => {_router.getEventObservable('foo', 'eventType', 'unknownStage').subscribe(()=>{}); }).toThrow(new Error('The stage argument value of [unknownStage] is incorrect. It should be preview, normal or committed.'));
+            expect(() => {_router.getEventObservable('foo', 'eventType', {}).subscribe(()=>{}); }).toThrow(new Error('The stage argument should be a string'));
         });
 
         it('dispatches events to processors by modelid', () => {
             var model1ProcessorReceived = false, model2ProcessorReceived = false;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
-            _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 model1ProcessorReceived = true;
             });
-            _router.getEventObservable('modelId2', 'Event1').observe(() => {
+            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
                 model2ProcessorReceived = true;
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
@@ -57,7 +57,7 @@ describe('Router', () => {
         it('doesn\'t dispatch to disposed update ubscribers', () => {
             _router.addModel('modelId1', {});
             var eventReeivedCount =0;
-            var disposable = _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            var disposable = _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 eventReeivedCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
@@ -99,17 +99,17 @@ describe('Router', () => {
                 };
                 _router.addModel('modelId1', {});
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.preview)
-                    .observe((event, eventContext) => {
+                    .subscribe((event, eventContext) => {
                         receivedAtPreview = true;
                         actOnEventContext(eventContext, esp.ObservationStage.preview);
                     });
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.normal)
-                    .observe((event, eventContext) => {
+                    .subscribe((event, eventContext) => {
                         receivedAtNormal = true;
                         actOnEventContext(eventContext, esp.ObservationStage.normal);
                     });
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.committed)
-                    .observe((event, eventContext) => {
+                    .subscribe((event, eventContext) => {
                         receivedAtCommitted = true;
                         actOnEventContext(eventContext, esp.ObservationStage.committed);
                     });
@@ -175,7 +175,7 @@ describe('Router', () => {
                 eventContextActions.shouldCommit = true;
                 eventContextActions.commitStage = esp.ObservationStage.committed;
                 _router.getEventObservable('modelId1', 'Event1')
-                    .observe((event, eventContext, model) => {
+                    .subscribe((event, eventContext, model) => {
                         eventContext.commit();
                     });
                 expect(() => {

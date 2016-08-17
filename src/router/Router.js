@@ -23,6 +23,7 @@ import { Subject, Observable } from '../reactive/index';
 import { Guard, utils, logging, WeakMapPollyFill } from '../system';
 import { DisposableBase, CompositeDisposable } from '../system/disposables';
 import { EspDecoratorMetadata } from '../decorators';
+import DecoratorObservationRegister from "./DecoratorObservationRegister";
 
 var _log = logging.Logger.create('Router');
 
@@ -40,15 +41,17 @@ export default class Router extends DisposableBase {
         this._diagnosticMonitor = new CompositeDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
 
-        this._decoratorObservationRegister = {};
+        this._decoratorObservationRegister = new DecoratorObservationRegister();
     }
     addModel(modelId, model, options) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
-        Guard.isDefined(model, 'THe model argument must be defined');
+        Guard.isDefined(model, 'The model argument must be defined');
         if(options) Guard.isObject(options, 'The options argument should be an object');
         Guard.isFalsey(this._models[modelId], 'The model with id [' + modelId + '] is already registered');
         this._models[modelId] = new ModelRecord(modelId, model, options);
+        let modelUpdateSubject = this._getModelUpdateSubjects(modelId);
+        modelUpdateSubject.onNext(model);
         this._diagnosticMonitor.addModel(modelId);
     }
     removeModel(modelId){
@@ -147,7 +150,7 @@ export default class Router extends DisposableBase {
             }
             let subjects = this._getOrCreateModelsEventSubjects(modelId, eventType);
             let subject = subjects[stage];
-            return subject.observe(o);
+            return subject.subscribe(o);
         });
     }
     getModelObservable(modelId) {
@@ -155,7 +158,7 @@ export default class Router extends DisposableBase {
             this._throwIfHaltedOrDisposed();
             Guard.isString(modelId, 'The modelId should be a string');
             let updateSubject = this._getModelUpdateSubjects(modelId);
-            return updateSubject.observe(o);
+            return updateSubject.subscribe(o);
         });
     }
     createModelRouter(targetModelId) {
@@ -180,7 +183,6 @@ export default class Router extends DisposableBase {
             throw new Error('Unknown error handler.');
         }
     }
-
     getDispatchLoopDiagnostics () {
         return this._diagnosticMonitor.getLoggingDiagnosticSummary();
     }
@@ -429,16 +431,16 @@ export default class Router extends DisposableBase {
         return nextModel;
     }
     _observeEventsUsingDirectives(modelId, object){
-        if (this._decoratorObservationRegister[modelId]) {
-            throw new Error(`observeEvents has already been called for model with id '${modelId}'`);
+        if (this._decoratorObservationRegister.isRegistered(modelId, object)) {
+            throw new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
         }
-        this._decoratorObservationRegister[modelId] = true;
+        this._decoratorObservationRegister.register(modelId, object);
         var compositeDisposable = new CompositeDisposable();
         var metadata = EspDecoratorMetadata.getMetadata(object);
         var eventsDetails = metadata.getAllEvents();
         for (var i = 0; i < eventsDetails.length; i ++) {
             let details = eventsDetails[i];
-            compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).observe((e, c, m) => {
+            compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((e, c, m) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
                 this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
@@ -446,7 +448,7 @@ export default class Router extends DisposableBase {
             }));
         }
         compositeDisposable.add(() => {
-            delete this._decoratorObservationRegister[modelId];
+            delete this._decoratorObservationRegister.removeRegistration(modelId, object);
         });
         return compositeDisposable;
     }
@@ -477,7 +479,7 @@ export default class Router extends DisposableBase {
                         eventName = eventName.substring(0, observationStageSplitIndex);
                     }
                 }
-                compositeDisposable.add(this.getEventObservable(modelId, eventName, stage).observe((e, c, m) => {
+                compositeDisposable.add(this.getEventObservable(modelId, eventName, stage).subscribe((e, c, m) => {
                     this._diagnosticMonitor.dispatchingViaConvention(prop);
                     object[prop](e, c, m);
                 }));

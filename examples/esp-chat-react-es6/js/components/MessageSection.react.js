@@ -11,7 +11,7 @@ export default class MessageSection extends React.Component {
         this._subscription = this.props.router
             .getModelObservable()
             .where(model => model.messageSection.hasChanges)
-            .observe(model => {
+            .subscribe(model => {
                 this.setState(model.messageSection);
             });
     }

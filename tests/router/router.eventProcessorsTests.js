@@ -66,12 +66,12 @@ describe('Router', () => {
             _router.addModel('modelId3', _model3, _options);
             _router.addModel('modelId5', _model5);
 
-            _router.getEventObservable('modelId1', 'startEvent').observe(() => {
+            _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
                 _router.publishEvent('modelId3', 'Event1', 'theEvent');
                 _router.publishEvent('modelId2', 'Event1', 'theEvent');
                 _router.publishEvent('modelId1', 'Event1', 'theEvent');
             });
-            _router.getEventObservable('modelId5', 'startEvent').observe(() => {
+            _router.getEventObservable('modelId5', 'startEvent').subscribe(() => {
                 /* noop */
             });
         });
@@ -87,13 +87,13 @@ describe('Router', () => {
         });
 
         it('calls a models post processors before processing the next models events', () => {
-            _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 /* noop */
             });
-            _router.getEventObservable('modelId2', 'Event1').observe(() => {
+            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
                 _testPassed = _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0] === _model1;
             });
-            _router.getEventObservable('modelId3', 'Event1').observe(() => {
+            _router.getEventObservable('modelId3', 'Event1').subscribe(() => {
                 _testPassed = _testPassed && _modelsSentForPostProcessing.length === 2 && _modelsSentForPostProcessing[1] === _model2;
             });
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
@@ -102,7 +102,7 @@ describe('Router', () => {
         });
 
         it('calls a models pre processors before dispatching to processors', () => {
-            _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 _testPassed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
@@ -110,7 +110,7 @@ describe('Router', () => {
         });
 
         it('only calls the pre event processor for the model the event was targeted at', () => {
-            _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
             _testPassed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
@@ -120,10 +120,10 @@ describe('Router', () => {
         it('should allow a preEventProcessor to publish an event', () => {
             _router.addModel('modelId4', _model1, { preEventProcessor : () => {_router.publishEvent('modelId4', 'Event2', 'theEvent'); } });
             var wasPublished = false;
-            _router.getEventObservable('modelId4', 'Event2').observe(() => {
+            _router.getEventObservable('modelId4', 'Event2').subscribe(() => {
                 wasPublished = true;
             });
-            _router.getEventObservable('modelId4', 'Event1').observe(() => {
+            _router.getEventObservable('modelId4', 'Event1').subscribe(() => {
                 /* noop */
             });
             _router.publishEvent('modelId4', 'Event1', 'theEvent');
@@ -146,7 +146,7 @@ describe('Router', () => {
                         }
                     }
                 });
-            _router.getEventObservable('modelId4', 'Event1').observe((event, eventContext, model) => {
+            _router.getEventObservable('modelId4', 'Event1').subscribe((event, eventContext, model) => {
                 eventReceived = true;
                 eventWasRaisedInNewEventLoop = model.version ===2;
             });

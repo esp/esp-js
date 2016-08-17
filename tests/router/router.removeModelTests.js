@@ -61,22 +61,22 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').observe((event, context, model) => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe((event, context, model) => {
                 _eventReceivedCount1++;
                 if(model.removeAtDispatch) {
                     _router.removeModel('modelId1');
                 }
             });
-            _router.getEventObservable('modelId1', 'Event1').observe(() => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 _eventReceivedCount2++;
             });
-            _router.getModelObservable('modelId1').observe(model => {
+            _router.getModelObservable('modelId1').subscribe(model => {
                 _updateReceivedCount1++;
                 if(model.removeAtUpdate) {
                     _router.removeModel('modelId1');
                 }
             });
-            _router.getModelObservable('modelId1').observe(() => {
+            _router.getModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount2++;
             });
             // the model gets pumped on initial observe so reset these here
@@ -94,7 +94,7 @@ describe('Router', () => {
 
         it('should onComplete all event streams when the model is removed', () => {
             var didComplete = false;
-            _router.getEventObservable('modelId1', 'Event1').observe(
+            _router.getEventObservable('modelId1', 'Event1').subscribe(
                 () => {},
                 () => didComplete = true
             );
@@ -104,7 +104,7 @@ describe('Router', () => {
 
         it('should onComplete all update streams when the model is removed', () => {
             var didComplete = false;
-            _router.getModelObservable('modelId1').observe(
+            _router.getModelObservable('modelId1').subscribe(
                 () => {},
                 () => didComplete = true
             );

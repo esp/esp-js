@@ -25,9 +25,25 @@ describe('.asObservable', () => {
         subject = new reactive.Subject();
     });
 
+    it('.asObservable propagates onNext', () => {
+        var receivedItems = [];
+        subject.asObservable().subscribe(
+            (a, b, c) => {
+                receivedItems.push(a);
+                receivedItems.push(b);
+                receivedItems.push(c);
+            }
+        );
+        subject.onNext(1, 2, 3);
+        expect(receivedItems.length).toEqual(3);
+        expect(receivedItems[0]).toEqual(1);
+        expect(receivedItems[1]).toEqual(2);
+        expect(receivedItems[2]).toEqual(3);
+    });
+
     it('.asObservable propagates onCompleted', () => {
         var onCompleteCalled = false;
-        subject.asObservable().observe(
+        subject.asObservable().subscribe(
             () => { },
             () => onCompleteCalled = true
         );

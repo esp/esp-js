@@ -31,29 +31,31 @@ export class Router {
     runAction<T>(modelId:string, action:(model : T) => void)  : void;
     getEventObservable<T, TEvent, TContext>(modelId:string, eventType:string, observationStage?: string) : EventObservable<T, TEvent, TContext>;
     getModelObservable<T>(modelId:string) : Observable<T>;
+    createObservableFor<T>(modelId : string, observer : (observer : Observer<T>) => Disposable) : RouterObservable<T>;
+    createSubject<T>() : RouterSubject<T>;
+    observeEventsOn<TModel>(modelId: string, model : TModel, methodPrefix?: string) : Disposable;
     createModelRouter<T>(targetModelId:string) : SingleModelRouter<T>;
     addOnErrorHandler(handler : (e : Error) => void) : void;
     removeOnErrorHandler(handler : (e : Error) => void) : void;
     getDispatchLoopDiagnostics() : string
     enableDiagnostics() : void;
     disableDiagnostics() : void;
-    observeEventsOn(modelId: string, object : any, methodPrefix?: string) : Disposable;
 }
 
 export class SingleModelRouter<T> {
     static create<TModel>() : SingleModelRouter<TModel>;
     static createWithModel<TModel>(model : TModel) : SingleModelRouter<TModel>;
     static createWithRouter<TModel>(underlyingRouter : Router, modelId : string) : SingleModelRouter<TModel>;
-
     setModel(model : T) : void;
     publishEvent(eventType : string, event : any) : void;
     executeEvent(eventType : string, event : any) : void;
     runAction(action : () => void) : void;
     runAction(action : (model : T) => void) : void;
-
     getEventObservable<TEvent, TContext>(eventType : string, observationStage? : string) : EventObservable<T, TEvent, TContext>;
     getModelObservable<T>() : Observable<T>;
-    observeEventsOn(object : any, methodPrefix?: string) : Disposable;
+    observeEventsOn<TModel>(model : TModel, methodPrefix?: string) : Disposable;
+    createObservableFor<T>(observer : (observer : Observer<T>) => Disposable) : RouterObservable<T>;
+    createSubject<T>() : RouterSubject<T>;
 }
 
 export interface EventContext {
@@ -95,10 +97,10 @@ export interface EventObserver<TModel, TEvent, TContext> {
 
 export interface EventObservable<TModel, TEvent, TContext> {
     subscribe(observer : EventObserver<TModel, TEvent, TContext>) : Disposable;
-    subscribe(onNext : (event : TEvent, context : TContext, model : TModel) => void, onCompleted? : () => void) : Disposable;
-    do(onNext : (event : TEvent) => void) : EventObservable<TModel, TEvent, TContext>;
-    do(onNext : (event : TEvent, context : TContext) => void) : EventObservable<TModel, TEvent, TContext>;
-    do(onNext : (event : TEvent, context : TContext, model : TModel) => void) : EventObservable<TModel, TEvent, TContext>;
+    subscribe(observer : (event : TEvent, context : TContext, model : TModel) => void, onCompleted? : () => void) : Disposable;
+    do(observer : (event : TEvent) => void) : EventObservable<TModel, TEvent, TContext>;
+    do(observer : (event : TEvent, context : TContext) => void) : EventObservable<TModel, TEvent, TContext>;
+    do(observer : (event : TEvent, context : TContext, model : TModel) => void) : EventObservable<TModel, TEvent, TContext>;
     where(predicate: (event : TEvent) => boolean) : EventObservable<TModel, TEvent, TContext>;
     where(predicate: (event : TEvent, context : TContext) => boolean) : EventObservable<TModel, TEvent, TContext>;
     where(predicate: (event : TEvent, context : TContext, model : TModel) => boolean) : EventObservable<TModel, TEvent, TContext>;
@@ -112,14 +114,11 @@ export interface Observer<T> {
 
 export interface Observable<T> {
     subscribe(observer : Observer<T>) : Disposable;
-    subscribe(onNext : (model : T) => void, onCompleted? : () => void) : Disposable;
-    do(onNext : (model : T) => void) : Observable<T>;
+    subscribe(observer : (model : T) => void, onCompleted? : () => void) : Disposable;
+    do(observer : (model : T) => void) : Observable<T>;
     where(predicate: (model : T) => boolean) : Observable<T>;
     map<TOther>(predicate: (model : T) => TOther) : Observable<TOther>;
     take(count:number) : Observable<T>;
-    subscribeOn(router:Router, modelId:string);
-    observeOn(router:Router, modelId:string);
-    asObservable() : Observable<T>;
 }
 
 export interface ObservableStatic {
@@ -137,6 +136,19 @@ interface SubjectStatic {
 }
 
 export var Subject: SubjectStatic;
+
+export interface RouterObservable<T> {
+    streamFor(modelId:string) : Observable<T>;
+    subscribeOn(modelId:string);
+}
+
+export interface RouterSubject<T> extends Subject<T>  {
+    asRouterObservable() : RouterObservable<T>;
+}
+
+interface RouterSubjectStatic {
+    new <T>(router: Router): RouterSubject<T>;
+}
 
 export class ModelChangedEvent<T> {
     modelId: string;

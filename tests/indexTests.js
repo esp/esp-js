@@ -11,6 +11,8 @@ import {
     ModelChangedEvent,
     Observable,
     Subject,
+    RouterObservable,
+    RouterSubject,
     observeEvent,
     observeModelChangedEvent,
     model,
@@ -67,6 +69,16 @@ describe('index exports', () => {
     it('should export Subject', () => {
         expect(esp.Subject).toBeDefined();
         expect(Subject).toBeDefined();
+    });
+
+    it('should export RouterSubject', () => {
+        expect(esp.RouterSubject).toBeDefined();
+        expect(RouterSubject).toBeDefined();
+    });
+
+    it('should export RouterObservable', () => {
+        expect(esp.RouterObservable).toBeDefined();
+        expect(RouterObservable).toBeDefined();
     });
 
     it('should export observeEvent', () => {

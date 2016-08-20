@@ -16,12 +16,12 @@
  */
 // notice_end
 
-import Observable from '../Observable';
+import RouterObservable from '../RouterObservable';
 import { Guard } from '../../system';
 
-Observable.prototype.subscribeOn = function(router, modelId) {
-    Guard.isDefined(router, "router must be defined");
-    Guard.isString(modelId, "modelId must be a string");
+RouterObservable.prototype.subscribeOn = function(modelId) {
+    Guard.isString(modelId, 'modelId must be a string');
+    Guard.isTrue(modelId != '', "modelId must not be empty");
     var source = this;
     var subscribe =  observer => {
         let disposable = {
@@ -31,18 +31,18 @@ Observable.prototype.subscribeOn = function(router, modelId) {
                 this.isDisposed = true;
                 let _subscription = this.subscription;
                 if(_subscription) {
-                    router.runAction(modelId, () => {
+                    source._router.runAction(modelId, () => {
                         _subscription.dispose();
                     });
                 }
             }
         };
-        router.runAction(modelId, () => {
+        source._router.runAction(modelId, () => {
             if(!disposable.isDisposed) {
                 disposable.subscription = source.subscribe(observer);
             }
         });
         return disposable;
     };
-    return new Observable(subscribe);
+    return new RouterObservable(this._router, subscribe);
 };

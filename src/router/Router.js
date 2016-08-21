@@ -24,6 +24,7 @@ import { Guard, utils, logging, WeakMapPollyFill } from '../system';
 import { DisposableBase, CompositeDisposable } from '../system/disposables';
 import { EspDecoratorMetadata } from '../decorators';
 import DecoratorObservationRegister from "./DecoratorObservationRegister";
+import RouterSubject from '../reactive/RouterSubject';
 
 var _log = logging.Logger.create('Router');
 
@@ -160,6 +161,15 @@ export default class Router extends DisposableBase {
             let updateSubject = this._getModelUpdateSubjects(modelId);
             return updateSubject.subscribe(o);
         });
+    }
+    createObservableFor(modelId, observer) {
+        return Observable
+            .create(observer)
+            .asRouterObservable(this)
+            .subscribeOn(modelId);
+    }
+    createSubject() {
+        return new RouterSubject(this);
     }
     createModelRouter(targetModelId) {
         Guard.isString(targetModelId, 'The targetModelId argument should be a string');

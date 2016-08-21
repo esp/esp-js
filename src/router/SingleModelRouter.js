@@ -18,6 +18,7 @@
 
 import Router from './Router';
 import { Guard } from '../system';
+import { Observable } from '../reactive';
 
 export default class SingleModelRouter {
     constructor() {
@@ -74,6 +75,15 @@ export default class SingleModelRouter {
     getModelObservable() {
         this._ensureModelIsSet();
         return this._underlying.getModelObservable(this._targetModelId);
+    }
+    createObservable(observer) {
+        return Observable
+            .create(observer)
+            .asRouterObservable(this._underlying)
+            .subscribeOn(this._targetModelId);
+    }
+    createSubject() {
+        return this._underlying.createSubject();
     }
     observeEventsOn(object, methodPrefix='_observe_') {
         this._ensureModelIsSet();

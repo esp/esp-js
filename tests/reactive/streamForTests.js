@@ -18,7 +18,7 @@
 
 import esp from '../../src';
 
-describe('.subscribeOn', () => {
+describe('.streamFor', () => {
     var _router;
     var _testModel1;
     var _workflowActions;
@@ -37,7 +37,7 @@ describe('.subscribeOn', () => {
     it('throws if modelId is undefined', () => {
         expect(() => {
             _routerObservable
-                .subscribeOn(undefined)
+                .streamFor(undefined)
                 .subscribe(o => {});
         }).toThrow(new Error('modelId must be a string'));
     });
@@ -45,7 +45,7 @@ describe('.subscribeOn', () => {
     it('throws if router is null', () => {
         expect(() => {
             _routerObservable
-                .subscribeOn(null)
+                .streamFor(null)
                 .subscribe(o => {});
         }).toThrow(new Error('modelId must be a string'));
     });
@@ -53,44 +53,41 @@ describe('.subscribeOn', () => {
     it('throws if modelid is empty', () => {
         expect(() => {
             _routerObservable
-                .subscribeOn('')
+                .streamFor('')
                 .subscribe(o => {});
         }).toThrow(new Error('modelId must not be empty'));
     });
 
-    it('subscribes to the stream on the correct models dispatch loop', () => {
-        let receivedUpdates = [];
-        // have to use esp.Observable.create here to get a hook at subscription time
-        esp.Observable.create(o => {
-            let onCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
-            receivedUpdates.push(onCorrectDispatchLoop);
 
-        }).asRouterObservable(_router)
-            .subscribeOn(_testModel1.modelId)
+    it('streams the results on the correct models dispatch loop', () => {
+        let receivedUpdates = [];
+        _routerObservable
+            .streamFor(_testModel1.modelId)
             .subscribe(i => {
-                receivedUpdates.push({}); // shouldn't get hit
+                let onCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
+                receivedUpdates.push(onCorrectDispatchLoop);
             });
+        _routerSubject.onNext(1);
         expect(receivedUpdates.length).toEqual(1);
         expect(receivedUpdates[0]).toEqual(true);
     });
 
-    it('disposes the stream on the correct dispatch loop', () => {
+
+    it('onCompletes on the correct dispatch loop', () => {
         let receivedUpdates = [];
-        // have to use esp.Observable.create here to get a hook at subscription time
-        let disposable = esp.Observable.create(o => {
-            let onCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
-            receivedUpdates.push(onCorrectDispatchLoop);
-            return () => {
-                let disposeOnCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
-                receivedUpdates.push(disposeOnCorrectDispatchLoop);
-            };
-        }).asRouterObservable(_router)
-            .subscribeOn(_testModel1.modelId)
+        _routerObservable
+            .streamFor(_testModel1.modelId)
             .subscribe(i => {
-                receivedUpdates.push({}); // shouldn't get hit
+                let onCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
+                receivedUpdates.push(onCorrectDispatchLoop);
+            }, ()=> {
+                let onCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
+                receivedUpdates.push(onCorrectDispatchLoop);
             });
-        disposable.dispose();
+        _routerSubject.onNext(1);
+        _routerSubject.onCompleted();
         expect(receivedUpdates.length).toEqual(2);
+        expect(receivedUpdates[0]).toEqual(true);
         expect(receivedUpdates[1]).toEqual(true);
     });
 });

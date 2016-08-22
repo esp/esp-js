@@ -29,10 +29,12 @@ Symptoms you might be looking for a model management solution:
 
 ## Benefits
 
-* Provides a deterministic [dispatch loop](../router-api/dispatch-loop.md) for state manipulation.
+* Provides a deterministic [dispatch loop](../router-api/dispatch-loop.md) and [event workflow](../advanced-concepts/complete-event-workflow.md) for state manipulation.
   All interested in the current event have a chance to mutate state before moving on.
-* Removes the need for concurrency related code as a specific [threading model](../advanced-concepts/multithreading.md) is built in.
+* Fits well with unidirectional message flow type architectures.
+* Support multiple independent or dependent models.
 * Puts domain modelling at the forefront of your architecture.
+* Very few moving parts, with just esp-js and React you can implement a full unidirectional architecture.
 
 ## Where can it be used?
 

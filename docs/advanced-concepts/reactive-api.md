@@ -1,11 +1,9 @@
-<a name="reactive-api"></a>
-
 # Reactive API
 
 Both `router.getEventObservable()` and `router.getModelObservable()` return an observable object.
 This is modeled on [RxJs's](https://github.com/Reactive-Extensions/RxJS) observable API but with only a few observable methods included, additionally `onError` semantics are not applicable.
 
-> ##### Why not use Rx?
+> ##### Why not use Rx? <a name="reactive-api-why-not-rx"></a>
 >
 >The push based model of Rx is ideal for pub/sub scenarios where state needs to be combined from many differing streams.
 >However the full Rx API isn't suitable as introduction of asynchronicity and other methods that would result in state being held in observable streams would break the deterministic staged workflow that the `Router` owns.

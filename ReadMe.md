@@ -28,6 +28,8 @@ var router = new esp.Router();
 
 Alternatively you can reference `dist\esp.js` or `dist\esp.min.js` via a `script` tag. These files expose `esp` using the Universal Module Definition (UMD) format. 
 
+If you're using TypeScript [esp.d.ts](./esp.d.ts) is referenced via the `typings` property in [package.json](package.json) so the TS compiler can discover it.
+
 # Basic Usage
 
 ```js
@@ -48,9 +50,9 @@ class LoginModel {
   }
   registerWithRouter() {
     // register the model with the router
-    router.addModel(this._modelId, this);
+    this._router.addModel(this._modelId, this);
     // instruct the router to hook up decorated event observation methods 
-    router.observeEventsOn(this._modelId, this);      
+    this._router.observeEventsOn(this._modelId, this);      
   }
 }
 
@@ -108,6 +110,7 @@ subscription.dispose();
   * [Complete Event Workflow](docs/advanced-concepts/complete-event-workflow.md)
   * [Asynchronous Operations](docs/advanced-concepts/asynchronous-operations.md)
   * [Automatic Event Observation](docs/advanced-concepts/auto-event-observation.md)
+  * [Model To Model Communications](docs/advanced-concepts/model-to-model-communications.md)
   * [Error Flows](docs/advanced-concepts/error-flows.md)
   * [Bypassing the event queue](docs/advanced-concepts/bypassing-the-event-queue.md)
   * [Anti-Patterns](docs/advanced-concepts/anti-patterns.md)

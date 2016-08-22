@@ -54,7 +54,7 @@ export class SingleModelRouter<T> {
     getEventObservable<TEvent, TContext>(eventType : string, observationStage? : string) : EventObservable<T, TEvent, TContext>;
     getModelObservable<T>() : Observable<T>;
     observeEventsOn<TModel>(model : TModel, methodPrefix?: string) : Disposable;
-    createObservableFor<T>(observer : (observer : Observer<T>) => Disposable) : RouterObservable<T>;
+    createObservable<T>(observer : (observer : Observer<T>) => Disposable) : RouterObservable<T>;
     createSubject<T>() : RouterSubject<T>;
 }
 

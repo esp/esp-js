@@ -17,6 +17,7 @@
   * [Complete Event Workflow](advanced-concepts/complete-event-workflow.md)
   * [Asynchronous Operations](advanced-concepts/asynchronous-operations.md)
   * [Automatic Event Observation](advanced-concepts/auto-event-observation.md)
+  * [Model To Model Communications](advanced-concepts/model-to-model-communications.md)
   * [Error Flows](advanced-concepts/error-flows.md)
   * [Bypassing the event queue](advanced-concepts/bypassing-the-event-queue.md)
   * [Anti-Patterns](advanced-concepts/anti-patterns.md)

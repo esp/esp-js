@@ -124,6 +124,9 @@ export default class Router extends DisposableBase {
     }
     runAction(modelId, action) {
         this._throwIfHaltedOrDisposed();
+        Guard.isString(modelId, 'modelId must be a string');
+        Guard.isTrue(modelId !== '', 'modelId must not be empty');
+        Guard.isFunction(action, 'the argument passed to runAction must be a function and can not be null|undefined');
         this._diagnosticMonitor.runAction(modelId);
         let modelRecord = this._models[modelId];
         if (typeof modelRecord === 'undefined') {

@@ -63,6 +63,33 @@ describe('Router', () => {
             model2ReceivedCount = 0;
         });
 
+        it('throws if modelId not a string', () => {
+            expect(() => {
+                _router.runAction(undefined, () =>{ });
+            }).toThrow(new Error('modelId must be a string'));
+            expect(() => {
+                _router.runAction(null, () =>{ });
+            }).toThrow(new Error('modelId must be a string'));
+            expect(() => {
+                _router.runAction({}, () =>{ });
+            }).toThrow(new Error('modelId must be a string'));
+            expect(() => {
+                _router.runAction('', () =>{ });
+            }).toThrow(new Error('modelId must not be empty'));
+        });
+
+        it('throws if action isn\'t a function', () => {
+            expect(() => {
+                _router.runAction(_model1.id, null);
+            }).toThrow(new Error('the argument passed to runAction must be a function and can not be null|undefined'));
+            expect(() => {
+                _router.runAction(_model1.id, undefined);
+            }).toThrow(new Error('the argument passed to runAction must be a function and can not be null|undefined'));
+            expect(() => {
+                _router.runAction(_model1.id, {});
+            }).toThrow(new Error('the argument passed to runAction must be a function and can not be null|undefined'));
+        });
+
         it('runs action for target model', () => {
             _router.runAction(_model1.id, () =>{
                 // noop

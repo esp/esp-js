@@ -356,6 +356,7 @@ var runEventWorkflowExample = () => {
     committedStageExample();
 };
 
+////////////////////////////////////////////////////////////// model observation example //////////////////////////////////////////////////////////////
 var runModelObserveExample = () => {
     var router = new esp.Router();
     router.addModel("modelId", { foo: 1 });
@@ -372,6 +373,7 @@ var runModelObserveExample = () => {
     router.publishEvent('modelId', 'fooChanged', { newFoo: 2 });
 };
 
+////////////////////////////////////////////////////////////// observable API example //////////////////////////////////////////////////////////////
 var runObserveApiBasicExample = () => {
 
     // note there are several concerns here that would exist in different
@@ -430,30 +432,245 @@ var runObserveApiBasicExample = () => {
     router.publishEvent('modelId', 'priceReceivedEvent', { price: 103 });
 };
 
-var runErrorFlowsExample = () => {
+////////////////////////////////////////////////////////////// model to model communications with events example //////////////////////////////////////////////////////////////
+var modelToModelCommunicationsWithEvents = () => {
+    class BaseModel {
+        constructor(modelId, router) {
+            this.modelId = modelId;
+            this.router = router;
+        }
+        registerWithRouter() {
+            this.router.addModel(this.modelId, this);
+            this.router.observeEventsOn(this.modelId, this);
+        }
+    }
+
+    class TradingModel extends BaseModel {
+        constructor(router) {
+            super('tradingModelId', router);
+        }
+        @esp.observeEvent('userRequestedPrice')
+        _onUserRequestedPrice(priceRequestEvent) {
+            console.log(`TradingModel: User requested price, sending request to pricing model`);
+            this.router.publishEvent('pricingModelId', 'priceRequested', { symbol:priceRequestEvent.symbol, replyTo:this.modelId });
+        }
+        @esp.observeEvent('priceReceived')
+        _onPriceReceived(priceEvent) {
+            console.log(`TradingModel: Price received: ${priceEvent.symbol} - ${priceEvent.bid} - ${priceEvent.ask}`);
+        }
+    }
+
+    class PricingModel extends BaseModel {
+        constructor(router) {
+            super('pricingModelId', router);
+        }
+        @esp.observeEvent('priceRequested')
+        _onPriceRequested(priceRequestedEvent) {
+            console.log(`PricingModel: price request received, responding with last price`);
+            this.router.publishEvent(priceRequestedEvent.replyTo, 'priceReceived', { symbol:priceRequestedEvent.symbol, bid:1, ask:2 });
+        }
+    }
+
     var router = new esp.Router();
-    router.addModel("modelId", { });
-    router
-        .getEventObservable('modelId', 'boomEvent')
-        .do(() => {throw new Error("Boom");})
-        .subscribe(
-            () => {
-                console.log("This never run");
-            }
-        );
-    try {
-        router.publishEvent('modelId', 'boomEvent', {});
-    } catch(err) {
-        console.log("Error caught: " + err.message);
-    }
-    // this won't make it to any observers as the router is halted
-    try {
-        router.publishEvent('modelId', 'boomEvent', {});
-    } catch(err) {
-        console.log("Error caught 2: " + err.message);
-    }
+    let pricingModel = new PricingModel(router);
+    pricingModel.registerWithRouter();
+    let tradingModel = new TradingModel(router);
+    tradingModel.registerWithRouter();
+    console.log(`User requesting price for EURUSD`);
+    router.publishEvent(tradingModel.modelId, 'userRequestedPrice', { symbol: 'EURUSD'});
 };
 
+////////////////////////////////////////////////////////////// model to model communications with runAction example //////////////////////////////////////////////////////////////
+var modelToModelCommunicationsWithRunAction = () => {
+    class BaseModel {
+        constructor(modelId, router) {
+            this.modelId = modelId;
+            this.router = router;
+        }
+        registerWithRouter() {
+            this.router.addModel(this.modelId, this);
+            this.router.observeEventsOn(this.modelId, this);
+        }
+    }
+
+    class TradingModel extends BaseModel {
+        constructor(router, pricingModel) {
+            super('tradingModelId', router);
+            this._pricingModel = pricingModel;
+        }
+        @esp.observeEvent('userRequestedPrice')
+        _onUserRequestedPrice(priceRequestEvent) {
+            console.log(`TradingModel: User requested price, sending request to pricing model`);
+            this._pricingModel.onPriceRequested({ symbol:priceRequestEvent.symbol, replyTo:this.modelId });
+        }
+        @esp.observeEvent('priceReceived')
+        _onPriceReceived(priceEvent) {
+            console.log(`TradingModel: Price received: ${priceEvent.symbol} - ${priceEvent.bid} - ${priceEvent.ask}`);
+        }
+    }
+
+    class PricingModel extends BaseModel {
+        constructor(router) {
+            super('pricingModelId', router);
+        }
+        onPriceRequested(priceRequest) {
+            this.router.runAction(this.modelId, () => {
+                console.log(`PricingModel: price request received, responding with last price`);
+                this.router.publishEvent(priceRequest.replyTo, 'priceReceived', { symbol:priceRequest.symbol, bid:1, ask:2 });
+            });
+        }
+    }
+
+    var router = new esp.Router();
+    let pricingModel = new PricingModel(router);
+    pricingModel.registerWithRouter();
+    let tradingModel = new TradingModel(router, pricingModel);
+    tradingModel.registerWithRouter();
+    console.log(`User requesting price for EURUSD`);
+    router.publishEvent(tradingModel.modelId, 'userRequestedPrice', { symbol: 'EURUSD'});
+};
+
+////////////////////////////////////////////////////////////// model to model communications with observables (Unique Request -> Many Responses) example /////////////////////////
+var modelToModelCommunicationsWithObservables1 = () => {
+    class BaseModel {
+        constructor(modelId, router) {
+            this.modelId = modelId;
+            this.router = router;
+        }
+        registerWithRouter() {
+            this.router.addModel(this.modelId, this);
+            this.router.observeEventsOn(this.modelId, this);
+        }
+    }
+
+    class TradingModel extends BaseModel {
+        constructor(router, pricingModel) {
+            super('tradingModelId', router);
+            this._pricingModel = pricingModel;
+            this.lastPrice = null;
+        }
+        @esp.observeEvent('userRequestedPrice')
+        _onUserRequestedPrice(priceRequestEvent) {
+            console.log(`TradingModel: User requested price, sending request to pricing model`);
+            // subscribe to another models observable stream.
+            let subscription = this._pricingModel
+                .getPriceStream({ symbol:priceRequestEvent.symbol})
+                // streamFor : ensure our observable stream yields on the dispatch loop for this model
+                .streamFor(this.modelId)
+                .subscribe(price => {
+                    let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
+                    console.log(`TradingModel: Price received: ${price.symbol} - ${price.bid} - ${price.ask}. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);
+                    // Store the last price so the/a view can pick it up.
+                    // Given we're on the dispatch loop for this model, the router will be pushing the model to observers after this function ends.
+                    this.lastPrice = price;
+                });
+            // later : subscription.dispose();
+        }
+    }
+
+    class PricingModel extends BaseModel {
+        constructor(router) {
+            super('pricingModelId', router);
+        }
+        getPriceStream(priceRequest) {
+            return this.router.createObservableFor(this.modelId, observer => {
+                // This gets invoked when the caller subscribes to the observable stream.
+                // Typically you'd wire the observer up to some async service and push updates to it
+                let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
+                console.log(`PricingModel: price request received, responding with last price. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);
+                observer.onNext({ symbol:priceRequest.symbol, bid:1, ask:2 });
+                observer.onNext({ symbol:priceRequest.symbol, bid:1.1, ask:2.1 });
+                return () => {
+                    // Gets invoked when the caller disposes the subscription.
+                    // Typically you'd un-wire the observer from any local state
+                };
+            });
+        }
+    }
+
+    var router = new esp.Router();
+    let pricingModel = new PricingModel(router);
+    pricingModel.registerWithRouter();
+    let tradingModel = new TradingModel(router, pricingModel);
+    tradingModel.registerWithRouter();
+    console.log(`User requesting price for EURUSD`);
+    router.publishEvent(tradingModel.modelId, 'userRequestedPrice', { symbol: 'EURUSD'});
+};
+
+////////////////////////////////////////////////////////////// model to model communications with observables (streaming) example /////////////////////////
+var modelToModelCommunicationsWithObservables2 = () => {
+    class BaseModel {
+        constructor(modelId, router) {
+            this.modelId = modelId;
+            this.router = router;
+        }
+        registerWithRouter() {
+            this.router.addModel(this.modelId, this);
+            this.router.observeEventsOn(this.modelId, this);
+        }
+    }
+
+    class TradingModel extends BaseModel {
+        constructor(router, pricingModel) {
+            super('tradingModelId', router);
+            this._pricingModel = pricingModel;
+            this._currentSymbol = 'EURUSD';
+            this.lastPrice = null;
+        }
+        registerWithRouter() {
+            super.registerWithRouter();
+            this._observePriceStream();
+        }
+        _observePriceStream() {
+            let subscription = this._pricingModel.priceStream
+                .streamFor(this.modelId)
+                .where(price => price.symbol === this._currentSymbol)
+                .subscribe(price => {
+                    let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
+                    console.log(`TradingModel: Price received: ${price.symbol} - ${price.bid} - ${price.ask}. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);
+                    this.lastPrice = price;
+                });
+            // later, when the model is destroyed : subscription.dispose();
+        }
+        @esp.observeEvent('userRequestedPrice')
+        _onUserRequestedPrice(priceRequestEvent) {
+            this._currentSymbol = priceRequestEvent.symbol;
+        }
+    }
+
+    class PricingModel extends BaseModel {
+        constructor(router) {
+            super('pricingModelId', router);
+            this._priceSubject = router.createSubject();
+        }
+        get priceStream() {
+            // Expose our internal price stream.
+            // `asRouterObservable()` wraps the subject hiding functions such as onNext from consumers
+            return this._priceSubject.asRouterObservable();
+        }
+        // expose a function so we can push prices, in a real app
+        // this model would own interactions with downstream objects, receive prices and push them internally
+        pushPrice(price){
+            this._priceSubject.onNext(price);
+        }
+    }
+
+    var router = new esp.Router();
+    let pricingModel = new PricingModel(router);
+    pricingModel.registerWithRouter();
+    let tradingModel = new TradingModel(router, pricingModel);
+    tradingModel.registerWithRouter();
+
+    console.log(`Prices received from network`);
+    pricingModel.pushPrice({ symbol:'EURUSD', bid:1, ask:2 });
+    pricingModel.pushPrice({ symbol:'USDJPY', bid:3, ask:4 });
+    console.log(`User changed symbol to USDJPY`);
+    router.publishEvent(tradingModel.modelId, 'userRequestedPrice', { symbol: 'USDJPY'});
+    console.log(`More prices received from network`);
+    pricingModel.pushPrice({ symbol:'USDJPY', bid:5, ask:6 });
+};
+
+////////////////////////////////////////////////////////////// async operation with workitem //////////////////////////////////////////////////////////////
 var runAcyncOperationWithWorkItemExample = () => {
 
     class GetUserStaticDataWorkItem extends esp.DisposableBase {
@@ -516,6 +733,7 @@ var runAcyncOperationWithWorkItemExample = () => {
     router.publishEvent('modelId', 'initialiseEvent', {});
 };
 
+////////////////////////////////////////////////////////////// async operation with runAction //////////////////////////////////////////////////////////////
 var runAcyncOperationWithRunActionExample = () => {
     var myModel = {
         foo:0,
@@ -540,6 +758,7 @@ var runAcyncOperationWithRunActionExample = () => {
     });
 };
 
+////////////////////////////////////////////////////////////// SingleModelRouter example //////////////////////////////////////////////////////////////
 var runModelRouter = () => {
     var myModel = {
         foo:0
@@ -558,8 +777,34 @@ var runModelRouter = () => {
     modelRouter.publishEvent('fooEvent', { theFoo: 2});
 };
 
+
+////////////////////////////////////////////////////////////// error flows example //////////////////////////////////////////////////////////////
+var runErrorFlowsExample = () => {
+    var router = new esp.Router();
+    router.addModel("modelId", { });
+    router
+        .getEventObservable('modelId', 'boomEvent')
+        .do(() => {throw new Error("Boom");})
+        .subscribe(
+            () => {
+                console.log("This never run");
+            }
+        );
+    try {
+        router.publishEvent('modelId', 'boomEvent', {});
+    } catch(err) {
+        console.log("Error caught: " + err.message);
+    }
+    // this won't make it to any observers as the router is halted
+    try {
+        router.publishEvent('modelId', 'boomEvent', {});
+    } catch(err) {
+        console.log("Error caught 2: " + err.message);
+    }
+};
+
 ///////////////////////// example bootstrap code /////////////////
-// Simply calls one of the functions above via the prompt
+// Call one of the functions above via the prompt setup below
 //////////////////////////////////////////////////////////////////
 
 var examples = {
@@ -567,10 +812,14 @@ var examples = {
     "2" : { description : "Event Workflow", action : runEventWorkflowExample },
     "3" : { description : "Model Observe", action : runModelObserveExample },
     "4" : { description : "Observable Api", action : runObserveApiBasicExample },
-    "5" : { description : "Error flows example", action : runErrorFlowsExample },
-    "6" : { description : "Async operation with work item", action : runAcyncOperationWithWorkItemExample },
-    "7" : { description : "Async operation with run action", action : runAcyncOperationWithRunActionExample},
-    "8" : { description : "Model specific routers", action : runModelRouter },
+    "5" : { description : "Model to model communications with events", action : modelToModelCommunicationsWithEvents },
+    "6" : { description : "Model to model communications with runAction", action : modelToModelCommunicationsWithRunAction },
+    "7" : { description : "Model to model communications with observables (Unique Request -> Many Responses)", action : modelToModelCommunicationsWithObservables1 },
+    "8" : { description : "Model to model communications with observables (streaming)", action : modelToModelCommunicationsWithObservables2 },
+    "9" : { description : "Async operation with work item", action : runAcyncOperationWithWorkItemExample },
+    "10" : { description : "Async operation with run action", action : runAcyncOperationWithRunActionExample},
+    "11" : { description : "Single model routers", action : runModelRouter },
+    "12" : { description : "Error flows example", action : runErrorFlowsExample }
 };
 
 console.log('Which sample do you want to run (enter a number)?');

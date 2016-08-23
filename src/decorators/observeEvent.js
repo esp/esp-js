@@ -18,6 +18,7 @@
 
 import {ObservationStage, Const} from '../router';
 import EspDecoratorMetadata from './espDecoratorMetadata';
+import Guard from "../system/Guard";
 
 export let DecoratorTypes = {
     observeEvent: 'observeEvent',
@@ -29,6 +30,8 @@ export function observeEvent(eventName, observationStage) {
         if (eventName === Const.modelChangedEvent) {
             throw new Error(`Can not use observeEvent to observe the ${Const.modelChangedEvent} on function target ${name}. Use the observeModelChangedEvent decorator instead`);
         }
+        Guard.isString(eventName, 'eventName passed to an observeEvent decorator must be a string');
+        Guard.isTrue(eventName !== '', 'eventName passed to an observeEvent decorator must not be \'\'');
         let metadata = EspDecoratorMetadata.getOrCreateOwnMetaData(target);
         metadata.addEvent(
             name,

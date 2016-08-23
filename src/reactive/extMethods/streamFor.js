@@ -16,12 +16,17 @@
  */
 // notice_end
 
-import Observable from '../Observable';
+import RouterObservable from '../RouterObservable';
 import { Guard } from '../../system';
 
-Observable.prototype.observeOn = function(router, modelId) {
-    Guard.isDefined(router, "router must be defined");
-    Guard.isString(modelId, "modelId must be a string");
+/**
+ *
+ * @param modelId - the modelId who's dispatch loop the changes will be invoked on
+ * @returns {Observable}
+ */
+RouterObservable.prototype.streamFor = function(modelId) {
+    Guard.isString(modelId, 'modelId must be a string');
+    Guard.isTrue(modelId != '', "modelId must not be empty");
     var source = this;
     var hasCompleted = false;
     var subscribe =  observer => {
@@ -30,17 +35,17 @@ Observable.prototype.observeOn = function(router, modelId) {
                 if(hasCompleted ) {
                     return;
                 }
-                router.runAction(modelId, () => {
+                source._router.runAction(modelId, () => {
                     observer.onNext(arg1, arg2, arg3);
                 });
             },
             () => {
                 hasCompleted = true;
-                router.runAction(modelId, () => {
+                source._router.runAction(modelId, () => {
                     observer.onCompleted();
                 });
             }
         );
     };
-    return new Observable(subscribe);
+    return new RouterObservable(source._router, subscribe);
 };

@@ -6,7 +6,7 @@
   "plugins": ["edit-link", "prism", "-highlight", "github"],
   "pluginsConfig": {
     "edit-link": {
-      "base": "https://github.com/esp/esp-js/tree/1.1.0/docs/",
+      "base": "https://github.com/esp/esp-js/tree/master/docs/",
       "label": "Edit This Page"
     },
     "github": {

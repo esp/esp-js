@@ -95,7 +95,7 @@ let subscription = router
 
 
 Publish an event to change the models state, typically done from a view.
-The router will fan-out delivery of the event to observers using an event-workflow.
+The router will fan-out delivery of the event to observers in your model using an [event workflow](advanced-concepts/complete-event-workflow.md).
 When event processing is finished the router will fan-out deliver of the model to observers.
 
 ```js

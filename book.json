@@ -1,0 +1,16 @@
+{
+  "title": "ESP",
+  "language": "en",
+  "description": "Documentation for esp-js, a deterministic state processor for JavaScript",
+  "root": "./docs",
+  "plugins": ["edit-link", "prism", "-highlight", "github"],
+  "pluginsConfig": {
+    "edit-link": {
+      "base": "https://github.com/esp/esp-js/tree/1.1.0/docs/",
+      "label": "Edit This Page"
+    },
+    "github": {
+      "url": "https://github.com/esp/esp-js/"
+    }
+  }
+}

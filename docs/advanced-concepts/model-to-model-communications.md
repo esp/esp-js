@@ -4,7 +4,7 @@ The esp `Router` supports multiple models.
 Often these model need to communicate with one another and when they do it's important to remember that any change to a models state should happen on that models [dispatch loop](../router-api/dispatch-loop.md). 
 There are a few different options available and we'll work from the least preferable to most.
 
-Note: the below examples are part of the [AIP example ](../../examples/api/README.md).
+You can find the code below with the [AIP example](../../examples/api/README.md).
 
 Note that all models on this page use this base, lets just drop that here so we're not repeating ourselves :
 ``` js
@@ -20,23 +20,22 @@ class BaseModel {
 }
 ```
 
+Not much going on here other than having a common place the models can register themselves with the `router`, and instruct the `router` to wire up any esp decorators used for event observation.  
+
 ## Option 1 - Directly mutating state (don't do this) 
-If model A takes a dependency on model B, that is, a hard reference, then model A can just directly call methods and set properties on model B. 
-The direct reference isn't an anti-pattern, however if an external caller updates an objects state there is no way for the esp `Router` to know that state has changed. 
+If model A takes a dependency on model B, i.e. a hard reference, then model A can just directly call methods and set properties on model B. 
+The direct reference isn't an anti-pattern, however if an external caller updates a models state there is no way for the `Router` to know that state has changed. 
 This means there is no way the `Router` can run the [event workflow](./complete-event-workflow.md) or notify [model observers](../router-api/model-observation.md) when the workflow is done.
   
 ## Option 2 - By publishing events
 A reasonable approach to communicate with another model is by simply publishing an event to it. 
 
 Below we see this in action. 
-`TradingModel` has an implicit dependency on `PricingModel`, it publish an event to it passing a reply to model id enabling `PricingModel` to send a response event. 
-As we're publishing events we're garenteed to be on the right dispatch loop for the model in question,
-thus allowing the [event workflow](./complete-event-workflow.md) to run and [model observers](../router-api/model-observation.md) (if any) to be notified. 
+`TradingModel` has an implicit dependency on `PricingModel`, it publish an event to it and passes a `replyTo` model ID.
+This enables `PricingModel` to send a response event. 
+As we're publishing events we're garenteed to be on the right dispatch loop for the model in question.
+This allows the `Router` to run the [event workflow](./complete-event-workflow.md) and to notify [model observers](../router-api/model-observation.md) (if any). 
  
-While this works, implicit relationships aren't great. 
-Notice how the `TradingModel` knows about the `PricingModel` id. 
-You'll need to lift you're model IDs to const files to enable the inter  model communications.
-
 ``` js
 class TradingModel extends BaseModel {
     constructor(router) {
@@ -81,17 +80,23 @@ PricingModel: price request received, responding with last price
 TradingModel: Price received: EURUSD - 1 - 2
 ```
 
+While this works, implicit relationships aren't great. 
+Notice how the `TradingModel` knows about the `PricingModel` ID. 
+You'll need to lift you're model IDs into a const file to enable the inter model communications.
+
 ## Option 3 - Using `router.runAction()`
 We can improve on the above by doing 2 things:
 
-1. Making the models explicitly related
-If you have dependent models then it's logical for a parent to either take the dependant via is't constructor or create it themselves.
-If you have a large app you may even use a container to hold and resoleves instances at runtime.
+1. Making the models explicitly related:
+ 
+    If you have dependent models then it's logical for a parent to either take the dependant via is't constructor or create it themselves.
+    If you have a large app you may even use a container to hold and resolve instances at runtime.
 
-2. Using `router.runAction(modelId, action)` rather than publishing events. 
-`runAction()` is similar to publishing an event, difference being you actualy 'post' a function to be run on the dispatch loop for the model in question. 
-The idea being within the functino you update that model's local state. 
-It's also handy when dealing with results from [async calls](./asynchronous-operations.md) as you can simply inline the code all into a single coherent method.
+2. Using `router.runAction(modelId, action)` rather than publishing events:
+ 
+    `runAction()` is similar to publishing an event, difference being you're actually publishing a function to be run on the dispatch loop for the model in question. 
+    The idea is to update local model state when the function is run. 
+    It's also handy when dealing with results from [async calls](./asynchronous-operations.md) as you can simply inline the code all into a single coherent method.
   
 Lets re-work our first example with this new knowledge.
 
@@ -141,11 +146,11 @@ PricingModel: price request received, responding with last price
 TradingModel: Price received: EURUSD - 1 - 2
 ```  
 
-This are starting to look better. 
+Things are starting to look better. 
 We've got rid of the implicit dependency, object dependencies are now obvious and statically represented.
 We've also got rid of some model id passing, the `TradingModel` now just calls a function on the `PricingModel` to kick off the request.
-If you're just doing one way first-and-forget, i.e. call a method and expect no results then `runAction()` is all you need.
-If you have more complex streaming dependencies, i.e. need to send *n* responses, then you can use observables. 
+If you're just doing one way first-and-forget, i.e. call a method and expect no results, then `runAction()` is all you need.
+If you have more complex streaming dependencies, i.e. need to send *n* responses or shared streams of data, then you can use observables. 
 
 ## Option 4 - Using Observables
 The ESP `Router` dispatches events and model updates using a reactive API.
@@ -156,8 +161,11 @@ Via the reactive API you can ensure you're on the correct dispatch loop.
 The `Router` has 2 methods `router.createObservableFor()` and `router.createSubject()` which can be used for requests that receive many notifications, or simply for hooking onto a shared notification stream. 
 
 ### Unique Request -> Many Responses with `router.createObservableFor(modelId)`
+It's often the case that one model needs to get a custom stream of updates from another model. 
+For example: provide a request that outlines what's needed, then receive a stream of updates.
+Stopping that stream, and unhooking the observer needs to be handled by the API too.
 
-Lets again improve on our example.
+Lets again improve on our example using ESP observables.
 
 ```js
 class TradingModel extends BaseModel {
@@ -224,12 +232,12 @@ TradingModel: Price received: EURUSD - 1 - 2. On correct dispatch loop: true
 TradingModel: Price received: EURUSD - 1.1 - 2.1. On correct dispatch loop: true
 ```  
 
-We've negated the need to pass model ids to unrelated models. 
+We've negated the need to pass model IDs to unrelated models. 
 Models communicate to other models directly using a fit-for-purpose streaming API. 
-The API allows for the child model to act when the callers subscribes, when an update needs to be pushed and again when the caller disposes the subscription.
+The API allows for the child model to act when the callers subscribes, when an update needs to be pushed, and again when the caller disposes the subscription.
 The API takes car of ensuring you're on the correct dispatch loop thus allowing the [event workflow](./complete-event-workflow.md) to run and [model observers](../router-api/model-observation.md) (if any) to be notified.
 
-Every caller to `PricingModel.getPriceStream()` gets a unique stream, internally of course it's upto `PricingModel` to deal with passed observer how it sees fit. 
+In the above example every caller to `PricingModel.getPriceStream()` gets a unique stream, internally it's up to `PricingModel` to deal with the provided observer how it sees fit. 
 It could wire the observer up to an RX or ESP subject, or cache the observers and invoke them in a `for` loop when some downstream service yields a result that needs to be passed on.
 
 > ##### Note
@@ -238,7 +246,7 @@ It could wire the observer up to an RX or ESP subject, or cache the observers an
 
 ### Shared Stream
 Sometimes you just want to hook onto a 'fat pipe' of notifications. 
-Regardless of the caller you get the same pipe, if the caller want's it can filter using `.where(item -> boolean)`. 
+Regardless of the caller you get the same pipe, if the caller want's it can filter using `.where(item -> boolean)`, or take a number of items using `.take(number)`. 
 Lets re-work our example for one last time and assume all prices get pushed down a share stream.
 
 ```js
@@ -313,12 +321,14 @@ TradingModel: Price received: USDJPY - 5 - 6. On correct dispatch loop: true
 ```
 
 Here we use an esp `RouterSubject` returned from `router.createSubject()`. 
-This subject enables multiple observers to subscribe to the same stream of updates and receive notifications on their own dispatch loops using `streamFor(modelId`.
+This subject enables multiple observers to subscribe to the same stream of updates and receive notifications on their own dispatch loops using `streamFor(modelId)`.
+Subjects are ideal when a model needs to expose a shared stream of notifications and that model owns procurement of the notification. 
+Internally such a model might speak to multiple downstream services, consolidate the data, and push updates via the subject to anyone that's observing it. 
+Observers can subscribe, filter and un-subscribe as needed.
 
 ## Lets Wrap it up
 ESP give you multiple means to communicate between models. 
-In doing so it's important that when doing so you're on the correct dispatch loop for the model in question, the observable API is built to help you do this.
-Typically for fire-and-forget calls and `void` function invocations the model you're invoking will use `runAction` to jump onto it's dispatch loop adn update local state.
-For specific streaming operations the model you're invoking would use `router.createObservableFor(modelId)` and the calling model would stream the results via `streamFor(modelId)`.
-And finally, for shared streaming, a model can create a subject and expose it as a shared stream. 
-Callers can subscribe and, via `streamFor(modelId)`, receive the results on their dispatch loops. 
+In doing so it's important to ensure that when updating local model state you're on the correct dispatch loop for that model, the observable API is built to help you do this.
+Typically for fire-and-forget calls and `void` function invocations, the model you're invoking will use `runAction` to jump onto it's dispatch loop and update local state.
+For specific streaming operations, the model you're invoking would use `router.createObservableFor(modelId)` and the calling model would stream the results on it's dispatch loop via `streamFor(modelId)`.
+And finally, for shared streaming notifications, a model can create a subject and expose it for other models to observe, observer stream the results on the relevant dispatch loop via `streamFor(modelId)`.

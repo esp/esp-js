@@ -28,15 +28,15 @@ var router = new esp.Router();
 
 Alternatively you can reference `dist\esp.js` or `dist\esp.min.js` via a `script` tag. These files expose `esp` using the Universal Module Definition (UMD) format. 
 
-If you're using TypeScript [esp.d.ts](./esp.d.ts) is referenced via the `typings` property in [package.json](package.json) so the TS compiler can discover it.
+If you're using TypeScript [esp.d.ts](../esp.d.ts) is referenced via the `typings` property in [package.json](../package.json) so the TS compiler can discover it.
 
 # Basic Usage
 
-```js
-// see this example on codepen: 
-// http://codepen.io/KeithWoods/pen/yJWLQk?editors=1012
+Run this example on codepen: http://codepen.io/KeithWoods/pen/yJWLQk?editors=1012
 
-// Create an ES6 style model
+Create an ES6 style model
+
+```js
 class LoginModel {
   constructor(modelId, router) {
     this._modelId = modelId;
@@ -55,19 +55,33 @@ class LoginModel {
     this._router.observeEventsOn(this._modelId, this);      
   }
 }
+```
 
-// create an app wide router
+Create an app wide router.
+
+```js
 let router = new esp.Router();  
+```
 
-// all models are identified by an ID so let's create one
+
+All models are identified by an ID so let's create one.
+
+```js
 let loginModelId = 'loginModelId';
+```
 
-// create an instance of your model
+
+Create an instance of your model.
+
+```js
 let loginModel = new LoginModel(loginModelId, router); 
 // instruct it to register itself with the router
 loginModel.registerWithRouter();
+```
 
-// observe the model for changes, typically done in a view
+Observe the model for changes, typically done in a view.
+
+```js
 let subscription = router
   .getModelObservable(loginModelId)
   // the router has a built-in observable API with basic methods, where(), do(), map(), take() 
@@ -77,45 +91,25 @@ let subscription = router
       // ... update the view 
     }
   );
-
-// Publish an event to change the models state, typically done from a view.
-// The router will fan-out delivery of the event to observers using an event-workflow.
-// When event processing is finished the router will fan-out deliver of the model to observers
-router.publishEvent(loginModelId, 'setUsername', {username:'ben'});
-
-// stop observing the model
-subscription.dispose();      
-
-// Output:
-// "Updating view. Username is: anonymous"
-// "Updating view. Username is: ben"
 ```
 
-# Help Topics
 
-* [Getting Started](docs/getting-started/index.md)
-  * [Overview](docs/getting-started/overview.md)
-  * [Installation](docs/getting-started/installation.md)
-* [Router Api](docs/router-api/index.md)
-  * [Creating a Router](docs/router-api/creating-a-router.md)
-  * [Registering a model](docs/router-api/registering-a-model.md)
-  * [Event Pub/Sub](docs/router-api/event-pub-sub.md)
-  * [Model Observation](docs/router-api/model-observation.md)
-  * [Dispatch Loop](docs/router-api/dispatch-loop.md)
-* [Modelling Approaches](docs/modelling-approaches/index.md)
-  * [Domain model](docs/modelling-approaches/domain-model.md)
-  * [Event Processor Domain Model](docs/modelling-approaches/event-processor-domain-model.md)
-  * [Reactive Domain Model](docs/modelling-approaches/reactive-domain-model.md)
-* [Advanced Concepts](docs/advanced-concepts/index.md)
-  * [Complete Event Workflow](docs/advanced-concepts/complete-event-workflow.md)
-  * [Asynchronous Operations](docs/advanced-concepts/asynchronous-operations.md)
-  * [Automatic Event Observation](docs/advanced-concepts/auto-event-observation.md)
-  * [Model To Model Communications](docs/advanced-concepts/model-to-model-communications.md)
-  * [Error Flows](docs/advanced-concepts/error-flows.md)
-  * [Bypassing the event queue](docs/advanced-concepts/bypassing-the-event-queue.md)
-  * [Anti-Patterns](docs/advanced-concepts/anti-patterns.md)
-  * [Reactive API](docs/advanced-concepts/reactive-api.md)
-* [Examples](docs/examples/index.md)
-* [Getting Help](docs/getting-help/index.md)
-* [Contribute](docs/contribute/index.md)
-* [Licence](docs/licence/index.md)
+Publish an event to change the models state, typically done from a view.
+The router will fan-out delivery of the event to observers using an event-workflow.
+When event processing is finished the router will fan-out deliver of the model to observers.
+
+```js
+router.publishEvent(loginModelId, 'setUsername', {username:'ben'});
+```
+
+Stop observing the model
+```js
+subscription.dispose();      
+```
+
+Output
+
+````
+"Updating view. Username is: anonymous"
+"Updating view. Username is: ben"
+```

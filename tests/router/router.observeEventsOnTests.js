@@ -262,6 +262,50 @@ describe('Router', () => {
             _router.addModel('derivedModel2Id', _derivedModel2);
         });
 
+        it('should throw if event name is omitted', ()=> {
+            expect(() => {
+                class Foo {
+                    @esp.observeEvent()
+                    _anObserveFunction() {
+                    }
+                }
+            }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+            expect(() => {
+                class Foo {
+                    @esp.observeEvent(null)
+                    _anObserveFunction() {
+                    }
+                }
+            }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+            expect(() => {
+                class Foo {
+                    @esp.observeEvent(undefined)
+                    _anObserveFunction() {
+                    }
+                }
+            }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+        });
+
+        it('should throw if event name is empty', ()=> {
+            expect(() => {
+                class Foo {
+                    @esp.observeEvent('')
+                    _anObserveFunction() {
+                    }
+                }
+            }).toThrow(new Error('eventName passed to an observeEvent decorator must not be \'\''));
+        });
+
+        it('should throw if event name is an invalid type', ()=> {
+            expect(() => {
+                class Foo {
+                    @esp.observeEvent({})
+                    _anObserveFunction() {
+                    }
+                }
+            }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+        });
+
         it('should observe events by event name and stage', ()=> {
             _model.observeEvents();
             _router.publishEvent('modelId', 'fooEvent', 1);

@@ -95,7 +95,7 @@ let subscription = router
 
 
 Publish an event to change the models state, typically done from a view.
-The router will fan-out delivery of the event to observers in your model using an [event workflow](docs/advanced-concepts/complete-event-workflow.md).
+The router will fan-out delivery of the event to observers in your model using an [event workflow](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/complete-event-workflow.html).
 When event processing is finished the router will fan-out deliver of the model to observers.
 
 ```js
@@ -116,29 +116,31 @@ Output
 
 # Help Topics
 
-* [Getting Started](docs/getting-started/index.md)
-  * [Overview](docs/getting-started/overview.md)
-  * [Installation](docs/getting-started/installation.md)
-* [Router Api](docs/router-api/index.md)
-  * [Creating a Router](docs/router-api/creating-a-router.md)
-  * [Registering a model](docs/router-api/registering-a-model.md)
-  * [Event Pub/Sub](docs/router-api/event-pub-sub.md)
-  * [Model Observation](docs/router-api/model-observation.md)
-  * [Dispatch Loop](docs/router-api/dispatch-loop.md)
-* [Modelling Approaches](docs/modelling-approaches/index.md)
-  * [Domain model](docs/modelling-approaches/domain-model.md)
-  * [Event Processor Domain Model](docs/modelling-approaches/event-processor-domain-model.md)
-  * [Reactive Domain Model](docs/modelling-approaches/reactive-domain-model.md)
-* [Advanced Concepts](docs/advanced-concepts/index.md)
-  * [Complete Event Workflow](docs/advanced-concepts/complete-event-workflow.md)
-  * [Asynchronous Operations](docs/advanced-concepts/asynchronous-operations.md)
-  * [Automatic Event Observation](docs/advanced-concepts/auto-event-observation.md)
-  * [Model To Model Communications](docs/advanced-concepts/model-to-model-communications.md)
-  * [Error Flows](docs/advanced-concepts/error-flows.md)
-  * [Bypassing the event queue](docs/advanced-concepts/bypassing-the-event-queue.md)
-  * [Anti-Patterns](docs/advanced-concepts/anti-patterns.md)
-  * [Reactive API](docs/advanced-concepts/reactive-api.md)
-* [Examples](docs/examples/index.md)
-* [Getting Help](docs/getting-help/index.md)
-* [Contribute](docs/contribute/index.md)
-* [Licence](docs/licence/index.md)
+[Documentation Home](https://www.gitbook.com/book/keithwoods/esp-js/details)
+
+* [Getting Started](https://keithwoods.gitbooks.io/esp-js/content/getting-started/)
+  * [Overview](https://keithwoods.gitbooks.io/esp-js/content/getting-started/overview.html)
+  * [Installation](https://keithwoods.gitbooks.io/esp-js/content/getting-started/installation.html)
+* [Router Api](https://keithwoods.gitbooks.io/esp-js/content/router-api/)
+  * [Creating a Router](https://keithwoods.gitbooks.io/esp-js/content/router-api/creating-a-router.html)
+  * [Registering a model](https://keithwoods.gitbooks.io/esp-js/content/router-api/registering-a-model.html)
+  * [Event Pub/Sub](https://keithwoods.gitbooks.io/esp-js/content/router-api/event-pub-sub.html)
+  * [Model Observation](https://keithwoods.gitbooks.io/esp-js/content/router-api/model-observation.html)
+  * [Dispatch Loop](https://keithwoods.gitbooks.io/esp-js/content/router-api/dispatch-loop.html)
+* [Modelling Approaches](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/)
+  * [Domain model](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/domain-model.html)
+  * [Event Processor Domain Model](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/event-processor-domain-model.html)
+  * [Reactive Domain Model](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/reactive-domain-model.html)
+* [Advanced Concepts](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/)
+  * [Complete Event Workflow](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/complete-event-workflow.html)
+  * [Asynchronous Operations](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/asynchronous-operations.html)
+  * [Automatic Event Observation](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/auto-event-observation.html)
+  * [Model To Model Communications](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/model-to-model-communications.html)
+  * [Error Flows](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/error-flows.html)
+  * [Bypassing the event queue](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/bypassing-the-event-queue.html)
+  * [Anti-Patterns](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/anti-patterns.html)
+  * [Reactive API](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/reactive-api.html)
+* [Examples](https://keithwoods.gitbooks.io/esp-js/content/examples/index.html)
+* [Getting Help](https://keithwoods.gitbooks.io/esp-js/content/getting-help/index.html)
+* [Contribute](https://keithwoods.gitbooks.io/esp-js/content/contribute/index.html)
+* [Licence](https://keithwoods.gitbooks.io/esp-js/content/licence/index.html)

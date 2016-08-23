@@ -3,14 +3,16 @@ docs
 examples/
 .git
 .gitignore
+.npmignore
 .idea
 karma.conf.js
 node_modules/
-NOTICE
+./NOTICE
 src
 tests
 *.log
 .travis.yml
+book.json
 NOTICE
 webpack.dev.config.js
 webpack.prod.config.js

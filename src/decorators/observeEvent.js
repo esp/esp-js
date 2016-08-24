@@ -18,26 +18,49 @@
 
 import {ObservationStage, Const} from '../router';
 import EspDecoratorMetadata from './espDecoratorMetadata';
-import Guard from "../system/Guard";
+import { Guard, utils } from "../system";
 
 export let DecoratorTypes = {
     observeEvent: 'observeEvent',
     observeModelChangedEvent: 'observeModelChangedEvent'
 };
 
-export function observeEvent(eventName, observationStage) {
+export function observeEvent() {
+    let args = Array.prototype.slice.call(arguments);
     return function (target, name, descriptor) {
+        let eventName, observationStage, predicate;
+        if(args.length >= 0) {
+            eventName = args[0];
+        }
+        if(args.length >= 1) {
+            if(utils.isString(args[1])) {
+                observationStage = args[1];
+            } else if (utils.isFunction(args[1])) {
+                predicate = args[1];
+            }
+        }
+        if(!predicate && args.length >= 2) {
+            predicate = args[2];
+        }
         if (eventName === Const.modelChangedEvent) {
             throw new Error(`Can not use observeEvent to observe the ${Const.modelChangedEvent} on function target ${name}. Use the observeModelChangedEvent decorator instead`);
         }
         Guard.isString(eventName, 'eventName passed to an observeEvent decorator must be a string');
         Guard.isTrue(eventName !== '', 'eventName passed to an observeEvent decorator must not be \'\'');
+        if(observationStage) {
+            Guard.isString(observationStage, 'observationStage passed to an observeEvent decorator must be a string');
+            Guard.isTrue(observationStage !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
+        }
+        if(predicate) {
+            Guard.isFunction(predicate, 'predicate passed to an observeEvent decorator must be a function');
+        }
         let metadata = EspDecoratorMetadata.getOrCreateOwnMetaData(target);
         metadata.addEvent(
             name,
             eventName,
             DecoratorTypes.observeEvent,
-            observationStage
+            observationStage,
+            predicate
         );
         return descriptor;
     };
@@ -51,6 +74,7 @@ export function observeModelChangedEvent(modelId) {
             Const.modelChangedEvent,
             DecoratorTypes.observeModelChangedEvent,
             ObservationStage.normal,
+            null,
             modelId
         );
         return descriptor;

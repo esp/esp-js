@@ -161,9 +161,12 @@ describe('Router', () => {
                 this._id = id;
                 this._router = router;
                 this.receivedBarEvents = [];
+                this.receivedFruitEvents = [];
+                this.subModel = new SubModel(id, router);
             }
             observeEvents() {
                 this.addDisposable(this._router.observeEventsOn(this._id, this));
+                this.subModel.observeEvents();
             }
             //start-non-standard
             @esp.observeEvent('fooEvent', esp.ObservationStage.preview)
@@ -193,7 +196,28 @@ describe('Router', () => {
             _allBarEvents(e, c, m) {
                 this.receivedBarEvents.push({event: e, stage: c.currentStage});
             }
+            @esp.observeEvent('fruitEvent', (m, e) => e.type ==='orange')
+            _onFruitEvent(e, c, m) {
+                this.receivedFruitEvents.push(e);
+            }
             //end-non-standard
+        }
+
+        class SubModel extends esp.DisposableBase {
+            constructor(id, router) {
+                super();
+                this._id = id;
+                this._router = router;
+                this.carEvents = [];
+                this.tag = 'submodel';
+            }
+            observeEvents() {
+                this.addDisposable(this._router.observeEventsOn(this._id, this));
+            }
+            @esp.observeEvent('carEvent', (m, e) => { return e.type ==='bmw' && m.tag === 'submodel'; })
+            _onFruitEvent(e, c, m) {
+                this.carEvents.push({type:e.type, model:m});
+            }
         }
 
         class BaseModel extends esp.DisposableBase {
@@ -380,6 +404,24 @@ describe('Router', () => {
             expect(() => {
                 _derivedModel1.observeEvents();
             }).toThrow(getExpectedObserveEventsOnTwiceError('derivedModel1Id'));
+        });
+
+        it('should use observeEvent predicate if provided', ()=> {
+            _model.observeEvents();
+            _router.publishEvent('modelId', 'fruitEvent', {type:'apple'});
+            expect(_model.receivedFruitEvents.length).toEqual(0);
+            _router.publishEvent('modelId', 'fruitEvent', {type:'orange'});
+            expect(_model.receivedFruitEvents.length).toEqual(1);
+            expect(_model.receivedFruitEvents[0].type).toEqual('orange');
+        });
+
+        it('should pass sub model to observeEvent predicate if provided', ()=> {
+            _model.observeEvents();
+            _router.publishEvent('modelId', 'carEvent', {type:'vw'});
+            expect(_model.subModel.carEvents.length).toEqual(0);
+            _router.publishEvent('modelId', 'carEvent', {type:'bmw'});
+            expect(_model.subModel.carEvents.length).toEqual(1);
+            expect(_model.subModel.carEvents[0].type).toEqual('bmw');
         });
 
         it('should allow multiple registrations for the same modelId against different objects', ()=> {

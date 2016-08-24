@@ -28,6 +28,10 @@ export function isString(value) {
     return typeof value == 'string' || value instanceof String;
 }
 
+export function isFunction(value) {
+    return typeof(value) === "function";
+}
+
 export function format(formatString) {
     //Guard.isString(format, "First argument to a log function should be a string, but got [" + format + "]");
     var args = Array.prototype.slice.call(arguments, 1);

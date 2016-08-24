@@ -66,12 +66,13 @@ export default class EspDecoratorMetadata {
         return [...this._events, ...parentEvents];
     }
 
-    addEvent(functionName, eventName, decoratorType, observationStage, modelId) {
+    addEvent(functionName, eventName, decoratorType, observationStage, predicate, modelId) {
         this._events.push({
             functionName,
             eventName,
             decoratorType,
             observationStage: observationStage || ObservationStage.normal,
+            predicate,
             modelId
         });
     }

@@ -456,8 +456,10 @@ export default class Router extends DisposableBase {
             compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((e, c, m) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
-                this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
-                object[details.functionName](e, c, m);
+                if(!details.predicate || details.predicate(object, e)) {
+                    this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
+                    object[details.functionName](e, c, m);
+                }
             }));
         }
         compositeDisposable.add(() => {

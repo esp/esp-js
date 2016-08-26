@@ -7,3 +7,4 @@ dist
 **/.idea
 www/app/*
 *.orig
+esp-js-react-*.tgz

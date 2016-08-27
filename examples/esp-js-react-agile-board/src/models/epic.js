@@ -11,15 +11,16 @@ let colourFactory = () => { return Colours.all[id%Colours.all.length]};
 let epicEventPredicate = (epic, event) => epic == event.epic;
 
 export default class Epic extends ModelBase {
-    constructor(modelId, router, modal) {
+    constructor(modelId, router, modal, name, itemNameDialog) {
         super(modelId, router);
         this.epicId = idFactory();
-        this.name = `Temp Name ${this.epicId}`;
+        this.name = name;
         this.stories = [];
         this.modal = modal;
         this.colours = Colours.all;
         this.colour = colourFactory();
         this.doneCount = 0;
+        this.itemNameDialog = itemNameDialog;
     }
 
     @esp.observeEvent(EventConsts.EPIC_NAME_CHANGED, epicEventPredicate)
@@ -29,9 +30,11 @@ export default class Epic extends ModelBase {
 
     @esp.observeEvent(EventConsts.ADD_STORY, epicEventPredicate)
     _onAddStory() {
-        var story = new Story(this.modelId, this.router, this, this.modal);
-        story.observeEvents();
-        this.stories.push(story);
+        this.itemNameDialog.getName('Create Story', name => {
+            var story = new Story(this.modelId, this.router, this, this.modal, name);
+            story.observeEvents();
+            this.stories.push(story);
+        });
     }
 
     postProcess() {

@@ -29,7 +29,7 @@ export default class WorkspaceView extends React.Component {
             : null;
         return (
             <div className="workspace">
-                <h1>Agile Workspace (esp-js-react demo)</h1>
+                <h1>Scrum Task Board (esp-js-react demo)</h1>
                 <input
                     type="button"
                     onClick={() => {this.props.router.publishEvent(workspace.modelId, EventConsts.ADD_EPIC, {})}}

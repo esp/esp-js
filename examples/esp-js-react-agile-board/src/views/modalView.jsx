@@ -39,7 +39,7 @@ export default class ModalView extends React.Component {
                         <input
                             type="button"
                             onClick={() => this._publishEvent(ModalResultType.Saved)}
-                            value="Save"/>
+                            value={modal.saveButtonText}/>
                     </div>
                 </div>
             </div>

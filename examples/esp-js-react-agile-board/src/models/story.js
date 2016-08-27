@@ -12,10 +12,10 @@ const STORY_EDIT_VIEW = 'STORY_EDIT_VIEW';
 
 @viewBinding(StoryEditView, STORY_EDIT_VIEW)
 export default class Story extends ModelBase {
-    constructor(modelId, router, epic, modal) {
+    constructor(modelId, router, epic, modal, name) {
         super(modelId, router);
         this.storyId = idFactory();
-        this.name = `Temp Name ${id}`;
+        this.name = name;
         this.epic = epic;
         this.isSelected = false;
         this.modal = modal;
@@ -37,7 +37,7 @@ export default class Story extends ModelBase {
     @esp.observeEvent(EventConsts.EDIT_STORY, storyEventPredicate)
     _onEditStory() {
         this._saveState();
-        this.modal.open(this, STORY_EDIT_VIEW, 'Edit Story')
+        this.modal.open(this, {modelViewContext: STORY_EDIT_VIEW, title: 'Edit Story', saveButtonText:'Save Story' })
             .streamFor(this.modelId)
             .subscribe(
                 modalResultType => {

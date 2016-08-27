@@ -27,13 +27,16 @@ export default class StoryListItemView extends React.Component {
                     <input
                         type='text'
                         value={story.name}
+                        disabled={story.isDone}
                         onChange={e => {this._publishEvent(EventConsts.STORY_NAME_CHANGED, {story, name:e.target.value});}} />
                 </div>
                 <EpicLabel epic={story.epic} />
                 <input
                     type="button"
+                    disabled={story.isDone}
                     onClick={() => {this._publishEvent(EventConsts.EDIT_STORY, {story});}}
                     value="Edit"/>
+                {story.isDone ? <label>Done</label> : null}
             </div>
         );
     }

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import esp from 'esp-js'
 import ModelBase from './modelBase';
 import Story from './story';
@@ -18,6 +19,7 @@ export default class Epic extends ModelBase {
         this.modal = modal;
         this.colours = Colours.all;
         this.colour = colourFactory();
+        this.doneCount = 0;
     }
 
     @esp.observeEvent(EventConsts.EPIC_NAME_CHANGED, epicEventPredicate)
@@ -30,5 +32,9 @@ export default class Epic extends ModelBase {
         var story = new Story(this.modelId, this.router, this, this.modal);
         story.observeEvents();
         this.stories.push(story);
+    }
+
+    postProcess() {
+        this.doneCount = _.filter(this.stories, story => story.isDone).length;
     }
 }

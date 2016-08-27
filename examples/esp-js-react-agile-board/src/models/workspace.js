@@ -71,5 +71,8 @@ export default class Wokspace extends ModelBase {
             this.displayedStories = this.allStories;
         }
         this.showAllStoriesButton = this.selectedEpic && this.allStories.length !== this.displayedStories.length;
+        _.forEach(this.epics, epic => {
+            epic.postProcess();
+        });
     }
 }

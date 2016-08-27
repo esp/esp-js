@@ -15,12 +15,12 @@ h1, h2, h3 {
 
 body {
     font-family: Arial, sans-serif;
-    overflow: hidden;
 }
 
 label {
     margin: .5em .5em 0 0;
 }
+
 .workspace {
     margin: 20px auto;
 }

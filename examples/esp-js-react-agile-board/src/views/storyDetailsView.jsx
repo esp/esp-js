@@ -18,6 +18,7 @@ export default class StoryDetailsView extends React.Component {
                 <h1>Story details</h1>
                 <input
                     type='text'
+                    disabled={story.isDone}
                     value={story.name}
                     onChange={e => router.publishEvent(story.modelId, EventConsts.STORY_NAME_CHANGED, {story, name:e.target.value})} />
                 <EpicLabel epic={story.epic} />
@@ -29,10 +30,18 @@ export default class StoryDetailsView extends React.Component {
                     <li>Aenean commodo ligula eget dolor.</li>
                     <li>Aenean massa cum sociis natoque penatibus.</li>
                 </ul>
-                <input
-                    type="button"
-                    onClick={() => {router.publishEvent(story.modelId, EventConsts.EDIT_STORY, {story})}}
-                    value="Edit"/>
+                <div>
+                    <input
+                        type="button"
+                        disabled={story.isDone}
+                        onClick={() => {router.publishEvent(story.modelId, EventConsts.EDIT_STORY, {story})}}
+                        value="Edit"/>
+                    <input
+                        type="button"
+                        disabled={story.isDone}
+                        onClick={() => {router.publishEvent(story.modelId, EventConsts.DONE_STORY, {story})}}
+                        value="Done"/>
+                </div>
             </div>
         )
     }

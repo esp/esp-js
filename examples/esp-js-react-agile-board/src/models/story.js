@@ -21,6 +21,7 @@ export default class Story extends ModelBase {
         this.modal = modal;
         this.description = '';
         this._sateBackup = null;
+        this.isDone = false;
     }
 
     @esp.observeEvent(EventConsts.STORY_NAME_CHANGED, storyEventPredicate)
@@ -49,16 +50,23 @@ export default class Story extends ModelBase {
             );
     }
 
+    @esp.observeEvent(EventConsts.DONE_STORY, storyEventPredicate)
+    _onDoneStory() {
+        this.isDone = true;
+    }
+
     _saveState() {
         this._sateBackup = {
             name:this.name,
-            description:this.description
+            description:this.description,
+            isDone:this.isDone
         };
     }
 
     _restore() {
         this.name = this._sateBackup.name;
         this.description = this._sateBackup.description;
+        this.isDone = this._sateBackup.isDone;
         this._sateBackup = null;
     }
 }

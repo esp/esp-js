@@ -20,12 +20,14 @@ export default class StoryEditView extends React.Component {
                 <label>Name</label>
                 <input
                     type='text'
+                    disabled={story.isDone}
                     value={story.name}
                     onChange={e => this._publishEvent(EventConsts.STORY_NAME_CHANGED, {name: e.target.value, story})}/>
                 <EpicLabel epic={story.epic} />
                 <label>Description</label>
                 <textarea
                     value={story.description}
+                    disabled={story.isDone}
                     onChange={e => this._publishEvent(EventConsts.STORY_DESCRIPTION_CHANGED, {description: e.target.value, story})}/>
             </div>
         )

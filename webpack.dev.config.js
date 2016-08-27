@@ -16,7 +16,6 @@
  */
 // notice_end
 
-var CopyWebpackPlugin = require('copy-webpack-plugin');
 var webpack = require('webpack');
 var path = require('path');
 
@@ -50,10 +49,5 @@ module.exports = {
     },
     eslint: {
         configFile: './.eslintrc'
-    },
-    plugins: [
-        new CopyWebpackPlugin([
-            {from: './src/esp.d.ts', to: 'esp.d.ts'}
-        ])
-    ],
+    }
 };

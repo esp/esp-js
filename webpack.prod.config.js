@@ -16,7 +16,6 @@
  */
 // notice_end
 
-var CopyWebpackPlugin = require('copy-webpack-plugin');
 var webpack = require('webpack');
 var path = require('path');
 
@@ -51,9 +50,6 @@ module.exports = {
     },
     plugins: [
         new webpack.optimize.UglifyJsPlugin({minimize: true}),
-        new webpack.optimize.OccurenceOrderPlugin(true),
-        new CopyWebpackPlugin([
-            {from: './src/esp.d.ts', to: 'esp.d.ts'}
-        ])
+        new webpack.optimize.OccurenceOrderPlugin(true)
     ]
 };

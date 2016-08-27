@@ -1,15 +1,22 @@
+import * as esp from 'esp-js';
 import React from 'react';
 import EventConsts from '../eventConsts';
 import ModalResultType from '../models/modalResultType';
 import { ViewBinder } from 'esp-js-react';
 
 export default class ModalView extends React.Component {
+    static propTypes = {
+        model: React.PropTypes.object.isRequired,
+        router: React.PropTypes.instanceOf(esp.Router).isRequired
+    };
+
     _publishEvent(resultType) {
         this.props.router.publishEvent(this.props.model.modelId, EventConsts.MODAL_ACTION_RESULT, {resultType});
     }
+
     render() {
-        let model = this.props.model;
-        if (!model.modelToDisplay) {
+        let modal = this.props.model;
+        if (!modal.modelToDisplay) {
             return null;
         }
         return (
@@ -19,10 +26,10 @@ export default class ModalView extends React.Component {
                         <span
                             className='modal__close'
                             onClick={() => this._publishEvent(ModalResultType.Canceled)}>x</span>
-                        <h2>{model.modalTitle}</h2>
+                        <h2>{modal.modalTitle}</h2>
                     </div>
                     <div className="modal__body">
-                        <ViewBinder model={model.modelToDisplay} viewContext={model.modelViewContext} />
+                        <ViewBinder model={modal.modelToDisplay} viewContext={modal.modelViewContext} />
                     </div>
                     <div className='modal__footer'>
                         <input

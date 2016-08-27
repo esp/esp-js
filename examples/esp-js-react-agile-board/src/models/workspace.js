@@ -31,7 +31,7 @@ export default class Wokspace extends ModelBase {
     }
 
     @esp.observeEvent(EventConsts.SHOW_ALL_STORIES)
-    _onShowAllStories(event) {
+    _onShowAllStories() {
         this.selectedEpic.isSelected = false;
         this.selectedEpic = null;
     }

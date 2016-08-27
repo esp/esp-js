@@ -7,7 +7,7 @@ import Colours from './colours';
 let id = 0;
 let idFactory = () => `epic-${id++}`;
 let colourFactory = () => { return Colours.all[id%Colours.all.length]};
-let epicEventPredicate = (epic, event) => epic.epicId == event.epicId;
+let epicEventPredicate = (epic, event) => epic == event.epic;
 
 export default class Epic extends ModelBase {
     constructor(modelId, router, modal) {

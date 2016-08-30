@@ -4,6 +4,7 @@ import ModelBase from './modelBase';
 import Epic from './epic';
 import EventConsts from '../eventConsts';
 import Modal from './modal';
+import ItemNameDialog from './itemNameDialog';
 
 export default class Wokspace extends ModelBase {
     constructor(router) {
@@ -13,25 +14,29 @@ export default class Wokspace extends ModelBase {
         this.displayedStories = [];
         this.selectedEpic = null;
         this.selectedStory = null;
-        this.modal = new Modal(router);
         this.showAllStoriesButton = false;
+        this.modal = new Modal(router);
+        this.itemNameDialog = new ItemNameDialog(this.modelId, router, this.modal);
     }
 
     observeEvents() {
-        super.observeEvents();
         this.router.addModel(this.modelId, this);
+        super.observeEvents();
         this.modal.observeEvents();
+        this.itemNameDialog.observeEvents();
     }
 
     @esp.observeEvent(EventConsts.ADD_EPIC)
     _onAddEpic() {
-        var epic = new Epic(this.modelId, this.router, this.modal);
-        epic.observeEvents();
-        this.epics.push(epic);
+        this.itemNameDialog.getName('Create Epic', name => {
+            var epic = new Epic(this.modelId, this.router, this.modal, name, this.itemNameDialog);
+            epic.observeEvents();
+            this.epics.push(epic);
+        });
     }
 
     @esp.observeEvent(EventConsts.SHOW_ALL_STORIES)
-    _onShowAllStories(event) {
+    _onShowAllStories() {
         this.selectedEpic.isSelected = false;
         this.selectedEpic = null;
     }
@@ -71,5 +76,8 @@ export default class Wokspace extends ModelBase {
             this.displayedStories = this.allStories;
         }
         this.showAllStoriesButton = this.selectedEpic && this.allStories.length !== this.displayedStories.length;
+        _.forEach(this.epics, epic => {
+            epic.postProcess();
+        });
     }
 }

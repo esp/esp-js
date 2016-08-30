@@ -31,7 +31,7 @@ export class Router {
     runAction<T>(modelId:string, action:(model : T) => void)  : void;
     getEventObservable<T, TEvent, TContext>(modelId:string, eventType:string, observationStage?: string) : EventObservable<T, TEvent, TContext>;
     getModelObservable<T>(modelId:string) : Observable<T>;
-    createObservableFor<T>(modelId : string, observer : (observer : Observer<T>) => Disposable) : RouterObservable<T>;
+    createObservableFor<T>(modelId : string, observer : (observer : Observer<T>) => Disposable | Function | void) : RouterObservable<T>;
     createSubject<T>() : RouterSubject<T>;
     observeEventsOn<TModel>(modelId: string, model : TModel, methodPrefix?: string) : Disposable;
     createModelRouter<T>(targetModelId:string) : SingleModelRouter<T>;
@@ -54,7 +54,7 @@ export class SingleModelRouter<T> {
     getEventObservable<TEvent, TContext>(eventType : string, observationStage? : string) : EventObservable<T, TEvent, TContext>;
     getModelObservable<T>() : Observable<T>;
     observeEventsOn<TModel>(model : TModel, methodPrefix?: string) : Disposable;
-    createObservable<T>(observer : (observer : Observer<T>) => Disposable) : RouterObservable<T>;
+    createObservable<T>(observer : (observer : Observer<T>) => Disposable | Function | void) : RouterObservable<T>;
     createSubject<T>() : RouterSubject<T>;
 }
 
@@ -122,7 +122,7 @@ export interface Observable<T> {
 }
 
 export interface ObservableStatic {
-    create<T>(observer: (observer: Observer<T>) => Disposable | Function): Observable<T>;
+    create<T>(observer: (observer: Observer<T>) => Disposable | Function | void): Observable<T>;
 }
 
 export var Observable: ObservableStatic;

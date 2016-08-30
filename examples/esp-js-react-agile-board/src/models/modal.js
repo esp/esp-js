@@ -11,6 +11,7 @@ export default class Modal extends ModelBase {
         this.modelToDisplay = null;
         this.modelViewContext = null;
         this.modalTitle = null;
+        this.saveButtonText = '';
         this._modalActionSubject = router.createSubject();
     }
 
@@ -24,11 +25,12 @@ export default class Modal extends ModelBase {
         this._modalActionSubject.onNext(event.resultType);
     }
 
-    open(modelToDisplay, modelViewContext, title) {
+    open(modelToDisplay, options) {
         return this.router.createObservableFor(this.modelId, o => {
             this.modelToDisplay = modelToDisplay;
-            this.modelViewContext = modelViewContext;
-            this.modalTitle = title || 'Modal Dialog';
+            this.modelViewContext = options.modelViewContext;
+            this.modalTitle = options.title || 'Modal Dialog';
+            this.saveButtonText = options.saveButtonText || '';
             let subscription = this._modalActionSubject.take(1).subscribe(
                 result => o.onNext(result),
                 () => {
@@ -45,6 +47,7 @@ export default class Modal extends ModelBase {
     _clear() {
         this.modelToDisplay = null;
         this.modelViewContext = null;
-        this.modalTitle = null;
+        this.modalTitle = '';
+        this.saveButtonText = '';
     }
 }

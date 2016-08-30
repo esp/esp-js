@@ -15,12 +15,12 @@ h1, h2, h3 {
 
 body {
     font-family: Arial, sans-serif;
-    overflow: hidden;
 }
 
 label {
     margin: .5em .5em 0 0;
 }
+
 .workspace {
     margin: 20px auto;
 }
@@ -109,15 +109,15 @@ label {
     width: 20em;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     -webkit-animation-name: animatetop;
-    -webkit-animation-duration: 0.4s;
+    -webkit-animation-duration: 0.2s;
     animation-name: animatetop;
-    animation-duration: 0.4s
+    animation-duration: 0.2s
 }
 
 /* Add Animation */
 @-webkit-keyframes animatetop {
     from {
-        top: -300px;
+        top: -10px;
         opacity: 0
     }
     to {
@@ -128,7 +128,7 @@ label {
 
 @keyframes animatetop {
     from {
-        top: -300px;
+        top: -10px;
         opacity: 0
     }
     to {

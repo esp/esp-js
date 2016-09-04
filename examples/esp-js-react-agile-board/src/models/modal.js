@@ -1,18 +1,18 @@
-import * as esp from 'esp-js';
 import ModelBase from './modelBase';
-import EventConsts from '../eventConsts';
 import ModalView from '../views/modalView.jsx';
 import { viewBinding } from 'esp-js-react';
+import idFactory from './idFactory';
 
+/**
+ * Model for app wide modal dialogs
+ */
 @viewBinding(ModalView)
 export default class Modal extends ModelBase {
     constructor(router) {
-        super('modalModelid', router);
-        this.modelToDisplay = null;
+        super(idFactory('modal'), router);
+        this.modelIdToDisplay = null;
         this.modelViewContext = null;
         this.modalTitle = null;
-        this.saveButtonText = '';
-        this._modalActionSubject = router.createSubject();
     }
 
     observeEvents() {
@@ -20,34 +20,19 @@ export default class Modal extends ModelBase {
         this.router.addModel(this.modelId, this);
     }
 
-    @esp.observeEvent(EventConsts.MODAL_ACTION_RESULT)
-    _onModalActionResults(event) {
-        this._modalActionSubject.onNext(event.resultType);
-    }
-
-    open(modelToDisplay, options) {
-        return this.router.createObservableFor(this.modelId, o => {
-            this.modelToDisplay = modelToDisplay;
-            this.modelViewContext = options.modelViewContext;
-            this.modalTitle = options.title || 'Modal Dialog';
-            this.saveButtonText = options.saveButtonText || '';
-            let subscription = this._modalActionSubject.take(1).subscribe(
-                result => o.onNext(result),
-                () => {
-                    this._clear();
-                    o.onCompleted();
-                });
+    open(modelIdToDisplay, modelViewContext) {
+        return this.router.createObservableFor(this.modelId, () => {
+            this.modelIdToDisplay = modelIdToDisplay;
+            this.modelViewContext = modelViewContext;
             return () => {
                 this._clear();
-                subscription.dispose();
             };
         });
     }
 
     _clear() {
-        this.modelToDisplay = null;
+        this.modelIdToDisplay = null;
         this.modelViewContext = null;
         this.modalTitle = '';
-        this.saveButtonText = '';
     }
 }

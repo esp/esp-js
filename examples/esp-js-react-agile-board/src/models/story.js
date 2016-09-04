@@ -1,27 +1,22 @@
 import esp from 'esp-js';
-import { viewBinding } from 'esp-js-react';
 import ModelBase from './modelBase';
-import StoryEditView from '../views/storyEditView.jsx';
 import EventConsts from '../eventConsts';
-import ModalResultType from './modalResultType';
-
-let id = 0;
-const idFactory = () => `story-${id++}`;
+import StoryStatus from './storyStatus';
+import idFactory from './idFactory';
+// All stories share the same views so events fired from these views get routed to all instances of a stories.
+// `observeEvent` optionally takes a predicate we can use to filter out events for the right instance.
 const storyEventPredicate = (story, event) => story == event.story;
-const STORY_EDIT_VIEW = 'STORY_EDIT_VIEW';
 
-@viewBinding(StoryEditView, STORY_EDIT_VIEW)
 export default class Story extends ModelBase {
-    constructor(modelId, router, epic, modal, name) {
+    constructor(modelId, router, epic, name) {
         super(modelId, router);
-        this.storyId = idFactory();
-        this.name = name;
         this.epic = epic;
+        this.name = name;
+        this.storyId = idFactory('story');
+        this.status = StoryStatus.NORMAL;
         this.isSelected = false;
-        this.modal = modal;
         this.description = '';
         this._sateBackup = null;
-        this.isDone = false;
     }
 
     @esp.observeEvent(EventConsts.STORY_NAME_CHANGED, storyEventPredicate)
@@ -37,29 +32,32 @@ export default class Story extends ModelBase {
     @esp.observeEvent(EventConsts.EDIT_STORY, storyEventPredicate)
     _onEditStory() {
         this._saveState();
-        this.modal.open(this, {modelViewContext: STORY_EDIT_VIEW, title: 'Edit Story', saveButtonText:'Save Story' })
-            .streamFor(this.modelId)
-            .subscribe(
-                modalResultType => {
-                    if(modalResultType === ModalResultType.Saved) {
-                        // nothing to do for now
-                    } else {
-                        this._restore();
-                    }
-                }
-            );
+        this.status = StoryStatus.EDITING;
+    }
+
+    @esp.observeEvent(EventConsts.CANCEL_EDIT_STORY, storyEventPredicate)
+    _onCancelEditStory() {
+        this.status = StoryStatus.NORMAL;
+        this._restore();
+    }
+
+    @esp.observeEvent(EventConsts.SAVE_STORY, storyEventPredicate)
+    _onSaveStory() {
+        this.status = StoryStatus.NORMAL;
+        this._sateBackup = null;
     }
 
     @esp.observeEvent(EventConsts.DONE_STORY, storyEventPredicate)
     _onDoneStory() {
-        this.isDone = true;
+        this.status = StoryStatus.DONE;
     }
 
     _saveState() {
         this._sateBackup = {
             name:this.name,
             description:this.description,
-            isDone:this.isDone
+            isDone:this.isDone,
+            status:this.status
         };
     }
 
@@ -67,6 +65,7 @@ export default class Story extends ModelBase {
         this.name = this._sateBackup.name;
         this.description = this._sateBackup.description;
         this.isDone = this._sateBackup.isDone;
+        this.status = this._sateBackup.status;
         this._sateBackup = null;
     }
 }

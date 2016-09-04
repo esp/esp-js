@@ -2,9 +2,9 @@ import * as React from 'react';
 import classnames from 'classnames';
 
 const EpicLabel = (props) => {
-    let epicClassnames = classnames(`epic_${props.epic.colour}`, 'epic_label');
+    let epicClassnames = classnames(`epic_${props.colour}`, 'epic_label');
     return (
-        <label className={epicClassnames}>{props.showEpicId ? props.epic.epicId : props.epic.name}</label>
+        <label className={epicClassnames}>{props.displayText}</label>
     );
 };
 

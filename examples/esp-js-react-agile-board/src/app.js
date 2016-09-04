@@ -3,16 +3,25 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider, SmartComponent} from 'esp-js-react';
 import Workspace from './models/workspace';
-import WorkspaceView from './views/workspaceView.jsx';
+import Modal from './models/modal';
 
-var router = new esp.Router();
+// create an app wide router
+let router = new esp.Router();
 
-var workspace = new Workspace(router);
+// create a model responsible for displaying app wide modal windows
+let modal = new Modal(router);
+modal.observeEvents();
+
+// create the main model
+let workspace = new Workspace(router, modal);
 workspace.observeEvents();
 
 ReactDOM.render(
     <RouterProvider router={router}>
-        <SmartComponent modelId={workspace.modelId} view={WorkspaceView} />
+        <div>
+            <SmartComponent modelId={workspace.modelId} />
+            <SmartComponent modelId={modal.modelId} />
+        </div>
     </RouterProvider>,
     document.getElementById('react')
 );

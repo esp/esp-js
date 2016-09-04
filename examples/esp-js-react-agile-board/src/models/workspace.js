@@ -1,38 +1,50 @@
 import _ from 'lodash';
 import esp from 'esp-js';
+import { viewBinding } from 'esp-js-react';
 import ModelBase from './modelBase';
 import Epic from './epic';
 import EventConsts from '../eventConsts';
-import Modal from './modal';
 import ItemNameDialog from './itemNameDialog';
+import ItemNameDialogResultType from './itemNameDialogResultType';
+import WorkspaceView from '../views/workspaceView.jsx';
+import idFactory from './idFactory';
 
-export default class Wokspace extends ModelBase {
-    constructor(router) {
-        super('workspaceModelId', router);
+@viewBinding(WorkspaceView)
+export default class Workspace extends ModelBase {
+    constructor(router, modal) {
+        super(idFactory('workspace'), router);
+        this.modal = modal;
         this.epics = [];
         this.allStories = [];
         this.displayedStories = [];
         this.selectedEpic = null;
         this.selectedStory = null;
         this.showAllStoriesButton = false;
-        this.modal = new Modal(router);
-        this.itemNameDialog = new ItemNameDialog(this.modelId, router, this.modal);
+        this._createEpicDialog = new ItemNameDialog(router, modal, 'Create Epic', 'Create Epic');
+        this._createStoryDialog = new ItemNameDialog(router, modal, 'Create Story', 'Create Story');
     }
 
     observeEvents() {
         this.router.addModel(this.modelId, this);
         super.observeEvents();
-        this.modal.observeEvents();
-        this.itemNameDialog.observeEvents();
+        this._createEpicDialog.observeEvents();
+        this._createStoryDialog.observeEvents();
     }
 
     @esp.observeEvent(EventConsts.ADD_EPIC)
     _onAddEpic() {
-        this.itemNameDialog.getName('Create Epic', name => {
-            var epic = new Epic(this.modelId, this.router, this.modal, name, this.itemNameDialog);
-            epic.observeEvents();
-            this.epics.push(epic);
-        });
+        this._createEpicDialog.resultsStream
+            .streamFor(this.modelId)
+            .take(1)
+            .subscribe(results => {
+                if(results.type === ItemNameDialogResultType.Saved) {
+                    var epic = new Epic(this.modelId, this.router, this._createStoryDialog, results.name);
+                    epic.observeEvents();
+                    this.epics.push(epic);
+                }
+                this._createEpicDialog.close();
+            });
+        this._createEpicDialog.open();
     }
 
     @esp.observeEvent(EventConsts.SHOW_ALL_STORIES)
@@ -61,6 +73,8 @@ export default class Wokspace extends ModelBase {
         });
     }
 
+    // Gets called by the router when an event for this model has been processed by observers,
+    // great place for aggregate operations and/or validation.
     postProcess() {
         this.allStories = _.reduce(
             this.epics, (result, epic) => {

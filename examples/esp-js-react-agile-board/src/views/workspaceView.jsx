@@ -5,12 +5,11 @@ import EpicListItemView from './epicListItemView.jsx';
 import StoryListItemView from './storyListItemView.jsx';
 import classnames from 'classnames';
 import { ViewBinder, SmartComponent } from 'esp-js-react';
-import Workspace from '../models/workspace';
 import StoryDetailsView from './storyDetailsView.jsx';
 
 export default class WorkspaceView extends React.Component {
     static propTypes = {
-        model: React.PropTypes.instanceOf(Workspace).isRequired,
+        model: React.PropTypes.object.isRequired,
         router: React.PropTypes.instanceOf(esp.Router).isRequired
     };
 
@@ -53,7 +52,6 @@ export default class WorkspaceView extends React.Component {
                         {storyDetailsView}
                     </div>
                 </div>
-                <SmartComponent modelId={workspace.modal.modelId} />
             </div>
         );
     }

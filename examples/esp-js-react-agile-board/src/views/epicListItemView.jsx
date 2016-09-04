@@ -29,7 +29,7 @@ export default class EpicListItemView extends React.Component {
                     type="button"
                     onClick={() => {this.props.router.publishEvent(epic.modelId, EventConsts.ADD_STORY, {epic})}}
                     value="Add story"/>
-                <EpicLabel epic={epic} showEpicId={true} />
+                <EpicLabel colour={epic.colour} displayText={epic.epicId} />
                 {epic.stories.length > 0 ? <label>Done {epic.doneCount} of {epic.stories.length} Stories</label> : null}
             </div>
         );

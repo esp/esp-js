@@ -15,6 +15,7 @@ h1, h2, h3 {
 
 body {
     font-family: Arial, sans-serif;
+    padding: 1em;
 }
 
 label {
@@ -28,6 +29,27 @@ label {
 .workspace__main-content {
     display: flex;
     flex-direction: row;
+}
+
+.itemNameDialog {
+    display: flex;
+    flex-direction: column;
+}
+
+.itemNameDialog__header {
+    padding: 2px 16px;
+    background-color: #F5F5F5;
+}
+
+.itemNameDialog__body {
+    padding: 2px 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.itemNameDialog__footer {
+    padding: 2px 16px;
+    background-color: #F5F5F5;
 }
 
 .workspace__epic-list, .workspace__story-list, .workspace__story-details {
@@ -61,7 +83,7 @@ label {
     background: #EBF2F9;
 }
 
-.storyEdit textarea {
+.storyDetails textarea {
     width: 100%;
     height: 8em;
 }
@@ -80,23 +102,6 @@ label {
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0, 0, 0); /* Fallback color */
     background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-}
-
-/* Modal Header */
-.modal__header {
-    padding: 2px 16px;
-    background-color: #F5F5F5;
-}
-
-/* Modal Body */
-.modal__body {
-    padding: 2px 16px;
-}
-
-/* Modal Footer */
-.modal__footer {
-    padding: 2px 16px;
-    background-color: #F5F5F5;
 }
 
 /* Modal Content */

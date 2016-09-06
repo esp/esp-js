@@ -16,13 +16,32 @@ export default class ItemNameDialogView extends React.Component {
         let itemNameDialog = this.props.model;
         return (
             <div className='itemNameDialog'>
-                <label>Name:</label>
-                <input
-                    autoFocus
-                    type='text'
-                    value={itemNameDialog.itemName}
-                    onChange={e => this._publishEvent(EventConsts.ITEM_NAME_CHANGED, {itemName: e.target.value})}/>
+                <div className='itemNameDialog__header'>
+                    <span className='modal__close' onClick={() => this._publishEvent(EventConsts.ITEM_NAME_CANCELED)}>x</span>
+                    <h2>{itemNameDialog.modalTitle}</h2>
+                </div>
+                <div className='itemNameDialog__body'>
+                    <label>Name:</label>
+                    <input
+                        autoFocus
+                        type='text'
+                        value={itemNameDialog.itemName}
+                        maxLength="20"
+                        onChange={e => this._publishEvent(EventConsts.ITEM_NAME_CHANGED, {itemName: e.target.value})}/>
+                    <label>{Math.abs(itemNameDialog.itemName.length - 20)} characters left</label>
+                </div>
+                <div className='itemNameDialog__footer'>
+                    <input
+                        type="button"
+                        onClick={() => this._publishEvent(EventConsts.ITEM_NAME_CANCELED, {})}
+                        value="Cancel"/>
+                    <input
+                        type="button"
+                        disabled={!itemNameDialog.canSave}
+                        onClick={() => this._publishEvent(EventConsts.ITEM_NAME_SAVED, {})}
+                        value={itemNameDialog.saveButtonText}/>
+                </div>
             </div>
-        )
+        );
     }
 }

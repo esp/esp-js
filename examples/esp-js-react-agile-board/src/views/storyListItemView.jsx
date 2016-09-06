@@ -4,6 +4,7 @@ import React from 'react';
 import EventConsts from '../eventConsts';
 import EpicLabel from './epicLabel';
 import Story from '../models/story';
+import StoryStatus from '../models/storyStatus';
 
 export default class StoryListItemView extends React.Component {
     static propTypes = {
@@ -15,28 +16,20 @@ export default class StoryListItemView extends React.Component {
         this.props.router.publishEvent(this.props.story.modelId, eventName, event);
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        // return nextProps.story.isDirty; when https://github.com/esp/esp-js-react/issues/1 is implemented
+        return true;
+    }
+
     render() {
         var story = this.props.story;
         let className = classnames('storyListItem', {'selectedItem':story.isSelected});
         return (
-            <div
-                className={className}
-                onClick={() => {this._publishEvent(EventConsts.STORY_SELECTED, {story});}}>
-                <div>
-                    <label>Story:</label>
-                    <input
-                        type='text'
-                        value={story.name}
-                        disabled={story.isDone}
-                        onChange={e => {this._publishEvent(EventConsts.STORY_NAME_CHANGED, {story, name:e.target.value});}} />
-                </div>
-                <EpicLabel epic={story.epic} />
-                <input
-                    type="button"
-                    disabled={story.isDone}
-                    onClick={() => {this._publishEvent(EventConsts.EDIT_STORY, {story});}}
-                    value="Edit"/>
-                {story.isDone ? <label>Done</label> : null}
+            <div className={className} onClick={() => {this._publishEvent(EventConsts.STORY_SELECTED, {story});}}>
+                <label>Story:{story.name}</label>
+                <p>{story.description}</p>
+                <EpicLabel colour={story.epic.colour} displayText={story.epic.name} />
+                {story.status === StoryStatus.DONE ? <label>Done</label> : null}
             </div>
         );
     }

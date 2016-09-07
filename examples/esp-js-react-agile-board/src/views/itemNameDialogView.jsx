@@ -26,9 +26,9 @@ export default class ItemNameDialogView extends React.Component {
                         autoFocus
                         type='text'
                         value={itemNameDialog.itemName}
-                        maxLength="20"
+                        maxLength="200"
                         onChange={e => this._publishEvent(EventConsts.ITEM_NAME_CHANGED, {itemName: e.target.value})}/>
-                    <label>{Math.abs(itemNameDialog.itemName.length - 20)} characters left</label>
+                    <label>{Math.abs(itemNameDialog.itemName.length - 200)} characters left</label>
                 </div>
                 <div className='itemNameDialog__footer'>
                     <input

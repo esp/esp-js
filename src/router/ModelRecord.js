@@ -26,6 +26,7 @@ export default class ModelRecord {
         this._eventQueue = [];
         this._hasChanges = false;
         this._wasRemoved = false;
+        this._postModelDispatchActions = [];
         this._runPreEventProcessor = this._createEventProcessor("preEventProcessor", 'preProcess', options ? options.preEventProcessor : undefined);
         this._runPostEventProcessor = this._createEventProcessor("postEventProcessor", 'postProcess', options ? options.postEventProcessor : undefined);
     }
@@ -55,6 +56,15 @@ export default class ModelRecord {
     }
     get runPostEventProcessor() {
         return this._runPostEventProcessor;
+    }
+    addPostModelDispatchAction(action) {
+        this._postModelDispatchActions.push(action);
+    }
+    runPostModelDispatchActions() {
+        for(let i =0; i < this._postModelDispatchActions.length; i++) {
+            this._postModelDispatchActions[i]();
+        }
+        this._postModelDispatchActions.length = 0;
     }
     _createEventProcessor(name, modelProcessMethod, externalProcessor) {
         var externalProcessor1 = () => { /*noop */ };

@@ -1,10 +1,20 @@
+import esp from 'esp-js';
 import _ from 'lodash';
 
+@esp.dirtyTracking()
 export default class ModelBase {
     constructor(modelId, router) {
         this.modelId = modelId;
         this.router = router;
         this._disposables = [];
+        this._isDirty = false;
+    }
+
+    get isDirty() {
+        return this._isDirty;
+    }
+    set isDirty(value) {
+        this._isDirty = value;
     }
 
     observeEvents() {

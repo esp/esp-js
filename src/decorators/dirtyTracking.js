@@ -14,12 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-export {
-    observeEvent,
-    observeModelChangedEvent,
-    DecoratorTypes
-} from './observeEvent';
-export { default as  dirtyTracking } from './dirtyTracking';
-export { default as EspDecoratorMetadata } from './espDecoratorMetadata';
+import { Guard, utils } from "../system";
+import EspDecoratorMetadata from './espDecoratorMetadata';
+
+export default function dirtyTracking(isDirtyPropName) {
+    return function (target, name, descriptor) {
+        // the dirtyTracking decorator is designed to go on a class, thus
+        // 'target' will be the constructor function itself
+        let metadata = EspDecoratorMetadata.getOrCreateOwnMetaData(target);
+        metadata.addDirtyTracking(isDirtyPropName);
+        return descriptor;
+    };
+}

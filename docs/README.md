@@ -109,7 +109,7 @@ subscription.dispose();
 
 Output
 
-````
+```
 "Updating view. Username is: anonymous"
 "Updating view. Username is: ben"
 ```

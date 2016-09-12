@@ -179,7 +179,7 @@ export default class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter(this, targetModelId);
     }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
-        if(EspDecoratorMetadata.hasMetadata(object)) {
+        if(EspDecoratorMetadata.hasMetadata(object.constructor)) {
             return this._observeEventsUsingDirectives(modelId, object, methodPrefix);
         } else {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);
@@ -359,6 +359,7 @@ export default class Router extends DisposableBase {
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
+                modelRecord.runPostModelDispatchActions();
                 modelRecord = this._getNextModelRecordWithQueuedEvents();
                 hasEvents = typeof modelRecord !== 'undefined';
                 this._diagnosticMonitor.endingModelEventLoop();
@@ -449,8 +450,9 @@ export default class Router extends DisposableBase {
         }
         this._decoratorObservationRegister.register(modelId, object);
         var compositeDisposable = new CompositeDisposable();
-        var metadata = EspDecoratorMetadata.getMetadata(object);
+        var metadata = EspDecoratorMetadata.getMetadata(object.constructor);
         var eventsDetails = metadata.getAllEvents();
+        let modelRecord = this._models[modelId];
         for (var i = 0; i < eventsDetails.length; i ++) {
             let details = eventsDetails[i];
             compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((e, c, m) => {
@@ -459,6 +461,12 @@ export default class Router extends DisposableBase {
                 if(!details.predicate || details.predicate(object, e)) {
                     this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
                     object[details.functionName](e, c, m);
+                    if(metadata.isDirtyTracking) {
+                        object[metadata.dirtyTrackingPropName] = true;
+                        modelRecord.addPostModelDispatchAction(() => {
+                            object[metadata.dirtyTrackingPropName] = false;
+                        });
+                    }
                 }
             }));
         }

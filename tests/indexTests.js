@@ -15,6 +15,7 @@ import {
     RouterSubject,
     observeEvent,
     observeModelChangedEvent,
+    dirtyTracking,
     model,
     logging,
     DisposableWrapper
@@ -94,6 +95,11 @@ describe('index exports', () => {
     it('should export ModelChangedEvent', () => {
         expect(esp.ModelChangedEvent).toBeDefined();
         expect(ModelChangedEvent).toBeDefined();
+    });
+
+    it('should export dirtyTracking', () => {
+        expect(esp.dirtyTracking).toBeDefined();
+        expect(dirtyTracking).toBeDefined();
     });
 
     it('should export logging', () => {

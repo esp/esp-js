@@ -30,6 +30,25 @@ Alternatively you can reference `dist\esp.js` or `dist\esp.min.js` via a `script
 
 If you're using TypeScript [esp.d.ts](../esp.d.ts) is referenced via the `typings` property in [package.json](../package.json) so the TS compiler can discover it.
 
+# Examples
+
+You can find several [examples](../examples) with the source.
+It's suggested you take a look at the [Agile board](../examples/esp-js-react-agile-board) to get started (don't forget to read the docs first). 
+
+## ESP Agile board
+
+This example demonstrates a simple agile planning board.
+It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](https://www.npmjs.com/package/esp-js-react) to build a unidirectional, model first application.
+
+![ESP Agile board Example](https://github.com/esp/esp-js/blob/master/docs/images/esp-agile-demo.gif)
+
+## Reactive Trader Cloud
+
+A more more elaborate and comprehensive reference implementation done by [Adaptive Financial](http://weareadaptive.com/). 
+The GUI state is modeled using [esp-js](https://www.npmjs.com/package/esp-js) with dynamic view resolution done using [esp-js-react](https://www.npmjs.com/package/esp-js-react).
+
+![ESP Agile board Example](https://github.com/esp/esp-js/blob/master/docs/images/esp-rt-electron.gif)
+
 # Basic Usage
 
 Run this example on codepen: http://codepen.io/KeithWoods/pen/yJWLQk?editors=1012

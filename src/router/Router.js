@@ -504,7 +504,7 @@ export default class Router extends DisposableBase {
     }
     _throwIfHaltedOrDisposed() {
         if (this._state.currentStatus === Status.Halted) {
-            throw new Error(`Event router halted due to previous error [${this._haltingException}]`);
+            throw new Error(`ESP router halted due to previous unhandled error [${this._haltingException}]`, this._haltingException);
         }
         if(this.isDisposed) {
             throw new Error(`ESP router has been disposed`);
@@ -517,7 +517,7 @@ export default class Router extends DisposableBase {
 
         let modelIds = Object.keys(this._models);
         this._diagnosticMonitor.halted(modelIds, err);
-        _log.error('Router halted error: [{0}]', err);
+        _log.error('The ESP router has caught an unhandled error and will halt', err);
         this._haltingException = err;
 
         // We run the onErrorHandlers after the
@@ -528,9 +528,8 @@ export default class Router extends DisposableBase {
                     handler(err);
                 }
                 catch(handlerError) {
-                    _log.info('Error handler errored. Ignoring and continuing, Error = ', handlerError);
+                    _log.info(`Error handler errored. Ignoring and continuing, Error = ${handlerError}`, handlerError);
                 }
-
             })
         }
 

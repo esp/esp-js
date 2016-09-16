@@ -43,52 +43,48 @@ export default class Logger {
         _sink = sink;
     }
 
-    verbose(format) {
+    verbose(message) {
         if (_currentLevel <= level.verbose) {
             var args = Array.prototype.slice.call(arguments, 1);
-            this._log("VERBOSE", format, args);
+            this._log("VERBOSE", message, args);
         }
     }
 
-    debug(format) {
+    debug(message) {
         if (_currentLevel <= level.debug) {
             var args = Array.prototype.slice.call(arguments, 1);
-            this._log("DEBUG", format, args);
+            this._log("DEBUG", message, args);
         }
     }
 
-    info(format) {
+    info(message) {
         if (_currentLevel <= level.info) {
             var args = Array.prototype.slice.call(arguments, 1);
-            this._log("INFO", format, args);
+            this._log("INFO", message, args);
         }
     }
 
-    warn(format) {
+    warn(message) {
         if (_currentLevel <= level.warn) {
             var args = Array.prototype.slice.call(arguments, 1);
-            this._log("WARN", format, args);
+            this._log("WARN", message, args);
         }
     }
 
-    error(format) {
+    error(message) {
         if (_currentLevel <= level.error) {
             var args = Array.prototype.slice.call(arguments, 1);
-            this._log("ERROR", format, args);
+            this._log("ERROR", message, args);
         }
     }
 
-    _log(level, format, args) {
-        Guard.isString(format, "First argument to a log function should be a string, but got [" + format + "]");
-        var message = format.replace(/{(\d+)}/g, (match, number) => {
-            return typeof args[number] != 'undefined'
-                ? args[number]
-                : match;
-        });
+    _log(level, message, args) {
+        Guard.isString(message, "First argument to a log function should be a string, but got [" + message + "]");
         _sink({
             logger: this._name,
             level: level,
-            message: message
+            message: message,
+            args: args
         });
     }
 }

@@ -23,15 +23,18 @@ describe('Logger', () => {
     var _lasMessage;
     var _lastLoggerName;
     var _log;
+    var _sinkArgs;
 
     beforeEach(() =>{
-        _lastLevel = undefined;
-        _lasMessage = undefined;
-        _lastLoggerName = undefined;
+        _lastLevel = null;
+        _lasMessage = null;
+        _lastLoggerName = null;
+        _sinkArgs = null;
         system.logging.Logger.setSink(logEvent => {
             _lastLevel = logEvent.level;
             _lasMessage = logEvent.message;
             _lastLoggerName = logEvent.logger;
+            _sinkArgs = logEvent.args;
         });
         _log = system.logging.Logger.create("TestLogger");
         system.logging.Logger.setLevel(system.logging.level.verbose);
@@ -64,8 +67,11 @@ describe('Logger', () => {
         expect(_lastLoggerName).toEqual("TestLogger");
     });
 
-    it('should format the given log string with the arguments', () => {
-        _log.error("My format [{0} {1} {2}]", "keith", "wrote", "code");
-        expect(_lasMessage).toEqual("My format [keith wrote code]");
+    it('should pass arguments to the sink', () => {
+        let error = new Error('boom');
+        _log.error("It's dead jim", error);
+        expect(_lasMessage).toEqual("It's dead jim");
+        expect(_sinkArgs.length).toEqual(1);
+        expect(_sinkArgs[0]).toBe(error);
     });
 });

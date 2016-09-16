@@ -17,5 +17,5 @@
 // notice_end
 
 export default function (logEvent) {
-    console.log('[' + logEvent.logger + '] [' + logEvent.level + ']: ' + logEvent.message);
+    console.log('[' + logEvent.logger + '] [' + logEvent.level + ']: ' + logEvent.message, ...logEvent.args);
 };

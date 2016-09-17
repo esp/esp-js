@@ -69,6 +69,7 @@ export default class SmartComponent extends React.Component {
         return null; // this (in react 15) will render a 'comment node' rather than any actual html
     }
     _getChildProps() {
+        // 'consume' the props we own, pass the rest down
         let {modelId, viewContext, view, ...other} = this.props;
         let newProps = {
             model: this.state.model,

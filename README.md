@@ -155,7 +155,7 @@ Output
   * [Domain model](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/domain-model.html)
   * [Event Processor Domain Model](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/event-processor-domain-model.html)
   * [Reactive Domain Model](https://keithwoods.gitbooks.io/esp-js/content/modelling-approaches/reactive-domain-model.html)
-* [Using ESP with React](https://keithwoods.gitbooks.io/esp-js/content/esp-js-react/index.md)
+* [Using ESP with React](https://keithwoods.gitbooks.io/esp-js/content/esp-js-react/index.html)
 * [Advanced Concepts](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/)
   * [Complete Event Workflow](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/complete-event-workflow.html)
   * [Asynchronous Operations](https://keithwoods.gitbooks.io/esp-js/content/advanced-concepts/asynchronous-operations.html)

@@ -13,6 +13,7 @@
   * [Domain model](modelling-approaches/domain-model.md)
   * [Event Processor Domain Model](modelling-approaches/event-processor-domain-model.md)
   * [Reactive Domain Model](modelling-approaches/reactive-domain-model.md)
+* [Using ESP with React](esp-js-react/index.md)
 * [Advanced Concepts](advanced-concepts/index.md)
   * [Complete Event Workflow](advanced-concepts/complete-event-workflow.md)
   * [Asynchronous Operations](advanced-concepts/asynchronous-operations.md)

@@ -36,4 +36,5 @@ A general rule is start off with 1-2 main entities then break them down as you i
 ## Source code examples
 There are [examples](../examples/index.md) checked into both .Net and JS implementations using this approach, specifically:
 
-* [JS React chat app (port from flux)](https://github.com/esp/esp-js/tree/master/examples/esp-chat-react-es6)
+* [ESP agile board](../examples/index.md#espaagileboard)
+* [JS React chat app (port from flux)](../examples/index.md#fbchat)

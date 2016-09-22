@@ -32,12 +32,12 @@ If you're using TypeScript [esp.d.ts](../esp.d.ts) is referenced via the `typing
 
 # Examples
 
-You can find several [examples](../examples) with the source.
-It's suggested you take a look at the [Agile board](../examples/esp-js-react-agile-board) to get started (don't forget to read the docs first). 
+You can find several [examples](https://github.com/esp/esp-js/tree/master/examples) with the source.
+It's suggested you take a look at the [agile board](https://github.com/esp/esp-js/tree/master/examples/esp-js-react-agile-board) to get started (don't forget to read the docs first). 
 
 ## ESP Agile board
 
-This example demonstrates a simple agile planning board.
+[This example](https://github.com/esp/esp-js/tree/master/examples/esp-js-react-agile-board) demonstrates a simple agile planning board.
 It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](https://www.npmjs.com/package/esp-js-react) to build a unidirectional, model first application.
 
 ![ESP Agile board Example](./images/esp-agile-demo.gif)

@@ -4,7 +4,7 @@ This example contains the code showing the lower level APIs in the ESP `Router`.
 
 ## Learning ESP
 
-- [Documentation](http://esp.readthedocs.org)
+- [Documentation](http://keithwoods.gitbooks.io/esp-js/content)
 
 ### Get help from other users:
 

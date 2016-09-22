@@ -38,18 +38,18 @@ If you're using TypeScript [esp.d.ts](esp.d.ts) is referenced via the `typings` 
 # Examples
 
 You can find several [examples](./examples) with the source.
-It's suggested you take a look at the [Agile board](./examples/esp-js-react-agile-board) to get started (don't forget to read the [docs](#help-topics) first). 
+It's suggested you take a look at the [agile board](./examples/esp-js-react-agile-board) to get started (don't forget to read the [docs](#help-topics) first). 
 
 ## ESP Agile board
 
-This example demonstrates a simple agile planning board.
+[This example](./examples/esp-js-react-agile-board/README.md) demonstrates a simple agile planning board.
 It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](https://www.npmjs.com/package/esp-js-react) to build a unidirectional, model first application.
 
 ![ESP Agile board Example](./docs/images/esp-agile-demo.gif)
 
 ## Reactive Trader Cloud
 
-A more more elaborate and comprehensive reference implementation done by [Adaptive Financial](http://weareadaptive.com/). 
+[Reactive Trader Cloud](https://github.com/AdaptiveConsulting/ReactiveTraderCloud) is a more elaborate and comprehensive reference implementation done by [Adaptive Financial](http://weareadaptive.com/). 
 The GUI state is modeled using [esp-js](https://www.npmjs.com/package/esp-js) with dynamic view resolution done using [esp-js-react](https://www.npmjs.com/package/esp-js-react).
 
 ![ESP Agile board Example](./docs/images/esp-rt-electron.gif)

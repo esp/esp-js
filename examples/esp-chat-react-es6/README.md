@@ -15,12 +15,12 @@ streaming data).
 This example is similar to the esp-chat-react app (also a port of the 
 [Flux Chat](https://github.com/facebook/flux/tree/master/examples/flux-chat)) however 
 it is written in ES6 and uses the 
-[reactive model](http://esp.readthedocs.org/en/latest/modeling-approaches/reactive-domain-model.html) 
+[reactive model](http://keithwoods.gitbooks.io/esp-js/content/en/latest/modeling-approaches/reactive-domain-model.html) 
 approach.
 
 ## Learning ESP
 
-- [Documentation](http://esp.readthedocs.org)
+- [Documentation](http://keithwoods.gitbooks.io/esp-js/content)
 
 ### Get help from other users:
 

@@ -1,12 +1,12 @@
 # Model Observation
 
-An object can observe model updates by via `router.getModelObservable()`.
-Similar to `router.getEventObservable()`, this call returns an observable object (`ModelObservable`) which will can be used to observe model updates.
+An object can observe model updates via `router.getModelObservable()`.
+Similar to `router.getEventObservable()`, this call returns an observable object (`ModelObservable`) which can be used to observe model updates.
 
 Below we enhance the example used previously to add model observation.
 In this instance we have 2 observations on the `Router` for the model.
 The second observation uses the chaining API provided by the `ModelObservable`, this filters (`.where(predicate)`) the model update stream for a specific user.
-All observations against the `Router` can be disposed to remove the the given observer from the model.
+All observations against the `Router` can be disposed to remove the given observer from the model.
 
 ``` js
 class Model {

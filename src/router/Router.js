@@ -179,7 +179,7 @@ export default class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter(this, targetModelId);
     }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
-        if(EspDecoratorMetadata.hasMetadata(object)) {
+        if(EspDecoratorMetadata.hasMetadata(object.constructor)) {
             return this._observeEventsUsingDirectives(modelId, object, methodPrefix);
         } else {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);
@@ -449,8 +449,7 @@ export default class Router extends DisposableBase {
         }
         this._decoratorObservationRegister.register(modelId, object);
         var compositeDisposable = new CompositeDisposable();
-        var metadata = EspDecoratorMetadata.getMetadata(object);
-        var eventsDetails = metadata.getAllEvents();
+        var eventsDetails = EspDecoratorMetadata.getAllEvents(object);
         for (var i = 0; i < eventsDetails.length; i ++) {
             let details = eventsDetails[i];
             compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((e, c, m) => {

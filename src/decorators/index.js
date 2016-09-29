@@ -21,5 +21,4 @@ export {
     observeModelChangedEvent,
     DecoratorTypes
 } from './observeEvent';
-
 export { default as EspDecoratorMetadata } from './espDecoratorMetadata';

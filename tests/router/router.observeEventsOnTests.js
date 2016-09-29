@@ -153,7 +153,7 @@ describe('Router', () => {
         var normalInvokeCount = 0;
         var normal2InvokeCount = 0;
         var committedInvokeCount = 0;
-        var _model, _derivedModel1, _derivedModel2;
+        var _model, _derivedModel1, _derivedModel2, _derivedModel3, _derivedModel4;
 
         class Model extends esp.DisposableBase {
             constructor(id, router) {
@@ -266,6 +266,52 @@ describe('Router', () => {
             }
         }
 
+        class DerivedModel3 extends BaseModel {
+            constructor(id, router) {
+                super(id, router);
+                this.reveivedCount = 0;
+            }
+            @esp.observeEvent('derivedEvent')
+            _derivedEvent(e, c, m) {
+                this.reveivedCount++;
+            }
+            // don't override the base observeEvents
+        }
+
+        class DerivedModel4 extends BaseModel {
+            constructor(id, router) {
+                super(id, router);
+                this.reveivedCount = 0;
+            }
+            @esp.observeEvent('derivedEvent')
+            _derivedEvent(e, c, m) {
+                this.reveivedCount++;
+            }
+            // don't override the base observeEvents
+        }
+
+        class DerivedModel3_1 extends DerivedModel3 {
+            constructor(id, router) {
+                super(id, router);
+                this.reveivedCount1 = 0;
+            }
+            @esp.observeEvent('derivedEvent_1')
+            _derivedEvent_1(e, c, m) {
+                this.reveivedCount1++;
+            }
+        }
+
+        class DerivedModel4_1 extends DerivedModel4 {
+            constructor(id, router) {
+                super(id, router);
+                this.reveivedCount1 = 0;
+            }
+            @esp.observeEvent('derivedEvent_1')
+            _derivedEvent_1(e, c, m) {
+                this.reveivedCount1++;
+            }
+        }
+
         function getExpectedObserveEventsOnTwiceError(modelId) {
             return new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
         }
@@ -284,6 +330,12 @@ describe('Router', () => {
 
             _derivedModel2 = new DerivedModel2('derivedModel2Id', _router);
             _router.addModel('derivedModel2Id', _derivedModel2);
+
+            _derivedModel3 = new DerivedModel3_1('derivedModel3Id', _router);
+            _router.addModel('derivedModel3Id', _derivedModel3);
+
+            _derivedModel4 = new DerivedModel4_1('derivedModel4Id', _router);
+            _router.addModel('derivedModel4Id', _derivedModel4);
         });
 
         it('should throw if event name is omitted', ()=> {
@@ -399,6 +451,15 @@ describe('Router', () => {
             expect(_derivedModel2.baseEventReveivedCount).toBe(1);
         });
 
+        it('should only observe events in a derived objects inheritance hierarchy when observeEvents is called on base model', ()=> {
+            _derivedModel3.observeEvents();
+            _derivedModel4.observeEvents();
+
+            _router.publishEvent('derivedModel4Id', 'derivedEvent_1', {});
+            expect(_derivedModel3.reveivedCount1).toBe(0);
+            expect(_derivedModel4.reveivedCount1).toBe(1);
+        });
+
         it('should throw when observeEvents called twice with the same object', ()=> {
             _derivedModel1.observeEvents();
             expect(() => {
@@ -453,5 +514,7 @@ describe('Router', () => {
             _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});
             expect(_derivedModel1.baseEventReveivedCount).toBe(1);
         });
+
+
     });
 });

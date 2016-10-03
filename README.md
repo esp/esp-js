@@ -4,6 +4,7 @@
 
 **[Installation](#installation)** |
 **[Examples](#examples)** |
+**[ESP Talk](#esp-at-the-react-london-meetup-group)** |
 **[Basic Usage](#basic-usage)** |
 **[Help Topics](#help-topics)** 
 
@@ -53,6 +54,12 @@ It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](h
 The GUI state is modeled using [esp-js](https://www.npmjs.com/package/esp-js) with dynamic view resolution done using [esp-js-react](https://www.npmjs.com/package/esp-js-react).
 
 ![ESP Agile board Example](./docs/images/esp-rt-electron.gif)
+
+# ESP at the React London Meetup group
+Watch [this](https://youtu.be/Pj-RakjfHDI?t=5m33s) 25min talk on using ESP with React at the [React London meetup](https://meetup.react.london/).
+Slides for the talk are available [here](http://goo.gl/40jie4).
+
+[![React London Talk](./docs/images/esp-talk-thumb.png)](https://youtu.be/Pj-RakjfHDI?t=5m33s "ESP React London Meetup Talk")
 
 # Basic Usage
 

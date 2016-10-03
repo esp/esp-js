@@ -49,6 +49,12 @@ The GUI state is modeled using [esp-js](https://www.npmjs.com/package/esp-js) wi
 
 ![ESP Agile board Example](./images/esp-rt-electron.gif)
 
+# ESP at the React London Meetup group
+Watch [this](https://youtu.be/Pj-RakjfHDI?t=5m33s) 25min talk on using ESP with React at the [React London meetup](https://meetup.react.london/).
+Slides for the talk are available [here](http://goo.gl/40jie4).
+
+[![React London Talk](./images/esp-talk-thumb.png)](https://youtu.be/Pj-RakjfHDI?t=5m33s "ESP React London Meetup Talk")
+
 # Basic Usage
 
 Run this example on codepen: http://codepen.io/KeithWoods/pen/yJWLQk?editors=1012

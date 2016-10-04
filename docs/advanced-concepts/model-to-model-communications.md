@@ -235,7 +235,7 @@ TradingModel: Price received: EURUSD - 1.1 - 2.1. On correct dispatch loop: true
 We've negated the need to pass model IDs to unrelated models. 
 Models communicate to other models directly using a fit-for-purpose streaming API. 
 The API allows for the child model to act when the callers subscribes, when an update needs to be pushed, and again when the caller disposes the subscription.
-The API takes car of ensuring you're on the correct dispatch loop thus allowing the [event workflow](./complete-event-workflow.md) to run and [model observers](../router-api/model-observation.md) (if any) to be notified.
+The API takes care of ensuring you're on the correct dispatch loop thus allowing the [event workflow](./complete-event-workflow.md) to run and [model observers](../router-api/model-observation.md) (if any) to be notified.
 
 In the above example every caller to `PricingModel.getPriceStream()` gets a unique stream, internally it's up to `PricingModel` to deal with the provided observer how it sees fit. 
 It could wire the observer up to an RX or ESP subject, or cache the observers and invoke them in a `for` loop when some downstream service yields a result that needs to be passed on.

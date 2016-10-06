@@ -23,8 +23,8 @@ var path = require('path');
 module.exports = {
     entry: './src/index.js',
     externals: {
-        'react': 'react',
-        'esp-js': 'esp-js'
+        'react': 'React',
+        'esp-js': 'esp'
     },
     output: {
         libraryTarget: 'umd',

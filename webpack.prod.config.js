@@ -28,7 +28,7 @@ module.exports = {
     output: {
         libraryTarget: 'umd',
         sourcePrefix: '    ',
-        library: 'esp-react',
+        library: 'EspReact',
         path: './dist/',
         filename: 'esp-react.min.js'
     },

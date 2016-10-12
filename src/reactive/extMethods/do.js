@@ -19,7 +19,6 @@
 import Observable from '../Observable';
 import { Guard } from '../../system';
 
-// TODO beta, needs test
 Observable.prototype.do = function(action) {
     Guard.isFunction(action, "provided value isn't a function");
     var source = this;

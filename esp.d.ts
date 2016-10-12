@@ -40,6 +40,7 @@ export class Router {
     getDispatchLoopDiagnostics() : string
     enableDiagnostics() : void;
     disableDiagnostics() : void;
+    isOnDispatchLoopFor(modelId) : boolean;
 }
 
 export class SingleModelRouter<T> {
@@ -56,6 +57,7 @@ export class SingleModelRouter<T> {
     observeEventsOn<TModel>(model : TModel, methodPrefix?: string) : Disposable;
     createObservable<T>(observer : (observer : Observer<T>) => Disposable | Function | void) : RouterObservable<T>;
     createSubject<T>() : RouterSubject<T>;
+    isOnDispatchLoop() : boolean;
 }
 
 export interface EventContext {
@@ -113,6 +115,7 @@ export interface Observer<T> {
 }
 
 export interface Observable<T> {
+    subscribe() : Disposable;
     subscribe(observer : Observer<T>) : Disposable;
     subscribe(observer : (model : T) => void, onCompleted? : () => void) : Disposable;
     do(observer : (model : T) => void) : Observable<T>;
@@ -137,9 +140,9 @@ interface SubjectStatic {
 
 export var Subject: SubjectStatic;
 
-export interface RouterObservable<T> {
-    streamFor(modelId:string) : Observable<T>;
-    subscribeOn(modelId:string);
+export interface RouterObservable<T> extends Observable<T> {
+    streamFor(modelId:string) : RouterObservable<T>;
+    subscribeOn(modelId:string) : RouterObservable<T>;
 }
 
 export interface RouterSubject<T> extends Subject<T>  {

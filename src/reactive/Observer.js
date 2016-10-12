@@ -25,7 +25,10 @@ export default class Observer {
      */
     static wrap() {
         var observer;
-        if(arguments.length === 1 && arguments[0] instanceof Observer) {
+        if(arguments.length === 0) {
+            // create a no-op observer
+            observer = new Observer(() => {}, () => {});
+        } else if(arguments.length === 1 && arguments[0] instanceof Observer) {
             observer = arguments[0];
         } else {
             Guard.lengthIsAtLeast(arguments, 1, 'Incorrect arg count on observe, should be a single Observer or (onNext:(t)=>[,onCompleted:()=>{}])');

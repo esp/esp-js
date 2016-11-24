@@ -124,6 +124,21 @@ describe('Container', () =>  {
                 }).toThrow();
             });
 
+            it('should resolve group instances in the same order they were registered', () => {
+                var N_OBJS = 5;
+                for(var i=0; i<N_OBJS; i++){
+                    var Obj = createObject({index: {value : i}});
+                    container.register('object-' + i, Obj)
+                        .inGroup('foo');
+                }
+
+                var objs = container.resolveGroup('foo');
+                expect(objs.length).toBe(N_OBJS);
+                for(var i=0; i<N_OBJS; i++){
+                    expect(objs[i].index).toBe(i);
+                }
+            });
+
             it('should respect the instance lifetime settings when resolving', () =>  {
                 var A = createObject();
                 var B = createObject();

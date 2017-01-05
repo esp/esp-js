@@ -82,6 +82,10 @@ export default class Router extends DisposableBase {
             }
         }
     }
+    isModelRegistered(modelId) {
+        Guard.isString(modelId, 'The modelId argument should be a string');
+        return !!this._models[modelId];
+    }
     publishEvent(modelId, eventType, event) {
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isString(eventType, 'The eventType argument should be a string');

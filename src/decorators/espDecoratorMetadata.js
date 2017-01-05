@@ -21,33 +21,25 @@ import {Guard} from "../system";
 
 let EspDecoratorMetadata = {
     getAllEvents(object) {
-        let ownEvents = object.constructor._espDecoratorMetadata._events;
-        let parentEvents;
-        // see comments in _createMetadata as to why we need to do this.
-        let basePrototype = Object.getPrototypeOf(Object.getPrototypeOf(object));
-        if(basePrototype.constructor._espDecoratorMetadata) {
-            parentEvents = this.getAllEvents(basePrototype);
-        } else {
-            parentEvents = [];
+        if (!object || !object.constructor) {
+            return [];
         }
-        return [...ownEvents, ...parentEvents];
+        return object.constructor._espDecoratorMetadata
+            ? object.constructor._espDecoratorMetadata._events
+            : [];
     },
     hasMetadata(constructor) {
-        let metadata = this.getMetadata(constructor);
-        return !!metadata;
-    },
-    getMetadata(constructor) {
-        Guard.isDefined(constructor, 'the object passed to \'hasMetadata()\' must be defined');
-        if(constructor._espDecoratorMetadata) {
-            return constructor._espDecoratorMetadata;
+        if (!constructor) {
+            return false;
         }
-        return null;
+        return !!constructor._espDecoratorMetadata;
     },
-    getOrCreateMetaData(constructor) {
-        if (constructor.hasOwnProperty('_espDecoratorMetadata')) {
-            return constructor._espDecoratorMetadata;
+    getOrCreateMetaData(target) {
+        Guard.isDefined(target.constructor, 'Object to decorate needs to have a \'constructor\' property');
+        if (target.constructor.hasOwnProperty('_espDecoratorMetadata')) {
+            return target.constructor._espDecoratorMetadata;
         } else {
-            return _createMetadata(constructor);
+            return _createMetadata(target);
         }
     }
 };
@@ -78,19 +70,25 @@ let Metadata = {
  * The initial intention with this code was to store the metadata on the constructor, and inspect the constructors prototype to see if it has any metadata of it's own, then our metadata could prototypically derive from that (i.e with Object.create()).
  * This would allow for a full lists of events for an object graph to be obtained.
  * Unfortunately Babel and TypeScript have different implementation of the constructor property and make this somewhat problematic.
- * In Babel the constructor property is a ctor function that prototypically inherits from the base object, in TypeScript it's inherits from function directly, you have no access to that constructors prototype making prototypical inheritance impossible at this point.
- * Babel and TypeScript have different implementation of object 'extends' too (TS copies 'own' properties from the base, Babel doesn't.
+ * In Babel the constructor property is a ctor function that prototypically inherits from the base object (which makes sense), in TypeScript it's inherits from function directly, you have no access to that constructors prototype making prototypical inheritance impossible at this point (which sucks).
+ * While babel uses prototypically inheritance for the constructor object typescript copies the properties across manually (they difference is really in their 'extends' functionality for objects).
  *
- * The best we can do here is always store metadata as an own property then traverse the prototype manually when getting all events for an object graph in question.
+ * The best we can do here is always store metadata as an own property and copy any base events across manually when we're creating an objects own event metadata.
  * This approach still allows derived instances to have their own event subscriptions yet inherit those of their base, abit somewhat manually.
  * It will also work with both TypeScript and Babel.
- * EspDecoratorMetadata.getAllEvents(object) is smart enough to look at the given 'object' metadata and manually lookup any base objects metadata as declared on the base objects constructors.
+ * `_createMetadata()` below is smart enough to look at the base objects metadata and manually copy any events to the new metadata being created.
  *
- * Issue #136 has more note on this.
+ * Issue #136 has more notes on this.
  */
-function _createMetadata(constructor) {
+function _createMetadata(target) {
+    let prototype = Object.getPrototypeOf(target);
     let metadata = Object.create(Metadata).init();
-    Object.defineProperty(constructor, '_espDecoratorMetadata', {
+    if (prototype.constructor && prototype.constructor._espDecoratorMetadata) {
+        for (let e of prototype.constructor._espDecoratorMetadata._events) {
+            metadata._events.push(e);
+        }
+    }
+    Object.defineProperty(target.constructor, '_espDecoratorMetadata', {
         value: metadata,
         // by default enumerable is false, I'm just being explicit here.
         // When Typescript derives from a base class it copies all own property to the new instance we don't want the metadata copied. 

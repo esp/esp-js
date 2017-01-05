@@ -54,7 +54,7 @@ export function observeEvent() {
         if(predicate) {
             Guard.isFunction(predicate, 'predicate passed to an observeEvent decorator must be a function');
         }
-        let metadata = EspDecoratorMetadata.getOrCreateMetaData(target.constructor);
+        let metadata = EspDecoratorMetadata.getOrCreateMetaData(target);
         metadata.addEvent(
             name,
             eventName,

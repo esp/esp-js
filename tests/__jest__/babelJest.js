@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-var testsContext = require.context('.', true, /Tests.js$/);
-testsContext.keys().forEach(testsContext);
+const fs = require('fs');
+const babelConfig = JSON.parse(fs.readFileSync('.babelrc', "utf8"));
+const babelJest = require('babel-jest');
+// override our .bablerc to have inline source maps, this helps with debugging (line numbers work as expected) in intellij/webstorm.
+const newConfig = Object.assign(babelConfig, {sourceMaps:"inline"});
+module.exports = babelJest.createTransformer(newConfig);

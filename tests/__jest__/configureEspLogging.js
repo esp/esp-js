@@ -15,5 +15,7 @@
  * limitations under the License.
  */
 // notice_end
-import esp from '../../src';
+
+const esp = require('../../src');
+// comment this out if you want more verbose logging, i.e. any esp logging (mostly for unhappy path test cases) spat out.
 esp.logging.Logger.setSink(() => { /* noop */});

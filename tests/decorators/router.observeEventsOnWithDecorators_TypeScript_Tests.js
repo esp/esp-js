@@ -22,7 +22,7 @@ const fs = require ('fs');
 
 describe('Router', function() {
 
-    // this is somewhat of a HACK:
+    // This is somewhat of a HACK:
     // Typescript and babel generated different JS for decorators and as such
     // much pain has been had figuring out the lowest common denominator between the two transpilers.
     // The below code sucks in the ES6 JS and runs it through tsc so we can ensure the esp decorators work with it.

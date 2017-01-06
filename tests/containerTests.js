@@ -85,6 +85,12 @@ describe('Container', () =>  {
             expect(resolved).toBe(instance);
         });
 
+        it('should throw if resolving an unregistered instance', () =>  {
+            expect(() => {
+                container.resolve('a');
+            }).toThrow(new Error('Nothing registered for dependency [a]'));
+        });
+
         it('should pass additional dependencies to object being  resolved', () =>  {
             var A = createObject();
             container.register('a', A);

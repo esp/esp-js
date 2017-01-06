@@ -77,7 +77,6 @@ export default class Container {
         var registration = this._registrations[name];
         return !!registration;
     }
-
     resolve(name, ...additionalDependencies) {
         this._throwIfDisposed();
         var registration = this._registrations[name],

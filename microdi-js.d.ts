@@ -22,7 +22,7 @@ export class Container {
     resolveGroup(groupName:String):Array<any>;
     isRegistered(name : string) : boolean;
 
-    addResolver<T>(name:String, resolver:Resolver);
+    addResolver<T>(name:String, resolver:Resolver<T>);
     dispose():void;
 }
 
@@ -34,6 +34,6 @@ export class RegistrationModifier {
     inGroup(groupName:String):RegistrationModifier;
 }
 
-export interface Resolver {
-    resolve<T>(container:Container, dependencyKey:any):T
+export interface Resolver<T> {
+    resolve(container:Container, dependencyKey:any):T
 }

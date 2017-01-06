@@ -49,9 +49,9 @@ export default class Container {
         return child;
     }
     register(name, proto) {
-        Guard.isString(name, 'name must be a string');
-        Guard.isTrue(!utils.isString(proto), 'Can not register a string using register(). Use registerInstance()');
-        Guard.isTrue(!utils.isNumber(proto), 'Can not register a number using register(). Use registerInstance()');
+        Guard.isString(name, 'Error calling register(name, proto). The name argument must be a string');
+        Guard.isTrue(!utils.isString(proto), 'Error calling register(name, proto). Can not register a string instance, use registerInstance()');
+        Guard.isTrue(!utils.isNumber(proto), 'Error calling register(name, proto). Can not register a number instance, use registerInstance()');
         this._throwIfDisposed();
         var registration = {
             name: name,
@@ -63,6 +63,8 @@ export default class Container {
         return new RegistrationModifier(registration, this._instanceCache, this._registrationGroups);
     }
     registerInstance(name, instance, isExternallyOwned = true) {
+        Guard.isString(name, 'Error calling registerInstance(name, instance, isExternallyOwned = true). The name argument must be a string');
+        Guard.isNotNullOrUndefined(instance, `Error calling registerInstance(name, instance, isExternallyOwned = true). Provided instance for [${name}] can not be null or undefined`);
         this._throwIfDisposed();
         this._registrations[name] = {
             name: name,

@@ -101,11 +101,11 @@ describe('Container', () =>  {
         });
 
         it('should throw if string registered', () => {
-        	expect(() => { container.register('a', 'aString'); }).toThrow(new Error('Can not register a string using register(). Use registerInstance()'));
+        	expect(() => { container.register('a', 'aString'); }).toThrow(new Error('MicroDi: Can not register a string using register(). Use registerInstance()'));
         });
 
         it('should throw if number registered', () => {
-            expect(() => { container.register('a', 1234); }).toThrow(new Error('Can not register a number using register(). Use registerInstance()'));
+            expect(() => { container.register('a', 1234); }).toThrow(new Error('MicroDi: Can not register a number using register(). Use registerInstance()'));
         });
 
         describe('groups', () =>  {
@@ -577,6 +577,18 @@ describe('Container', () =>  {
 
         it('should throw if .register() called with existing registration key', () =>  {
             pending();
+        });
+
+        it('should throw if .registerInstance called with a non string name argument', () =>  {
+            expect(() => {
+                container.registerInstance({}, {});
+            }).toThrow(new Error('MicroDi: Error calling registerInstance(name, instance, isExternallyOwned = true). The name argument must be a string'));
+        });
+
+        it('should throw if .registerInstance with an undefined instance', () =>  {
+            expect(() => {
+                container.registerInstance('a');
+            }).toThrow(new Error('MicroDi: Error calling registerInstance(name, instance, isExternallyOwned = true). Provided instance for [a] can not be null or undefined'));
         });
 
         it('should throw if .registerMany() called with incorrect arguments', () =>  {

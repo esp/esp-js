@@ -19,3 +19,4 @@ microdi-js-*.tgz
 .babelrc
 jest.config
 yarn.lock
+npm-shrinkwrap.json

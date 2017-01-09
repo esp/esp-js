@@ -47,6 +47,11 @@ export default class Guard {
             doThrow(message);
         }
     }
+    static isNonEmptyString(value, message) {
+        if (!utils.isString(value) || Guard.lengthIsAtLeast(value, 1, message)) {
+            doThrow(message);
+        }
+    }
     static isNumber(value, message) {
         if (!utils.isNumber(value)) {
             doThrow(message);

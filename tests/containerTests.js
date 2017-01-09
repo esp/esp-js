@@ -100,14 +100,6 @@ describe('Container', () =>  {
             expect(resolved.dependencies[1]).toEqual("Bar");
         });
 
-        it('should throw if string registered', () => {
-        	expect(() => { container.register('a', 'aString'); }).toThrow(new Error('MicroDi: Can not register a string using register(). Use registerInstance()'));
-        });
-
-        it('should throw if number registered', () => {
-            expect(() => { container.register('a', 1234); }).toThrow(new Error('MicroDi: Can not register a number using register(). Use registerInstance()'));
-        });
-
         describe('groups', () =>  {
 
             it('should be able able to register/resolve many objects with the same key', () =>  {
@@ -563,48 +555,94 @@ describe('Container', () =>  {
 
     describe('incorrect argument handling', () =>  {
 
-        it('should throw if .registerObject() called with incorrect arguments', () =>  {
-            pending();
+        it('throws if arguments incorrect for .register()', () => {
+            let keyError = new Error('MicroDi: Error calling register(name, proto). The name argument must be a string and can not be \'\'');
+            expect(() => {container.register(); }).toThrow(keyError);
+            expect(() => {container.register(undefined, {}); }).toThrow(keyError);
+            expect(() => {container.register('', {}); }).toThrow(keyError);
+            expect(() => {container.register(null, {}); }).toThrow(keyError);
+            expect(() => {container.register({}, {}); }).toThrow(keyError);
+
+            let registrationError = new Error('MicroDi: Error calling register(name, proto). Registered item for [foo] can not be null or undefined');
+            expect(() => {container.register('foo', undefined); }).toThrow(registrationError);
+            expect(() => {container.register('foo', null); }).toThrow(registrationError);
+
+            expect(() => {container.register('foo', 1); }).toThrow(new Error('MicroDi: Error calling register(name, proto). Can not register a number instance against key [foo], use registerInstance(name, instance)'));
+            expect(() => {container.register('foo', 'aString'); }).toThrow(new Error('MicroDi: Error calling register(name, proto). Can not register a string instance against key [foo], use registerInstance(name, instance)'));
         });
 
-        it('should throw if .registerObject() called with existing registration key', () =>  {
-            pending();
+        it('should not throw if .register() called with existing registration key', () =>  {
+            // you should be allowed to override a registration
+            let A = createObject();
+            container.register('foo', A);
+            let B = createObject();
+            container.register('foo', B);
+            let b = container.resolve('foo');
+            expect(B.isPrototypeOf(b)).toEqual(true);
         });
 
-        it('should throw if .register() called with incorrect arguments', () =>  {
-            pending();
+        it('throws if arguments incorrect for .registerInstance()', () => {
+            let keyError = new Error('MicroDi: Error calling register(name, instance, isExternallyOwned = true). The name argument must be a string and can not be \'\'');
+            expect(() => {container.registerInstance(); }).toThrow(keyError);
+            expect(() => {container.registerInstance(undefined, {}); }).toThrow(keyError);
+            expect(() => {container.registerInstance('', {}); }).toThrow(keyError);
+            expect(() => {container.registerInstance(null, {}); }).toThrow(keyError);
+            expect(() => {container.registerInstance({}, {}); }).toThrow(keyError);
+
+            let registrationError = new Error('MicroDi: Error calling registerInstance(name, instance, isExternallyOwned = true). Provided instance for [foo] can not be null or undefined');
+            expect(() => {container.registerInstance('foo', undefined); }).toThrow(registrationError);
+            expect(() => {container.registerInstance('foo', null); }).toThrow(registrationError);
         });
 
-        it('should throw if .register() called with existing registration key', () =>  {
-            pending();
+        it('throws if arguments incorrect for .resolve()', () => {
+            let keyError = new Error('MicroDi: Error calling resolve(name, ...additionalDependencies). The name argument must be a string and can not be \'\'');
+            expect(() => {container.resolve(); }).toThrow(keyError);
+            expect(() => {container.resolve(undefined); }).toThrow(keyError);
+            expect(() => {container.resolve(''); }).toThrow(keyError);
+            expect(() => {container.resolve(null); }).toThrow(keyError);
+            expect(() => {container.resolve({}, {}); }).toThrow(keyError);
         });
 
-        it('should throw if .registerInstance called with a non string name argument', () =>  {
-            expect(() => {
-                container.registerInstance({}, {});
-            }).toThrow(new Error('MicroDi: Error calling registerInstance(name, instance, isExternallyOwned = true). The name argument must be a string'));
+        it('throws if arguments incorrect for .resolveGroup()', () => {
+            let keyError = new Error('MicroDi: Error calling resolveGroup(groupName). The groupName argument must be a string and can not be \'\'');
+            expect(() => {container.resolveGroup(); }).toThrow(keyError);
+            expect(() => {container.resolveGroup(undefined); }).toThrow(keyError);
+            expect(() => {container.resolveGroup(''); }).toThrow(keyError);
+            expect(() => {container.resolveGroup(null); }).toThrow(keyError);
+            expect(() => {container.resolveGroup({}); }).toThrow(keyError);
         });
 
-        it('should throw if .registerInstance with an undefined instance', () =>  {
-            expect(() => {
-                container.registerInstance('a');
-            }).toThrow(new Error('MicroDi: Error calling registerInstance(name, instance, isExternallyOwned = true). Provided instance for [a] can not be null or undefined'));
+        it('throws if arguments incorrect for .addResolver()', () => {
+            let resolver = () => {};
+            let keyError = new Error('MicroDi: Error calling addResolver(name, resolver). The name argument must be a string and can not be \'\'');
+            expect(() => {container.addResolver(); }).toThrow(keyError);
+            expect(() => {container.addResolver(undefined); }).toThrow(keyError);
+            expect(() => {container.addResolver(''); }).toThrow(keyError);
+            expect(() => {container.addResolver(null); }).toThrow(keyError);
+            expect(() => {container.addResolver({}); }).toThrow(keyError);
+
+            let registrationError = new Error('MicroDi: Error calling addResolver(name, resolver). Provided resolver for [foo] can not be null or undefined');
+            expect(() => {container.addResolver('foo'); }).toThrow(registrationError);
+            expect(() => {container.addResolver('foo', undefined); }).toThrow(registrationError);
+            expect(() => {container.addResolver('foo', null); }).toThrow(registrationError);
         });
 
-        it('should throw if .registerMany() called with incorrect arguments', () =>  {
-            pending();
+        it('throws if arguments incorrect for .isRegistered()', () => {
+            let keyError = new Error('MicroDi: Error calling isRegistered(name). The name argument must be a string and can not be \'\'');
+            expect(() => {container.isRegistered(); }).toThrow(keyError);
+            expect(() => {container.isRegistered(undefined); }).toThrow(keyError);
+            expect(() => {container.isRegistered(''); }).toThrow(keyError);
+            expect(() => {container.isRegistered(null); }).toThrow(keyError);
+            expect(() => {container.isRegistered({}); }).toThrow(keyError);
         });
 
-        it('should throw if .registerMany() called with existing registration key', () =>  {
-            pending();
-        });
-
-        it('should throw if .resolve() called with incorrect arguments', () =>  {
-            pending();
-        });
-
-        it('should throw if .resolveAll() called with incorrect arguments', () =>  {
-            pending();
+        it('should throw if .inGroup() called with incorrect arguments', () =>  {
+            let inGroupKeyError = new Error('MicroDi: Error calling inGroup(groupName). The name argument must be a string and can not be \'\'');
+            expect(() => { container.register('foo', {}).inGroup(); }).toThrow(inGroupKeyError);
+            expect(() => { container.register('foo', {}).inGroup(undefined); }).toThrow(inGroupKeyError);
+            expect(() => { container.register('foo', {}).inGroup(''); }).toThrow(inGroupKeyError);
+            expect(() => { container.register('foo', {}).inGroup(null); }).toThrow(inGroupKeyError);
+            expect(() => { container.register('foo', {}).inGroup({}); }).toThrow(inGroupKeyError);
         });
     });
 

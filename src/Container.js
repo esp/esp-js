@@ -49,9 +49,10 @@ export default class Container {
         return child;
     }
     register(name, proto) {
-        Guard.isString(name, 'Error calling register(name, proto). The name argument must be a string');
-        Guard.isTrue(!utils.isString(proto), 'Error calling register(name, proto). Can not register a string instance, use registerInstance()');
-        Guard.isTrue(!utils.isNumber(proto), 'Error calling register(name, proto). Can not register a number instance, use registerInstance()');
+        Guard.isNonEmptyString(name, 'Error calling register(name, proto). The name argument must be a string and can not be \'\'');
+        Guard.isNotNullOrUndefined(proto, `Error calling register(name, proto). Registered item for [${name}] can not be null or undefined`);
+        Guard.isTrue(!utils.isString(proto), `Error calling register(name, proto). Can not register a string instance against key [${name}], use registerInstance(name, instance)`);
+        Guard.isTrue(!utils.isNumber(proto), `Error calling register(name, proto). Can not register a number instance against key [${name}], use registerInstance(name, instance)`);
         this._throwIfDisposed();
         var registration = {
             name: name,
@@ -63,7 +64,7 @@ export default class Container {
         return new RegistrationModifier(registration, this._instanceCache, this._registrationGroups);
     }
     registerInstance(name, instance, isExternallyOwned = true) {
-        Guard.isString(name, 'Error calling registerInstance(name, instance, isExternallyOwned = true). The name argument must be a string');
+        Guard.isNonEmptyString(name, 'Error calling register(name, instance, isExternallyOwned = true). The name argument must be a string and can not be \'\'');
         Guard.isNotNullOrUndefined(instance, `Error calling registerInstance(name, instance, isExternallyOwned = true). Provided instance for [${name}] can not be null or undefined`);
         this._throwIfDisposed();
         this._registrations[name] = {
@@ -75,11 +76,13 @@ export default class Container {
         this._instanceCache[name] = instance;
     }
     isRegistered(name) {
+        Guard.isNonEmptyString(name, 'Error calling isRegistered(name). The name argument must be a string and can not be \'\'');
         this._throwIfDisposed();
         var registration = this._registrations[name];
         return !!registration;
     }
     resolve(name, ...additionalDependencies) {
+        Guard.isNonEmptyString(name, 'Error calling resolve(name, ...additionalDependencies). The name argument must be a string and can not be \'\'');
         this._throwIfDisposed();
         var registration = this._registrations[name],
             dependency,
@@ -101,6 +104,7 @@ export default class Container {
         return instance;
     }
     resolveGroup(groupName) {
+        Guard.isNonEmptyString(groupName, 'Error calling resolveGroup(groupName). The groupName argument must be a string and can not be \'\'');
         this._throwIfDisposed();
         var items = [],
             mapings,
@@ -116,6 +120,8 @@ export default class Container {
         return items;
     }
     addResolver(name, resolver) {
+        Guard.isNonEmptyString(name, 'Error calling addResolver(name, resolver). The name argument must be a string and can not be \'\'');
+        Guard.isNotNullOrUndefined(resolver, `Error calling addResolver(name, resolver). Provided resolver for [${name}] can not be null or undefined`);
         this._throwIfDisposed();
         this._resolvers[name] = resolver;
     }

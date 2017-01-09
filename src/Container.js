@@ -19,6 +19,7 @@ import ResolverContext from './ResolverContext';
 import InstanceLifecycleType from './InstanceLifecycleType';
 import RegistrationModifier from './RegistrationModifier';
 import Guard from './Guard';
+import MicroDiConsts from './MicroDiConsts';
 
 export default class Container {
     constructor() {
@@ -31,6 +32,7 @@ export default class Container {
         this._resolvers = this._createDefaultResolvers();
         this._isDisposed = false;
         this._childContainers = [];
+        this._registerSelf();
     }
     createChildContainer() {
         this._throwIfDisposed();
@@ -45,6 +47,7 @@ export default class Container {
         child._resolvers = Object.create(this._resolvers);
         child._isDisposed = false;
         child._childContainers = [];
+        child._registerSelf();
         this._childContainers.push(child);
         return child;
     }
@@ -173,7 +176,11 @@ export default class Container {
                 for (let i = 0, len = registration.dependencyList.length; i < len; i++) {
                     dependencyKey = registration.dependencyList[i];
                     if (utils.isString(dependencyKey)) {
-                        dependency = this.resolve(dependencyKey);
+                        if(dependencyKey === MicroDiConsts.owningContainer) {
+                            dependency = this.resolve(dependencyKey);
+                        } else {
+                            dependency = this.resolve(dependencyKey);
+                        }
                     } else if (dependencyKey.hasOwnProperty('resolver') && utils.isString(dependencyKey.resolver)) {
                         resolver = this._resolvers[dependencyKey.resolver];
                         if (resolver === undefined) {
@@ -239,6 +246,10 @@ export default class Container {
                 }
             }
         };
+    }
+    _registerSelf() {
+        // register the child with itself so any dependency that wants to resolve a container get's the container at the same scope as itself (i.e. the container that built it).
+        this.registerInstance(MicroDiConsts.owningContainer, this);
     }
     _throwIfDisposed() {
         if (this._isDisposed) throw new Error("Container has been disposed");

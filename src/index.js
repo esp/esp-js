@@ -31,13 +31,16 @@
 import Container from './Container';
 import RegistrationModifier from './RegistrationModifier';
 import ResolverContext from './ResolverContext';
+import MicroDiConsts from './MicroDiConsts';
 
 export { Container };
 export { RegistrationModifier };
 export { ResolverContext };
+export { MicroDiConsts };
 
 export default {
     Container,
     RegistrationModifier,
-    ResolverContext
+    ResolverContext,
+    MicroDiConsts
 };

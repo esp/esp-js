@@ -419,6 +419,28 @@ describe('Container', () =>  {
             });
         });
 
+        describe('resolving objects that have injected containers from within child containers', () =>  {
+            it('should return the same container that is resolving the object in question', () =>  {
+                var A = createObject();
+                container.register('a', A)
+                    .transient()
+                    .inject(microid.MicroDiConsts.owningContainer);
+
+                var a1 = container.resolve('a');
+                expect(a1.dependencies[0]).toBe(container);
+
+                var childContainer_1 = container.createChildContainer();
+                var a1_1 = childContainer_1.resolve('a');
+                expect(a1_1.dependencies[0]).toBe(childContainer_1);
+
+                var a2 = container.resolve('a');
+                expect(a2.dependencies[0]).toBe(container);
+
+                var childContainer_2 = container.createChildContainer();
+                var a1_2 = childContainer_2.resolve('a');
+                expect(a1_2.dependencies[0]).toBe(childContainer_2);
+            });
+        });
     });
 
     describe('.dispose() container', () =>  {

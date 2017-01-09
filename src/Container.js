@@ -84,6 +84,12 @@ export default class Container {
         var registration = this._registrations[name];
         return !!registration;
     }
+    isGroupRegistered(groupName) {
+        Guard.isNonEmptyString(groupName, 'Error calling isGroupRegistered(groupName). The groupName argument must be a string and can not be \'\'');
+        this._throwIfDisposed();
+        var registration = this._registrationGroups[groupName];
+        return !!registration;
+    }
     resolve(name, ...additionalDependencies) {
         Guard.isNonEmptyString(name, 'Error calling resolve(name, ...additionalDependencies). The name argument must be a string and can not be \'\'');
         this._throwIfDisposed();
@@ -176,8 +182,8 @@ export default class Container {
                 for (let i = 0, len = registration.dependencyList.length; i < len; i++) {
                     dependencyKey = registration.dependencyList[i];
                     if (utils.isString(dependencyKey)) {
-                        if(dependencyKey === MicroDiConsts.owningContainer) {
-                            dependency = this.resolve(dependencyKey);
+                        if(this.isGroupRegistered(dependencyKey)) {
+                            dependency = this.resolveGroup(dependencyKey);
                         } else {
                             dependency = this.resolve(dependencyKey);
                         }

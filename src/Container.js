@@ -19,6 +19,7 @@ import ResolverContext from './ResolverContext';
 import InstanceLifecycleType from './InstanceLifecycleType';
 import RegistrationModifier from './RegistrationModifier';
 import Guard from './Guard';
+import MicroDiConsts from './MicroDiConsts';
 
 export default class Container {
     constructor() {
@@ -31,6 +32,7 @@ export default class Container {
         this._resolvers = this._createDefaultResolvers();
         this._isDisposed = false;
         this._childContainers = [];
+        this._registerSelf();
     }
     createChildContainer() {
         this._throwIfDisposed();
@@ -45,14 +47,16 @@ export default class Container {
         child._resolvers = Object.create(this._resolvers);
         child._isDisposed = false;
         child._childContainers = [];
+        child._registerSelf();
         this._childContainers.push(child);
         return child;
     }
     register(name, proto) {
-        Guard.isString(name, 'name must be a string');
-        Guard.isTrue(!utils.isString(proto), 'Can not register a string using register(). Use registerInstance()');
-        Guard.isTrue(!utils.isNumber(proto), 'Can not register a number using register(). Use registerInstance()');
         this._throwIfDisposed();
+        Guard.isNonEmptyString(name, 'Error calling register(name, proto). The name argument must be a string and can not be \'\'');
+        Guard.isNotNullOrUndefined(proto, `Error calling register(name, proto). Registered item for [${name}] can not be null or undefined`);
+        Guard.isTrue(!utils.isString(proto), `Error calling register(name, proto). Can not register a string instance against key [${name}], use registerInstance(name, instance)`);
+        Guard.isTrue(!utils.isNumber(proto), `Error calling register(name, proto). Can not register a number instance against key [${name}], use registerInstance(name, instance)`);
         var registration = {
             name: name,
             proto: proto,
@@ -64,6 +68,8 @@ export default class Container {
     }
     registerInstance(name, instance, isExternallyOwned = true) {
         this._throwIfDisposed();
+        Guard.isNonEmptyString(name, 'Error calling register(name, instance, isExternallyOwned = true). The name argument must be a string and can not be \'\'');
+        Guard.isNotNullOrUndefined(instance, `Error calling registerInstance(name, instance, isExternallyOwned = true). Provided instance for [${name}] can not be null or undefined`);
         this._registrations[name] = {
             name: name,
             instanceLifecycleType: isExternallyOwned
@@ -74,12 +80,19 @@ export default class Container {
     }
     isRegistered(name) {
         this._throwIfDisposed();
+        Guard.isNonEmptyString(name, 'Error calling isRegistered(name). The name argument must be a string and can not be \'\'');
         var registration = this._registrations[name];
         return !!registration;
     }
-
+    isGroupRegistered(groupName) {
+        this._throwIfDisposed();
+        Guard.isNonEmptyString(groupName, 'Error calling isGroupRegistered(groupName). The groupName argument must be a string and can not be \'\'');
+        var registration = this._registrationGroups[groupName];
+        return !!registration;
+    }
     resolve(name, ...additionalDependencies) {
         this._throwIfDisposed();
+        Guard.isNonEmptyString(name, 'Error calling resolve(name, ...additionalDependencies). The name argument must be a string and can not be \'\'');
         var registration = this._registrations[name],
             dependency,
             instance,
@@ -101,6 +114,7 @@ export default class Container {
     }
     resolveGroup(groupName) {
         this._throwIfDisposed();
+        Guard.isNonEmptyString(groupName, 'Error calling resolveGroup(groupName). The groupName argument must be a string and can not be \'\'');
         var items = [],
             mapings,
             error;
@@ -116,6 +130,8 @@ export default class Container {
     }
     addResolver(name, resolver) {
         this._throwIfDisposed();
+        Guard.isNonEmptyString(name, 'Error calling addResolver(name, resolver). The name argument must be a string and can not be \'\'');
+        Guard.isNotNullOrUndefined(resolver, `Error calling addResolver(name, resolver). Provided resolver for [${name}] can not be null or undefined`);
         this._resolvers[name] = resolver;
     }
     dispose() {
@@ -166,7 +182,11 @@ export default class Container {
                 for (let i = 0, len = registration.dependencyList.length; i < len; i++) {
                     dependencyKey = registration.dependencyList[i];
                     if (utils.isString(dependencyKey)) {
-                        dependency = this.resolve(dependencyKey);
+                        if(this.isGroupRegistered(dependencyKey)) {
+                            dependency = this.resolveGroup(dependencyKey);
+                        } else {
+                            dependency = this.resolve(dependencyKey);
+                        }
                     } else if (dependencyKey.hasOwnProperty('resolver') && utils.isString(dependencyKey.resolver)) {
                         resolver = this._resolvers[dependencyKey.resolver];
                         if (resolver === undefined) {
@@ -232,6 +252,10 @@ export default class Container {
                 }
             }
         };
+    }
+    _registerSelf() {
+        // register the child with itself so any dependency that wants to resolve a container get's the container at the same scope as itself (i.e. the container that built it).
+        this.registerInstance(MicroDiConsts.owningContainer, this);
     }
     _throwIfDisposed() {
         if (this._isDisposed) throw new Error("Container has been disposed");

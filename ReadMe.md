@@ -250,6 +250,22 @@ theFoo
 theBar
 ```
 
+### Injecting groups
+
+If you want to inject a group simply register the injection using the `groupName`.
+From example, if you wanted to inject all dependencies in group `group1`, from our example above, you'd do this:
+
+```javascript
+class Bazz {
+    constructor(group1) {
+        // group1 would be an array with dependencies 'foo' and 'bar'
+        this._group1 = group1;
+    }
+};
+container.register('bazz', Bazz).inject('group1');
+var bazz = container.resolveGroup('bazz');
+```
+
 ## Resolution with additional dependencies
 
 When calling `resolve` you can optionally pass additional [dependencies](#dependencies).
@@ -405,9 +421,80 @@ false
 false
 ```
 
-### Disposal
+## Resolving the container
 
-When you call `.dispose()` on a child container, that container will inspect any object it holds and if an object has a `dispose` function, it will be called.
+Sometimes you have an object that requires the container to be injected. 
+While often thought of as an anti pattern, there are scenarios where this makes sense. 
+If the object is a 'bootstrapper' of sorts, i.e. it needs fine grained control over child containers and sub object graph resolution, injecting a container makes sense. 
+  
+When there are child containers at play, you'd expect objects who require a container, to be provide with the same container that build them, i.e. the child container in question. 
+ 
+Lets look at an example:
+
+```javascript
+// a class that takes a container as a dependency
+class Bootstrapper {
+    constructor(container) {
+        this._container = container; 
+    }
+}
+```
+
+Lets look at the manual way of doing this:
+
+```javascript
+import { Container } from 'microdi-js'; 
+var container = new Container();
+container.registerInstance('theRootContainer', container);
+container.register('bootstrapper', Bootstrapper).inject('theRootContainer');
+// bootstrapper will get injected with instance `container`
+let bootstrapper = container.resolve('bootstrapper');
+```
+
+This will work, but when there are child container at play it gets a bit messy as you have to register things manually each time a child is created.
+Typically you strive to keep child container re-configuration to a minimum for code maintainability reasons. 
+
+microdi supports a special injection key exposed as `MicroDiConsts.owningContainer`.
+This key will ensure an object getting resolved get it's owning container.
+Lets re-work the above example:
+
+```javascript
+import { Container, MicroDiConsts } from 'microdi-js'; 
+var container = new Container();
+container
+    .register('bootstrapper', Bootstrapper)
+    .inject(MicroDiConsts.owningContainer);
+// bootstrapper will get injected with instance `container`
+let bootstrapper = container.resolve('bootstrapper');
+```
+
+Objects injected with `MicroDiConsts.owningContainer` and resolved from child containers will get the owning child container injected: 
+
+```javascript
+import { Container, MicroDiConsts } from 'microdi-js'; 
+var container1 = new Container();
+container1
+    .register('bootstrapper', Bootstrapper)
+    .transient() // resolve new `Bootstrapper` instance each time
+    .inject(MicroDiConsts.owningContainer);
+
+// bootstrapper1 will get injected with `container1`
+let bootstrapper1 = container1.resolve('bootstrapper');
+
+// bootstrapper2 will get injected with `container2`
+let container2 = container1.createChildContainer();
+let bootstrapper2 = container2.resolve('bootstrapper');
+```
+
+## Checking what's registered
+
+You can check if a dependency is registered using `.isRegistered(name)`.
+A group can be checked using `.isGroupRegistered(groupName):boolean`.
+Both these exist on a `container` object and will return a boolean result. 
+
+## Disposal
+
+When you call `.dispose()` on a container, that container will inspect any object it holds and if an object has a `dispose` function, it will be called.
 However it will not dispose transient-created objects or objects registered via `registerInstance('aKey', myInstance)`.
 Any child containers created from the disposed parent will also be disposed.  These child containers will in turn dispose of their registered instances.
 

@@ -16,6 +16,7 @@
  
 import * as utils from './utils';
 import InstanceLifecycleType from './InstanceLifecycleType';
+import Guard from './Guard';
 
 export default class RegistrationModifier  {
     constructor(registration, instanceCache, registrationGroups) {
@@ -47,6 +48,7 @@ export default class RegistrationModifier  {
         return this;
     }
     inGroup(groupName) {
+        Guard.isNonEmptyString(groupName, 'Error calling inGroup(groupName). The name argument must be a string and can not be \'\'');
         this._ensureInstanceNotCreated();
         var currentContainerOwnsRegistration = true;
         var lookup = this._registrationGroups[groupName];

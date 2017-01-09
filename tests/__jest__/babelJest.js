@@ -16,29 +16,9 @@
  */
 // notice_end
 
-module.exports = {
-    entry: './src/index.js',
-    output: {
-        libraryTarget: 'umd',
-        sourcePrefix: '    ',
-        library: 'microdi',
-        path: './dist/',
-        filename: 'microdi.js'
-    },
-    devtool: 'source-map',
-    debug:true,
-    module: {
-        loaders: [
-            {
-                test: /\.js$/,
-                loader: "babel-loader",
-                exclude: /(node_modules|dist|.idea)/
-            },
-            {
-                test: /\.js$/,
-                loader: "eslint-loader",
-                exclude: /node_modules/
-            }
-        ]
-    }
-};
+const fs = require('fs');
+const babelConfig = JSON.parse(fs.readFileSync('.babelrc', "utf8"));
+const babelJest = require('babel-jest');
+// override our .bablerc to have inline source maps, this helps with debugging (line numbers work as expected) in intellij/webstorm.
+const newConfig = Object.assign(babelConfig, {sourceMaps:"inline"});
+module.exports = babelJest.createTransformer(newConfig);

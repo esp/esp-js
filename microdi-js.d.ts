@@ -21,7 +21,7 @@ export class Container {
     resolve<T>(name:String, ...additionalDependencies):T;
     resolveGroup(groupName:String):Array<any>;
     isRegistered(name : string) : boolean;
-
+    isGroupRegistered(groupName : string) : boolean;
     addResolver<T>(name:String, resolver:Resolver<T>);
     dispose():void;
 }
@@ -36,4 +36,7 @@ export class RegistrationModifier {
 
 export interface Resolver<T> {
     resolve(container:Container, dependencyKey:any):T
+}
+export class MicroDiConsts {
+    static get owningContainer() : string;
 }

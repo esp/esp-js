@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  notice_end */
- 
+
 import * as utils from './utils';
 
 export default class Guard {
-    static isDefined(value, message) {
-        if (typeof value === 'undefined') {
+    static isNotNullOrUndefined(value, message) {
+        if (typeof value === 'undefined' || value === null) {
             doThrow(message);
         }
     }
@@ -47,6 +47,11 @@ export default class Guard {
             doThrow(message);
         }
     }
+    static isNonEmptyString(value, message) {
+        if (!utils.isString(value) || Guard.lengthIsAtLeast(value, 1, message)) {
+            doThrow(message);
+        }
+    }
     static isNumber(value, message) {
         if (!utils.isNumber(value)) {
             doThrow(message);
@@ -71,7 +76,7 @@ export default class Guard {
 
 function doThrow(message) {
     if(typeof message === 'undefined' || message === '') {
-        throw new Error("Argument error");
+        throw new Error('MicroDi: Argument error');
     }
-    throw new Error(message);
+    throw new Error('MicroDi: ' + message);
 }

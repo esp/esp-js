@@ -16,38 +16,12 @@
  */
 // notice_end
 
-var webpack = require('webpack');
-var path = require('path');
-
-module.exports = {
-    entry: './src/index.js',
-    output: {
-        libraryTarget: 'umd',
-        sourcePrefix: '    ',
-        library: 'microdi',
-        path: './dist/',
-        filename: 'microdi.min.js'
-    },
-    devtool: 'source-map',
-    debug:false,
-    module: {
-        loaders: [
-            {
-                loader: "babel-loader",
-                exclude: /(node_modules|dist|.idea|tests)/,
-                test: /\.js$/,
-                query: {
-                    presets: ['es2015'],
-                    plugins: ['transform-runtime']
-                }
-            }
-        ]
-    },
-    eslint: {
-        configFile: './.eslintrc'
-    },
-    plugins: [
-        new webpack.optimize.UglifyJsPlugin({minimize: true}),
-        new webpack.optimize.OccurenceOrderPlugin(true)
-    ]
-};
+const webpack = require('webpack');
+const baseConfig = require('./webpack.dev.config');
+baseConfig.output.filename = 'microdi.min.js';
+baseConfig.debug = false;
+baseConfig.plugins = [
+    new webpack.optimize.UglifyJsPlugin({minimize: true}),
+    new webpack.optimize.OccurenceOrderPlugin(true)
+];
+module.exports = baseConfig;

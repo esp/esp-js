@@ -17,29 +17,40 @@
 // notice_end
 
 import {ObservationStage} from '../router';
-import {Guard} from "../system";
 
 let EspDecoratorMetadata = {
-    getAllEvents(object) {
-        if (!object || !object.constructor) {
+    /**
+     * Gets all events for an object instance
+     */
+    getAllEvents(objectInstance) {
+        if (!objectInstance) {
             return [];
         }
-        return object.constructor._espDecoratorMetadata
-            ? object.constructor._espDecoratorMetadata._events
+        let prototype = Object.getPrototypeOf(objectInstance);
+        return prototype._espDecoratorMetadata
+            ? prototype._espDecoratorMetadata._events
             : [];
     },
-    hasMetadata(constructor) {
-        if (!constructor) {
+    /**
+     * Checks if an object instance has esp related metdata on it's prototype
+     * @param objectInstance
+     * @returns {boolean}
+     */
+    hasMetadata(objectInstance) {
+        if (!objectInstance) {
             return false;
         }
-        return !!constructor._espDecoratorMetadata;
+        let prototype = Object.getPrototypeOf(objectInstance);
+        return !!prototype._espDecoratorMetadata;
     },
-    getOrCreateMetaData(target) {
-        Guard.isDefined(target.constructor, 'Object to decorate needs to have a \'constructor\' property');
-        if (target.constructor.hasOwnProperty('_espDecoratorMetadata')) {
-            return target.constructor._espDecoratorMetadata;
+    /**
+     * Gets or creates esp related metadata which is stores as an own prop on the given constructor-function's .prototype property
+     */
+    getOrCreateMetaData(ctorFunction) {
+        if (ctorFunction.prototype.hasOwnProperty('_espDecoratorMetadata')) {
+            return ctorFunction.prototype._espDecoratorMetadata;
         } else {
-            return _createMetadata(target);
+            return _createMetadata(ctorFunction.prototype);
         }
     }
 };
@@ -62,36 +73,46 @@ let Metadata = {
 };
 
 /**
- * Create and stores an instance of EspDecoratorMetadata on the given constructor as an own property.
+ * _createMetadata(): Create and stores an instance of EspDecoratorMetadata on the given prototype as an own property.
  *
+ * Notes:
  * With both Babel and Typescript the object passed to a decorator declared on a class is something that prototypical derives from the base (if any) and has it's constructor property set to the ctor-function/class where the decorator is declared upon.
- * Given this we always store the esp metadata on the constructor property, i.e. on the actually ctor-function/class itself, not it's base.
- *
  * The initial intention with this code was to store the metadata on the constructor, and inspect the constructors prototype to see if it has any metadata of it's own, then our metadata could prototypically derive from that (i.e with Object.create()).
- * This would allow for a full lists of events for an object graph to be obtained.
+ * This would allow for derived objects to override base and a full lists of events for an object graph to be obtained.
  * Unfortunately Babel and TypeScript have different implementation of the constructor property and make this somewhat problematic.
- * In Babel the constructor property is a ctor function that prototypically inherits from the base object (which makes sense), in TypeScript it's inherits from function directly, you have no access to that constructors prototype making prototypical inheritance impossible at this point (which sucks).
- * While babel uses prototypically inheritance for the constructor object typescript copies the properties across manually (they difference is really in their 'extends' functionality for objects).
  *
- * The best we can do here is always store metadata as an own property and copy any base events across manually when we're creating an objects own event metadata.
- * This approach still allows derived instances to have their own event subscriptions yet inherit those of their base, abit somewhat manually.
- * It will also work with both TypeScript and Babel.
- * `_createMetadata()` below is smart enough to look at the base objects metadata and manually copy any events to the new metadata being created.
+ * In Babel the `CtorFunctions.prototype` prop is created using prototypical inheritance which one would expect.
+ *
+ * In Typescript it manually copies properties from the base class to the child class.
+ * Typescripts approach made it somewhat problematic to derive a full object graph of events as the metadata on the base class gets copied to all children.
+ * If `ChildA` and `ChildB` both derive from `Parent` and both declare event 'foo', this event gets recorded in the Parents metadata twice as it's actually copied to the children upon `_extends`.
+ * Storing the metadata as a non enumerable property solved this however if a derived child had no own events the code that retrieved the full list of events had to get the constructor.prototype.prototype which was confusing.
+ * It was all a mess just because prototypical inheritance wasn't respected.
+ * This only affected TS when it's target was ES5, when targeting ES6 it uses the runtimes own `extends` functionality which work as expected.
+ *
+ * To get away from the indifference between typescript and Babel I've decided to store the esp metadata on `CtorFunction.prototype`.
+ * This isn't affected by the 'own prop' copy issues mentioned above and the code to retrieve the full event graph is consistent regardless of inheritance chain.
  *
  * Issue #136 has more notes on this.
  */
-function _createMetadata(target) {
-    let prototype = Object.getPrototypeOf(target);
+function _createMetadata(prototype) {
+    let basePrototype = Object.getPrototypeOf(prototype);
+
     let metadata = Object.create(Metadata).init();
-    if (prototype.constructor && prototype.constructor._espDecoratorMetadata) {
-        for (let e of prototype.constructor._espDecoratorMetadata._events) {
+    // manually copy properties from the prototypes metadata
+    if (basePrototype._espDecoratorMetadata) {
+        for (let e of basePrototype._espDecoratorMetadata._events) {
             metadata._events.push(e);
         }
     }
-    Object.defineProperty(target.constructor, '_espDecoratorMetadata', {
+    // define an enumerable property on the constructors to hold the metadata.
+    // It needs to be enumerable so TS extends can copy it accross.
+    Object.defineProperty(prototype, '_espDecoratorMetadata', {
         value: metadata,
         // by default enumerable is false, I'm just being explicit here.
-        // When Typescript derives from a base class it copies all own property to the new instance we don't want the metadata copied. 
+        // When Typescript derives from a base class it copies all own property to the new instance we don't want the metadata copied.
+        // To stop it we set enumerable to false. You'd expect this to work using prototypical inheritance so you can override via the prototype chain.
+        // Last I looked that's how babel worked.
         enumerable: false
     });
     return metadata;

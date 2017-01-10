@@ -82,6 +82,10 @@ export default class Router extends DisposableBase {
             }
         }
     }
+    isModelRegistered(modelId) {
+        Guard.isString(modelId, 'The modelId argument should be a string');
+        return !!this._models[modelId];
+    }
     publishEvent(modelId, eventType, event) {
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isString(eventType, 'The eventType argument should be a string');
@@ -179,7 +183,7 @@ export default class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter(this, targetModelId);
     }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
-        if(EspDecoratorMetadata.hasMetadata(object.constructor)) {
+        if(EspDecoratorMetadata.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object, methodPrefix);
         } else {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);

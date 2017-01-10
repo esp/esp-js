@@ -24,6 +24,7 @@ export function observeModelChangedEvent(modelId:string): any;
 export class Router {
     addModel<T>(modelId:string, model:T, options? : any) : void;
     removeModel(modelId:string) : void;
+    isModelRegistered(modelId:string) : boolean;
     publishEvent(modelId:string, eventType:string, event:any) : void;
     broadcastEvent(eventType:string, event:any)  : void;
     executeEvent(eventType:string, event:any)  : void;

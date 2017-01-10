@@ -38,5 +38,5 @@ export interface Resolver<T> {
     resolve(container:Container, dependencyKey:any):T
 }
 export class MicroDiConsts {
-    static get owningContainer() : string;
+    static readonly owningContainer : string;
 }

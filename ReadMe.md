@@ -128,6 +128,22 @@ It specifies `Controller` requires 2 dependencies:
 * The dependency registered as `a`.
 * The dependency `{ resolver: 'factory', key : 'b' }`, this is a `resolverKey` telling the container to build the dependency `b` using the build in [injection factory](#injection-factories) resolver.
 
+> **Note on annotation usages regarding IoC**
+>
+> Often container implementation use [decorators](https://github.com/wycats/javascript-decorators/blob/caf8f28b665333dc39293d5319fe01f01e3e3c0f/README.md) (annotations in Java and attributes in C#) to decorate objects with IoC related concerns. 
+> For example lifetime management, scoping, dependency information etc.
+> The author believes this to be useful in some instances however often an anti-pattern for the following reasons:
+> * Objects become dependent on their dependencies as they are explicitly declared together.
+> * It becomes difficult to configure an object for differing usages unless you decorate it for both, if supported.
+> * It becomes difficult to gain an understanding of how objects play together at runtime.
+>   Runtime configuration is scattered on objects in different code files and across the entire codebase.
+>   Runtime configuration of objects is simpler to understand when it's in a single place.
+> * 90% of the time you'll find you need some runtime configuration. 
+>   You end up in a place where you have both runtime and declarative (i.e. decorator) configuration.
+>   This adds confusion.
+> * It doesn't work when creating shared code, i.e. in libraries. 
+>   If you hit this you don't want some code using annotation and some using run time configuration (i.e. the above point).
+
 # Features
 
 ## Object creation & dependency injection
@@ -323,7 +339,7 @@ creating an item
 
 ```
 
-### Additional dependencies
+### Additional dependencies in factories
 
 You can pass arguments to the factory and they forwarded as discussed [above](#resolution-with-additional-dependencies).
 
@@ -362,6 +378,8 @@ Hello Mick
 ## Child containers
 
 Child containers can be used to manage and scope a set of related objects.
+They inherit configuration from the parent however can be re-configured.
+They also inherit instances from their parent depending upon the lifetime management of the objects in question. 
 
 Create a child container by calling `createChildContainer` on a parent;
 ```javascript

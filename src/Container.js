@@ -66,6 +66,17 @@ export default class Container {
         this._registrations[name] = registration;
         return new RegistrationModifier(registration, this._instanceCache, this._registrationGroups);
     }
+    registerFactory(name, factory) {
+        this._throwIfDisposed();
+        Guard.isNonEmptyString(name, 'Error calling registerFactory(name, factory). The name argument must be a string and can not be \'\'');
+        Guard.isFunction(factory, `Error calling registerFactory(name, factory). Provided factory for [${name}] must be a function`);
+        let dependencyKey = {
+            resolver: 'externalFactory',
+            factory : factory,
+            isResolverKey: true
+        };
+        return this.register(name, dependencyKey);
+    }
     registerInstance(name, instance, isExternallyOwned = true) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(name, 'Error calling register(name, instance, isExternallyOwned = true). The name argument must be a string and can not be \'\'');
@@ -205,7 +216,7 @@ export default class Container {
             if(registration.proto.isResolverKey) {
                 if(registration.proto.resolver) {
                     resolver = this._resolvers[registration.proto.resolver];
-                    instance = resolver.resolve(this, registration.proto);
+                    instance = resolver.resolve(this, registration.proto, ...dependencies);
                 }
                 else {
                     throw new Error('Registered resolverKey is missing it\'s resolver property');
@@ -249,6 +260,12 @@ export default class Container {
                         args.unshift(dependencyKey.key);
                         return container.resolve.apply(container, args );
                     };
+                }
+            },
+            // A resolver that invokes an external factory to resolve the dependency from the container.
+            externalFactory: {
+                resolve: function(container, dependencyKey, ...additionalDeps) {
+                    return dependencyKey.factory.apply(null, [container, ...additionalDeps]);
                 }
             }
         };

@@ -33,6 +33,27 @@ You can register an object using one of two methods:
   It's [lifetime management](#lifetime-management) is `singletonPerContainer`.
   It can be resolved using the `identifier` or as part of the [group](#resolve-groups) `mySimilarObjects`. 
   
+* `container.registerFactory(identifier, factory)`.
+
+  This registers a factory using the given string `identifier`. The factory is a function that must return
+  the object instance which will be resolved. The factory will receive the current container as a first parameter.
+  This is a similar concept as using [Injection factories](#injection-factories) but perhaps a bit simpler.
+  
+    ```javascript
+    var identifier = 'itemKey1';
+    container
+      .registerFactory('identifier', (context, ...additionalDependencies) => {
+          console.log('This is called when trying to resolve `identifier`');
+          let scopedVar = 'scopedVar';
+          return new Item(
+            scopedVar,
+            context.resolve('otherDependencyIdentifier1')
+          );
+      })
+      .singletonPerContainer()
+      .inGroup('mySimilarObjects');
+    ```
+  
 * `container.registerInstance(identifier, objectInstance)`.
 
   Registers the given `objectInstance` using the string `identifier`.

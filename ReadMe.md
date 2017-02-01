@@ -11,7 +11,8 @@ Microdi-js is a tiny but feature rich dependency injection container for JavaScr
 
 # Basic usage
 
-You can register an object using one of two methods:
+## Object Registration 
+You can register an object using one of three methods:
 
 * `container.register(identifier, Item)`.
 
@@ -20,12 +21,12 @@ You can register an object using one of two methods:
   You can chain calls to alter the registration settings:
   
   ```javascript
-  var identifier = 'itemKey1';
-  container
-    .register('identifier', Item)
-    .inject('otherDependencyIdentifier1', 'otherDependencyIdentifier1')
-    .singletonPerContainer()
-    .inGroup('mySimilarObjects');
+    var identifier = 'itemKey1';
+    container
+        .register('identifier', Item)
+        .inject('otherDependencyIdentifier1', 'otherDependencyIdentifier1')
+        .singletonPerContainer()
+        .inGroup('mySimilarObjects');
   ```
 
   Here we register `Item` using the string `identifier`. 
@@ -33,30 +34,34 @@ You can register an object using one of two methods:
   It's [lifetime management](#lifetime-management) is `singletonPerContainer`.
   It can be resolved using the `identifier` or as part of the [group](#resolve-groups) `mySimilarObjects`. 
   
-* `container.registerFactory(identifier, factory)`.
-
-  This registers a factory using the given string `identifier`. The factory is a function that must return
-  the object instance which will be resolved. The factory will receive the current container as a first parameter.
-  This is a similar concept as using [Injection factories](#injection-factories) but perhaps a bit simpler.
-  
-    ```javascript
-    var identifier = 'itemKey1';
-    container
-      .registerFactory('identifier', (context, ...additionalDependencies) => {
-          console.log('This is called when trying to resolve `identifier`');
-          let scopedVar = 'scopedVar';
-          return new Item(
-            scopedVar,
-            context.resolve('otherDependencyIdentifier1')
-          );
-      })
-      .singletonPerContainer()
-      .inGroup('mySimilarObjects');
-    ```
-  
 * `container.registerInstance(identifier, objectInstance)`.
 
-  Registers the given `objectInstance` using the string `identifier`.
+  You can use `registerInstance` to register an existing instance with the given string `identifier`.
+    
+* `container.registerFactory(identifier, factory)`.
+
+  This registers a creation factory using the given string `identifier`. 
+  The factory is a function that must return a new object instance. 
+  The factory will receive the current container as a first parameter.
+  Any additional arguments passed during the `resolve` call will be passed to the factory.
+  
+  ```javascript
+    container
+        .registerFactory('fooId', (container, ...additionalDependencies) => {
+              let fooDependency = container.resolve('fooDependencyId');  
+              return new Foo(fooDependency, ...additionalDependencies);
+        })
+        .transient();
+    
+    let foo = container.resolve('fooId', 1, 2, 3);
+  ```
+  
+  Here we register a factory that will resolve a `Foo`. 
+  We then resolve an instance (`foo`) passing some additional arguments. 
+  Our creation factory resolves an additional dependency, then passes this dependency, plus the additional dependencies `1, 2, 3` to `Foo`s constructor and returns it.
+  It's registered using a transient scope so each time you resolve it, the factor will be invoked to resolve a new `Foo` instance. 
+
+## Object Resolution
 
 Object resolution is done via :
 
@@ -344,6 +349,13 @@ creating an item
 
 ```
 
+> **Note**
+>
+> Injected factories are different from factories you use to create objects (via `container.registerFactory`). 
+> A factory registered via `registerFactory` is simply used to create your instance. 
+> An injected factory lets the container create the instance but it wraps this creation in a factory and injects the factory. 
+> It's typically used for lazy resolution of objects or when an object needs to create many other objects but doesn't want to take a dependency on the container itself. 
+
 ### Additional dependencies in factories
 
 You can pass arguments to the factory and they forwarded as discussed [above](#resolution-with-additional-dependencies).
@@ -621,11 +633,11 @@ Fake DOM element - viewId
 ```
 
 ### Built in resolvers
-There are 2 built in resolvers.
+There are 3 built in resolvers.
 
 #### Delegate
 
-This simply defers object creation to a delegate provided by the `resolverKey`.
+The `delegate` resolver simply defers object creation to a delegate provided by the `resolverKey`.
 
 ```javascript
 class Foo  {
@@ -653,7 +665,11 @@ bar is : [barInstance]
 
 #### Injection factory
 
-Discussed [above](#injection-factories), this resolver injects a factory that can be called multiple times to create the dependency.
+Discussed [above](#injection-factories), injection factories use the `factory` dependency resolver to wrap the creation call in a function for later invocation.
+
+#### External factory
+
+Under the covers `registerFactory` uses a built in `externalFactory` dependency resolver to invoke the factory registered against an identifier.
 
 ## Annotation usages and IoC
 

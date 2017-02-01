@@ -18,6 +18,7 @@ export class Container {
     createChildContainer():Container;
     register(name:String, proto:any):RegistrationModifier;
     registerInstance<T>(name:String, instance:T, isExternallyOwned?):void;
+    registerFactory<T>(name:String, factory:(context:Container, ...additionalDependencies:any[]) => T):RegistrationModifier;
     resolve<T>(name:String, ...additionalDependencies):T;
     resolveGroup(groupName:String):Array<any>;
     isRegistered(name : string) : boolean;

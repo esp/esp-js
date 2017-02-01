@@ -34,6 +34,16 @@ describe('Container', () =>  {
             expect(foo.bar).toBe(5);
         });
 
+        it('should register/resolve an object with a custom factory', () =>  {
+            let Foo = createFunction({ bar: { value : 5 }});
+            container.registerFactory('foo', (context,...additionalDependencies) =>
+                new Foo(...additionalDependencies));
+            let foo = container.resolve('foo', 1, 2, 3);
+            expect(foo.bar).toBeDefined();
+            expect(foo.bar).toBe(5);
+            expect(foo.dependencies.length).toBe(3);
+        });
+
         it('should call init with resolving if object has init method', () =>  {
             let Foo = {
                 init: function() {
@@ -709,10 +719,11 @@ describe('Container', () =>  {
         return o;
     }
 
-    function createFunction() {
-        function AFunction() {
-            this.dependencies = Array.prototype.slice.call(arguments);
+    function createFunction(props) {
+        function AFunction(...dependencies) {
+            this.dependencies = dependencies;
         }
+        AFunction.prototype = createObject(props);
         return AFunction;
     }
 });

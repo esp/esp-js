@@ -22,7 +22,6 @@ import { Observable } from '../reactive';
 
 export default class SingleModelRouter {
     constructor() {
-        this._modelSet = false;
     }
     static create() {
         let router = new SingleModelRouter();
@@ -45,15 +44,12 @@ export default class SingleModelRouter {
         }
 
         let router = new SingleModelRouter();
-        router._modelSet = true;
         router._underlying = underlyingRouter;
         router._targetModelId = modelId;
         return router;
     }
     setModel(model) {
         Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');
-        Guard.isFalsey(this._modelSet, 'Model is already set.');
-        this._modelSet = true;
         this._underlying.addModel(this._targetModelId, model);
     }
     publishEvent(eventType, event) {
@@ -94,6 +90,9 @@ export default class SingleModelRouter {
         return this._underlying.isOnDispatchLoopFor(this._targetModelId);
     }
     _ensureModelIsSet() {
-        Guard.isTrue(this._modelSet, 'You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');
+        Guard.isTrue(
+            this._underlying.isModelRegistered(this._targetModelId),
+            `Model with id ${this._targetModelId} not registered with the router`
+        );
     }
 }

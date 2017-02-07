@@ -92,7 +92,7 @@ describe('Router', () => {
         describe('errors', () => {
 
             describe('static create', () => {
-                var _expectedError = new Error('You must call \'singleModelRouterInstance.setModel(model)\' before interacting with the router');
+                var _expectedError = new Error(`Model with id modelId not registered with the router`);
 
                 it('should throw if publishEvent used without setting model', () => {
                     var router = esp.SingleModelRouter.create();

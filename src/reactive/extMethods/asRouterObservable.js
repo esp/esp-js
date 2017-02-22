@@ -22,7 +22,7 @@ import RouterObservable from '../RouterObservable';
 
 Observable.prototype.asRouterObservable = function(router) {
     Guard.isDefined(router, "router must be defined");
-    var source = this;
-    var subscribe =  observer => source.subscribe(observer);
+    let source = this;
+    let subscribe =  observer => source.subscribe(observer);
     return new RouterObservable(router, subscribe);
 };

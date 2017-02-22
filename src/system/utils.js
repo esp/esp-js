@@ -17,7 +17,7 @@
  // notice_end
 
 export function removeAll(arr, item) {
-    for(var i = arr.length; i--;) {
+    for(let i = arr.length; i--;) {
         if(arr[i] === item) {
             arr.splice(i, 1);
         }
@@ -34,8 +34,8 @@ export function isFunction(value) {
 
 export function format(formatString) {
     //Guard.isString(format, "First argument to a log function should be a string, but got [" + format + "]");
-    var args = Array.prototype.slice.call(arguments, 1);
-    var message = formatString.replace(/{(\d+)}/g, function (match, number) {
+    let args = Array.prototype.slice.call(arguments, 1);
+    let message = formatString.replace(/{(\d+)}/g, function (match, number) {
         return typeof args[number] != 'undefined'
             ? args[number]
             : match;
@@ -49,14 +49,14 @@ export function startsWith(string, searchString, position) {
 }
 
 export function getPropertyNames(object) {
-    var props = [];
+    let props = [];
     Object.getOwnPropertyNames(object).forEach( function( key ){
         props.push(key);
     });
-    var proto = Object.getPrototypeOf(object);
+    let proto = Object.getPrototypeOf(object);
     if(proto !== null && typeof proto === 'object') {
-        var childProps = getPropertyNames(proto);
-        for (var i = 0; i < childProps.length; i++) {
+        let childProps = getPropertyNames(proto);
+        for (let i = 0; i < childProps.length; i++) {
             props.push(childProps[i]);
         }
     }

@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -36,7 +36,7 @@ describe('Router', () => {
         it('when enableDiagnostics called getDispatchLoopDiagnostics returns diagnostics', ()=> {
             _router.enableDiagnostics();
             _router.publishEvent('modelId1', 'startEvent', {});
-            var dispatchLoopDiagnostics = _router.getDispatchLoopDiagnostics();
+            let dispatchLoopDiagnostics = _router.getDispatchLoopDiagnostics();
             expect(dispatchLoopDiagnostics).toBeDefined();
         });
 

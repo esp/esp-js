@@ -19,7 +19,7 @@
 import { EventContext } from '../../src';
 
 describe('EventContext', () => {
-    var ec;
+    let ec;
 
     beforeEach(function(){
         ec = new EventContext('modekId', 'eventType', "event1Data");

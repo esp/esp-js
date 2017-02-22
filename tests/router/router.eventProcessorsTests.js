@@ -20,14 +20,14 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     describe('eventProcessors', () => {
-        var _model1 = {},
+        let _model1 = {},
             _model2 = {},
             _model3 = {},
             _model5 = {},
@@ -141,7 +141,7 @@ describe('Router', () => {
 
         it('should allow a preEventProcessor to publish an event', () => {
             _router.addModel('modelId4', _model1, { preEventProcessor : () => {_router.publishEvent('modelId4', 'Event2', 'theEvent'); } });
-            var wasPublished = false;
+            let wasPublished = false;
             _router.getEventObservable('modelId4', 'Event2').subscribe(() => {
                 wasPublished = true;
             });
@@ -153,7 +153,7 @@ describe('Router', () => {
         });
 
         it('should allow a postEventProcessor to publishs an event', () => {
-            var eventReceived = false,
+            let eventReceived = false,
                 eventWasRaisedInNewEventLoop = false,
                 postProcessorPublished = false;
             _router.addModel(

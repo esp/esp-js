@@ -20,14 +20,14 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     describe('.runAction()', () => {
-        var _model1 = { },
+        let _model1 = { },
             _model2 = {},
             _proto = {
                 init(id) {

@@ -25,7 +25,7 @@ let noop = () => {};
 export default class Observable {
     static create(onObserve) {
         Guard.lengthIs(arguments, 1, "Incorrect argument count on Observable, expect 1 onObserve function");
-        var subscribe =  observer => {
+        let subscribe =  observer => {
             let disposable = onObserve(observer);
             // if there was no disposable returned from the onObserve handler we default it to a noop here
             return new DisposableWrapper(disposable || noop);
@@ -36,7 +36,7 @@ export default class Observable {
         this._subscribe = subscribe;
     }
     subscribe(...args) {
-        var observer = Observer.wrap(...args);
+        let observer = Observer.wrap(...args);
         Guard.isDefined(this._subscribe, '_subscribe not set');
         return this._subscribe(observer);
     }

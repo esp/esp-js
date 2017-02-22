@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -40,7 +40,7 @@ describe('Router', () => {
         });
 
         it('dispatches events to processors by modelid', () => {
-            var model1ProcessorReceived = false, model2ProcessorReceived = false;
+            let model1ProcessorReceived = false, model2ProcessorReceived = false;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
@@ -56,8 +56,8 @@ describe('Router', () => {
 
         it('doesn\'t dispatch to disposed update ubscribers', () => {
             _router.addModel('modelId1', {});
-            var eventReeivedCount =0;
-            var disposable = _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
+            let eventReeivedCount =0;
+            let disposable = _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 eventReeivedCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
@@ -69,7 +69,7 @@ describe('Router', () => {
 
         describe('subscription stages', () => {
 
-            var receivedAtPreview,
+            let receivedAtPreview,
                 receivedAtNormal,
                 receivedAtCommitted,
                 eventContextActions;

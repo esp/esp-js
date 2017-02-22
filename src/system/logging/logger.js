@@ -45,35 +45,35 @@ export default class Logger {
 
     verbose(message) {
         if (_currentLevel <= level.verbose) {
-            var args = Array.prototype.slice.call(arguments, 1);
+            let args = Array.prototype.slice.call(arguments, 1);
             this._log("VERBOSE", message, args);
         }
     }
 
     debug(message) {
         if (_currentLevel <= level.debug) {
-            var args = Array.prototype.slice.call(arguments, 1);
+            let args = Array.prototype.slice.call(arguments, 1);
             this._log("DEBUG", message, args);
         }
     }
 
     info(message) {
         if (_currentLevel <= level.info) {
-            var args = Array.prototype.slice.call(arguments, 1);
+            let args = Array.prototype.slice.call(arguments, 1);
             this._log("INFO", message, args);
         }
     }
 
     warn(message) {
         if (_currentLevel <= level.warn) {
-            var args = Array.prototype.slice.call(arguments, 1);
+            let args = Array.prototype.slice.call(arguments, 1);
             this._log("WARN", message, args);
         }
     }
 
     error(message) {
         if (_currentLevel <= level.error) {
-            var args = Array.prototype.slice.call(arguments, 1);
+            let args = Array.prototype.slice.call(arguments, 1);
             this._log("ERROR", message, args);
         }
     }

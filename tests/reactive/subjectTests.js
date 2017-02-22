@@ -22,15 +22,15 @@ import * as reactive from '../../src/reactive/index';
 // ensuring edge cases with multiple observers don't interfere with others, ordering of publication
 // just to name a few
 describe('subject', () => {
-    var subject;
+    let subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
     });
 
     it('onNext pushes item to observers', () => {
-        var receivedItems1 = [];
-        var receivedItems2 = [];
+        let receivedItems1 = [];
+        let receivedItems2 = [];
         subject.subscribe(i => {
             receivedItems1.push(i);
         });
@@ -61,8 +61,8 @@ describe('subject', () => {
 
 
     it('removes observers on dispose', () => {
-        var publishCount = 0;
-        var disposable = subject.subscribe(i => {
+        let publishCount = 0;
+        let disposable = subject.subscribe(i => {
             publishCount++;
         });
         subject.onNext(1);
@@ -73,7 +73,7 @@ describe('subject', () => {
     });
 
     it('should call onCompleted on observers when it completes', () => {
-        var didComplete1 = false, didComplete2 = false;
+        let didComplete1 = false, didComplete2 = false;
         subject.subscribe(
             () => { },
             () => didComplete1 = true
@@ -88,7 +88,7 @@ describe('subject', () => {
     });
 
     it('should not onNext after completes', () => {
-        var onNextCount = 0;
+        let onNextCount = 0;
         subject.subscribe(
             () => {
                 onNextCount++;
@@ -102,7 +102,7 @@ describe('subject', () => {
     });
 
     it('.subscribe propagates onCompleted', () => {
-        var onCompleteCalled = false;
+        let onCompleteCalled = false;
         subject.subscribe(
             () => { },
             () => onCompleteCalled = true
@@ -112,7 +112,7 @@ describe('subject', () => {
     });
 
     it('can subscribe using observer function', () => {
-        var onNextCalled = false;
+        let onNextCalled = false;
         subject.subscribe(
             () => {
                 onNextCalled = true;
@@ -123,8 +123,8 @@ describe('subject', () => {
     });
 
     it('can subscribe using observer', () => {
-        var onCompleteCalled = false;
-        var receivedItems = [];
+        let onCompleteCalled = false;
+        let receivedItems = [];
         let observer = new reactive.Observer(
             item => {
                 receivedItems.push(item);

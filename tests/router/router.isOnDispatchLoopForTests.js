@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -35,7 +35,7 @@ describe('Router', () => {
         });
 
         it('returns true when on models dispatch loop', () => {
-            var model1EventHandler_isOnModel1DispatchLoop = null,
+            let model1EventHandler_isOnModel1DispatchLoop = null,
                 model1EventHandler_isOnModel2DispatchLoop = null,
                 model2EventHandler_isOnModel1DispatchLoop = null,
                 model2EventHandler_isOnModel2DispatchLoop = null;

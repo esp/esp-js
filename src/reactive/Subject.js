@@ -37,10 +37,10 @@ export default class Subject extends Observable  {
             if(this._cacheLastValue) {
                 this._lastValue = {arg1: arg1, arg2: arg2, arg3: arg3};
             }
-            var os = this._observers.slice(0);
-            for (var i = 0, len = os.length; i < len; i++) {
+            let os = this._observers.slice(0);
+            for (let i = 0, len = os.length; i < len; i++) {
                 if(this._hasError) break;
-                var observer = os[i];
+                let observer = os[i];
                 observer.onNext(arg1, arg2, arg3);
             }
         }
@@ -48,9 +48,9 @@ export default class Subject extends Observable  {
     onCompleted() {
         if(!this._hasComplete) {
             this._hasComplete = true;
-            var os = this._observers.slice(0);
-            for (var i = 0, len = os.length; i < len; i++) {
-                var observer = os[i];
+            let os = this._observers.slice(0);
+            for (let i = 0, len = os.length; i < len; i++) {
+                let observer = os[i];
                 observer.onCompleted();
             }
         }

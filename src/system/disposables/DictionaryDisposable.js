@@ -26,7 +26,7 @@ export default class DictionaryDisposable {
         if(this.hasOwnProperty(key)) {
             throw new Error("Key " + key + " already found");
         }
-        var disposableWrapper = new DisposableWrapper(disposable);
+        let disposableWrapper = new DisposableWrapper(disposable);
         if(this._isDisposed) {
             disposableWrapper.dispose();
             return;
@@ -44,9 +44,9 @@ export default class DictionaryDisposable {
     dispose() {
        // if(!this._isDisposed) {
             this._isDisposed = true;
-            for (var p in this) {
+            for (let p in this) {
                 if (this.hasOwnProperty(p)) {
-                    var disposable = this[p];
+                    let disposable = this[p];
                     if (disposable.dispose) {
                         disposable.dispose();
                     }

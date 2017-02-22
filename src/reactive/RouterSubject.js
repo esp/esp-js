@@ -25,8 +25,8 @@ export default class RouterSubject extends Subject {
         this._router = router;
     }
     asRouterObservable() {
-        var source = this;
-        var subscribe =  observer => source.subscribe(observer);
+        let source = this;
+        let subscribe =  observer => source.subscribe(observer);
         return new RouterObservable(this._router, subscribe);
     }
 }

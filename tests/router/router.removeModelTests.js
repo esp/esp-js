@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -28,13 +28,13 @@ describe('Router', () => {
 
     describe('.removeModel()', () => {
 
-        var _preProcessorReceivedCount = 0;
-        var _eventReceivedCount1 = 0;
-        var _eventReceivedCount2 = 0;
-        var _postProcessorReceivedCount = 0;
-        var _updateReceivedCount1 = 0;
-        var _updateReceivedCount2 = 0;
-        var _model;
+        let _preProcessorReceivedCount = 0;
+        let _eventReceivedCount1 = 0;
+        let _eventReceivedCount2 = 0;
+        let _postProcessorReceivedCount = 0;
+        let _updateReceivedCount1 = 0;
+        let _updateReceivedCount2 = 0;
+        let _model;
 
         beforeEach(()=> {
             _model = {
@@ -93,7 +93,7 @@ describe('Router', () => {
         });
 
         it('should onComplete all event streams when the model is removed', () => {
-            var didComplete = false;
+            let didComplete = false;
             _router.getEventObservable('modelId1', 'Event1').subscribe(
                 () => {},
                 () => didComplete = true
@@ -103,7 +103,7 @@ describe('Router', () => {
         });
 
         it('should onComplete all update streams when the model is removed', () => {
-            var didComplete = false;
+            let didComplete = false;
             _router.getModelObservable('modelId1').subscribe(
                 () => {},
                 () => didComplete = true

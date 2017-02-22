@@ -19,8 +19,8 @@
 import Observable from '../Observable';
 
 Observable.prototype.asObservable = function() {
-    var source = this;
-    var subscribe =  observer => {
+    let source = this;
+    let subscribe =  observer => {
         return source.subscribe(
             (arg1, arg2, arg3) => {
                 observer.onNext(arg1, arg2, arg3);

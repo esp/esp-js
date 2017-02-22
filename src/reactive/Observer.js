@@ -24,7 +24,7 @@ export default class Observer {
      * @returns Observer
      */
     static wrap() {
-        var observer;
+        let observer;
         if(arguments.length === 0) {
             // create a no-op observer
             observer = new Observer(() => {}, () => {});
@@ -32,9 +32,9 @@ export default class Observer {
             observer = arguments[0];
         } else {
             Guard.lengthIsAtLeast(arguments, 1, 'Incorrect arg count on observe, should be a single Observer or (onNext:(t)=>[,onCompleted:()=>{}])');
-            var onNext = arguments[0];
+            let onNext = arguments[0];
             Guard.isFunction(onNext, 'The first argument to observe must be a function (t=>{})');
-            var onCompleted = arguments.length >= 1 ? arguments[1] : undefined;
+            let onCompleted = arguments.length >= 1 ? arguments[1] : undefined;
             if(onCompleted) {
                 Guard.isFunction(onCompleted, 'The second argument to observe must be a function (()=>{})');
             }

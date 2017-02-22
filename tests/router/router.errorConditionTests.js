@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -28,9 +28,9 @@ describe('Router', () => {
 
     describe('error conditions', function() {
 
-        var _eventReceivedCount = 0;
-        var _updateReceivedCount = 0;
-        var _model;
+        let _eventReceivedCount = 0;
+        let _updateReceivedCount = 0;
+        let _model;
 
         beforeEach(()=> {
             _eventReceivedCount =0;

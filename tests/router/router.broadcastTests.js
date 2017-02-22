@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -33,7 +33,7 @@ describe('Router', () => {
         });
 
         it('should deliver the event to all models', () => {
-            var model1ProcessorReceived = 0, model2ProcessorReceived = 0;
+            let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').subscribe((event) => {

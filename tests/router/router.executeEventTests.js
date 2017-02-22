@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -28,7 +28,7 @@ describe('Router', () => {
 
     describe('.executeEvent()', () => {
 
-        var _model1 = {},
+        let _model1 = {},
             _model2 = {};
 
         function raiseStartEvent() {
@@ -45,7 +45,7 @@ describe('Router', () => {
         });
 
         it('should only allow execute during processor and event dispatch stages', () => {
-            var model1 = { value: ""}, updateStreamTestRan = false;
+            let model1 = { value: ""}, updateStreamTestRan = false;
             _router.addModel(
                 'myModel',
                 model1,
@@ -72,7 +72,7 @@ describe('Router', () => {
         });
 
         it('should throw if an execute handler raises another event', () => {
-            var didTest = false;
+            let didTest = false;
             _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe(() => {
                 didTest = true;
                 expect(() => {
@@ -84,7 +84,7 @@ describe('Router', () => {
         });
 
         it('should execute the event against the current event loops model', () => {
-            var actualModel;
+            let actualModel;
             _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe((event, eventContext, model) => {
                 actualModel = model;
             });
@@ -94,7 +94,7 @@ describe('Router', () => {
         });
 
         it('should execute the event immediately', () => {
-            var counter = 0, testPassed = false;
+            let counter = 0, testPassed = false;
             _router.getEventObservable('modelId1', 'triggerExecuteEvent2').subscribe(() => {
                 counter = 1;
                 _router.executeEvent('ExecutedEvent', {});
@@ -109,7 +109,7 @@ describe('Router', () => {
         });
 
         it('should execute the event against all stages', () => {
-            var previewReceived = false, normalReceived = false, committedReceived = false;
+            let previewReceived = false, normalReceived = false, committedReceived = false;
             _router.getEventObservable('modelId1', 'ExecutedEvent', 'preview').subscribe(() => {
                 previewReceived = true;
             });

@@ -19,18 +19,18 @@
 import * as reactive from '../../src/reactive/index';
 
 describe('.create', () => {
-    var subject;
+    let subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
     });
 
     it('.create invokes the subscription factory on observable subscription', () => {
-        var subject = new reactive.Subject();
-        var stream  = reactive.Observable.create(o => {
+        let subject = new reactive.Subject();
+        let stream  = reactive.Observable.create(o => {
             return subject.subscribe(o);
         });
-        var received = [];
+        let received = [];
         stream.subscribe(i => {
             received.push(i);
         });

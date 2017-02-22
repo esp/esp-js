@@ -51,9 +51,9 @@ export default class State {
         this._currentStatus = Status.PostProcessing;
     }
     executeEvent(executeAction) {
-        var canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventProcessorDispatch || this._currentStatus === Status.PostProcessing;
+        let canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventProcessorDispatch || this._currentStatus === Status.PostProcessing;
         Guard.isTrue(canMove, 'Can\'t move to executing as the current state ' + this._currentStatus + ' doesn\'t allow it');
-        var previousStatus = this._currentStatus;
+        let previousStatus = this._currentStatus;
         this._currentStatus = Status.EventExecution;
         executeAction();
         this._currentStatus = previousStatus;

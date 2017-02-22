@@ -22,13 +22,13 @@ import { Guard } from '../../system';
 // TODO beta, needs test
 Observable.prototype.takeUntil = function(predicate, inclusive) {
     Guard.isFunction(predicate, "provided predicate isn't a function");
-    var source = this;
-    var done = false;
-    var subscribe =  observer => {
+    let source = this;
+    let done = false;
+    let subscribe =  observer => {
         return source.subscribe(
             (arg1, arg2, arg3) => {
                 if(done) return;
-                var shouldTake = predicate(arg1, arg2, arg3);
+                let shouldTake = predicate(arg1, arg2, arg3);
                 if(shouldTake || inclusive) {
                     done = true;
                     observer.onNext(arg1, arg2, arg3);

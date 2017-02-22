@@ -19,14 +19,14 @@
 import * as reactive from '../../src/reactive/index';
 
 describe('.asObservable', () => {
-    var subject;
+    let subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
     });
 
     it('.asObservable propagates onNext', () => {
-        var receivedItems = [];
+        let receivedItems = [];
         subject.asObservable().subscribe(
             (a, b, c) => {
                 receivedItems.push(a);
@@ -42,7 +42,7 @@ describe('.asObservable', () => {
     });
 
     it('.asObservable propagates onCompleted', () => {
-        var onCompleteCalled = false;
+        let onCompleteCalled = false;
         subject.asObservable().subscribe(
             () => { },
             () => onCompleteCalled = true

@@ -19,11 +19,11 @@
 import esp from '../../src';
 
 describe('.streamFor', () => {
-    var _router;
-    var _testModel1;
-    var _workflowActions;
-    var _routerSubject;
-    var _routerObservable;
+    let _router;
+    let _testModel1;
+    let _workflowActions;
+    let _routerSubject;
+    let _routerObservable;
 
     beforeEach(() => {
         _router = new esp.Router();

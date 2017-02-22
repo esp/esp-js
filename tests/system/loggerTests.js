@@ -19,11 +19,11 @@
 import * as system from '../../src/system';
 
 describe('Logger', () => {
-    var _lastLevel;
-    var _lasMessage;
-    var _lastLoggerName;
-    var _log;
-    var _sinkArgs;
+    let _lastLevel;
+    let _lasMessage;
+    let _lastLoggerName;
+    let _log;
+    let _sinkArgs;
 
     beforeEach(() =>{
         _lastLevel = null;

@@ -86,6 +86,28 @@ describe('Router', () => {
             expect(_model5.postProcessCount).toBe(1);
         });
 
+        it('only calls a models preProcess() function if the model is observing the published event', () => {
+            _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
+            expect(_model5.preProcessCount).toBe(0);
+        });
+
+        it('only calls a models postProcess() function if the model is observing the published event', () => {
+            _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
+            expect(_model5.postProcessCount).toBe(0);
+        });
+
+        it('only calls a models pre event processor if the model is observing the published event', () => {
+            _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
+            _testPassed = _modelsSentForPreProcessing.length === 0;
+            expect(_testPassed).toBe(true);
+        });
+
+        it('only calls a models post event processor if the model is observing the published event', () => {
+            _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
+            _testPassed = _modelsSentForPostProcessing.length === 0;
+            expect(_testPassed).toBe(true);
+        });
+
         it('calls a models post processors before processing the next models events', () => {
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 /* noop */

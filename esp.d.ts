@@ -127,6 +127,7 @@ export interface Observable<T> {
 
 export interface ObservableStatic {
     create<T>(observer: (observer: Observer<T>) => Disposable | Function | void): Observable<T>;
+    merge<T>(...observables: Observable<T>[]): Observable<T>;
 }
 
 export var Observable: ObservableStatic;

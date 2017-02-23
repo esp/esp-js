@@ -18,7 +18,7 @@
 
 import { logging } from '../../system';
 
-var _log = logging.Logger.create('LoggingDiagnosticMonitor');
+let _log = logging.Logger.create('LoggingDiagnosticMonitor');
 
 /**
  * Handy for debugging if in node or via unit tests, else use esp-js-devtools.
@@ -130,7 +130,7 @@ export default class LoggingDiagnosticMonitor {
         this._steps.push(this._padSpaces(this._currentDepth) + stepMessage);
     }
     _padSpaces(length) {
-        var spaces = ' ', i;
+        let spaces = ' ', i;
         for(i = 0; i < length; i++) {
             spaces += '  ';
         }

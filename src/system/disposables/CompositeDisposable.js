@@ -16,7 +16,6 @@
  */
  // notice_end
 
-import Guard from '../Guard';
 import DisposableWrapper from './DisposableWrapper';
 
 export default class CompositeDisposable {
@@ -28,7 +27,7 @@ export default class CompositeDisposable {
         return this._isDisposed;
     }
     add(disposable) {
-        var disposableWrapper = new DisposableWrapper(disposable);
+        let disposableWrapper = new DisposableWrapper(disposable);
         if(this._isDisposed) {
             disposableWrapper.dispose();
             return;
@@ -38,8 +37,8 @@ export default class CompositeDisposable {
     dispose() {
         if(!this._isDisposed) {
             this._isDisposed = true;
-            for (var i = 0, len = this._disposables.length; i < len; i++) {
-                var disposable = this._disposables[i];
+            for (let i = 0, len = this._disposables.length; i < len; i++) {
+                let disposable = this._disposables[i];
                 disposable.dispose();
             }
             this._disposables.length = 0;

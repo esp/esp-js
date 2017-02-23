@@ -19,7 +19,7 @@
 import * as system from '../../../src/system';
 
 describe('DictionaryDisposable', () => {
-    var disposables;
+    let disposables;
 
     class Disposable {
         constructor() {
@@ -39,8 +39,8 @@ describe('DictionaryDisposable', () => {
     });
 
     it('should dispose all disposables when dispose() called', () => {
-        var disposable1 = new Disposable();
-        var disposable2 = new Disposable();
+        let disposable1 = new Disposable();
+        let disposable2 = new Disposable();
         disposables.add("foo", disposable1);
         disposables.add("bar", disposable2);
         disposables.dispose();
@@ -50,14 +50,14 @@ describe('DictionaryDisposable', () => {
 
     it('should dispose an added disposed if already disposed', () => {
         disposables.dispose();
-        var disposable = new Disposable();
+        let disposable = new Disposable();
         disposables.add("foo", disposable);
         expect(disposable.isDisposed).toEqual(true);
     });
 
     it('should not dispose a removed disposable', () => {
-        var disposable1 = new Disposable();
-        var disposable2 = new Disposable();
+        let disposable1 = new Disposable();
+        let disposable2 = new Disposable();
         disposables.add("foo", disposable1);
         disposables.add("bar", disposable2);
         disposables.remove("bar");
@@ -67,7 +67,7 @@ describe('DictionaryDisposable', () => {
     });
 
     it('containsKey returns true when dictionary contains key', () => {
-        var disposable1 = new Disposable();
+        let disposable1 = new Disposable();
         disposables.add("foo", disposable1);
         expect(disposables.containsKey("foo")).toEqual(true);
         disposables.remove("foo");

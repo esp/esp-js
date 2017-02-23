@@ -24,17 +24,17 @@ import esp from '../../src';
 
 describe('Decorators', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
-    var previewInvokeCount = 0;
-    var normalInvokeCount = 0;
-    var normal2InvokeCount = 0;
-    var committedInvokeCount = 0;
-    var _model, _derivedModel1, _derivedModel2, _derivedModel3, _derivedModel4, _derivedModel5;
+    let previewInvokeCount = 0;
+    let normalInvokeCount = 0;
+    let normal2InvokeCount = 0;
+    let committedInvokeCount = 0;
+    let _model, _derivedModel1, _derivedModel2, _derivedModel3, _derivedModel4, _derivedModel5;
 
     class Model extends esp.DisposableBase {
         constructor(id, router) {
@@ -427,7 +427,7 @@ describe('Decorators', () => {
     });
 
     it('should not throw when observeEvents called after initial observation disposed', () => {
-        var subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
+        let subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
         subscription.dispose();
         subscription = _router.observeEventsOn('derivedModel1Id', _derivedModel1);
         _router.publishEvent('derivedModel1Id', 'aBaseEvent', {});

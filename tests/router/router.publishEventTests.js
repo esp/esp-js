@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -35,7 +35,7 @@ describe('Router', () => {
         });
 
         it('queues and processes events received during event loop by model id', () => {
-            var model1ProcessorReceived = 0, testPassed = false;
+            let model1ProcessorReceived = 0, testPassed = false;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
             _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
@@ -54,8 +54,8 @@ describe('Router', () => {
         });
 
         it('should reset the EventContext for each event', () => {
-            var testPassed = false;
-            var lastEventDelivered = false;
+            let testPassed = false;
+            let lastEventDelivered = false;
             _router.addModel('modelId1', {});
             _router.getEventObservable('modelId1', 'startEvent').subscribe((event, eventContext) => {
                 eventContext.commit();

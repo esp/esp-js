@@ -20,14 +20,14 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     describe('lock/unlock', () => {
-        var _model,
+        let _model,
             _modelWasLockedForChangeDispatch = false;
 
         beforeEach(() => {

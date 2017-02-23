@@ -19,14 +19,14 @@
 import * as reactive from '../../src/reactive/index';
 
 describe('observableTests', () => {
-    var subject;
+    let subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
     });
 
     it('can .subscribe() ', () => {
-        var receivedItems = [];
+        let receivedItems = [];
         subject.subscribe(i => {
             receivedItems.push(i);
         });
@@ -36,7 +36,7 @@ describe('observableTests', () => {
     });
 
     it('can .subscribe() without any args', () => {
-        var receivedItems = [];
+        let receivedItems = [];
         subject.do(i => {
             receivedItems.push(i);
         }).subscribe();

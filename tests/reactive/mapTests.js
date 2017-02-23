@@ -19,14 +19,14 @@
 import * as reactive from '../../src/reactive/index';
  
 describe('.map', () => {
-    var subject;
+    let subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
     });
 
     it('yields the selected item', () => {
-        var receivedItems = [];
+        let receivedItems = [];
         subject
             .map(i => i.child)
             .subscribe(child => receivedItems.push(child));
@@ -37,7 +37,7 @@ describe('.map', () => {
     });
 
     it('should bubble errors', () => {
-        var disposable = subject
+        let disposable = subject
             .map(i => {
                 throw new Error('Boom'); })
             .subscribe(
@@ -49,7 +49,7 @@ describe('.map', () => {
     });
 
     it('should bubble errors in observer', () => {
-        var select = subject
+        let select = subject
             .map(i => i)
             .subscribe(
                 i => {
@@ -62,7 +62,7 @@ describe('.map', () => {
     });
 
     it('should propagate onCompleted', () => {
-        var onCompleteCalled = false;
+        let onCompleteCalled = false;
         subject
             .map(i => i)
             .subscribe(

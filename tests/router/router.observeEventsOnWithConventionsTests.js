@@ -20,19 +20,19 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     describe('.observeEventsOn with function naming conventions', () => {
-        var previewInvokeCount = 0;
-        var normalInvokeCount = 0;
-        var normal2InvokeCount = 0;
-        var committedInvokeCount = 0;
-        var subscription;
-        var _model = {
+        let previewInvokeCount = 0;
+        let normalInvokeCount = 0;
+        let normal2InvokeCount = 0;
+        let committedInvokeCount = 0;
+        let subscription;
+        let _model = {
             // standard events
             _observe_fooEvent_preview(e, c, m) {
                 previewInvokeCount++;
@@ -125,7 +125,7 @@ describe('Router', () => {
         });
 
         it('should observe events via prototype chain', ()=> {
-            var model2 = Object.create(_model);
+            let model2 = Object.create(_model);
             subscription = _router.observeEventsOn('modelId', model2);
             _router.publishEvent('modelId', 'fooEvent', 1);
             expect(previewInvokeCount).toBe(1);
@@ -135,13 +135,13 @@ describe('Router', () => {
         });
 
         it('should observe events via ctor function', ()=> {
-            var invokeCount = 0;
+            let invokeCount = 0;
             class Model {
                 _observe_fooEvent(m, e, c) {
                     invokeCount++;
                 }
             }
-            var model = new Model();
+            let model = new Model();
             subscription = _router.observeEventsOn('modelId', model);
             _router.publishEvent('modelId', 'fooEvent', 1);
             expect(invokeCount).toBe(1);

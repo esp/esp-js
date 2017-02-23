@@ -20,9 +20,9 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
-    var _onErrorHandler;
-    var _onErrorHandlerCallCount = 0;
+    let _router;
+    let _onErrorHandler;
+    let _onErrorHandlerCallCount = 0;
 
     const ignoreErrors = action => {
         try {
@@ -41,7 +41,7 @@ describe('Router', () => {
 
     describe('onErrorHandler tests', function() {
 
-        var _model;
+        let _model;
 
         beforeEach(()=> {
             _model = {

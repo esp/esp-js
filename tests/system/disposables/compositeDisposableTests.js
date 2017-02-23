@@ -19,7 +19,7 @@
 import * as system from '../../../src/system';
 
 describe('CompositeDisposable', () => {
-    var disposables;
+    let disposables;
 
     class Disposable {
         constructor() {
@@ -34,8 +34,8 @@ describe('CompositeDisposable', () => {
     });
 
     it('should dispose all disposables when dispose() called', () => {
-        var disposable1 = new Disposable();
-        var disposable2 = new Disposable();
+        let disposable1 = new Disposable();
+        let disposable2 = new Disposable();
         disposables.add(disposable1);
         disposables.add(disposable2);
         disposables.dispose();
@@ -45,7 +45,7 @@ describe('CompositeDisposable', () => {
 
     it('should dispose an added disposed if already disposed', () => {
         disposables.dispose();
-        var disposable = new Disposable();
+        let disposable = new Disposable();
         disposables.add(disposable);
         expect(disposable.isDisposed).toEqual(true);
     });

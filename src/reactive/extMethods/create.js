@@ -16,17 +16,18 @@
  */
 // notice_end
 
-import Subject from '../../src/reactive/Subject';
-import RouterObservable from './RouterObservable';
+import Observable from '../Observable';
+import { Guard } from '../../system';
+import DisposableWrapper from '../../system/disposables/DisposableWrapper';
 
-export default class RouterSubject extends Subject {
-    constructor(router) {
-        super();
-        this._router = router;
-    }
-    asRouterObservable() {
-        let source = this;
-        let subscribe =  observer => source.subscribe(observer);
-        return new RouterObservable(this._router, subscribe);
-    }
-}
+let noop = () => {};
+
+Observable.create = function(onObserve) {
+    Guard.lengthIs(arguments, 1, "Incorrect argument count on Observable, expect 1 onObserve function");
+    let subscribe =  observer => {
+        let disposable = onObserve(observer);
+        // if there was no disposable returned from the onObserve handler we default it to a noop here
+        return new DisposableWrapper(disposable || noop);
+    };
+    return new Observable(subscribe);
+};

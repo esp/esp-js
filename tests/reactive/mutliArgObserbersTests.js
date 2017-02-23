@@ -19,7 +19,7 @@
 import * as reactive from '../../src/reactive/index';
 
 describe('multi argument observers', () => {
-    var subject;
+    let subject;
 
     beforeEach(() => {
         subject = new reactive.Subject();
@@ -27,7 +27,7 @@ describe('multi argument observers', () => {
 
     it('should take a multi argument observe on a subject ', () => {
 
-        var a1, b1;
+        let a1, b1;
         subject.subscribe((a, b) => {
             a1 = a;
             b1 = b;
@@ -38,7 +38,7 @@ describe('multi argument observers', () => {
     });
 
     it('should take a multi argument observer with where', () => {
-        var a1, b1;
+        let a1, b1;
         subject
             .where((a, b) => {
                 return a + b === 8;

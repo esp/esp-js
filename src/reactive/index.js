@@ -25,6 +25,8 @@ import './extMethods/map';
 import './extMethods/streamFor';
 import './extMethods/subscribeOn';
 import './extMethods/asRouterObservable';
+import './extMethods/merge';
+import './extMethods/create';
 
 export { default as Observable } from './Observable';
 export { default as Observer } from './Observer';

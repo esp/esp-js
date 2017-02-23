@@ -47,7 +47,7 @@ describe('Router', () => {
                         this.modelId,
                         observer => {
                             this.workflowActions.push(`obsCreate-${this.modelId}`);
-                            var subscription = this.priceSubject.subscribe(observer);
+                            let subscription = this.priceSubject.subscribe(observer);
                             return () => {
                                 this.workflowActions.push(`disposed-${this.modelId}`);
                                 subscription.dispose();

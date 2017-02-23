@@ -21,30 +21,30 @@ import * as system from '../../../src/system';
 describe('DisposableWrapper', () => {
 
     it('should accept functions as disposables', () => {
-    	var isDisposed = false;
-        var disposable = function() {
+    	let isDisposed = false;
+        let disposable = function() {
             isDisposed = true;
         };
-        var disposableWrapper = new system.disposables.DisposableWrapper(disposable);
+        let disposableWrapper = new system.disposables.DisposableWrapper(disposable);
         disposableWrapper.dispose();
         expect(isDisposed).toEqual(true);
     });
 
     it('should accept objects with a dispose methods as disposables', () => {
-        var disposable = {
+        let disposable = {
             isDisposed: false,
             dispose: function() {
                 this.isDisposed = true;
             }
         };
-        var disposableWrapper = new system.disposables.DisposableWrapper(disposable);
+        let disposableWrapper = new system.disposables.DisposableWrapper(disposable);
         disposableWrapper.dispose();
         expect(disposable.isDisposed).toEqual(true);
     });
 
     it('should only dispose instances once', () => { // bit of a void test
-        var disposeCount = 0;
-        var disposable = new system.disposables.DisposableWrapper(() => { disposeCount++; });
+        let disposeCount = 0;
+        let disposable = new system.disposables.DisposableWrapper(() => { disposeCount++; });
         disposable.dispose();
         disposable.dispose();
         expect(disposeCount).toEqual(1);

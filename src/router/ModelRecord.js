@@ -57,7 +57,7 @@ export default class ModelRecord {
         return this._runPostEventProcessor;
     }
     _createEventProcessor(name, modelProcessMethod, externalProcessor) {
-        var externalProcessor1 = () => { /*noop */ };
+        let externalProcessor1 = () => { /*noop */ };
         if(typeof externalProcessor !== 'undefined') {
             if(typeof externalProcessor === 'function') {
                 externalProcessor1 = model => {
@@ -71,7 +71,7 @@ export default class ModelRecord {
                 throw new Error(name + " on the options parameter is neither a function nor an object with a process() method");
             }
         }
-        var modelProcessor = model => {
+        let modelProcessor = model => {
             if(model[modelProcessMethod] && (typeof model[modelProcessMethod] === 'function')) {
                 model[modelProcessMethod]();
             }

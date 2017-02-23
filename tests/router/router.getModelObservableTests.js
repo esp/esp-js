@@ -20,7 +20,7 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -39,7 +39,7 @@ describe('Router', () => {
         });
 
         it('dispatches model once registered', () => {
-            var model3UpdateCount = 0;
+            let model3UpdateCount = 0;
             _router.addModel('modelId3', {number:0});
             _router.getModelObservable('modelId1').subscribe(() => {
                 model3UpdateCount++;
@@ -48,7 +48,7 @@ describe('Router', () => {
         });
 
         it('dispatches model updates to observers by modelid', () => {
-            var model1UpdateCount = 0, model2UpdateCount = 0;
+            let model1UpdateCount = 0, model2UpdateCount = 0;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
@@ -64,9 +64,9 @@ describe('Router', () => {
         });
 
         it('doesn\'t dispatch to disposed update observers', () => {
-            var model1UpdateCount = 0;
+            let model1UpdateCount = 0;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
-            var disposable = _router.getModelObservable('modelId1').subscribe(() => {
+            let disposable = _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
             _router.publishEvent('modelId1', 'Event1', 'payload');
@@ -77,7 +77,7 @@ describe('Router', () => {
         });
 
         it('dispatches model updates after that models event queue is empty, but before processing next model', () => {
-            var model1UpdateCount = 0,
+            let model1UpdateCount = 0,
                 model2UpdateCount = 0,
                 model1EventCount = 0,
                 model2EventCount = 0,
@@ -118,8 +118,8 @@ describe('Router', () => {
         });
 
         it('processes events published during model dispatch', () => {
-            var event2Received = false;
-            var publishedEvent2 = false;
+            let event2Received = false;
+            let publishedEvent2 = false;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /* noop */ });
             _router.getEventObservable('modelId1', 'Event2').subscribe(() => {
                 event2Received = true;
@@ -135,7 +135,7 @@ describe('Router', () => {
         });
 
         it('only dispatches changes for models which processed an event', () => {
-            var model1UpdateCount = 0, model2UpdateCount = 0;
+            let model1UpdateCount = 0, model2UpdateCount = 0;
             _router.getEventObservable('modelId2', 'StartEvent').subscribe(() => {
                 _router.publishEvent('modelId2', 'Event1', 'payload');
             });
@@ -161,7 +161,7 @@ describe('Router', () => {
         });
 
         it('should pump the last model on observation', () => {
-            var model1UpdateCount = 0, model1UpdateCount2 = 0;
+            let model1UpdateCount = 0, model1UpdateCount2 = 0;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
@@ -180,7 +180,7 @@ describe('Router', () => {
             // this is a different edge case to the 'should pump the last model on observation'
             // it appears that there was a bug whereby if there are no model observers and an event loop completes,
             // the router/subject doesn't set the streams model as there are no observers.
-            var model1UpdateCount = 0, model1UpdateCount2 = 0;
+            let model1UpdateCount = 0, model1UpdateCount2 = 0;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
             expect(model1UpdateCount).toBe(0);
             _router.publishEvent('modelId1', 'Event1', 'payload');

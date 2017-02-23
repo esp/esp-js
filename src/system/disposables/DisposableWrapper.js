@@ -21,7 +21,7 @@ import Guard from '../Guard';
 export default class DisposableWrapper {
     constructor(disposable) {
         Guard.isDefined(disposable, "disposable must be defined");
-        var innerDisposable;
+        let innerDisposable;
         if(typeof disposable === 'function') {
             innerDisposable = { dispose: function() { disposable(); } };
         } else if(disposable.dispose && typeof disposable.dispose === 'function') {

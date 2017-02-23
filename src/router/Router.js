@@ -26,7 +26,7 @@ import { EspDecoratorMetadata } from '../decorators';
 import DecoratorObservationRegister from "./DecoratorObservationRegister";
 import RouterSubject from '../reactive/RouterSubject';
 
-var _log = logging.Logger.create('Router');
+let _log = logging.Logger.create('Router');
 
 export default class Router extends DisposableBase {
     constructor() {
@@ -452,9 +452,9 @@ export default class Router extends DisposableBase {
             throw new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
         }
         this._decoratorObservationRegister.register(modelId, object);
-        var compositeDisposable = new CompositeDisposable();
-        var eventsDetails = EspDecoratorMetadata.getAllEvents(object);
-        for (var i = 0; i < eventsDetails.length; i ++) {
+        let compositeDisposable = new CompositeDisposable();
+        let eventsDetails = EspDecoratorMetadata.getAllEvents(object);
+        for (let i = 0; i < eventsDetails.length; i ++) {
             let details = eventsDetails[i];
             compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((e, c, m) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
@@ -472,9 +472,9 @@ export default class Router extends DisposableBase {
     }
 
     _observeEventsUsingConventions(modelId, object, methodPrefix) {
-        var compositeDisposable = new CompositeDisposable();
-        var props = utils.getPropertyNames(object);
-        for (var i = 0; i < props.length; i ++) {
+        let compositeDisposable = new CompositeDisposable();
+        let props = utils.getPropertyNames(object);
+        for (let i = 0; i < props.length; i ++) {
             let prop = props[i];
             if(utils.startsWith(prop, methodPrefix)) {
                 let stage = ObservationStage.normal;

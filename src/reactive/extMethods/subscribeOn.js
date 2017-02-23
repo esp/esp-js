@@ -22,8 +22,8 @@ import { Guard } from '../../system';
 RouterObservable.prototype.subscribeOn = function(modelId) {
     Guard.isString(modelId, 'modelId must be a string');
     Guard.isTrue(modelId != '', "modelId must not be empty");
-    var source = this;
-    var subscribe =  observer => {
+    let source = this;
+    let subscribe =  observer => {
         let disposable = {
             subscription:null,
             isDisposed:false,

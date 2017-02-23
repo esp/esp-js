@@ -20,14 +20,14 @@ import esp from '../../src';
 
 describe('Router', () => {
 
-    var _router;
+    let _router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     describe('single model router', () => {
-        var _model, _modelRouter, _dispatchedModelNumbers, _fooEventReceivedCount;
+        let _model, _modelRouter, _dispatchedModelNumbers, _fooEventReceivedCount;
 
         beforeEach(() => {
             _model = {
@@ -81,7 +81,7 @@ describe('Router', () => {
 
         it('should proxy isOnDispatchLoop', ()=> {
             _modelRouter.observeEventsOn(_model);
-            var actualIsOnDispatchResult = null;
+            let actualIsOnDispatchResult = null;
             _modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {
                 actualIsOnDispatchResult = _modelRouter.isOnDispatchLoop();
             });
@@ -92,40 +92,40 @@ describe('Router', () => {
         describe('errors', () => {
 
             describe('static create', () => {
-                var _expectedError = new Error(`Model with id modelId not registered with the router`);
+                let _expectedError = new Error(`Model with id modelId not registered with the router`);
 
                 it('should throw if publishEvent used without setting model', () => {
-                    var router = esp.SingleModelRouter.create();
+                    let router = esp.SingleModelRouter.create();
                     expect(() => {
                         router.publishEvent("foo", {});
                     }).toThrow(_expectedError);
                 });
                 it('should throw if executeEvent used without setting model', () => {
-                    var router = esp.SingleModelRouter.create();
+                    let router = esp.SingleModelRouter.create();
                     expect(() => {
                         router.executeEvent("foo", {});
                     }).toThrow(_expectedError);
                 });
                 it('should throw if runAction used without setting model', () => {
-                    var router = esp.SingleModelRouter.create();
+                    let router = esp.SingleModelRouter.create();
                     expect(() => {
                         router.runAction(() => {});
                     }).toThrow(_expectedError);
                 });
                 it('should throw if getEventObservable used without setting model', () => {
-                    var router = esp.SingleModelRouter.create();
+                    let router = esp.SingleModelRouter.create();
                     expect(() => {
                         router.getEventObservable('FooEvent');
                     }).toThrow(_expectedError);
                 });
                 it('should throw if getModelObservable used without setting model', () => {
-                    var router = esp.SingleModelRouter.create();
+                    let router = esp.SingleModelRouter.create();
                     expect(() => {
                         router.getModelObservable();
                     }).toThrow(_expectedError);
                 });
                 it('should throw if observeEventsOn used without setting model', () => {
-                    var router = esp.SingleModelRouter.create();
+                    let router = esp.SingleModelRouter.create();
                     expect(() => {
                         router.observeEventsOn({});
                     }).toThrow(_expectedError);

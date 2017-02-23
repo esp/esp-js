@@ -27,9 +27,9 @@ import { Guard } from '../../system';
 RouterObservable.prototype.streamFor = function(modelId) {
     Guard.isString(modelId, 'modelId must be a string');
     Guard.isTrue(modelId != '', "modelId must not be empty");
-    var source = this;
-    var hasCompleted = false;
-    var subscribe =  observer => {
+    let source = this;
+    let hasCompleted = false;
+    let subscribe =  observer => {
         return source.subscribe(
             (arg1, arg2, arg3) => {
                 if(hasCompleted ) {

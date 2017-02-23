@@ -16,7 +16,6 @@
  */
  // notice_end
 
-import Guard from '../Guard';
 import DisposableWrapper from './DisposableWrapper';
 
 export default class CompositeDisposable {

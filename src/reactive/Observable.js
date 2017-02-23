@@ -17,21 +17,9 @@
  // notice_end
 
 import { Guard } from '../system';
-import { DisposableWrapper } from '../system/disposables';
 import Observer from './Observer';
 
-let noop = () => {};
-
 export default class Observable {
-    static create(onObserve) {
-        Guard.lengthIs(arguments, 1, "Incorrect argument count on Observable, expect 1 onObserve function");
-        let subscribe =  observer => {
-            let disposable = onObserve(observer);
-            // if there was no disposable returned from the onObserve handler we default it to a noop here
-            return new DisposableWrapper(disposable || noop);
-        };
-        return new Observable(subscribe);
-    }
     constructor(subscribe) {
         this._subscribe = subscribe;
     }

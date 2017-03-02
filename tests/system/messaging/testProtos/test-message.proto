@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package test.dtos;
+
+message LoginRequestDto {
+    string username = 1;
+    string password = 2;
+}
+
+message SomeResponseDto {
+    string response_data = 1;
+}

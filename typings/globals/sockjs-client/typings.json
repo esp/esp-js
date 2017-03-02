@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/50f81b23065f5c87b19f250c22979f93e1501cfd/sockjs-client/sockjs-client.d.ts",
+    "raw": "registry:dt/sockjs-client#1.0.3+20160626224127",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/50f81b23065f5c87b19f250c22979f93e1501cfd/sockjs-client/sockjs-client.d.ts"
+  }
+}

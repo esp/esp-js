@@ -1,0 +1,7 @@
+{
+  "globalDependencies": {
+    "query-string": "registry:dt/query-string#3.0.0+20160331065456",
+    "jasmine": "registry:dt/jasmine#2.2.0+20160505161446",
+    "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
+  }
+}

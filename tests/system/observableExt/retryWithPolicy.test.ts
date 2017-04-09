@@ -3,7 +3,7 @@ import * as Rx from 'rx';
 import {RetryPolicy} from '../../../src/core/observableExt';
 
 describe('.retryWithPolicy()', () => {
-    var _subject:Rx.Subject<any>,
+    let _subject:Rx.Subject<any>,
         _stream,
         _testScheduler:Rx.HistoricalScheduler,
         _relievedValue,
@@ -18,12 +18,12 @@ describe('.retryWithPolicy()', () => {
         _testScheduler = new Rx.HistoricalScheduler(0, null);
         _relievedValue = 0;
         _throwIf = -1;
-        _policy = new RetryPolicy("TestOperation", 2, 1000, "An Error");
+        _policy = new RetryPolicy('TestOperation', 2, 1000, 'An Error');
         _stream = Rx.Observable.create<any>(o => {
             _subject.subscribe(
                 i => {
                     if(i ===  _throwIf) {
-                        o.onError(new Error("Boom!"));
+                        o.onError(new Error('Boom!'));
                     } else {
                         o.onNext(i);
                     }
@@ -47,13 +47,13 @@ describe('.retryWithPolicy()', () => {
         );
     }
 
-    it('propagates values through the stream', () =>{
+    it('propagates values through the stream', () => {
         subscribe();
         _subject.onNext(1);
         expect(_relievedValue).toEqual(1);
     });
 
-    it('retries after exception', () =>{
+    it('retries after exception', () => {
         subscribe();
         _subject.onNext(1);
         expect(_relievedValue).toEqual(1);
@@ -64,14 +64,13 @@ describe('.retryWithPolicy()', () => {
         expect(_relievedValue).toEqual(2);
     });
 
-    it('calls onError on exception', () =>{
+    it('calls onError on exception', () => {
         subscribe();
         _subject.onNext(-1);
-        expect(_onRetryErr).toEqual(new Error("Boom!"));
+        expect(_onRetryErr).toEqual(new Error('Boom!'));
     });
 
-
-    it('resets retry count after successful propagation', () =>{
+    it('resets retry count after successful propagation', () => {
         subscribe();
         _subject.onNext(-1);
         expect(_policy.retryCount).toEqual(1);
@@ -80,7 +79,7 @@ describe('.retryWithPolicy()', () => {
         expect(_policy.retryCount).toEqual(0);
     });
 
-    it('propagates the exception after retry count limit reached', () =>{
+    it('propagates the exception after retry count limit reached', () => {
         subscribe();
         _subject.onNext(-1);
         _testScheduler.advanceBy(1001);
@@ -110,11 +109,11 @@ describe('.retryWithPolicy()', () => {
     });
 
     it('should retry unlimited when retry count is below 0', () => {
-        var doError = () => {
+        let doError = () => {
             _subject.onNext(-1);
             _testScheduler.advanceBy(1001);
         };
-        _policy = RetryPolicy.createForUnlimitedRetry("ATest", 1000);
+        _policy = RetryPolicy.createForUnlimitedRetry('ATest', 1000);
         subscribe();
         doError();
         doError();

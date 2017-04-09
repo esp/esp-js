@@ -56,6 +56,7 @@ module.exports =
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
+	Object.defineProperty(exports, "__esModule", { value: true });
 	__webpack_require__(10);
 	__export(__webpack_require__(10));
 	var decimal_1 = __webpack_require__(17);
@@ -79,6 +80,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const utils_1 = __webpack_require__(3);
 	class Guard {
 	    static isDefined(value, message) {
@@ -142,7 +144,6 @@ module.exports =
 	        }
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Guard;
 	function doThrow(message) {
 	    if (typeof message === 'undefined' || message === '') {
@@ -157,6 +158,7 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class Utils {
 	    static parseBool(input) {
 	        if (input === null || typeof input === 'undefined') {
@@ -179,7 +181,6 @@ module.exports =
 	        return Number(n) % 1 === 0;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Utils;
 
 
@@ -188,15 +189,16 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const guard_1 = __webpack_require__(2);
+	var Level;
 	(function (Level) {
 	    Level[Level["verbose"] = 0] = "verbose";
 	    Level[Level["debug"] = 1] = "debug";
 	    Level[Level["info"] = 2] = "info";
 	    Level[Level["warn"] = 3] = "warn";
 	    Level[Level["error"] = 4] = "error";
-	})(exports.Level || (exports.Level = {}));
-	var Level = exports.Level;
+	})(Level = exports.Level || (exports.Level = {}));
 	;
 	// note: if you want verbose you need to change this explictly, this is just the initial default
 	let _currentLevel = Level.debug;
@@ -270,7 +272,6 @@ module.exports =
 	        });
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Logger;
 
 
@@ -288,12 +289,12 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class DecimalFormat {
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = DecimalFormat;
 	DecimalFormat.ToString = (decimal) => decimal.value.toFixed(decimal.scale);
 	DecimalFormat.ToLocal = (decimal) => decimal.value.toLocaleString();
+	exports.default = DecimalFormat;
 
 
 /***/ },
@@ -301,6 +302,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	// retryWithPolicy doesn't have exports but it does add ext methods to rx
 	__webpack_require__(20);
 	__webpack_require__(21);
@@ -319,16 +321,11 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const utils_1 = __webpack_require__(3);
 	const guard_1 = __webpack_require__(2);
 	const decimalFormat_1 = __webpack_require__(9);
 	class Decimal {
-	    constructor(unscaledValue, scale = 0) {
-	        guard_1.default.isTrue(utils_1.default.isInt(unscaledValue), 'unscaledValue must be an int');
-	        guard_1.default.isTrue(utils_1.default.isInt(scale), 'scale must be an int');
-	        this._unscaledValue = unscaledValue;
-	        this._scale = scale;
-	    }
 	    static parse(value) {
 	        if (isNaN(value)) {
 	            return null;
@@ -341,6 +338,12 @@ module.exports =
 	            return new Decimal(Number(x), 0);
 	        }
 	        return new Decimal(Number(x.replace('.', '')), x.length - 1 - indexOfPoint);
+	    }
+	    constructor(unscaledValue, scale = 0) {
+	        guard_1.default.isTrue(utils_1.default.isInt(unscaledValue), 'unscaledValue must be an int');
+	        guard_1.default.isTrue(utils_1.default.isInt(scale), 'scale must be an int');
+	        this._unscaledValue = unscaledValue;
+	        this._scale = scale;
 	    }
 	    get unscaledValue() {
 	        return this._unscaledValue;
@@ -361,7 +364,6 @@ module.exports =
 	        }
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Decimal;
 
 
@@ -370,7 +372,8 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const queryString = __webpack_require__(29);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	const queryString = __webpack_require__(28);
 	const utils_1 = __webpack_require__(3);
 	/* tslint:disable */
 	// http://stackoverflow.com/a/11381730
@@ -388,7 +391,6 @@ module.exports =
 	        return isRunningOnTablet || utils_1.default.parseBool(queryString.parse(location.search).isRunningOnTablet);
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Environment;
 
 
@@ -397,15 +399,8 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class RetryPolicy {
-	    // TODO a backoff policy, i.e. backoff to a given time then retry at max backoff
-	    constructor(description, retryLimit, retryAfterElapsedMs, errorMessage) {
-	        this._description = description;
-	        this._retryLimit = retryLimit;
-	        this._retryCount = 0;
-	        this._errorMessage = errorMessage;
-	        this._retryAfterElapsedMs = retryAfterElapsedMs;
-	    }
 	    static defaultPolicy(errorMessage) {
 	        return new RetryPolicy('DefaultRetryPolicy', 3, 5000, errorMessage); // retry after 2 seconds, do the retry upto a max of 3 times
 	    }
@@ -414,6 +409,14 @@ module.exports =
 	    }
 	    static createForUnlimitedRetry(description, retryAfterElapsedMs) {
 	        return new RetryPolicy(description, -1, retryAfterElapsedMs, null);
+	    }
+	    // TODO a backoff policy, i.e. backoff to a given time then retry at max backoff
+	    constructor(description, retryLimit, retryAfterElapsedMs, errorMessage) {
+	        this._description = description;
+	        this._retryLimit = retryLimit;
+	        this._retryCount = 0;
+	        this._errorMessage = errorMessage;
+	        this._retryAfterElapsedMs = retryAfterElapsedMs;
 	    }
 	    get description() {
 	        return this._description;
@@ -440,7 +443,6 @@ module.exports =
 	        this._retryCount = 0;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = RetryPolicy;
 
 
@@ -449,6 +451,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const Rx = __webpack_require__(6);
 	const logger_1 = __webpack_require__(4);
 	const _log = logger_1.default.create('retryWithPolicy');
@@ -505,6 +508,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const Rx = __webpack_require__(6);
 	const guard_1 = __webpack_require__(2);
 	/**
@@ -558,6 +562,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const Rx = __webpack_require__(6);
 	class SchedulerService {
 	    constructor() {
@@ -579,8 +584,7 @@ module.exports =
 /* 24 */,
 /* 25 */,
 /* 26 */,
-/* 27 */,
-/* 28 */
+/* 27 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -669,12 +673,98 @@ module.exports =
 
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var strictUriEncode = __webpack_require__(30);
-	var objectAssign = __webpack_require__(28);
+	var strictUriEncode = __webpack_require__(29);
+	var objectAssign = __webpack_require__(27);
+
+	function encoderForArrayFormat(opts) {
+		switch (opts.arrayFormat) {
+			case 'index':
+				return function (key, value, index) {
+					return value === null ? [
+						encode(key, opts),
+						'[',
+						index,
+						']'
+					].join('') : [
+						encode(key, opts),
+						'[',
+						encode(index, opts),
+						']=',
+						encode(value, opts)
+					].join('');
+				};
+
+			case 'bracket':
+				return function (key, value) {
+					return value === null ? encode(key, opts) : [
+						encode(key, opts),
+						'[]=',
+						encode(value, opts)
+					].join('');
+				};
+
+			default:
+				return function (key, value) {
+					return value === null ? encode(key, opts) : [
+						encode(key, opts),
+						'=',
+						encode(value, opts)
+					].join('');
+				};
+		}
+	}
+
+	function parserForArrayFormat(opts) {
+		var result;
+
+		switch (opts.arrayFormat) {
+			case 'index':
+				return function (key, value, accumulator) {
+					result = /\[(\d*)\]$/.exec(key);
+
+					key = key.replace(/\[\d*\]$/, '');
+
+					if (!result) {
+						accumulator[key] = value;
+						return;
+					}
+
+					if (accumulator[key] === undefined) {
+						accumulator[key] = {};
+					}
+
+					accumulator[key][result[1]] = value;
+				};
+
+			case 'bracket':
+				return function (key, value, accumulator) {
+					result = /(\[\])$/.exec(key);
+
+					key = key.replace(/\[\]$/, '');
+
+					if (!result || accumulator[key] === undefined) {
+						accumulator[key] = value;
+						return;
+					}
+
+					accumulator[key] = [].concat(accumulator[key], value);
+				};
+
+			default:
+				return function (key, value, accumulator) {
+					if (accumulator[key] === undefined) {
+						accumulator[key] = value;
+						return;
+					}
+
+					accumulator[key] = [].concat(accumulator[key], value);
+				};
+		}
+	}
 
 	function encode(value, opts) {
 		if (opts.encode) {
@@ -684,11 +774,29 @@ module.exports =
 		return value;
 	}
 
+	function keysSorter(input) {
+		if (Array.isArray(input)) {
+			return input.sort();
+		} else if (typeof input === 'object') {
+			return keysSorter(Object.keys(input)).sort(function (a, b) {
+				return Number(a) - Number(b);
+			}).map(function (key) {
+				return input[key];
+			});
+		}
+
+		return input;
+	}
+
 	exports.extract = function (str) {
 		return str.split('?')[1] || '';
 	};
 
-	exports.parse = function (str) {
+	exports.parse = function (str, opts) {
+		opts = objectAssign({arrayFormat: 'none'}, opts);
+
+		var formatter = parserForArrayFormat(opts);
+
 		// Create an object with no prototype
 		// https://github.com/sindresorhus/query-string/issues/47
 		var ret = Object.create(null);
@@ -710,31 +818,36 @@ module.exports =
 			var key = parts.shift();
 			var val = parts.length > 0 ? parts.join('=') : undefined;
 
-			key = decodeURIComponent(key);
-
 			// missing `=` should be `null`:
 			// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
 			val = val === undefined ? null : decodeURIComponent(val);
 
-			if (ret[key] === undefined) {
-				ret[key] = val;
-			} else if (Array.isArray(ret[key])) {
-				ret[key].push(val);
-			} else {
-				ret[key] = [ret[key], val];
-			}
+			formatter(decodeURIComponent(key), val, ret);
 		});
 
-		return ret;
+		return Object.keys(ret).sort().reduce(function (result, key) {
+			var val = ret[key];
+			if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
+				// Sort object keys, not values
+				result[key] = keysSorter(val);
+			} else {
+				result[key] = val;
+			}
+
+			return result;
+		}, Object.create(null));
 	};
 
 	exports.stringify = function (obj, opts) {
 		var defaults = {
 			encode: true,
-			strict: true
+			strict: true,
+			arrayFormat: 'none'
 		};
 
 		opts = objectAssign(defaults, opts);
+
+		var formatter = encoderForArrayFormat(opts);
 
 		return obj ? Object.keys(obj).sort().map(function (key) {
 			var val = obj[key];
@@ -755,11 +868,7 @@ module.exports =
 						return;
 					}
 
-					if (val2 === null) {
-						result.push(encode(key, opts));
-					} else {
-						result.push(encode(key, opts) + '=' + encode(val2, opts));
-					}
+					result.push(formatter(key, val2, result.length));
 				});
 
 				return result.join('&');
@@ -773,7 +882,7 @@ module.exports =
 
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports) {
 
 	'use strict';

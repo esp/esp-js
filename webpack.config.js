@@ -12,23 +12,31 @@ let isProduction = env.trim().toUpperCase() === 'prod';
 
 console.log('Running in ' + env + ' environment.');
 
-let loaders = [
+let rules = [
     {
-        test: /\.json$/,
-        exclude: /(lib|node_modules)/,
-        loaders: ['json']
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use:[{
+                loader: 'awesome-typescript-loader',
+            }]
     },
     {
-        loaders: ['awesome-typescript-loader'],
         test: /\.tsx?$/,
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        enforce: 'pre',
+        use:[{
+            loader: 'tslint-loader',
+
+            options: {
+                failOnHint: true
+            }
+        }]
     }
 ];
 
 let plugins = [
     failPlugin,
     new CopyWebpackPlugin([{ from: 'src/**/*.less', to: 'styles/', flatten: true }]),
-    new webpack.optimize.OccurenceOrderPlugin(true),
     new CleanWebpackPlugin('dist', {
       root: process.cwd(),
       verbose: true,
@@ -37,29 +45,17 @@ let plugins = [
 ];
 
 if(isProduction) {
-    plugins.push(new webpack.optimize.DedupePlugin());
     plugins.push(new webpack.DefinePlugin({
       'process.env':{
         'NODE_ENV': JSON.stringify('production')
       }
     }));
 }
-
-let preLoaders = [
-    {
-        test: /(\.tsx?)$/,
-        loader: 'tslint-loader',
-        exclude: /node_modules|generated/
-    }
-];
-let aliases = {
+let alias = {
     'stompjs': __dirname + '/src/messaging/lib/stompjs'
 };
 
 let config = {
-    tslint: {
-        failOnHint: true
-    },
     entry: {
         'accelfin': './src/index.ts',
         'core': ['./src/core/index.ts'],
@@ -76,19 +72,17 @@ let config = {
         'google-protobuf': 'google-protobuf'
     },
     output: {
-        path: './dist',
+        path: process.cwd() + '/dist',
         libraryTarget: 'commonjs2',
         filename: '[name].js'
     },
     resolve: {
-        extensions: ['', '.ts', '.tsx', '.js', '.json'],
-        alias: aliases
+        alias,
+        extensions: ['.ts', '.tsx', '.js', '.json'],
     },
     module: {
-        preLoaders: preLoaders,
-        loaders: loaders
+        rules: rules
     },
     plugins: plugins
 };
-
 module.exports = config;

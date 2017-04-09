@@ -1,7 +1,13 @@
 {
   "globalDependencies": {
-    "query-string": "registry:dt/query-string#3.0.0+20160331065456",
+    "classnames": "registry:dt/classnames#0.0.0+20161113184211",
     "jasmine": "registry:dt/jasmine#2.2.0+20160505161446",
-    "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127"
+    "node": "registry:env/node#6.0.0+20161105011511",
+    "query-string": "registry:dt/query-string#3.0.0+20160331065456",
+    "sockjs-client": "registry:dt/sockjs-client#1.0.3+20160626224127",
+    "react": "registry:dt/react#0.14.0+20160423065914"
+  },
+  "dependencies": {
+    "lodash": "registry:npm/lodash#4.0.0+20161015015725"
   }
 }

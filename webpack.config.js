@@ -1,6 +1,7 @@
 /*eslint-env node */
 'use strict';
 
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const failPlugin = require('webpack-fail-plugin');
 const webpack = require('webpack');
@@ -8,7 +9,6 @@ const path = require('path');
 
 let env = process.env.NODE_ENV || 'dev';
 let isProduction = env.trim().toUpperCase() === 'prod';
-let isDevelopment = !isProduction;
 
 console.log('Running in ' + env + ' environment.');
 
@@ -27,12 +27,13 @@ let loaders = [
 
 let plugins = [
     failPlugin,
+    new CopyWebpackPlugin([{ from: 'src/**/*.less', to: 'styles/', flatten: true }]),
     new webpack.optimize.OccurenceOrderPlugin(true),
     new CleanWebpackPlugin('dist', {
       root: process.cwd(),
       verbose: true,
       dry: false
-    })
+    }),
 ];
 
 if(isProduction) {
@@ -42,18 +43,7 @@ if(isProduction) {
         'NODE_ENV': JSON.stringify('production')
       }
     }));
-
-    // Doesn't work with es6 output
-    // plugins.push(new webpack.optimize.UglifyJsPlugin({
-    //   compress: {
-    //     warnings: false
-    //   },
-    //   output: {
-    //     comments: false
-    //   },
-    //   sourceMap: true
-    // }));
-  }
+}
 
 let preLoaders = [
     {
@@ -73,11 +63,16 @@ let config = {
     entry: {
         'accelfin': './src/index.ts',
         'core': ['./src/core/index.ts'],
-        'messaging': ['./src/messaging/index.ts']
+        'ui': ['./src/ui/index.ts']
     },
     externals: {
         'rx': 'rx',
+        'react': 'react',
+        'classnames': 'classnames',
         'esp-js': 'esp-js',
+        'esp-js-react': 'esp-js-react',
+        'microdi-js': 'microdi-js',
+        'lodash': 'lodash',
         'google-protobuf': 'google-protobuf'
     },
     output: {

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "UI Package",
   "main": "dist/accelfin.js",
-  "typings": "accelfin.ui.d.ts",
+  "typings": "accelfin.d.ts",
   "scripts": {
     "build-dev": "export NODE_ENV=dev&& webpack --bail --display-reasons --display-error-details",
     "build-prod": "export NODE_ENV=prod&& webpack --bail --display-reasons --display-error-details",
@@ -13,10 +13,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/lodash": "4.14.37",
-    "@types/node": "6.0.45",
     "awesome-typescript-loader": "2.2.4",
     "clean-webpack-plugin": "0.1.13",
+    "copy-webpack-plugin": "^4.0.1",
     "expect": "1.20.1",
     "jasmine-core": "2.4.1",
     "karma": "0.13.22",
@@ -29,18 +28,20 @@
     "sinon": "1.17.4",
     "tslint": "3.15.1",
     "tslint-loader": "2.1.5",
-    "typescript": "2.0.7",
+    "typescript": "2.1.1",
     "typings": "1.5.0",
     "webpack": "1.13.2",
     "webpack-fail-plugin": "1.0.5"
   },
   "dependencies": {
-    "esp-js": "1.1.4",
-    "google-protobuf": "3.0.0-alpha.6",
+    "classnames": "2.2.5",
+    "esp-js": "1.1.5",
+    "esp-js-react": "0.1.6",
     "lodash": "4.16.4",
+    "microdi-js": "0.1.5",
     "node-uuid": "1.4.7",
     "query-string": "4.2.3",
-    "rx": "4.1.0",
-    "sockjs-client": "1.0.3"
+    "react": "15.3.2",
+    "rx": "4.1.0"
   }
 }

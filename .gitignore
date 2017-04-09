@@ -3,3 +3,4 @@ npm-debug.log
 *.orig
 .idea/
 yarn-error.log
+dist/

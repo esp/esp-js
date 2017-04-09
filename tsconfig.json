@@ -6,11 +6,12 @@
     "sourceMap": true,
     "noEmitOnError": true,
     "allowJs": false,
+    "jsx": "react",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "ES6",
     "module": "commonjs",
-    "noEmit": true,
+    "noEmit": false,
     "declaration": false,
     "strictNullChecks": false
   },

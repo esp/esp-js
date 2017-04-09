@@ -45,7 +45,7 @@ module.exports =
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(38);
+	module.exports = __webpack_require__(35);
 
 
 /***/ },
@@ -56,6 +56,7 @@ module.exports =
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
+	Object.defineProperty(exports, "__esModule", { value: true });
 	__webpack_require__(10);
 	__export(__webpack_require__(10));
 	var decimal_1 = __webpack_require__(17);
@@ -79,6 +80,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const utils_1 = __webpack_require__(3);
 	class Guard {
 	    static isDefined(value, message) {
@@ -142,7 +144,6 @@ module.exports =
 	        }
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Guard;
 	function doThrow(message) {
 	    if (typeof message === 'undefined' || message === '') {
@@ -157,6 +158,7 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class Utils {
 	    static parseBool(input) {
 	        if (input === null || typeof input === 'undefined') {
@@ -179,7 +181,6 @@ module.exports =
 	        return Number(n) % 1 === 0;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Utils;
 
 
@@ -188,15 +189,16 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const guard_1 = __webpack_require__(2);
+	var Level;
 	(function (Level) {
 	    Level[Level["verbose"] = 0] = "verbose";
 	    Level[Level["debug"] = 1] = "debug";
 	    Level[Level["info"] = 2] = "info";
 	    Level[Level["warn"] = 3] = "warn";
 	    Level[Level["error"] = 4] = "error";
-	})(exports.Level || (exports.Level = {}));
-	var Level = exports.Level;
+	})(Level = exports.Level || (exports.Level = {}));
 	;
 	// note: if you want verbose you need to change this explictly, this is just the initial default
 	let _currentLevel = Level.debug;
@@ -270,7 +272,6 @@ module.exports =
 	        });
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Logger;
 
 
@@ -291,10 +292,10 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const React = __webpack_require__(5);
 	class ViewBase extends React.Component {
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = ViewBase;
 
 
@@ -309,12 +310,12 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class DecimalFormat {
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = DecimalFormat;
 	DecimalFormat.ToString = (decimal) => decimal.value.toFixed(decimal.scale);
 	DecimalFormat.ToLocal = (decimal) => decimal.value.toLocaleString();
+	exports.default = DecimalFormat;
 
 
 /***/ },
@@ -322,6 +323,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	// retryWithPolicy doesn't have exports but it does add ext methods to rx
 	__webpack_require__(20);
 	__webpack_require__(21);
@@ -336,6 +338,7 @@ module.exports =
 	// pulled from https://github.com/AdaptiveConsulting/ReactiveTraderCloud
 	// licence Apache 2
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const esp_js_1 = __webpack_require__(8);
 	const core_1 = __webpack_require__(1);
 	let _log = core_1.Logger.create('ModelBase');
@@ -379,7 +382,6 @@ module.exports =
 	        return this._router;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = ModelBase;
 
 
@@ -388,6 +390,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const React = __webpack_require__(5);
 	class TileItemView extends React.Component {
 	    render() {
@@ -395,7 +398,6 @@ module.exports =
 	        return (React.createElement("div", { style: this.props.style, className: className }, this.props.children));
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = TileItemView;
 
 
@@ -404,6 +406,7 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class RegionItem {
 	    constructor(title, modelId, displayContext) {
 	        this.title = title;
@@ -422,7 +425,6 @@ module.exports =
 	        return this.modelId === modelId && this.displayContext === displayContext;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = RegionItem;
 
 
@@ -431,6 +433,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const core_1 = __webpack_require__(1);
 	const modelBase_1 = __webpack_require__(11);
 	let _log = core_1.Logger.create('RegionsModelBase');
@@ -471,7 +474,6 @@ module.exports =
 	        });
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = RegionModelBase;
 
 
@@ -492,16 +494,11 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const utils_1 = __webpack_require__(3);
 	const guard_1 = __webpack_require__(2);
 	const decimalFormat_1 = __webpack_require__(9);
 	class Decimal {
-	    constructor(unscaledValue, scale = 0) {
-	        guard_1.default.isTrue(utils_1.default.isInt(unscaledValue), 'unscaledValue must be an int');
-	        guard_1.default.isTrue(utils_1.default.isInt(scale), 'scale must be an int');
-	        this._unscaledValue = unscaledValue;
-	        this._scale = scale;
-	    }
 	    static parse(value) {
 	        if (isNaN(value)) {
 	            return null;
@@ -514,6 +511,12 @@ module.exports =
 	            return new Decimal(Number(x), 0);
 	        }
 	        return new Decimal(Number(x.replace('.', '')), x.length - 1 - indexOfPoint);
+	    }
+	    constructor(unscaledValue, scale = 0) {
+	        guard_1.default.isTrue(utils_1.default.isInt(unscaledValue), 'unscaledValue must be an int');
+	        guard_1.default.isTrue(utils_1.default.isInt(scale), 'scale must be an int');
+	        this._unscaledValue = unscaledValue;
+	        this._scale = scale;
 	    }
 	    get unscaledValue() {
 	        return this._unscaledValue;
@@ -534,7 +537,6 @@ module.exports =
 	        }
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Decimal;
 
 
@@ -543,7 +545,8 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const queryString = __webpack_require__(29);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	const queryString = __webpack_require__(28);
 	const utils_1 = __webpack_require__(3);
 	/* tslint:disable */
 	// http://stackoverflow.com/a/11381730
@@ -561,7 +564,6 @@ module.exports =
 	        return isRunningOnTablet || utils_1.default.parseBool(queryString.parse(location.search).isRunningOnTablet);
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = Environment;
 
 
@@ -570,15 +572,8 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class RetryPolicy {
-	    // TODO a backoff policy, i.e. backoff to a given time then retry at max backoff
-	    constructor(description, retryLimit, retryAfterElapsedMs, errorMessage) {
-	        this._description = description;
-	        this._retryLimit = retryLimit;
-	        this._retryCount = 0;
-	        this._errorMessage = errorMessage;
-	        this._retryAfterElapsedMs = retryAfterElapsedMs;
-	    }
 	    static defaultPolicy(errorMessage) {
 	        return new RetryPolicy('DefaultRetryPolicy', 3, 5000, errorMessage); // retry after 2 seconds, do the retry upto a max of 3 times
 	    }
@@ -587,6 +582,14 @@ module.exports =
 	    }
 	    static createForUnlimitedRetry(description, retryAfterElapsedMs) {
 	        return new RetryPolicy(description, -1, retryAfterElapsedMs, null);
+	    }
+	    // TODO a backoff policy, i.e. backoff to a given time then retry at max backoff
+	    constructor(description, retryLimit, retryAfterElapsedMs, errorMessage) {
+	        this._description = description;
+	        this._retryLimit = retryLimit;
+	        this._retryCount = 0;
+	        this._errorMessage = errorMessage;
+	        this._retryAfterElapsedMs = retryAfterElapsedMs;
 	    }
 	    get description() {
 	        return this._description;
@@ -613,7 +616,6 @@ module.exports =
 	        this._retryCount = 0;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = RetryPolicy;
 
 
@@ -622,6 +624,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const Rx = __webpack_require__(6);
 	const logger_1 = __webpack_require__(4);
 	const _log = logger_1.default.create('retryWithPolicy');
@@ -678,6 +681,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const Rx = __webpack_require__(6);
 	const guard_1 = __webpack_require__(2);
 	/**
@@ -731,6 +735,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const Rx = __webpack_require__(6);
 	class SchedulerService {
 	    constructor() {
@@ -752,6 +757,7 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const core_1 = __webpack_require__(1);
 	function getComponentFactoryMetadata(target) {
 	    let constructorFunction = target.constructor;
@@ -794,14 +800,11 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var componentRegistryModel_1 = __webpack_require__(34);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var componentRegistryModel_1 = __webpack_require__(32);
 	exports.ComponentRegistryModel = componentRegistryModel_1.default;
-	var componentFactoryBase_1 = __webpack_require__(32);
+	var componentFactoryBase_1 = __webpack_require__(31);
 	exports.ComponentFactoryBase = componentFactoryBase_1.default;
-	var componentMetadata_1 = __webpack_require__(33);
-	exports.ComponentMetadata = componentMetadata_1.default;
-	var factoryEntry_1 = __webpack_require__(35);
-	exports.FactoryEntry = factoryEntry_1.default;
 	var componentDecorator_1 = __webpack_require__(23);
 	exports.componentFactory = componentDecorator_1.componentFactory;
 	exports.getComponentFactoryMetadata = componentDecorator_1.getComponentFactoryMetadata;
@@ -813,10 +816,9 @@ module.exports =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var multiTileRegionEventConst_1 = __webpack_require__(26);
 	exports.MultiTileRegionEventConst = multiTileRegionEventConst_1.default;
-	var selectedTileChangedEvent_1 = __webpack_require__(27);
-	exports.SelectedTileChangedEvent = selectedTileChangedEvent_1.default;
 
 
 /***/ },
@@ -824,24 +826,17 @@ module.exports =
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class MultiTileRegionEventConst {
 	    static get selectedTileChanged() {
 	        return 'selectedTileChanged';
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = MultiTileRegionEventConst;
 
 
 /***/ },
 /* 27 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 28 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -930,12 +925,98 @@ module.exports =
 
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var strictUriEncode = __webpack_require__(30);
-	var objectAssign = __webpack_require__(28);
+	var strictUriEncode = __webpack_require__(29);
+	var objectAssign = __webpack_require__(27);
+
+	function encoderForArrayFormat(opts) {
+		switch (opts.arrayFormat) {
+			case 'index':
+				return function (key, value, index) {
+					return value === null ? [
+						encode(key, opts),
+						'[',
+						index,
+						']'
+					].join('') : [
+						encode(key, opts),
+						'[',
+						encode(index, opts),
+						']=',
+						encode(value, opts)
+					].join('');
+				};
+
+			case 'bracket':
+				return function (key, value) {
+					return value === null ? encode(key, opts) : [
+						encode(key, opts),
+						'[]=',
+						encode(value, opts)
+					].join('');
+				};
+
+			default:
+				return function (key, value) {
+					return value === null ? encode(key, opts) : [
+						encode(key, opts),
+						'=',
+						encode(value, opts)
+					].join('');
+				};
+		}
+	}
+
+	function parserForArrayFormat(opts) {
+		var result;
+
+		switch (opts.arrayFormat) {
+			case 'index':
+				return function (key, value, accumulator) {
+					result = /\[(\d*)\]$/.exec(key);
+
+					key = key.replace(/\[\d*\]$/, '');
+
+					if (!result) {
+						accumulator[key] = value;
+						return;
+					}
+
+					if (accumulator[key] === undefined) {
+						accumulator[key] = {};
+					}
+
+					accumulator[key][result[1]] = value;
+				};
+
+			case 'bracket':
+				return function (key, value, accumulator) {
+					result = /(\[\])$/.exec(key);
+
+					key = key.replace(/\[\]$/, '');
+
+					if (!result || accumulator[key] === undefined) {
+						accumulator[key] = value;
+						return;
+					}
+
+					accumulator[key] = [].concat(accumulator[key], value);
+				};
+
+			default:
+				return function (key, value, accumulator) {
+					if (accumulator[key] === undefined) {
+						accumulator[key] = value;
+						return;
+					}
+
+					accumulator[key] = [].concat(accumulator[key], value);
+				};
+		}
+	}
 
 	function encode(value, opts) {
 		if (opts.encode) {
@@ -945,11 +1026,29 @@ module.exports =
 		return value;
 	}
 
+	function keysSorter(input) {
+		if (Array.isArray(input)) {
+			return input.sort();
+		} else if (typeof input === 'object') {
+			return keysSorter(Object.keys(input)).sort(function (a, b) {
+				return Number(a) - Number(b);
+			}).map(function (key) {
+				return input[key];
+			});
+		}
+
+		return input;
+	}
+
 	exports.extract = function (str) {
 		return str.split('?')[1] || '';
 	};
 
-	exports.parse = function (str) {
+	exports.parse = function (str, opts) {
+		opts = objectAssign({arrayFormat: 'none'}, opts);
+
+		var formatter = parserForArrayFormat(opts);
+
 		// Create an object with no prototype
 		// https://github.com/sindresorhus/query-string/issues/47
 		var ret = Object.create(null);
@@ -971,31 +1070,36 @@ module.exports =
 			var key = parts.shift();
 			var val = parts.length > 0 ? parts.join('=') : undefined;
 
-			key = decodeURIComponent(key);
-
 			// missing `=` should be `null`:
 			// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
 			val = val === undefined ? null : decodeURIComponent(val);
 
-			if (ret[key] === undefined) {
-				ret[key] = val;
-			} else if (Array.isArray(ret[key])) {
-				ret[key].push(val);
-			} else {
-				ret[key] = [ret[key], val];
-			}
+			formatter(decodeURIComponent(key), val, ret);
 		});
 
-		return ret;
+		return Object.keys(ret).sort().reduce(function (result, key) {
+			var val = ret[key];
+			if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
+				// Sort object keys, not values
+				result[key] = keysSorter(val);
+			} else {
+				result[key] = val;
+			}
+
+			return result;
+		}, Object.create(null));
 	};
 
 	exports.stringify = function (obj, opts) {
 		var defaults = {
 			encode: true,
-			strict: true
+			strict: true,
+			arrayFormat: 'none'
 		};
 
 		opts = objectAssign(defaults, opts);
+
+		var formatter = encoderForArrayFormat(opts);
 
 		return obj ? Object.keys(obj).sort().map(function (key) {
 			var val = obj[key];
@@ -1016,11 +1120,7 @@ module.exports =
 						return;
 					}
 
-					if (val2 === null) {
-						result.push(encode(key, opts));
-					} else {
-						result.push(encode(key, opts) + '=' + encode(val2, opts));
-					}
+					result.push(formatter(key, val2, result.length));
 				});
 
 				return result.join('&');
@@ -1034,7 +1134,7 @@ module.exports =
 
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1046,17 +1146,18 @@ module.exports =
 
 
 /***/ },
-/* 31 */
+/* 30 */
 /***/ function(module, exports) {
 
 	module.exports = require("lodash");
 
 /***/ },
-/* 32 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	const _ = __webpack_require__(31);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	const _ = __webpack_require__(30);
 	const componentDecorator_1 = __webpack_require__(23);
 	const esp_js_1 = __webpack_require__(8);
 	class ComponentFactoryBase extends esp_js_1.DisposableBase {
@@ -1112,19 +1213,11 @@ module.exports =
 	        this._currentComponents.length = 0;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = ComponentFactoryBase;
 
 
 /***/ },
-/* 33 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 34 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1137,6 +1230,7 @@ module.exports =
 	var __metadata = (this && this.__metadata) || function (k, v) {
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const esp_js_1 = __webpack_require__(8);
 	const core_1 = __webpack_require__(1);
 	const modelBase_1 = __webpack_require__(11);
@@ -1206,74 +1300,66 @@ module.exports =
 	        core_1.Guard.isTrue(this._componentFactoriesEntries.has(componentFactoryKey), `component with id [${componentFactoryKey}] not registered`);
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = ComponentRegistryModel;
 	__decorate([
 	    esp_js_1.observeEvent('createComponent'),
 	    __metadata("design:type", Function),
 	    __metadata("design:paramtypes", [Object]),
 	    __metadata("design:returntype", void 0)
 	], ComponentRegistryModel.prototype, "_onCreateComponent", null);
+	exports.default = ComponentRegistryModel;
 
 
 /***/ },
-/* 35 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 36 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var literalResolver_1 = __webpack_require__(37);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var literalResolver_1 = __webpack_require__(34);
 	exports.LiteralResolver = literalResolver_1.default;
 
 
 /***/ },
-/* 37 */
+/* 34 */
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class LiteralResolver {
-	    static get name() {
-	        return 'literal';
-	    }
 	    resolve(container, dependencyKey) {
 	        return dependencyKey.value;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = LiteralResolver;
 
 
 /***/ },
-/* 38 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
+	Object.defineProperty(exports, "__esModule", { value: true });
 	__export(__webpack_require__(24));
-	__export(__webpack_require__(40));
-	__export(__webpack_require__(57));
-	__export(__webpack_require__(36));
+	__export(__webpack_require__(37));
+	__export(__webpack_require__(50));
+	__export(__webpack_require__(33));
 	var viewBase_1 = __webpack_require__(7);
 	exports.ViewBase = viewBase_1.default;
-	var layoutMode_1 = __webpack_require__(39);
+	var layoutMode_1 = __webpack_require__(36);
 	exports.LayoutMode = layoutMode_1.default;
 	var modelBase_1 = __webpack_require__(11);
 	exports.ModelBase = modelBase_1.default;
 
 
 /***/ },
-/* 39 */
+/* 36 */
 /***/ function(module, exports) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	class LayoutMode {
 	    constructor(status) {
 	        this._name = status;
@@ -1294,58 +1380,60 @@ module.exports =
 	        return this._name;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = LayoutMode;
 	LayoutMode._desktop = new LayoutMode('desktop');
 	LayoutMode._tabletDetached = new LayoutMode('tabletDetached');
 	LayoutMode._tabledAttached = new LayoutMode('tabledAttached');
+	exports.default = LayoutMode;
 
 
 /***/ },
-/* 40 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var regionItem_1 = __webpack_require__(13);
 	exports.RegionItem = regionItem_1.default;
 	var regionModelBase_1 = __webpack_require__(14);
 	exports.RegionModelBase = regionModelBase_1.default;
-	var regionManager_1 = __webpack_require__(50);
+	var regionManager_1 = __webpack_require__(44);
 	exports.RegionManager = regionManager_1.default;
-	__export(__webpack_require__(51));
+	__export(__webpack_require__(45));
+	__export(__webpack_require__(38));
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	function __export(m) {
+	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+	}
+	Object.defineProperty(exports, "__esModule", { value: true });
+	__export(__webpack_require__(39));
 	__export(__webpack_require__(41));
 
 
 /***/ },
-/* 41 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(42));
-	__export(__webpack_require__(47));
-
-
-/***/ },
-/* 42 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	function __export(m) {
-	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-	}
+	Object.defineProperty(exports, "__esModule", { value: true });
 	__export(__webpack_require__(25));
-	var multiTileRegionModel_1 = __webpack_require__(43);
+	var multiTileRegionModel_1 = __webpack_require__(40);
 	exports.MultiTileRegionModel = multiTileRegionModel_1.default;
 
 
 /***/ },
-/* 43 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1358,11 +1446,11 @@ module.exports =
 	var __metadata = (this && this.__metadata) || function (k, v) {
 	    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 	};
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const esp_js_1 = __webpack_require__(8);
 	const regionItem_1 = __webpack_require__(13);
 	const regionModelBase_1 = __webpack_require__(14);
 	const multiTileRegionEventConst_1 = __webpack_require__(26);
-	const selectedTileChangedEvent_1 = __webpack_require__(27);
 	class MultiTileRegionModel extends regionModelBase_1.default {
 	    constructor(regionName, router, regionManager) {
 	        super(regionName, router, regionManager);
@@ -1390,64 +1478,37 @@ module.exports =
 	        }
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.default = MultiTileRegionModel;
 	__decorate([
 	    esp_js_1.observeEvent(multiTileRegionEventConst_1.default.selectedTileChanged),
 	    __metadata("design:type", Function),
-	    __metadata("design:paramtypes", [typeof (_a = typeof selectedTileChangedEvent_1.default !== "undefined" && selectedTileChangedEvent_1.default) === "function" && _a || Object]),
+	    __metadata("design:paramtypes", [Object]),
 	    __metadata("design:returntype", void 0)
 	], MultiTileRegionModel.prototype, "_observeSelectedTileChanged", null);
-	var _a;
+	exports.default = MultiTileRegionModel;
 
 
 /***/ },
-/* 44 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 45 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 46 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 47 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	var tileItemView_1 = __webpack_require__(12);
 	exports.TileItemView = tileItemView_1.default;
-	var IMultiTileRegionViewProps_1 = __webpack_require__(44);
-	exports.IMultiTileRegionViewProps = IMultiTileRegionViewProps_1.default;
-	var ISelectableMultiTileViewProps_1 = __webpack_require__(45);
-	exports.ISelectableMultiTileViewProps = ISelectableMultiTileViewProps_1.default;
-	var ITileItemViewProps_1 = __webpack_require__(46);
-	exports.ITileItemViewProps = ITileItemViewProps_1.default;
-	var multiTileRegionView_1 = __webpack_require__(48);
+	var multiTileRegionView_1 = __webpack_require__(42);
 	exports.MultiTileRegionView = multiTileRegionView_1.default;
-	var selectableMultiTileView_1 = __webpack_require__(49);
+	var selectableMultiTileView_1 = __webpack_require__(43);
 	exports.SelectableMultiTileView = selectableMultiTileView_1.default;
 
 
 /***/ },
-/* 48 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const esp_js_react_1 = __webpack_require__(16);
-	const _ = __webpack_require__(31);
+	const _ = __webpack_require__(30);
 	const React = __webpack_require__(5);
 	const classnames = __webpack_require__(15);
 	const core_1 = __webpack_require__(1);
@@ -1474,15 +1535,15 @@ module.exports =
 	        return (React.createElement("div", { className: className }, items));
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = MultiTileRegionView;
 
 
 /***/ },
-/* 49 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const React = __webpack_require__(5);
 	const esp_js_react_1 = __webpack_require__(16);
 	const classnames = __webpack_require__(15);
@@ -1536,15 +1597,15 @@ module.exports =
 	            grids));
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = SelectableMultiTileView;
 
 
 /***/ },
-/* 50 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const core_1 = __webpack_require__(1);
 	const _log = core_1.Logger.create('RegionManager');
 	// exists to decouple all the region and their models from the rest of the app
@@ -1590,37 +1651,38 @@ module.exports =
 	        this._regions[regionName].onRemoving(model, displayContext);
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
-	// exists to decouple all the region and their models from the rest of the app
 	exports.default = RegionManager;
 
 
 /***/ },
-/* 51 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	function __export(m) {
 	    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 	}
-	__export(__webpack_require__(52));
-	__export(__webpack_require__(55));
+	Object.defineProperty(exports, "__esModule", { value: true });
+	__export(__webpack_require__(46));
+	__export(__webpack_require__(48));
 
 
 /***/ },
-/* 52 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var singleItemRegionsModel_1 = __webpack_require__(53);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var singleItemRegionsModel_1 = __webpack_require__(47);
 	exports.SingleItemRegionsModel = singleItemRegionsModel_1.default;
 
 
 /***/ },
-/* 53 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const regionItem_1 = __webpack_require__(13);
 	const regionModelBase_1 = __webpack_require__(14);
 	class SingleItemRegionsModel extends regionModelBase_1.default {
@@ -1635,33 +1697,25 @@ module.exports =
 	        this.item = null;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = SingleItemRegionsModel;
 
 
 /***/ },
-/* 54 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-
-/***/ },
-/* 55 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var singleItemRegionView_1 = __webpack_require__(56);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var singleItemRegionView_1 = __webpack_require__(49);
 	exports.SingleItemRegionView = singleItemRegionView_1.default;
-	var ISingleItemRegionViewProps_1 = __webpack_require__(54);
-	exports.ISingleItemRegionViewProps = ISingleItemRegionViewProps_1.default;
 
 
 /***/ },
-/* 56 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const esp_js_react_1 = __webpack_require__(16);
 	const React = __webpack_require__(5);
 	const classnames = __webpack_require__(15);
@@ -1686,24 +1740,25 @@ module.exports =
 	        }
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = SingleItemRegionView;
 
 
 /***/ },
-/* 57 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var stateService_1 = __webpack_require__(58);
+	Object.defineProperty(exports, "__esModule", { value: true });
+	var stateService_1 = __webpack_require__(51);
 	exports.StateService = stateService_1.default;
 
 
 /***/ },
-/* 58 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	Object.defineProperty(exports, "__esModule", { value: true });
 	const core_1 = __webpack_require__(1);
 	const _log = core_1.Logger.create('StateService');
 	class StateService {
@@ -1727,7 +1782,6 @@ module.exports =
 	        return `${appKey}-${layoutMode.name}`;
 	    }
 	}
-	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.default = StateService;
 
 

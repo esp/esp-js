@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ViewBaseProps} from './viewBaseProps';
+import ViewBaseProps from './viewBaseProps';
 
 abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<TModel>>
     extends React.Component<TProps, any> {

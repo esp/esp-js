@@ -1,5 +1,5 @@
 import {Router} from 'esp-js';
-export interface ViewBaseProps<TModel> {
+interface ViewBaseProps<TModel> {
     model:TModel;
     router:Router;
 }

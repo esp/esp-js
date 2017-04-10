@@ -3,7 +3,6 @@
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const failPlugin = require('webpack-fail-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -13,7 +12,6 @@ let isProduction = env.trim().toUpperCase() === 'prod';
 console.log('Running in ' + env + ' environment.');
 
 let plugins = [
-    failPlugin,
     new CopyWebpackPlugin([{ from: 'src/**/*.less', to: 'styles/', flatten: true }]),
     new CleanWebpackPlugin('dist', {
       root: process.cwd(),

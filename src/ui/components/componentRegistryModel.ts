@@ -9,12 +9,11 @@ import ComponentMetadata from './componentMetadata';
 let _log = Logger.create('ComponentRegistryModel');
 
 export default class ComponentRegistryModel extends ModelBase {
-    private _componentFactoriesEntries:Map<string, FactoryEntry>;
-    public componentsMetadata:Array<ComponentMetadata>;
+    private _componentFactoriesEntries = new Map<string, FactoryEntry>();
+    public componentsMetadata: Array<ComponentMetadata>;
 
     constructor(modelId:string, router:Router) {
         super(modelId, router);
-        this._componentFactoriesEntries = new Map<string, FactoryEntry>();
     }
 
     public getTitle() : string {

@@ -1,6 +1,7 @@
 import { Container, Resolver } from 'microdi-js';
 import { Router, DisposableBase } from 'esp-js';
 import * as React from 'react';
+import { JSX } from 'react';
 
 export declare function getComponentFactoryMetadata(target: any): ComponentFactoryMetadata;
 export declare function componentFactory(componentKey: string, shortName: string, showInAddComponentMenu?: boolean): (target: any) => void;
@@ -10,6 +11,12 @@ export declare class ComponentFactoryMetadata {
     readonly shortName: string;
     readonly showInAddComponentMenu: boolean;
 }
+
+export interface ComponentStateSet {
+    componentFactoryKey: string;
+    componentsState: Array<any>;
+}
+
 export declare abstract class ComponentFactoryBase extends DisposableBase {
     constructor(_container: Container);
     readonly componentKey: string;
@@ -17,10 +24,7 @@ export declare abstract class ComponentFactoryBase extends DisposableBase {
     readonly showInAddComponentMenu: boolean;
     protected abstract _createComponent(childContainer: Container, state?: any): any;
     createComponent(state?: any): void;
-    getAllComponentsState(): {
-        componentFactoryKey: string;
-        componentsState: any[];
-    };
+    getAllComponentsState(): ComponentStateSet;
     shutdownAllComponents(): void;
 }
 export interface ComponentMetadata {
@@ -45,11 +49,9 @@ export interface FactoryEntry {
     shortName: string;
     isWorkspaceItem: boolean;
 }
-export class LiteralResolver implements Resolver<any> {
+export class LiteralResolver<T> implements Resolver<T> {
     static readonly name: string;
-    resolve<T>(container: Container, dependencyKey: {
-        value: any;
-    }): any;
+    resolve<T>(container: Container, dependencyKey: { value: any; }): any;
 }
 export class MultiTileRegionEventConst {
     static readonly selectedTileChanged: string;

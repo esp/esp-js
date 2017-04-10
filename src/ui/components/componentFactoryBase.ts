@@ -4,6 +4,7 @@ import { getComponentFactoryMetadata } from './componentDecorator';
 import {DisposableBase} from 'esp-js';
 import ModelBase from '../modelBase';
 import {ComponentFactoryMetadata} from './componentDecorator';
+import ComponentStateSet from './componentStateSet';
 
 abstract class ComponentFactoryBase extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
@@ -27,7 +28,7 @@ abstract class ComponentFactoryBase extends DisposableBase {
         return this._metadata.showInAddComponentMenu;
     }
 
-    protected abstract _createComponent(childContainer: Container, state? : any);
+    protected abstract _createComponent(childContainer: Container, state?: any): any;
 
     public createComponent(state = null): void {
         let childContainer = this._container.createChildContainer();
@@ -44,7 +45,7 @@ abstract class ComponentFactoryBase extends DisposableBase {
         this._currentComponents.push(component);
     }
 
-    public getAllComponentsState(): {componentFactoryKey:string, componentsState: any[]} {
+    public getAllComponentsState(): ComponentStateSet {
         if(this._currentComponents.length === 0) {
             return null;
         }

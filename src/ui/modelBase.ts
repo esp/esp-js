@@ -30,7 +30,7 @@ abstract class ModelBase extends DisposableBase {
     // override if you're a component (i.e. created by a component factory)
     // and want to take part in saving and loading state.
     // It should be a normal object which will get stringified
-    getState() {
+    getState(): any {
         return null;
     }
 

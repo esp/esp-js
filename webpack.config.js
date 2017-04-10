@@ -29,9 +29,6 @@ if(isProduction) {
       }
     }));
 }
-let alias = {
-    'stompjs': __dirname + '/src/messaging/lib/stompjs'
-};
 
 let config = {
     entry: {
@@ -45,8 +42,8 @@ let config = {
         'classnames': 'classnames',
         'esp-js': 'esp-js',
         'esp-js-react': 'esp-js-react',
-        'microdi-js': 'microdi-js',
         'lodash': 'lodash',
+        'microdi-js': 'microdi-js',
         'google-protobuf': 'google-protobuf'
     },
     output: {
@@ -55,7 +52,6 @@ let config = {
         filename: '[name].js'
     },
     resolve: {
-        alias,
         extensions: ['.ts', '.tsx', '.js', '.json'],
     },
     module: {

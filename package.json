@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "UI Package",
   "main": "dist/accelfin.js",
-  "typings": "accelfin.d.ts",
+  "typings": "definitions/index.d.ts",
   "scripts": {
     "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",

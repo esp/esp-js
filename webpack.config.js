@@ -33,8 +33,8 @@ if(isProduction) {
 let config = {
     entry: {
         'accelfin': './src/index.ts',
-        'core': ['./src/core/index.ts'],
-        'ui': ['./src/ui/index.ts']
+        'core': './src/core/index.ts',
+        'ui': './src/ui/index.ts'
     },
     externals: {
         'rx': 'rx',

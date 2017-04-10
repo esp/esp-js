@@ -1,7 +1,7 @@
 import * as React from 'react';
-import ITileItemViewProps from './tileItemViewProps';
+import TileItemViewProps from './tileItemViewProps';
 
-export default class TileItemView extends React.Component<ITileItemViewProps, any> {
+export default class TileItemView extends React.Component<TileItemViewProps, any> {
     render() {
         let className = this.props.className ? this.props.className : 'tile-item-container'; 
 

@@ -1,8 +1,8 @@
 import MultiTileRegionModel from '../model/multiTileRegionModel';
-import {IViewBaseProps} from '../../../viewBase';
+import {ViewBaseProps} from '../../../viewBase';
 
-interface IMultiTileRegionViewProps extends IViewBaseProps<MultiTileRegionModel> {
+interface MultiTileRegionViewProps extends ViewBaseProps<MultiTileRegionModel> {
     className?: string;
 }
 
-export default IMultiTileRegionViewProps;
+export default MultiTileRegionViewProps;

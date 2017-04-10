@@ -75,24 +75,24 @@ export class MultiTileRegionModel extends RegionModelBase {
     _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
-export interface IMultiTileRegionViewProps extends IViewBaseProps<MultiTileRegionModel> {
+export interface MultiTileRegionViewProps extends ViewBaseProps<MultiTileRegionModel> {
     className?: string;
 }
-export class MultiTileRegionView extends ViewBase<MultiTileRegionView, MultiTileRegionModel, IMultiTileRegionViewProps> {
+export class MultiTileRegionView extends ViewBase<MultiTileRegionView, MultiTileRegionModel, MultiTileRegionViewProps> {
     render(): JSX.Element;
 }
 
-export interface ISelectableMultiTileViewProps extends IViewBaseProps<MultiTileRegionModel> {
+export interface SelectableMultiTileViewProps extends ViewBaseProps<MultiTileRegionModel> {
     className?: string;
 }
-export class SelectableMultiTileView extends ViewBase<SelectableMultiTileView, MultiTileRegionModel, ISelectableMultiTileViewProps> {
+export class SelectableMultiTileView extends ViewBase<SelectableMultiTileView, MultiTileRegionModel, SelectableMultiTileViewProps> {
     render(): JSX.Element;
 }
-export interface ITileItemViewProps {
+export interface TileItemViewProps {
     className?: string;
     style?: any;
 }
-export class TileItemView extends React.Component<ITileItemViewProps, any> {
+export class TileItemView extends React.Component<TileItemViewProps, any> {
     render(): JSX.Element;
 }
 
@@ -103,10 +103,10 @@ export class SingleItemRegionsModel extends RegionModelBase {
     _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
-export interface ISingleItemRegionViewProps extends IViewBaseProps<SingleItemRegionsModel> {
+export interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionsModel> {
     className?: string;
 }
-export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionsModel, ISingleItemRegionViewProps> {
+export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionsModel, SingleItemRegionViewProps> {
     render(): JSX.Element;
 }
 
@@ -158,9 +158,9 @@ export declare abstract class ModelBase extends DisposableBase {
     readonly router: Router;
 }
 
-export interface IViewBaseProps<TModel> {
+export interface ViewBaseProps<TModel> {
     model: TModel;
     router: Router;
 }
-export abstract class ViewBase<TComponent, TModel, TProps extends IViewBaseProps<TModel>> extends React.Component<TProps, any> {
+export abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<TModel>> extends React.Component<TProps, any> {
 }

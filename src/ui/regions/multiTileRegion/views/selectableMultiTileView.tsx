@@ -8,12 +8,11 @@ import MultiTileRegionModel from '../model/multiTileRegionModel';
 import RegionItem from '../../regionItem';
 import { MultiTileRegionEventConst } from '../model/events';
 import SelectedTileChangedEvent from '../model/events/selectedTileChangedEvent';
-import {IViewBaseProps} from '../../../viewBase';
-import ISelectableMultiTileViewProps from './selectableMultiTileViewProps';
+import SelectableMultiTileViewProps from './selectableMultiTileViewProps';
 
 const _log = Logger.create('MultiTileRegionView');
 
-export default class SelectableMultiTileView extends ViewBase<SelectableMultiTileView, MultiTileRegionModel, ISelectableMultiTileViewProps> {
+export default class SelectableMultiTileView extends ViewBase<SelectableMultiTileView, MultiTileRegionModel, SelectableMultiTileViewProps> {
   
     private _onItemClicked(item: RegionItem) : void {
         let ev : SelectedTileChangedEvent = { selectedItem: item };

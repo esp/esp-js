@@ -1,12 +1,12 @@
 import { Router } from 'esp-js';
 import * as React from 'react';
 
-export interface IViewBaseProps<TModel> {
+export interface ViewBaseProps<TModel> {
     model:TModel;
     router:Router;
 }
 
-abstract class ViewBase<TComponent, TModel, TProps extends IViewBaseProps<TModel>>
+abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<TModel>>
     extends React.Component<TProps, any> {
     // This used to have all the model observation, that's now in esp-js-react's SmartComponent
     // This view is doing something by way of the generic constraint it's putting on the props, but that's not exactly code reuse.

@@ -1,5 +1,5 @@
-interface ITileItemViewProps  {
+interface TileItemViewProps  {
     className?: string;
     style?: any;
 }
-export default ITileItemViewProps;
+export default TileItemViewProps;

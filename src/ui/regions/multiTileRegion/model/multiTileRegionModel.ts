@@ -9,12 +9,12 @@ export default class MultiTileRegionModel extends RegionModelBase {
     public tileItems : Array<RegionItem> = [];
     public selectedItem: RegionItem;
 
-    constructor(regionName : string, router: Router, regionManager: RegionManager) {
+    constructor(regionName: string, router: Router, regionManager: RegionManager) {
         super(regionName, router, regionManager);
     }
     
     @observeEvent(MultiTileRegionEventConst.selectedTileChanged)
-    _observeSelectedTileChanged(ev: SelectedTileChangedEvent) {
+    private _observeSelectedTileChanged(ev: SelectedTileChangedEvent) {
         this.selectedItem = ev.selectedItem;
     }
 

@@ -11,7 +11,7 @@ export declare class ComponentFactoryMetadata {
     readonly showInAddComponentMenu: boolean;
 }
 export declare abstract class ComponentFactoryBase extends DisposableBase {
-    constructor(container: Container);
+    constructor(_container: Container);
     readonly componentKey: string;
     readonly shortName: string;
     readonly showInAddComponentMenu: boolean;
@@ -119,9 +119,11 @@ export class RegionItem {
     equals(modelId: string, displayContext?: string): boolean;
 }
 
+export type ViewCallBack = (model: ModelBase, viewKey?: string) => void;
+
 export class RegionManager {
     constructor();
-    registerRegion(regionName: string, onAddingViewToRegionCallback: any, onRemovingFromRegionCallback: any): void;
+    registerRegion(regionName: string, onAddingViewToRegionCallback: ViewCallBack, onRemovingFromRegionCallback: ViewCallBack): void;
     unregisterRegion(regionName: string): void;
     addToRegion(regionName: string, model: ModelBase, displayContext?: string): void;
     removeFromRegion(regionName: string, model: ModelBase, displayContext?: string): void;

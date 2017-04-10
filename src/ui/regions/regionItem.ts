@@ -7,16 +7,16 @@ export default class RegionItem {
         this.modelId = modelId;
         this.displayContext = displayContext;
     }
-    
-    get itemKey() {
+
+    public get itemKey() {
         if(typeof this.displayContext === 'undefined') {
             return this.modelId;
         } else {
             return `${this.modelId}${this.displayContext}`;
         }
     }
-    
-    equals(modelId:string, displayContext?:string) {
+
+    public equals(modelId:string, displayContext?:string) {
         return this.modelId === modelId && this.displayContext === displayContext;
     }
 }

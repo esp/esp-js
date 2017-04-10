@@ -67,7 +67,6 @@ let config = {
                 enforce: 'pre',
                 use:[{
                     loader: 'tslint-loader',
-
                     options: {
                         failOnHint: true
                     }

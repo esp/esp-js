@@ -1,7 +1,7 @@
 import RegionItem from '../../regionItem';
 import RegionModelBase from '../../regionModelBase';
 
-export default class SingleItemRegionsModel extends RegionModelBase {
+export default class SingleItemRegionModel extends RegionModelBase {
     public item:RegionItem;
     
     constructor(regionName : string, router, regionManager) {

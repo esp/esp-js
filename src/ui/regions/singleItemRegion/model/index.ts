@@ -1,1 +1,1 @@
-export { default as SingleItemRegionsModel } from './singleItemRegionsModel';
+export { default as SingleItemRegionModel } from './singleItemRegionModel';

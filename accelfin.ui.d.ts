@@ -98,17 +98,17 @@ export class TileItemView extends React.Component<TileItemViewProps, any> {
     render(): JSX.Element;
 }
 
-export class SingleItemRegionsModel extends RegionModelBase {
+export class SingleItemRegionModel extends RegionModelBase {
     item: RegionItem;
     constructor(regionName: string, router: any, regionManager: any);
     _addToRegion(title: string, modelId: string, displayContext?: string): void;
     _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
-export interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionsModel> {
+export interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionModel> {
     className?: string;
 }
-export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionsModel, SingleItemRegionViewProps> {
+export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionModel, SingleItemRegionViewProps> {
     render(): JSX.Element;
 }
 

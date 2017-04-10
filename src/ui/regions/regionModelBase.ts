@@ -9,22 +9,17 @@ let _modelIdSeed = 1;
 let idFactory = () => { return 'region#' + (++_modelIdSeed); } ;
 
 abstract class RegionModelBase extends ModelBase {
-    private _regionManager : RegionManager;
-    private _regionName: string;
-
-    constructor(regionName : string, router: Router, regionManager) {
+    constructor(private _regionName : string, router: Router, private _regionManager) {
         super(idFactory(), router);
-        this._regionName = regionName;
-        this._regionManager = regionManager;
     }
 
-    observeEvents() {
+    public observeEvents() {
         super.observeEvents();
         _log.verbose('starting. Adding model and observing events');
         this._registerWithRegionManager(this._regionName);
     }
 
-    getTitle(): string {
+    public getTitle(): string {
         return '';
     }
 
@@ -32,7 +27,7 @@ abstract class RegionModelBase extends ModelBase {
 
     protected abstract _removeFromRegion(modelId:string, view:any, displayContext?:string);
 
-    _registerWithRegionManager(regionName) {
+    private _registerWithRegionManager(regionName) {
         this._regionManager.registerRegion(
             regionName,
             // on add

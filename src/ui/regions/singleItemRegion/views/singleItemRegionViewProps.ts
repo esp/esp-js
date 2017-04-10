@@ -1,7 +1,7 @@
-import SingleItemRegionsModel from '../model/singleItemRegionsModel';
-import {ViewBaseProps} from '../../../viewBase';
+import SingleItemRegionModel from '../model/singleItemRegionModel';
+import {ViewBaseProps} from '../../../viewBaseProps';
 
-interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionsModel> {
+interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionModel> {
     className?: string;
 }
 

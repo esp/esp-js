@@ -9,11 +9,11 @@ export default class SingleItemRegionsModel extends RegionModelBase {
         this.item = null;
     }
 
-    _addToRegion(title: string, modelId:string, displayContext?:string) {
+    protected _addToRegion(title: string, modelId:string, displayContext?:string) {
         this.item = new RegionItem(title, modelId, displayContext);
     }
 
-    _removeFromRegion(modelId:string, displayContext?:string) {
+    protected _removeFromRegion(modelId:string, displayContext?:string) {
         this.item = null;
     }
 }

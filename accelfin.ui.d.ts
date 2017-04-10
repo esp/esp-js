@@ -45,7 +45,7 @@ export interface FactoryEntry {
     shortName: string;
     isWorkspaceItem: boolean;
 }
-export class LiteralResolver implements Resolver {
+export class LiteralResolver implements Resolver<any> {
     static readonly name: string;
     resolve<T>(container: Container, dependencyKey: {
         value: any;
@@ -145,7 +145,7 @@ export class LayoutMode {
 export declare abstract class ModelBase extends DisposableBase {
     protected _modelId: string;
     protected _router: Router;
-    constructor(modelId: string, router: Router);
+    constructor(_modelId: string, _router: Router);
     abstract getTitle(): string;
     observeEvents(): void;
     getState(): any;

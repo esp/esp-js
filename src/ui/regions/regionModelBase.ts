@@ -28,9 +28,9 @@ abstract class RegionModelBase extends ModelBase {
         return '';
     }
 
-    abstract _addToRegion(title:string, modelId:string, view:any, displayContext?:string);
+    protected abstract _addToRegion(title:string, modelId:string, view:any, displayContext?:string);
 
-    abstract _removeFromRegion(modelId:string, view:any, displayContext?:string);
+    protected abstract _removeFromRegion(modelId:string, view:any, displayContext?:string);
 
     _registerWithRegionManager(regionName) {
         this._regionManager.registerRegion(

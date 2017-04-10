@@ -4,27 +4,24 @@
 import {Router, DisposableBase } from 'esp-js';
 import { Logger, Guard } from '../core';
 
-let _log = Logger.create('ModelBase');
-
 abstract class ModelBase extends DisposableBase {
-    protected _modelId:string;
-    protected _router:Router;
+    private _log: Logger;
 
-    constructor(modelId:string, router:Router) {
+    constructor(protected _modelId:string, protected _router:Router) {
         super();
-        Guard.isString(modelId, 'modelId required and must be a string');
-        Guard.isDefined(router, 'router required');
-        this._modelId = modelId;
-        this._router = router;
+        Guard.isString(_modelId, 'modelId required and must be a string');
+        Guard.isDefined(_router, 'router required');
+
+        this._log = Logger.create(`ModelBase-${_modelId}`);
     }
 
     abstract getTitle(): string;
 
     observeEvents() {
-        _log.debug(`Adding model with id ${this._modelId} to router`);
+        this._log.debug(`Adding model with id ${this._modelId} to router`);
         this.router.addModel(this._modelId, this);
         this.addDisposable(() => {
-            _log.debug(`Removing model with id ${this._modelId} from router`);
+            this._log.debug(`Removing model with id ${this._modelId} from router`);
             this.router.removeModel(this._modelId);
         });
         this.addDisposable(this.router.observeEventsOn(this._modelId, this));

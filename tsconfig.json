@@ -5,7 +5,7 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "noEmitOnError": true,
-    "allowJs": false,
+    "allowJs": true,
     "jsx": "react",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

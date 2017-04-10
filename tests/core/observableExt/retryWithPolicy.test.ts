@@ -1,6 +1,6 @@
 import * as Rx from 'rx';
 
-import {RetryPolicy} from '../../../src/core/observableExt';
+import { RetryPolicy } from '../../../src/core/observableExt';
 
 describe('.retryWithPolicy()', () => {
     let _subject:Rx.Subject<any>,

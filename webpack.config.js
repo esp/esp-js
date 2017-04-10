@@ -12,28 +12,6 @@ let isProduction = env.trim().toUpperCase() === 'prod';
 
 console.log('Running in ' + env + ' environment.');
 
-let rules = [
-    {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use:[{
-                loader: 'awesome-typescript-loader',
-            }]
-    },
-    {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        enforce: 'pre',
-        use:[{
-            loader: 'tslint-loader',
-
-            options: {
-                failOnHint: true
-            }
-        }]
-    }
-];
-
 let plugins = [
     failPlugin,
     new CopyWebpackPlugin([{ from: 'src/**/*.less', to: 'styles/', flatten: true }]),
@@ -81,7 +59,27 @@ let config = {
         extensions: ['.ts', '.tsx', '.js', '.json'],
     },
     module: {
-        rules: rules
+        rules: [
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                use:[{
+                    loader: 'awesome-typescript-loader',
+                }]
+            },
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                enforce: 'pre',
+                use:[{
+                    loader: 'tslint-loader',
+
+                    options: {
+                        failOnHint: true
+                    }
+                }]
+            }
+        ]
     },
     plugins: plugins
 };

@@ -5,7 +5,7 @@ import { Logger } from '../../../../core';
 import SingleItemRegionsModel from '../model/singleItemRegionsModel';
 import ViewBase from '../../../viewBase';
 import {IViewBaseProps} from '../../../viewBase';
-import ISingleItemRegionViewProps from './ISingleItemRegionViewProps';
+import ISingleItemRegionViewProps from './singleItemRegionViewProps';
 
 const _log = Logger.create('SingleItemRegionView');
 

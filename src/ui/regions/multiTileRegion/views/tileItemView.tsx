@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ITileItemViewProps from './ITileItemViewProps';
+import ITileItemViewProps from './tileItemViewProps';
 
 export default class TileItemView extends React.Component<ITileItemViewProps, any> {
     render() {

@@ -9,7 +9,7 @@ import RegionItem from '../../regionItem';
 import { MultiTileRegionEventConst } from '../model/events';
 import SelectedTileChangedEvent from '../model/events/selectedTileChangedEvent';
 import {IViewBaseProps} from '../../../viewBase';
-import ISelectableMultiTileViewProps from './ISelectableMultiTileViewProps';
+import ISelectableMultiTileViewProps from './selectableMultiTileViewProps';
 
 const _log = Logger.create('MultiTileRegionView');
 

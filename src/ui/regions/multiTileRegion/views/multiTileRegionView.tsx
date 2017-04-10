@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
 import TileItemView from './tileItemView';
-import IMultiTileRegionViewProps from './IMultiTileRegionViewProps';
+import IMultiTileRegionViewProps from './multiTileRegionViewProps';
 import MultiTileRegionModel from '../model/multiTileRegionModel';
 import ViewBase from '../../../viewBase';
 import RegionItem from '../../regionItem';

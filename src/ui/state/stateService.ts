@@ -4,7 +4,7 @@ import LayoutMode from '../layoutMode';
 const _log = Logger.create('StateService');
 
 export default class StateService {
-    saveApplicationState<T>(moduleKey:string, layoutMode:LayoutMode, state:T): void {
+    public saveApplicationState<T>(moduleKey:string, layoutMode:LayoutMode, state:T): void {
         Guard.isString(moduleKey, 'appKey must be a string');
         Guard.isDefined(layoutMode, 'layoutMode must be a defined');
         Guard.isDefined(state, 'state must be a defined');
@@ -13,8 +13,8 @@ export default class StateService {
         _log.debug(`saving layout state for key ${stateKey}. State:${stateJson}`, state);
         localStorage.setItem(stateKey, stateJson);
     }
-    
-    getApplicationState<T>(moduleKey:string, layoutMode:LayoutMode): T {
+
+    public getApplicationState<T>(moduleKey:string, layoutMode:LayoutMode): T {
         Guard.isString(moduleKey, 'moduleKey must be a string');
         Guard.isDefined(layoutMode, 'layoutMode must be a defined');
         let stateKey = this._getStateKey(moduleKey, layoutMode);

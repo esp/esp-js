@@ -5,8 +5,8 @@
   "main": "dist/accelfin.js",
   "typings": "accelfin.d.ts",
   "scripts": {
-    "build-dev": "export NODE_ENV=dev&& webpack --bail --display-reasons --display-error-details",
-    "build-prod": "export NODE_ENV=prod&& webpack --bail --display-reasons --display-error-details",
+    "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
+    "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
     "start": "webpack --watch",
     "test": "jest"
   },
@@ -32,7 +32,6 @@
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "expect": "^1.20.2",
-    "jasmine-core": "2.4.1",
     "jest": "^19.0.2",
     "script-loader": "0.7.0",
     "sinon": "1.17.4",

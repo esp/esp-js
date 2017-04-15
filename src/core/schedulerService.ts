@@ -6,19 +6,14 @@ export interface ISchedulerService {
 }
 
 export class SchedulerService implements ISchedulerService {
-  private _immediate: Rx.IScheduler;
-  private _async: Rx.IScheduler;
+  private _immediate: Rx.IScheduler = Rx.Scheduler.immediate;
+  private _async: Rx.IScheduler = Rx.Scheduler.default;
 
-  constructor() {
-    this._immediate = Rx.Scheduler.immediate;
-    this._async = Rx.Scheduler.default;
-  }
-
-  get immediate() {
+  get immediate(): Rx.IScheduler {
     return this._immediate;
   }
 
-  get async() {
+  get async(): Rx.IScheduler {
     return this._async;
   }
 }

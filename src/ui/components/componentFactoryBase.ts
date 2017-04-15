@@ -4,34 +4,33 @@ import { getComponentFactoryMetadata } from './componentDecorator';
 import {DisposableBase} from 'esp-js';
 import ModelBase from '../modelBase';
 import {ComponentFactoryMetadata} from './componentDecorator';
+import ComponentStateSet from './componentStateSet';
 
 abstract class ComponentFactoryBase extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
-    private _container: Container;
     private _metadata: ComponentFactoryMetadata;
 
-    constructor(container : Container) {
+    constructor(private _container : Container) {
         super();
-        this._container = container;
         this._currentComponents = [];
         this._metadata = getComponentFactoryMetadata(this);
     }
 
-    get componentKey(): string {
+    public get componentKey(): string {
         return this._metadata.componentKey;
     }
 
-    get shortName(): string {
+    public get shortName(): string {
         return this._metadata.shortName;
     }
 
-    get showInAddComponentMenu() : boolean {
+    public get showInAddComponentMenu() : boolean {
         return this._metadata.showInAddComponentMenu;
     }
 
-    protected abstract _createComponent(childContainer: Container, state? : any);
-    
-    createComponent(state = null): void {
+    protected abstract _createComponent(childContainer: Container, state?: any): any;
+
+    public createComponent(state = null): void {
         let childContainer = this._container.createChildContainer();
         let component : ModelBase = this._createComponent(childContainer, state);
         component.addDisposable(childContainer);
@@ -46,7 +45,7 @@ abstract class ComponentFactoryBase extends DisposableBase {
         this._currentComponents.push(component);
     }
 
-    getAllComponentsState(): {componentFactoryKey:string, componentsState: any[]} {
+    public getAllComponentsState(): ComponentStateSet {
         if(this._currentComponents.length === 0) {
             return null;
         }
@@ -59,8 +58,8 @@ abstract class ComponentFactoryBase extends DisposableBase {
             componentsState: componentsState
         };
     }
-    
-    shutdownAllComponents(): void {
+
+    public shutdownAllComponents(): void {
         // copy the array as we have some disposal code that remove items on disposed
         let components = this._currentComponents.slice();
         _.forEach(components, component => {

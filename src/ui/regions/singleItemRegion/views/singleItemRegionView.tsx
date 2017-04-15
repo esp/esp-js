@@ -2,22 +2,17 @@ import {SmartComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
-import SingleItemRegionsModel from '../model/singleItemRegionsModel';
+import SingleItemRegionModel from '../model/singleItemRegionModel';
 import ViewBase from '../../../viewBase';
-import {IViewBaseProps} from '../../../viewBase';
-import ISingleItemRegionViewProps from './ISingleItemRegionViewProps';
+import SingleItemRegionViewProps from './singleItemRegionViewProps';
 
 const _log = Logger.create('SingleItemRegionView');
 
-export interface ISingleItemRegionViewProps extends IViewBaseProps<SingleItemRegionsModel> {
-    className?: string;
-}
-
-export default class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionsModel, ISingleItemRegionViewProps> {
+export default class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionModel, SingleItemRegionViewProps> {
     render() {
         _log.verbose('Rendering');
 
-        let model : SingleItemRegionsModel = this.props.model;
+        let model : SingleItemRegionModel = this.props.model;
 
         if(!model) {
             return null;

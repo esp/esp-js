@@ -1,6 +1,7 @@
 import { Container, Resolver } from 'microdi-js';
 import { Router, DisposableBase } from 'esp-js';
 import * as React from 'react';
+import { JSX } from 'react';
 
 export declare function getComponentFactoryMetadata(target: any): ComponentFactoryMetadata;
 export declare function componentFactory(componentKey: string, shortName: string, showInAddComponentMenu?: boolean): (target: any) => void;
@@ -10,17 +11,20 @@ export declare class ComponentFactoryMetadata {
     readonly shortName: string;
     readonly showInAddComponentMenu: boolean;
 }
+
+export interface ComponentStateSet {
+    componentFactoryKey: string;
+    componentsState: Array<any>;
+}
+
 export declare abstract class ComponentFactoryBase extends DisposableBase {
-    constructor(container: Container);
+    constructor(_container: Container);
     readonly componentKey: string;
     readonly shortName: string;
     readonly showInAddComponentMenu: boolean;
     protected abstract _createComponent(childContainer: Container, state?: any): any;
     createComponent(state?: any): void;
-    getAllComponentsState(): {
-        componentFactoryKey: string;
-        componentsState: any[];
-    };
+    getAllComponentsState(): ComponentStateSet;
     shutdownAllComponents(): void;
 }
 export interface ComponentMetadata {
@@ -45,11 +49,9 @@ export interface FactoryEntry {
     shortName: string;
     isWorkspaceItem: boolean;
 }
-export class LiteralResolver implements Resolver {
+export class LiteralResolver<T> implements Resolver<T> {
     static readonly name: string;
-    resolve<T>(container: Container, dependencyKey: {
-        value: any;
-    }): any;
+    resolve<T>(container: Container, dependencyKey: { value: any; }): any;
 }
 export class MultiTileRegionEventConst {
     static readonly selectedTileChanged: string;
@@ -75,38 +77,38 @@ export class MultiTileRegionModel extends RegionModelBase {
     _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
-export interface IMultiTileRegionViewProps extends IViewBaseProps<MultiTileRegionModel> {
+export interface MultiTileRegionViewProps extends ViewBaseProps<MultiTileRegionModel> {
     className?: string;
 }
-export class MultiTileRegionView extends ViewBase<MultiTileRegionView, MultiTileRegionModel, IMultiTileRegionViewProps> {
+export class MultiTileRegionView extends ViewBase<MultiTileRegionView, MultiTileRegionModel, MultiTileRegionViewProps> {
     render(): JSX.Element;
 }
 
-export interface ISelectableMultiTileViewProps extends IViewBaseProps<MultiTileRegionModel> {
+export interface SelectableMultiTileViewProps extends ViewBaseProps<MultiTileRegionModel> {
     className?: string;
 }
-export class SelectableMultiTileView extends ViewBase<SelectableMultiTileView, MultiTileRegionModel, ISelectableMultiTileViewProps> {
+export class SelectableMultiTileView extends ViewBase<SelectableMultiTileView, MultiTileRegionModel, SelectableMultiTileViewProps> {
     render(): JSX.Element;
 }
-export interface ITileItemViewProps {
+export interface TileItemViewProps {
     className?: string;
     style?: any;
 }
-export class TileItemView extends React.Component<ITileItemViewProps, any> {
+export class TileItemView extends React.Component<TileItemViewProps, any> {
     render(): JSX.Element;
 }
 
-export class SingleItemRegionsModel extends RegionModelBase {
+export class SingleItemRegionModel extends RegionModelBase {
     item: RegionItem;
     constructor(regionName: string, router: any, regionManager: any);
     _addToRegion(title: string, modelId: string, displayContext?: string): void;
     _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
-export interface ISingleItemRegionViewProps extends IViewBaseProps<SingleItemRegionsModel> {
+export interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionModel> {
     className?: string;
 }
-export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionsModel, ISingleItemRegionViewProps> {
+export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionModel, SingleItemRegionViewProps> {
     render(): JSX.Element;
 }
 
@@ -119,9 +121,11 @@ export class RegionItem {
     equals(modelId: string, displayContext?: string): boolean;
 }
 
+export type ViewCallBack = (model: ModelBase, viewKey?: string) => void;
+
 export class RegionManager {
     constructor();
-    registerRegion(regionName: string, onAddingViewToRegionCallback: any, onRemovingFromRegionCallback: any): void;
+    registerRegion(regionName: string, onAddingViewToRegionCallback: ViewCallBack, onRemovingFromRegionCallback: ViewCallBack): void;
     unregisterRegion(regionName: string): void;
     addToRegion(regionName: string, model: ModelBase, displayContext?: string): void;
     removeFromRegion(regionName: string, model: ModelBase, displayContext?: string): void;
@@ -145,7 +149,7 @@ export class LayoutMode {
 export declare abstract class ModelBase extends DisposableBase {
     protected _modelId: string;
     protected _router: Router;
-    constructor(modelId: string, router: Router);
+    constructor(_modelId: string, _router: Router);
     abstract getTitle(): string;
     observeEvents(): void;
     getState(): any;
@@ -158,9 +162,9 @@ export declare abstract class ModelBase extends DisposableBase {
     readonly router: Router;
 }
 
-export interface IViewBaseProps<TModel> {
+export interface ViewBaseProps<TModel> {
     model: TModel;
     router: Router;
 }
-export abstract class ViewBase<TComponent, TModel, TProps extends IViewBaseProps<TModel>> extends React.Component<TProps, any> {
+export abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<TModel>> extends React.Component<TProps, any> {
 }

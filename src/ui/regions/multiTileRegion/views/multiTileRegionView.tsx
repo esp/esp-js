@@ -4,15 +4,14 @@ import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
 import TileItemView from './tileItemView';
-import IMultiTileRegionViewProps from './IMultiTileRegionViewProps';
+import MultiTileRegionViewProps from './multiTileRegionViewProps';
 import MultiTileRegionModel from '../model/multiTileRegionModel';
 import ViewBase from '../../../viewBase';
 import RegionItem from '../../regionItem';
-import {IViewBaseProps} from '../../../viewBase';
 
 const _log = Logger.create('MultiTileRegionView');
 
-export default class MultiTileRegionView extends ViewBase<MultiTileRegionView, MultiTileRegionModel, IMultiTileRegionViewProps> {
+export default class MultiTileRegionView extends ViewBase<MultiTileRegionView, MultiTileRegionModel, MultiTileRegionViewProps> {
   
     render() {
         _log.verbose('Rendering');

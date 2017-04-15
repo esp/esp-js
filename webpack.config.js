@@ -3,7 +3,6 @@
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const failPlugin = require('webpack-fail-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -12,30 +11,7 @@ let isProduction = env.trim().toUpperCase() === 'prod';
 
 console.log('Running in ' + env + ' environment.');
 
-let rules = [
-    {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use:[{
-                loader: 'awesome-typescript-loader',
-            }]
-    },
-    {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        enforce: 'pre',
-        use:[{
-            loader: 'tslint-loader',
-
-            options: {
-                failOnHint: true
-            }
-        }]
-    }
-];
-
 let plugins = [
-    failPlugin,
     new CopyWebpackPlugin([{ from: 'src/**/*.less', to: 'styles/', flatten: true }]),
     new CleanWebpackPlugin('dist', {
       root: process.cwd(),
@@ -51,15 +27,12 @@ if(isProduction) {
       }
     }));
 }
-let alias = {
-    'stompjs': __dirname + '/src/messaging/lib/stompjs'
-};
 
 let config = {
     entry: {
         'accelfin': './src/index.ts',
-        'core': ['./src/core/index.ts'],
-        'ui': ['./src/ui/index.ts']
+        'core': './src/core/index.ts',
+        'ui': './src/ui/index.ts'
     },
     externals: {
         'rx': 'rx',
@@ -67,8 +40,8 @@ let config = {
         'classnames': 'classnames',
         'esp-js': 'esp-js',
         'esp-js-react': 'esp-js-react',
-        'microdi-js': 'microdi-js',
         'lodash': 'lodash',
+        'microdi-js': 'microdi-js',
         'google-protobuf': 'google-protobuf'
     },
     output: {
@@ -77,11 +50,29 @@ let config = {
         filename: '[name].js'
     },
     resolve: {
-        alias,
         extensions: ['.ts', '.tsx', '.js', '.json'],
     },
     module: {
-        rules: rules
+        rules: [
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                use:[{
+                    loader: 'awesome-typescript-loader',
+                }]
+            },
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                enforce: 'pre',
+                use:[{
+                    loader: 'tslint-loader',
+                    options: {
+                        failOnHint: true
+                    }
+                }]
+            }
+        ]
     },
     plugins: plugins
 };

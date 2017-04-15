@@ -6,23 +6,23 @@ import MultiTileRegionEventConst from './events/multiTileRegionEventConst';
 import SelectedTileChangedEvent from './events/selectedTileChangedEvent';
 
 export default class MultiTileRegionModel extends RegionModelBase {
-    public tileItems : Array<RegionItem>;
+    public tileItems : Array<RegionItem> = [];
     public selectedItem: RegionItem;
 
-    constructor(regionName : string, router: Router, regionManager: RegionManager) {
+    constructor(regionName: string, router: Router, regionManager: RegionManager) {
         super(regionName, router, regionManager);
-        this.tileItems = [];
     }
     
     @observeEvent(MultiTileRegionEventConst.selectedTileChanged)
-    _observeSelectedTileChanged(ev: SelectedTileChangedEvent) {
+    private _observeSelectedTileChanged(ev: SelectedTileChangedEvent) {
         this.selectedItem = ev.selectedItem;
     }
-    
-    _addToRegion(title: string, modelId:string, displayContext?:string) : void {
+
+    protected _addToRegion(title: string, modelId:string, displayContext?:string) : void {
         this.tileItems.push(new RegionItem(title, modelId, displayContext));
     }
-    _removeFromRegion(modelId:string, displayContext?:string) : void {
+
+    protected _removeFromRegion(modelId:string, displayContext?:string) : void {
         for(let i = this.tileItems.length; i--;) {
             let item = this.tileItems[i];
             if(item === this.selectedItem) {

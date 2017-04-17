@@ -182,6 +182,12 @@ export default class Router extends DisposableBase {
         Guard.isString(targetModelId, 'The targetModelId argument should be a string');
         return SingleModelRouter.createWithRouter(this, targetModelId);
     }
+    createModelRouter(targetModelId, modelFactory) {
+        let singleRouter = this.createModelRouter(targetModelId);
+        let model = modelFactory(singleRouter);
+        this.registerModel(targetModelId, model);
+        return {model, router: singleRouter};
+    }
     observeEventsOn(modelId, object, methodPrefix='_observe_') {
         if(EspDecoratorMetadata.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object, methodPrefix);

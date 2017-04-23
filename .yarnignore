@@ -23,5 +23,6 @@ typings.json
 jest.config
 yarn.lock
 .tsbuild
+typings
 !dist
 !definitions

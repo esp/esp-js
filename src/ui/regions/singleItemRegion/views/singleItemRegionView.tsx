@@ -4,9 +4,13 @@ import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
 import SingleItemRegionModel from '../model/singleItemRegionModel';
 import ViewBase from '../../../viewBase';
-import SingleItemRegionViewProps from './singleItemRegionViewProps';
+import {ViewBaseProps} from '../../../viewBase';
 
 const _log = Logger.create('SingleItemRegionView');
+
+export interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegionModel> {
+    className?: string;
+}
 
 export default class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionModel, SingleItemRegionViewProps> {
     render() {

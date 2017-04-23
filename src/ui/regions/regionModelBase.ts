@@ -1,16 +1,15 @@
 import { Logger } from '../../core';
-import RegionManager from './regionManager';
 import {Router} from 'esp-js';
 import ModelBase from '../modelBase';
+import IdFactory from '../idFactory';
 
 let _log = Logger.create('RegionsModelBase');
 
 let _modelIdSeed = 1;
-let idFactory = () => { return 'region#' + (++_modelIdSeed); } ;
 
 abstract class RegionModelBase extends ModelBase {
     constructor(private _regionName : string, router: Router, private _regionManager) {
-        super(idFactory(), router);
+        super(IdFactory.createId(`region#${++_modelIdSeed}`), router);
     }
 
     public observeEvents() {

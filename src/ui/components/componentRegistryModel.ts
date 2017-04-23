@@ -3,17 +3,28 @@ import { Logger, Guard } from '../../core';
 import ModelBase from '../modelBase';
 import { getComponentFactoryMetadata, ComponentFactoryMetadata } from './index';
 import ComponentFactoryBase from './componentFactoryBase';
-import FactoryEntry from './factoryEntry';
-import ComponentMetadata from './componentMetadata';
+import IdFactory from '../idFactory';
 
 let _log = Logger.create('ComponentRegistryModel');
+
+export interface ComponentMetadata {
+    componentFactoryKey: string;
+    shortName: string;
+}
+
+export interface FactoryEntry {
+    componentFactoryKey: string;
+    factory: ComponentFactoryBase;
+    shortName: string;
+}
 
 export default class ComponentRegistryModel extends ModelBase {
     private _componentFactoriesEntries = new Map<string, FactoryEntry>();
     public componentsMetadata: Array<ComponentMetadata>;
 
-    constructor(modelId:string, router:Router) {
-        super(modelId, router);
+    constructor(router:Router) {
+        super(IdFactory.createId('component-registry'), router);
+        this.observeEvents();
     }
 
     public getTitle() : string {
@@ -37,9 +48,8 @@ export default class ComponentRegistryModel extends ModelBase {
             this._componentFactoriesEntries.set(metadata.componentKey, {
                 componentFactoryKey: metadata.componentKey,
                 factory: componentFactory,
-                shortName: metadata.shortName,
-                isWorkspaceItem: metadata.showInAddComponentMenu
-            });            
+                shortName: metadata.shortName
+            });
         });
     }
 
@@ -69,8 +79,7 @@ export default class ComponentRegistryModel extends ModelBase {
         for(let entry of this._componentFactoriesEntries.values()) {
             yield {
                 componentFactoryKey: entry.componentFactoryKey,
-                shortName: entry.shortName,
-                isWorkspaceItem: entry.isWorkspaceItem
+                shortName: entry.shortName
             };
         }
     }

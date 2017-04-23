@@ -8,10 +8,10 @@ export function getComponentFactoryMetadata(target):ComponentFactoryMetadata {
     throw new Error('No metadata found on component');
 }
 
-export function componentFactory(componentKey:string, shortName:string, showInAddComponentMenu:boolean = false) {
+export function componentFactory(componentKey:string, shortName:string) {
     Guard.isDefined(componentKey, 'componentKey must be defined');
     return (target) => {
-        target.__componentMetadata = new ComponentFactoryMetadata(componentKey, shortName, showInAddComponentMenu);
+        target.__componentMetadata = new ComponentFactoryMetadata(componentKey, shortName);
     };
 }
  
@@ -20,12 +20,11 @@ export class ComponentFactoryMetadata {
     _shortName:string;
     _showInAddComponentMenu:boolean;
 
-    constructor(componentKey:string, shortName:string, showInAddComponentMenu:boolean = false) {
+    constructor(componentKey:string, shortName:string) {
         Guard.isString(componentKey, 'componentKey must be defined and be a string');
         Guard.isString(shortName, 'shortName must be defined and be a string');
         this._componentKey = componentKey;
         this._shortName = shortName;
-        this._showInAddComponentMenu = showInAddComponentMenu;
     }
 
     get componentKey():string {
@@ -34,9 +33,5 @@ export class ComponentFactoryMetadata {
 
     get shortName():string {
         return this._shortName;
-    }
-
-    get showInAddComponentMenu():boolean{
-        return this._showInAddComponentMenu;
     }
 }

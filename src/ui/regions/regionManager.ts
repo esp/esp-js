@@ -1,8 +1,9 @@
 import { Logger, Guard } from '../../core';
 import ModelBase from '../modelBase';
-import ViewCallBack from './viewCallBack';
 
 const _log = Logger.create('RegionManager');
+
+export type ViewCallBack = (model: ModelBase, viewKey?: string) => void;
 
 // exists to decouple all the region and their models from the rest of the app
 export default class RegionManager {

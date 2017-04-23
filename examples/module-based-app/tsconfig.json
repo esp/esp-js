@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "noEmitOnError": true,
+    "allowJs": false,
+    "jsx": "react",
+    "experimentalDecorators":true,
+    "target": "ES6",
+    "module": "commonjs",
+    "noEmit": true,
+    "typeRoots" : ["./typings", "./node_modules/@types"],
+    "outDir" : "./.tsbuild"
+  },
+  "files": [
+    "./src/shell/views/shellView"
+  ]
+}

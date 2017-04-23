@@ -35,9 +35,7 @@ if(isProduction) {
 
 let config = {
     entry: {
-        'accelfin': './src/index.ts',
-        'core': './src/core/index.ts',
-        'ui': './src/ui/index.ts'
+        'esp-js-ui': './src/index.ts'
     },
     externals: {
         'rx': 'rx',
@@ -46,8 +44,7 @@ let config = {
         'esp-js': 'esp-js',
         'esp-js-react': 'esp-js-react',
         'lodash': 'lodash',
-        'microdi-js': 'microdi-js',
-        'google-protobuf': 'google-protobuf'
+        'microdi-js': 'microdi-js'
     },
     output: {
         path: process.cwd() + '/dist',

@@ -4,9 +4,13 @@ import { getComponentFactoryMetadata } from './componentDecorator';
 import {DisposableBase} from 'esp-js';
 import ModelBase from '../modelBase';
 import {ComponentFactoryMetadata} from './componentDecorator';
-import ComponentStateSet from './componentStateSet';
 
-abstract class ComponentFactoryBase extends DisposableBase {
+export interface ComponentStateSet {
+    componentFactoryKey: string;
+    componentsState: Array<any>;
+}
+
+export abstract class ComponentFactoryBase extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
     private _metadata: ComponentFactoryMetadata;
 
@@ -22,10 +26,6 @@ abstract class ComponentFactoryBase extends DisposableBase {
 
     public get shortName(): string {
         return this._metadata.shortName;
-    }
-
-    public get showInAddComponentMenu() : boolean {
-        return this._metadata.showInAddComponentMenu;
     }
 
     protected abstract _createComponent(childContainer: Container, state?: any): any;

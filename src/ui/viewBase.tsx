@@ -1,5 +1,10 @@
 import * as React from 'react';
-import ViewBaseProps from './viewBaseProps';
+import {Router} from 'esp-js';
+
+export interface ViewBaseProps<TModel> {
+    model:TModel;
+    router:Router;
+}
 
 abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<TModel>>
     extends React.Component<TProps, any> {

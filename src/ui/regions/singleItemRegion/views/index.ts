@@ -1,2 +1,1 @@
-export { default as SingleItemRegionView } from './singleItemRegionView';
-export { default as SingleItemRegionViewProps } from './singleItemRegionViewProps';
+export { default as SingleItemRegionView, SingleItemRegionViewProps } from './singleItemRegionView';

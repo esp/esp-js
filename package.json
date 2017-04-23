@@ -1,11 +1,12 @@
 {
-  "name": "accelfin.ui",
-  "version": "1.0.0",
-  "description": "UI Package",
-  "main": "dist/accelfin.js",
+  "name": "esp-js-ui",
+  "version": "0.1.0",
+  "description": "ESP-JS-UI Package",
+  "main": "dist/esp-js-ui.js",
   "typings": "definitions/index.d.ts",
   "scripts": {
     "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
+    "build-dev-for-example": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details && yarn pack && rm -rf ./examples/module-based-app/node_modules/esp-js-ui && mkdir ./examples/module-based-app/node_modules/esp-js-ui && tar -xzf esp-js-ui-v0.1.0.tgz -C ./examples/module-based-app/node_modules/esp-js-ui --strip 1",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
     "start": "webpack --watch",
     "test": "jest"
@@ -26,7 +27,7 @@
     }
   },
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "devDependencies": {
     "awesome-typescript-loader": "^3.1.2",
     "clean-webpack-plugin": "^0.1.16",

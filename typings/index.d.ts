@@ -2,5 +2,4 @@
 /// <reference path="globals/jest/index.d.ts" />
 /// <reference path="globals/query-string/index.d.ts" />
 /// <reference path="globals/react/index.d.ts" />
-/// <reference path="globals/sockjs-client/index.d.ts" />
 /// <reference path="modules/lodash/index.d.ts" />

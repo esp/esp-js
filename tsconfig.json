@@ -14,7 +14,8 @@
     "noEmit": false,
     "declaration": true,
     "declarationDir": "./definitions",
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "outDir" : "./.tsbuild"
   },
   "files": [
     "src/index.ts",

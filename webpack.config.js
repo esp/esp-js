@@ -43,7 +43,6 @@ let config = {
         'classnames': 'classnames',
         'esp-js': 'esp-js',
         'esp-js-react': 'esp-js-react',
-        'lodash': 'lodash',
         'microdi-js': 'microdi-js'
     },
     output: {

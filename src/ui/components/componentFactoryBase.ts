@@ -1,5 +1,4 @@
 import {Container} from 'microdi-js';
-import * as _ from 'lodash';
 import { getComponentFactoryMetadata } from './componentDecorator';
 import {DisposableBase} from 'esp-js';
 import ModelBase from '../modelBase';
@@ -49,10 +48,9 @@ export abstract class ComponentFactoryBase extends DisposableBase {
         if(this._currentComponents.length === 0) {
             return null;
         }
-        let componentsState = _(this._currentComponents)
+        let componentsState = this._currentComponents
             .map(c => c.getState())
-            .compact() // removes nulls
-            .value();
+            .filter(c => c != null);
         return {
             componentFactoryKey: this.componentKey,
             componentsState: componentsState
@@ -62,7 +60,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
     public shutdownAllComponents(): void {
         // copy the array as we have some disposal code that remove items on disposed
         let components = this._currentComponents.slice();
-        _.forEach(components, component => {
+        components.forEach(component => {
             component.dispose();
         });
         this._currentComponents.length = 0;

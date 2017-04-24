@@ -1,5 +1,4 @@
 import {SmartComponent} from 'esp-js-react';
-import * as _ from 'lodash';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
@@ -30,7 +29,7 @@ export default class MultiItemRegionView extends ViewBase<MultiItemRegionView, M
             return null;
         }
         
-        let items = _.map<RegionItem, any>(model.items, (regionItem:RegionItem) => {
+        let items = model.items.map((regionItem:RegionItem) => {
             _log.verbose(`Adding view for model [${regionItem.modelId}] with key [${regionItem.itemKey}]`);
             return (<ItemItemView key={regionItem.itemKey}>
                 <SmartComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext} />

@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Container } from 'microdi-js';
 import ComponentRegistryModel from '../components/componentRegistryModel';
 import StateService from '../state/stateService';
@@ -43,7 +42,7 @@ export default class ModuleLoader {
     unloadModules() {
         // note re reverse the modules here inorder to dispose the service module last,
         // all other modules container are child containers of the service container (see notes above)
-        _(this._modules)
+        this._modules
             .reverse()
             .forEach((module:Module) => {
                 module.unloadLayout();
@@ -52,22 +51,22 @@ export default class ModuleLoader {
         this._modules.length = 0;
     }
     loadLayout(layoutMode:string) {
-        _.forEach(this._modules, (module:Module) => {
+        this._modules.forEach((module:Module) => {
             module.loadLayout(layoutMode);
         });
     }
     _configureModulesContainer() {
-        _.forEach(this._modules, (module:Module) => {
+        this._modules.forEach((module:Module) => {
             module.configureContainer();
         });
     }
     _registerModulesComponents() {
-        _.forEach(this._modules, (module:Module) => {
+        this._modules.forEach((module:Module) => {
             module.registerComponents(this._componentRegistryModel);
         });
     }
     _initialiseModules() {
-        _.forEach(this._modules, (module:Module) => {
+        this._modules.forEach((module:Module) => {
             module.initialise();
         });
     }

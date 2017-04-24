@@ -3,8 +3,5 @@
     "classnames": "registry:dt/classnames#0.0.0+20161113184211",
     "query-string": "registry:dt/query-string#3.0.0+20160331065456",
     "react": "registry:dt/react#0.14.0+20160423065914"
-  },
-  "dependencies": {
-    "lodash": "registry:npm/lodash#4.0.0+20161015015725"
   }
 }

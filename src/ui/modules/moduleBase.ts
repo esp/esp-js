@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Container } from 'microdi-js';
 import {DisposableBase} from 'esp-js';
 import StateService from '../state/stateService';
@@ -63,7 +62,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     registerComponents(componentRegistryModel:ComponentRegistryModel) {
         this._log.debug('Registering components');
         let componentFactories:Array<ComponentFactoryBase> = this.getComponentsFactories();
-        _.forEach(componentFactories, componentFactory => {
+        componentFactories.forEach(componentFactory => {
             componentRegistryModel.registerComponentFactory(componentFactory);
             this.addDisposable(() => {
                 componentRegistryModel.unregisterComponentFactory(componentFactory);
@@ -85,15 +84,16 @@ export abstract class ModuleBase extends DisposableBase implements Module {
             this.unloadLayout();
         }
         this._currentLayout = layoutMode;
-        let componentFactoriesState = this._stateService.getApplicationState(this._moduleKey, this._currentLayout);
+        let componentFactoriesState = this._stateService.getApplicationState<ComponentFactoryState[]>(this._moduleKey, this._currentLayout);
         if (componentFactoriesState === null && this._defaultStateProvider) {
             Guard.isDefined(this._defaultStateProvider, `_defaultStateProvider was not provided for module ${this._moduleKey}`);
             componentFactoriesState = this._defaultStateProvider.getComponentFactoriesState(layoutMode);
         }
+        
         if(componentFactoriesState) {
-            _.forEach(componentFactoriesState, (componentFactoryState:ComponentFactoryState) => {
+            componentFactoriesState.forEach((componentFactoryState:ComponentFactoryState) => {
                 let componentFactory:ComponentFactoryBase = this.container.resolve<ComponentFactoryBase>(componentFactoryState.componentFactoryKey);
-                _.forEach(componentFactoryState.componentsState, (state:any) => {
+                componentFactoryState.componentsState.forEach((state:any) => {
                     componentFactory.createComponent(state);
                 });
             });
@@ -105,14 +105,13 @@ export abstract class ModuleBase extends DisposableBase implements Module {
             return;
         }
         let componentFactories:Array<ComponentFactoryBase> = this.getComponentsFactories();
-        let state = _(componentFactories)
+        let state = componentFactories
             .map(f => f.getAllComponentsState())
-            .compact() // removes nulls
-            .value();
+            .filter(f => f != null);
         if(state.length > 0) {
             this._stateService.saveApplicationState(this._moduleKey, this._currentLayout, state);
         }
-        _.forEach(componentFactories, (factory:ComponentFactoryBase) => {
+        componentFactories.forEach((factory: ComponentFactoryBase) => {
             factory.shutdownAllComponents();
         });
         this._currentLayout = null;

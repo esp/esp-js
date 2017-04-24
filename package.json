@@ -49,7 +49,6 @@
     "classnames": "2.2.5",
     "esp-js": "^1.3.0",
     "esp-js-react": "0.1.6",
-    "lodash": "^4.17.4",
     "microdi-js": "^1.1.0",
     "node-uuid": "^1.4.8",
     "query-string": "^4.3.2",

@@ -1,4 +1,4 @@
-import * as uuid from 'node-uuid';
+import * as uuid from 'uuid';
 import { Container, MicroDiConsts } from 'microdi-js';
 import { ModuleBase, StateService, ComponentFactoryBase, SystemContainerConst } from 'esp-js-ui';
 import TradingModuleDefautStateProvider from './tradingModuleDefaultStateProvider';

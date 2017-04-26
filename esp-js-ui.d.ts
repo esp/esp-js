@@ -176,7 +176,7 @@ export class ComponentRegistryModel extends ModelBase {
     constructor(router:Router);
     public getTitle() : string;
 
-    readonly componentFactories: Iterable<FactoryEntry>;
+    readonly componentFactories: Array<FactoryEntry>;
     postProcess(): void;
     registerComponentFactory(componentFactory:ComponentFactoryBase): void;
     unregisterComponentFactory(componentFactory:ComponentFactoryBase): void;

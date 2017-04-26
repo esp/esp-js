@@ -17,12 +17,7 @@ let plugins = [
       root: process.cwd(),
       verbose: true,
       dry: false
-    }),
-    new CleanWebpackPlugin('definitions', {
-        root: process.cwd(),
-        verbose: true,
-        dry: false
-    }),
+    })
 ];
 
 if(isProduction) {

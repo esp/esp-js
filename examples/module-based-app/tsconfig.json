@@ -14,7 +14,7 @@
     "typeRoots" : ["./typings", "./node_modules/@types"],
     "outDir" : "./.tsbuild"
   },
-  "files": [
-    "./src/shell/views/shellView"
+  "include": [
+    "src/**/*"
   ]
 }

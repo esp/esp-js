@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-export interface ItemItemViewProps  {
+export interface ItemViewProps  {
     className?: string;
     style?: any;
 }
 
-export default class ItemItemView extends React.Component<ItemItemViewProps, any> {
+export default class ItemView extends React.Component<ItemViewProps, any> {
     render() {
         let className = this.props.className ? this.props.className : 'item-item-container'; 
 

@@ -25,4 +25,3 @@ yarn.lock
 .tsbuild
 typings
 !dist
-!definitions

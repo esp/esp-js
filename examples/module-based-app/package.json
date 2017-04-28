@@ -17,12 +17,15 @@
     "html-webpack-plugin": "2.28.0",
     "lodash": "4.17.4",
     "microdi-js": "1.1.0",
-    "node-uuid": "1.4.7",
     "react": "15.4.2",
     "react-dom": "15.4.2",
     "source-map-loader": "0.2.0",
     "typescript": "2.2.1",
+    "uuid": "3.0.1",
     "webpack": "2.3.2",
     "webpack-dev-server": "2.4.2"
+  },
+  "devDependencies": {
+    "@types/uuid": "2.0.29"
   }
 }

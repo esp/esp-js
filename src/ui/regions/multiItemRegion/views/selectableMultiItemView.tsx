@@ -4,7 +4,7 @@ import {SmartComponent} from 'esp-js-react';
 import * as classnames from 'classnames';
 import {Logger} from '../../../../core';
 import ViewBase from '../../../viewBase';
-import ItemItemView from './itemItemView';
+import ItemView from './itemView';
 import MultiItemRegionModel from '../model/multiItemRegionModel';
 import RegionItem from '../../regionItem';
 import {ViewBaseProps} from '../../../viewBase';
@@ -61,9 +61,9 @@ export default class SelectableMultiItemView extends ViewBase<SelectableMultiIte
 
         let grids = model.items.map((item: RegionItem) => {
             if(item === selectedItem) {
-                return (<ItemItemView key={item.itemKey} className='single-item-view-container'>
+                return (<ItemView key={item.itemKey} className='single-item-view-container'>
                     <SmartComponent modelId={item.modelId} viewContext={item.displayContext} />
-                </ItemItemView>);
+                </ItemView>);
             } else {
                 return null;
             }

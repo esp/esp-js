@@ -263,12 +263,12 @@ export class MultiItemRegionModel extends RegionModelBase {
     protected _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
-export interface ItemItemViewProps  {
+export interface ItemViewProps  {
     className?: string;
     style?: any;
 }
 
-export default class ItemItemView extends React.Component<ItemItemViewProps, any> {
+export default class ItemView extends React.Component<ItemViewProps, any> {
     render(): JSX.Element;
 }
 

@@ -4,6 +4,5 @@ npm-debug.log
 .idea/
 yarn-error.log
 dist/
-definitions/
 esp-js-*.tgz
 .tsbuild

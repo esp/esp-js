@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "description": "ESP-JS-UI Package",
   "main": "dist/esp-js-ui.js",
-  "typings": "definitions/index.d.ts",
+  "typings": "esp-js-ui.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js-ui",

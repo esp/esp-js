@@ -5,6 +5,7 @@ import ComponentRegistryModel from '../components/componentRegistryModel';
 import ComponentFactoryBase from '../components/componentFactoryBase';
 import Logger from '../../core/logger';
 import Guard from '../../core/guard';
+import PrerequisiteRegistrar from './prerequisites/prerequisiteRegistrar';
 
 export interface ComponentFactoryState {
     componentFactoryKey:string;
@@ -33,76 +34,8 @@ export interface Module extends DisposableBase {
 
     unloadLayout(): void;
 
-    registerAsyncDataRequirements(registrar: AsyncDataRegistrar): void;
+    registerPrerequisites(registrar: PrerequisiteRegistrar): void;
 }
-
-export class AsyncDataRegistrar {
-    private _stream: Rx.Observable<LoadResult> = Rx.Observable.empty<LoadResult>();
-    private _log: Logger = Logger.create('AsyncDataRegistrar');
-
-    public registerStream(stream: Rx.Observable<any>, name: string): void {
-        let builtStream = Rx.Observable.create<LoadResult>(obs => {
-            obs.onNext({
-               stage: 'starting',
-               name
-            });
-
-            let handleError = (e: Error) => {
-                let message = `Error in async load for ${name}`;
-                this._log.error(message, e);
-
-                obs.onNext({
-                    stage: 'error',
-                    name,
-                    errorMessage: message
-                });
-            };
-
-            return stream
-                .take(1)
-                .ignoreElements()
-                .subscribe(
-                    _ => {},
-                    e =>  handleError(e),
-                    () => {
-                        obs.onNext({
-                            stage: 'completed',
-                            name
-                        });
-                    }
-                );
-        });
-
-        this._stream = this._stream.concat(builtStream);
-    }
-
-    public registerAction(action: () => void, name: string) {
-        let stream = Rx.Observable.create<any>(obs => action());
-        this.registerStream(stream, name);
-    }
-
-    public load(): Rx.Observable<LoadResult> {
-        return this._stream;
-    }
-}
-
-interface StartingLoadResult {
-    stage: 'starting';
-    name: string;
-}
-
-interface CompletedLoadResult {
-    stage: 'completed';
-    name: string;
-}
-
-interface ErroredLoadResult {
-    stage: 'error';
-    name: string;
-    errorMessage: string;
-}
-
-type LoadResult = StartingLoadResult | CompletedLoadResult | ErroredLoadResult;
 
 export abstract class ModuleBase extends DisposableBase implements Module {
     protected container:Container;
@@ -128,6 +61,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     }
 
     abstract configureContainer();
+
+    abstract registerPrerequisites(registrar: PrerequisiteRegistrar): void;
 
     registerComponents(componentRegistryModel:ComponentRegistryModel) {
         this._log.debug('Registering components');

@@ -1,3 +1,4 @@
+export * from './prerequisites';
 export {
     default as ModuleBase,
     Module,

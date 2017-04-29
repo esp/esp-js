@@ -58,6 +58,11 @@ export class Environment {
     static readonly isRunningOnTablet: boolean;
 }
 
+export class Unit {
+    static readonly default: Unit;
+    private constructor();
+}
+
 export class Guard {
     static isDefined(value: any, message: string): void;
     static isFalse(value: any, message: string): void;

@@ -1,10 +1,5 @@
 import Decimal from '../../src/core/decimal';
 describe('Decimal', () => {
-
-    beforeEach(() => {
-
-    });
-
     describe('parse', () => {
         it('returns null when passed invalid value', () => {
             expect(Decimal.parse({})).toEqual(null);

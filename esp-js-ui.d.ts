@@ -3,7 +3,6 @@ import * as esp from 'esp-js';
 import { Router, DisposableBase } from 'esp-js';
 import { Container, Resolver } from 'microdi-js';
 import * as React from 'react';
-import { JSX } from 'react';
 
 declare module 'rx' {
     export interface Observable<T> {

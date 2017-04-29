@@ -8,7 +8,7 @@
     "allowJs": false,
     "jsx": "react",
     "experimentalDecorators":true,
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
     "noEmit": true,
     "typeRoots" : ["./typings", "./node_modules/@types"],

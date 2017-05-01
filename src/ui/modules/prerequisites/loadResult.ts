@@ -1,17 +1,19 @@
-export interface StartingLoadResult {
+interface BaseResult {
+    stage: string;
+    name: string;
+}
+
+export interface StartingResult extends BaseResult {
     stage: 'starting';
-    name: string;
 }
 
-export interface CompletedLoadResult {
+export interface CompletedResult extends BaseResult {
     stage: 'completed';
-    name: string;
 }
 
-export interface ErroredLoadResult {
+export interface ErroredResult extends BaseResult {
     stage: 'error';
-    name: string;
     errorMessage: string;
 }
 
-export type LoadResult = StartingLoadResult | CompletedLoadResult | ErroredLoadResult;
+export type LoadResult = StartingResult | CompletedResult | ErroredResult;

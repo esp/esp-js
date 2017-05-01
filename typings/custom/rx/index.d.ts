@@ -3,6 +3,8 @@ import { Router } from 'esp-js';
 
 declare module 'rx' {
     interface Observable<T> {
+        doOnSubscribe<T>(action: () => void) : Rx.Observable<T>;
+
         // I can't find a way of extending ConnectableObservable in TS
         lazyConnect<T>(disposable: Rx.Disposable) : Rx.Observable<T>;
 

@@ -25,7 +25,7 @@ export default class SystemContainerConfiguration {
         rootContainer.register(SystemContainerConst.region_manager, RegionManager);
         rootContainer.register(SystemContainerConst.scheduler_service, SchedulerService);
 
-        // module loader
+        // functionalModule loader
         rootContainer.register(SystemContainerConst.module_loader, ModuleLoader)
             .inject(
                 MicroDiConsts.owningContainer,

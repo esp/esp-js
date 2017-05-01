@@ -24,13 +24,17 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
         })
         // When we load, stop on the first error result we get
         // But yield it back to the consumer so they know it stopped
-            .takeUntilInclusive((result: LoadResult) =>  result.stage === 'error')
-            .multicast(new Rx.AsyncSubject<LoadResult>())
-            .lazyConnect<LoadResult>(loadDisposable);
+        .takeUntilInclusive((result: LoadResult) =>  result.stage === 'error')
+        .multicast(new Rx.ReplaySubject<LoadResult>(1))
+        .lazyConnect<LoadResult>(loadDisposable);
     }
 
     public registerAction(action: () => void, name: string) {
-        let stream = Rx.Observable.create<any>(obs => action());
+        let stream = Rx.Observable.create<any>(obs => {
+            action();
+            obs.onNext(Unit.default);
+            obs.onCompleted();
+        });
         this.registerStream(stream, name);
     }
 
@@ -75,6 +79,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
                             stage: 'completed',
                             name
                         });
+                        obs.onCompleted();
                     }
                 );
         });

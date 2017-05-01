@@ -1,3 +1,4 @@
+import './doOnSubscribe';
 import './lazyConnect';
 import './retryWithPolicy';
 import './subscribeWithRouter';

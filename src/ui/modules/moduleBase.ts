@@ -6,6 +6,7 @@ import ComponentFactoryBase from '../components/componentFactoryBase';
 import Logger from '../../core/logger';
 import Guard from '../../core/guard';
 import PrerequisiteRegistrar from './prerequisites/prerequisiteRegistrar';
+import Module from './module';
 
 export interface ComponentFactoryState {
     componentFactoryKey:string;
@@ -14,27 +15,6 @@ export interface ComponentFactoryState {
 
 export interface DefaultStateProvider {
     getComponentFactoriesState(layoutMode:string):Array<ComponentFactoryState>;
-}
-
-export interface ModuleConstructor {
-    new (container:Container, stateService:StateService) : Module;
-}
-
-export interface Module extends DisposableBase {
-
-    initialise(): void;
-
-    configureContainer(): void;
-
-    registerComponents(componentRegistryModel:ComponentRegistryModel);
-
-    getComponentsFactories();
-
-    loadLayout(layoutMode:string);
-
-    unloadLayout(): void;
-
-    registerPrerequisites(registrar: PrerequisiteRegistrar): void;
 }
 
 export abstract class ModuleBase extends DisposableBase implements Module {
@@ -55,8 +35,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         this._stateService = stateService;
         this._defaultStateProvider = defaultStateProvider;
         this._log = Logger.create('ModuleBase');
-        // seems to make sense for the module to own it's container,
-        // disposing the module will dispose it's container and thus all it's child components.
+        // seems to make sense for the functionalModule to own it's container,
+        // disposing the functionalModule will dispose it's container and thus all it's child components.
         this.addDisposable(container);
     }
 

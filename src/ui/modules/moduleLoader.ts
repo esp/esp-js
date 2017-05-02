@@ -11,6 +11,7 @@ let _log = Logger.create('ModuleLoader');
 
 export default class ModuleLoader {
     private _modules: Array<{moduleLoader: SingleModuleLoader, name: string}> = [];
+    private _moduleDescriptors: ModuleDescriptor[];
 
     constructor(
         private _container: Container,
@@ -18,14 +19,18 @@ export default class ModuleLoader {
         private _stateService:StateService) {
     }
 
+    public registerModules(...functionalModules: ModuleDescriptor[]): void {
+        this._moduleDescriptors = functionalModules;
+    }
+
     /**
      * takes an array of modules class that will be new-ed up, i.e. constructor functions
      */
-    public loadModules(...functionalModules: ModuleDescriptor[]): Rx.Observable<ModuleLoadResult> {
+    public loadModules(): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             _log.debug('loading modules');
 
-            let moduleLoaders = functionalModules.map(descriptor => {
+            let moduleLoaders = this._moduleDescriptors.map(descriptor => {
                 let singleModuleLoader = new SingleModuleLoader(
                     this._container,
                     this._componentRegistryModel,

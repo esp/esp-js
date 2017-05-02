@@ -214,7 +214,7 @@ export interface DefaultStateProvider {
 }
 
 export interface ModuleConstructor {
-    new (container:Container, stateService:StateService) : Module;
+    new (container: Container, stateService: StateService) : Module;
 }
 
 export interface Module extends DisposableBase {
@@ -237,13 +237,28 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     unloadLayout();
 }
 
+export interface ModuleLoadChange {
+    type: 'loadChange';
+    moduleName: string;
+    description: string;
+}
+
+export interface ModuleLoadErrorChange {
+    type: 'loadError';
+    moduleName: string;
+    errorMessage: string;
+}
+
+export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;
+
 export class ModuleLoader {
     constructor(
         container: Container,
         componentRegistryModel: ComponentRegistryModel,
         stateService:StateService);
 
-    loadModules<TModule extends ModuleConstructor>(...functionalModules:Array<TModule>);
+    registerModules<ModuleConstructor>(...functionalModules:Array<ModuleConstructor>);
+    loadModules() : Rx.Observable<ModuleLoadResult>;
     unloadModules();
     loadLayout(layoutMode:string);
 }

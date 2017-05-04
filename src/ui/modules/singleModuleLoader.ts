@@ -101,13 +101,13 @@ export default class SingleModuleLoader {
                 return {
                     type: 'loadChange',
                     moduleName: this._descriptor.moduleName,
-                    description: `Started  Loading ${result.name}`
+                    description: result.name
                 };
             case 'completed':
                 return {
                     type: 'loadChange',
                     moduleName: this._descriptor.moduleName,
-                    description: `Finished loading ${result.name}`
+                    description: `Finished ${result.name}`
                 };
             case 'error':
                 return {

@@ -251,16 +251,25 @@ export interface ModuleLoadErrorChange {
 
 export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;
 
+interface ModuleDescriptor {
+    factory: ModuleConstructor;
+    moduleName: string;
+}
+
 export class ModuleLoader {
     constructor(
-        container: Container,
-        componentRegistryModel: ComponentRegistryModel,
-        stateService:StateService);
+        _container: Container,
+        _componentRegistryModel: ComponentRegistryModel,
+        _stateService:StateService);
 
-    registerModules<ModuleConstructor>(...functionalModules:Array<ModuleConstructor>);
-    loadModules() : Rx.Observable<ModuleLoadResult>;
-    unloadModules();
-    loadLayout(layoutMode:string);
+    public registerModules(...functionalModules: ModuleDescriptor[]): void;
+
+    /**
+     * takes an array of modules class that will be new-ed up, i.e. constructor functions
+     */
+    public loadModules(): Rx.Observable<ModuleLoadResult>;
+    public unloadModules(): void;
+    public loadLayout(layoutMode:string): void;
 }
 
 export class MultiItemRegionEventConst {
@@ -386,3 +395,29 @@ export abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<
     // This view is doing something by way of the generic constraint it's putting on the props, but that's not exactly code reuse.
     // Keeping this here for now, might delete at some point if we don't use it
 }
+
+interface BaseResult {
+    stage: string;
+    name: string;
+}
+
+export interface StartingResult extends BaseResult {
+    stage: 'starting';
+}
+
+export interface CompletedResult extends BaseResult {
+    stage: 'completed';
+}
+
+export interface ErroredResult extends BaseResult {
+    stage: 'error';
+    errorMessage: string;
+}
+
+export type LoadResult = StartingResult | CompletedResult | ErroredResult;
+
+export interface PrerequisiteRegistrar {
+    registerStream(stream: Rx.Observable<Unit>, name: string): void;
+    registerAction(action: () => void, name: string);
+}
+

@@ -12,7 +12,9 @@ import {
     LiteralResolver,
     SystemContainerConfiguration,
     SystemContainerConst,
-    ModuleLoader
+    ModuleLoader,
+    ModuleDescriptor,
+    ModuleLoadChange
 } from 'esp-js-ui';
 import ShellModel from './models/shellModel';
 import ShellModuleContainerConst from './shellModuleContainerConst';
@@ -55,6 +57,7 @@ class ShellBootstrapper {
             .register(ShellModuleContainerConst.shell_model, ShellModel)
             .inject(
                 SystemContainerConst.router,
+                SystemContainerConst.module_loader,
                 ShellModuleContainerConst.workspace_region,
                 ShellModuleContainerConst.blotter_region
             );
@@ -62,12 +65,18 @@ class ShellBootstrapper {
 
     _loadModules(permissions:Array<string>) {
         this._moduleLoader = this._container.resolve<ModuleLoader>(ShellModuleContainerConst.module_loader);
-        let modulesToLoad = [];
+        let modulesToLoad: ModuleDescriptor[] = [];
         if(permissions.indexOf(TradingModule.requiredPermission) >= 0) {
-            modulesToLoad.push(TradingModule);
+            let descriptor: ModuleDescriptor = {
+                factory:  TradingModule,
+                moduleName: 'Trading Module'
+            };
+            modulesToLoad.push(descriptor);
         }
-        this._moduleLoader.loadModules(...modulesToLoad);
-        this._moduleLoader.loadLayout('default-layout-mode');
+        this._moduleLoader.registerModules(...modulesToLoad);
+
+        let shellModel = this._container.resolve<ShellModel>(ShellModuleContainerConst.shell_model);
+        shellModel.init();
     }
 
     _displayShell() {

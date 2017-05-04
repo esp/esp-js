@@ -64,4 +64,5 @@ export default class ModuleLoader {
             _log.debug(`Loading layout for ${moduleItem.name}`);
             moduleItem.moduleLoader.functionalModule.loadLayout(layoutMode);
         });
+    }
 }

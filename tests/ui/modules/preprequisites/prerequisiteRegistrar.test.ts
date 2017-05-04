@@ -212,7 +212,19 @@ describe('Default Prerequisite Registrar Tests', () => {
         });
 
         it('Should handle a case where a stream does not yield and just completes', () => {
+            let stream = new Rx.Subject();
 
+            let counter = 0;
+            registrar.registerStream(stream, 'stream1');
+
+            registrar.load()
+                .subscribe(() => {}, () => {}, () => {
+                    counter++;
+                });
+
+            expect(counter).toEqual(0);
+            stream.onCompleted();
+            expect(counter).toEqual(1);
         });
     });
 });

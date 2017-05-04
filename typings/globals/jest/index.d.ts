@@ -3,11 +3,11 @@
 declare namespace Jest {
 	interface JestStatic {
 		/**
-		 * Disables automatic mocking in the functionalModule loader.
+		 * Disables automatic mocking in the module loader.
 		 */
 		autoMockOff(): void;
 		/**
-		 * Re-enables automatic mocking in the functionalModule loader.
+		 * Re-enables automatic mocking in the module loader.
 		 */
 		autoMockOn(): void;
 		/**
@@ -28,12 +28,12 @@ declare namespace Jest {
 		 */
 		genMockFunction(): Mock;
 		/**
-		 * Given the name of a functionalModule, use the automatic mocking system to generate a mocked version of the functionalModule for you.
+		 * Given the name of a module, use the automatic mocking system to generate a mocked version of the module for you.
 		 */
 		genMockFromModule(moduleName: string): Mock;
 		/**
-		 * Indicates that the functionalModule system should always return a mocked version of the specified functionalModule from require()
-		 * (e.g. that it should never return the real functionalModule).
+		 * Indicates that the module system should always return a mocked version of the specified module from require()
+		 * (e.g. that it should never return the real module).
 		 */
 		mock(moduleName: string): Mock;
 		/**
@@ -50,11 +50,11 @@ declare namespace Jest {
 		 */
 		runOnlyPendingTimers(): void;
 		/**
-		 * Explicitly supplies the mock object that the functionalModule system should return for the specified functionalModule.
+		 * Explicitly supplies the mock object that the module system should return for the specified module.
 		 */
 		setMock(moduleName: string, moduleExports: any): void;
 		/**
-		 * Indicates that the functionalModule system should never return a mocked version of the specified functionalModule from require() (e.g. that it should always return the real functionalModule).
+		 * Indicates that the module system should never return a mocked version of the specified module from require() (e.g. that it should always return the real module).
 		 */
 		unmock(moduleName: string): void;
 		/**
@@ -127,11 +127,11 @@ declare namespace Jest {
 // Node require extensions
 interface NodeRequire {
 	/**
-	 * Returns the actual functionalModule instead of a mock, bypassing all checks on whether the functionalModule should receive a mock implementation or not.
+	 * Returns the actual module instead of a mock, bypassing all checks on whether the module should receive a mock implementation or not.
 	 */
 	requireActual(moduleName: string): any;
 	/**
-	 * Returns a mock functionalModule instead of the actual functionalModule, bypassing all checks on whether the functionalModule should be required normally or not.
+	 * Returns a mock module instead of the actual module, bypassing all checks on whether the module should be required normally or not.
 	 */
 	requireMock(moduleName: string): Jest.Mock;
 }

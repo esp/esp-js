@@ -28,8 +28,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         this._stateService = stateService;
         this._defaultStateProvider = defaultStateProvider;
         this._log = Logger.create('ModuleBase');
-        // seems to make sense for the functionalModule to own it's container,
-        // disposing the functionalModule will dispose it's container and thus all it's child components.
+        // seems to make sense for the module to own it's container,
+        // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
     }
 

@@ -7,15 +7,8 @@ import Logger from '../../core/logger';
 import Guard from '../../core/guard';
 import PrerequisiteRegistrar from './prerequisites/prerequisiteRegistrar';
 import Module from './module';
-
-export interface ComponentFactoryState {
-    componentFactoryKey:string;
-    componentsState: Array<any>;
-}
-
-export interface DefaultStateProvider {
-    getComponentFactoriesState(layoutMode:string):Array<ComponentFactoryState>;
-}
+import DefaultStateProvider from './defaultStateProvider';
+import ComponentFactoryState from './componentFactoryState';
 
 export abstract class ModuleBase extends DisposableBase implements Module {
     protected container:Container;

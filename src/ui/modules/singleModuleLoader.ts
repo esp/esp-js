@@ -63,8 +63,6 @@ export default class SingleModuleLoader {
 
             let initStream = this._buildInitStream(this.functionalModule);
 
-            // Don`t forget about initialising the functionalModule
-            // and then yielding a complete
             return this._preReqsLoader
                 .load()
                 .map((result: LoadResult) => this._mapLoadResult(result))
@@ -76,6 +74,15 @@ export default class SingleModuleLoader {
     private _buildInitStream(functionalModule: Module): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             try {
+                // We yield an "Initialising" change, just in case the .initialise() call 
+                // is blocking and halts the UI for a while. We don't control the module
+                // so we'd rather let consumers know where it's stuck
+                obs.onNext({
+                    type: 'loadChange',
+                    moduleName: this._descriptor.moduleName,
+                    description: `Initialising Module ${this._descriptor.moduleName}`
+                });
+
                 functionalModule.initialise();
                 obs.onNext({
                     type: 'loadChange',
@@ -92,7 +99,7 @@ export default class SingleModuleLoader {
                 return () => {};
             }
         })
-            .take(1);
+        .take(1);
     }
 
     private _mapLoadResult(result: LoadResult) : ModuleLoadResult {

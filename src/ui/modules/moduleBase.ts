@@ -5,34 +5,10 @@ import ComponentRegistryModel from '../components/componentRegistryModel';
 import ComponentFactoryBase from '../components/componentFactoryBase';
 import Logger from '../../core/logger';
 import Guard from '../../core/guard';
-
-export interface ComponentFactoryState {
-    componentFactoryKey:string;
-    componentsState: Array<any>;
-}
-
-export interface DefaultStateProvider {
-    getComponentFactoriesState(layoutMode:string):Array<ComponentFactoryState>;
-}
-
-export interface ModuleConstructor {
-    new (container:Container, stateService:StateService) : Module;
-}
-
-export interface Module extends DisposableBase {
-
-    initialise() : void;
-
-    configureContainer() : void ;
-
-    registerComponents(componentRegistryModel:ComponentRegistryModel);
-
-    getComponentsFactories();
-
-    loadLayout(layoutMode:string);
-
-    unloadLayout() : void;
-}
+import PrerequisiteRegistrar from './prerequisites/prerequisiteRegistrar';
+import Module from './module';
+import DefaultStateProvider from './defaultStateProvider';
+import ComponentFactoryState from './componentFactoryState';
 
 export abstract class ModuleBase extends DisposableBase implements Module {
     protected container:Container;
@@ -58,6 +34,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     }
 
     abstract configureContainer();
+
+    abstract registerPrerequisites(registrar: PrerequisiteRegistrar): void;
 
     registerComponents(componentRegistryModel:ComponentRegistryModel) {
         this._log.debug('Registering components');

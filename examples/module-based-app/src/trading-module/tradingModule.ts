@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import { Container, MicroDiConsts } from 'microdi-js';
-import { ModuleBase, StateService, ComponentFactoryBase, SystemContainerConst } from 'esp-js-ui';
+import { ModuleBase, StateService, ComponentFactoryBase, SystemContainerConst, PrerequisiteRegistrar } from 'esp-js-ui';
 import TradingModuleDefautStateProvider from './tradingModuleDefaultStateProvider';
 import TradingModuleContainerConst from './tradingModuleContainerConst';
 import CashTileComponentFactory from './cash-tile/cashTileComponentFactory';
@@ -52,5 +52,9 @@ export default class TradingModule extends ModuleBase {
 
     getComponentsFactories():Array<ComponentFactoryBase> {
         return this.container.resolveGroup(this._componentFactoryGroupId);
+    }
+
+    registerPrerequisites(registrar: PrerequisiteRegistrar): void {
+        registrar.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
     }
 }

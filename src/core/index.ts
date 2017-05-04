@@ -8,4 +8,5 @@ export { default as Environment } from './environment';
 export * from './logger';
 export { default as Logger } from './logger';
 export * from './schedulerService';
+export { default as Unit } from './unit';
 export { default as Utils } from './utils';

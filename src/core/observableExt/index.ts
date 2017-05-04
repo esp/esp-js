@@ -1,4 +1,6 @@
-// retryWithPolicy doesn't have exports but it does add ext methods to rx
+import './doOnSubscribe';
+import './lazyConnect';
 import './retryWithPolicy';
 import './subscribeWithRouter';
+import './takeUntilInclusive';
 export { default as RetryPolicy } from './retryPolicy';

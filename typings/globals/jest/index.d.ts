@@ -32,7 +32,7 @@ declare namespace Jest {
 		 */
 		genMockFromModule(moduleName: string): Mock;
 		/**
-		 * Indicates that the module system should always return a mocked version of the specified module from require() 
+		 * Indicates that the module system should always return a mocked version of the specified module from require()
 		 * (e.g. that it should never return the real module).
 		 */
 		mock(moduleName: string): Mock;

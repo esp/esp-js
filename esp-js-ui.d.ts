@@ -58,6 +58,11 @@ export class Environment {
     static readonly isRunningOnTablet: boolean;
 }
 
+export class Unit {
+    static readonly default: Unit;
+    private constructor();
+}
+
 export class Guard {
     static isDefined(value: any, message: string): void;
     static isFalse(value: any, message: string): void;
@@ -209,7 +214,7 @@ export interface DefaultStateProvider {
 }
 
 export interface ModuleConstructor {
-    new (container:Container, stateService:StateService) : Module;
+    new (container: Container, stateService: StateService) : Module;
 }
 
 export interface Module extends DisposableBase {
@@ -232,15 +237,39 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     unloadLayout();
 }
 
+export interface ModuleLoadChange {
+    type: 'loadChange';
+    moduleName: string;
+    description: string;
+}
+
+export interface ModuleLoadErrorChange {
+    type: 'loadError';
+    moduleName: string;
+    errorMessage: string;
+}
+
+export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;
+
+interface ModuleDescriptor {
+    factory: ModuleConstructor;
+    moduleName: string;
+}
+
 export class ModuleLoader {
     constructor(
-        container: Container,
-        componentRegistryModel: ComponentRegistryModel,
-        stateService:StateService);
+        _container: Container,
+        _componentRegistryModel: ComponentRegistryModel,
+        _stateService:StateService);
 
-    loadModules<TModule extends ModuleConstructor>(...functionalModules:Array<TModule>);
-    unloadModules();
-    loadLayout(layoutMode:string);
+    public registerModules(...functionalModules: ModuleDescriptor[]): void;
+
+    /**
+     * takes an array of modules class that will be new-ed up, i.e. constructor functions
+     */
+    public loadModules(): Rx.Observable<ModuleLoadResult>;
+    public unloadModules(): void;
+    public loadLayout(layoutMode:string): void;
 }
 
 export class MultiItemRegionEventConst {
@@ -366,3 +395,29 @@ export abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<
     // This view is doing something by way of the generic constraint it's putting on the props, but that's not exactly code reuse.
     // Keeping this here for now, might delete at some point if we don't use it
 }
+
+interface BaseResult {
+    stage: string;
+    name: string;
+}
+
+export interface StartingResult extends BaseResult {
+    stage: 'starting';
+}
+
+export interface CompletedResult extends BaseResult {
+    stage: 'completed';
+}
+
+export interface ErroredResult extends BaseResult {
+    stage: 'error';
+    errorMessage: string;
+}
+
+export type LoadResult = StartingResult | CompletedResult | ErroredResult;
+
+export interface PrerequisiteRegistrar {
+    registerStream(stream: Rx.Observable<Unit>, name: string): void;
+    registerAction(action: () => void, name: string);
+}
+

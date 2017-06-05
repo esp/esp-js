@@ -18,6 +18,7 @@
 
 
 export function observeEvent(eventName:string, observationStage?:string): any;
+export function observeEvent(eventName:string, predicate?:(model: any, ev: any) => boolean): any;
 
 export function observeModelChangedEvent(modelId:string): any;
 

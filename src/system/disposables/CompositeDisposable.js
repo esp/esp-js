@@ -20,8 +20,8 @@ import Guard from '../Guard';
 import DisposableWrapper from './DisposableWrapper';
 
 export default class CompositeDisposable {
-    constructor() {
-        this._disposables = [];
+    constructor(...disposables) {
+        this._disposables = [...disposables];
         this._isDisposed = false;
     }
     get isDisposed() {

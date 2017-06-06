@@ -49,4 +49,14 @@ describe('CompositeDisposable', () => {
         disposables.add(disposable);
         expect(disposable.isDisposed).toEqual(true);
     });
+
+    it('should accept a set of disposables in the constructor',  () => {
+        let disposable1 = new Disposable();
+        let disposable2 = new Disposable();
+
+        disposables = new system.disposables.CompositeDisposable(disposable1, disposable2);
+        disposables.dispose();
+        expect(disposable1.isDisposed).toEqual(true);
+        expect(disposable2.isDisposed).toEqual(true); 
+    })
 });

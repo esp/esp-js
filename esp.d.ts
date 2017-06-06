@@ -88,6 +88,7 @@ export abstract class DisposableBase {
 }
 
 export class CompositeDisposable {
+    constructor(...disposable:Array<Disposable|(() => void)>);
     isDisposed : boolean;
     add(disposable : Disposable) : void;
     add(disposable : () => void) : void;
@@ -110,6 +111,13 @@ export interface EventObservable<TModel, TEvent, TContext> {
     where(predicate: (event : TEvent, context : TContext, model : TModel) => boolean) : EventObservable<TModel, TEvent, TContext>;
     take(count:number) : EventObservable<TModel, TEvent, TContext>;
 }
+
+export interface EventObservableStatic {
+    create<TModel, TEvent, TContext>(observer: (observer: EventObserver<TModel, TEvent, TContext>) => Disposable | Function | void): EventObservable<TModel, TEvent, TContext>;
+    merge<TModel, TEvent, TContext>(...observables: EventObservable<TModel, TEvent, TContext>[]): EventObservable<TModel, TEvent, TContext>;
+}
+
+export var EventObservable: EventObservableStatic;
 
 export interface Observer<T> {
     onNext(model : T) : void;

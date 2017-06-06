@@ -20,8 +20,11 @@ import DisposableWrapper from './DisposableWrapper';
 
 export default class CompositeDisposable {
     constructor(...disposables) {
-        this._disposables = [...disposables];
+        this._disposables = [];
         this._isDisposed = false;
+        for(let disposable of disposables) {
+            this.add(disposable);
+        }
     }
     get isDisposed() {
         return this._isDisposed;

@@ -1,9 +1,9 @@
 import * as queryString from 'query-string';
 import Utils from './utils';
 
-/* tslint:disable */
-// http://stackoverflow.com/a/11381730
-let isRunningOnTablet = function () {
+const _isRunningOnTablet = (): boolean =>  {
+    /* tslint:disable */
+    // http://stackoverflow.com/a/11381730
     if(!navigator || !window) {
         return false;
     }
@@ -15,10 +15,16 @@ let isRunningOnTablet = function () {
      }
     })(navigator.userAgent || navigator.vendor || window['opera']);
     return check;
-}();
+}
 
 export default class Environment {
+    private static _memoised: boolean = null;
+
     static get isRunningOnTablet(): boolean {
-        return isRunningOnTablet || Utils.parseBool(queryString.parse(location.search).isRunningOnTablet);
+        Environment._memoised = Environment._memoised === null 
+            ? _isRunningOnTablet() 
+            : Environment._memoised;
+
+        return Environment._memoised || Utils.parseBool(queryString.parse(location.search).isRunningOnTablet);
     }
 }

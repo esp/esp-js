@@ -18,10 +18,11 @@
 
 import esp from 'esp-js';
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export default class RouterProvider extends React.Component {
     static childContextTypes = {
-        router: React.PropTypes.instanceOf(esp.Router).isRequired
+        router: PropTypes.instanceOf(esp.Router).isRequired
     };
     getChildContext() {
         return {

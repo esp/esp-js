@@ -220,6 +220,7 @@ export interface ModuleConstructor {
 export interface Module extends DisposableBase {
     initialise() : void;
     configureContainer() : void ;
+    registerPrerequisites(registrar: PrerequisiteRegistrar): void;
     registerComponents(componentRegistryModel:ComponentRegistryModel);
     getComponentsFactories();
     loadLayout(layoutMode:string);
@@ -230,6 +231,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     protected container:Container;
     constructor(moduleKey, container:Container, stateService:StateService, defaultStateProvider?:DefaultStateProvider);
     abstract configureContainer();
+    abstract registerPrerequisites(registrar: PrerequisiteRegistrar): void;
     registerComponents(componentRegistryModel:ComponentRegistryModel);
     getComponentsFactories() : Array<ComponentFactoryBase>;
     initialise() : void;

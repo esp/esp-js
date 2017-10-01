@@ -18,6 +18,7 @@ declare module 'rx' {
             onError?: (exception: any, model: TModel) => void,
             onCompleted?: (model: TModel) => void): Rx.Disposable;
 
+        lazyConnect<T>(disposable: Rx.Disposable) : Rx.Observable<T>;
     }
 }
 

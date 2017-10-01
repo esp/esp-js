@@ -18,16 +18,17 @@
 
 import * as esp from 'esp-js';
 import * as React from 'react';
+import PropTypes from 'prop-types';
 import { createViewForModel } from './viewBindingDecorator';
 
 export default class SmartComponent extends React.Component {
     static propTypes = {
-        modelId: React.PropTypes.string.isRequired,
-        view: React.PropTypes.func,
-        viewContext: React.PropTypes.string,
+        modelId: PropTypes.string.isRequired,
+        view: PropTypes.func,
+        viewContext: PropTypes.string,
     }
     static contextTypes = {
-        router: React.PropTypes.instanceOf(esp.Router).isRequired
+        router: PropTypes.instanceOf(esp.Router).isRequired
     }
     constructor() {
         super();

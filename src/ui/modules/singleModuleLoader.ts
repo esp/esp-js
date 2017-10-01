@@ -1,3 +1,4 @@
+import * as Rx from 'rx';
 import DefaultPrerequisiteRegistrar from './prerequisites/defaultPrerequisiteRegistrar';
 import Logger from '../../core/logger';
 import {Container} from 'microdi-js';

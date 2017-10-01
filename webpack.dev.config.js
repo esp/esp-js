@@ -29,6 +29,12 @@ module.exports = {
             commonjs: 'react',
             amd: 'react'
         },
+        'prop-types': {
+            root: 'prop-types',
+            commonjs2: 'prop-types',
+            commonjs: 'prop-types',
+            amd: 'prop-types'
+        },
         'esp-js': {
             root: 'esp',
             commonjs2: 'esp-js',

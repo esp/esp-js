@@ -85,40 +85,51 @@ export declare enum Level {
     info = 2,
     warn = 3,
     error = 4,
+    none = 5
 }
+
+export type MarkerLabels = {[key:string]: string};
+
 export declare type LogEvent = {
     logger: string;
     level: Level;
     color: string;
     args: IArguments;
+    labels: MarkerLabels;
 };
+
+export interface Sink {
+    log(logEvent:LogEvent): void;
+}
+
+export class ConsoleSink implements Sink {
+    log(logEvent:LogEvent): void;
+}
+
+export class CompositeSink implements Sink {
+    constructor(...sinks: Array<Sink>);
+    log(logEvent: LogEvent);
+    addSinks(...sinks:Array<Sink>);
+}
+
+export class LoggingConfig {
+    static setLevel(level: Level): void;
+    static addSinks(...sink: Sink[]): void;
+}
+
 export class Logger {
-    private _name;
     constructor(name: string);
     static create(name: string): Logger;
-    static setLevel(level: Level): void;
-    static setSink(sink: (logEvent: LogEvent) => {}): void;
-    /**
-     * verbose(message [, ...args]): expects a string log message and optional object to dump to console
-     */
-    verbose(message: string, objectToDumpToConsole?: any): void;
-    /**
-     * debug(message [, ...args]): expects a string log message and optional object to dump to console
-     */
-    debug(message: string, objectToDumpToConsole?: any): void;
-    /**
-     * info(message [, ...args]): expects a string log message and optional object to dump to console
-     */
-    info(message: string, objectToDumpToConsole?: any): void;
-    /**
-     * warn(message [, ...args]): expects a string log message and optional object to dump to console
-     */
-    warn(message: string, objectToDumpToConsole?: any): void;
-    /**
-     * error(message [, ...args]): expects a string log message and optional object to dump to console
-     */
-    error(message: string, objectToDumpToConsole?: any): void;
-    private _log(level, color, args);
+    verbose(message: string, additionalDetails?: any): void;
+    verbose(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    debug(message: string, additionalDetails?: any): void;
+    debug(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    info(message: string, additionalDetails?: any): void;
+    info(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    warn(message: string, additionalDetails?: any): void;
+    warn(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    error(message: string, additionalDetails?: any): void;
+    error(labels:MarkerLabels, message: string, additionalDetails?: any): void;
 }
 
 export interface ISchedulerService {

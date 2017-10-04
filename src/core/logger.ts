@@ -13,6 +13,7 @@ export enum Level {
 export type MarkerLabels = {[key:string]: string};
 
 export type LogEvent = {
+    timestamp: Date,
     logger: string,
     level: Level,
     color: string,
@@ -139,6 +140,7 @@ export default class Logger {
         }
 
         _sink.log({
+            timestamp: new Date(),
             logger: this._name,
             level: level,
             color: color || 'black',

@@ -91,6 +91,7 @@ export declare enum Level {
 export type MarkerLabels = {[key:string]: string};
 
 export declare type LogEvent = {
+    timestamp: Date;
     logger: string;
     level: Level;
     color: string;

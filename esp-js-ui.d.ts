@@ -88,15 +88,16 @@ export declare enum Level {
     none = 5
 }
 
-export type MarkerLabels = {[key:string]: string};
+export type Markers = {[key:string]: string};
 
 export declare type LogEvent = {
-    timestamp: Date;
-    logger: string;
-    level: Level;
-    color: string;
-    args: IArguments;
-    labels: MarkerLabels;
+    timestamp: Date,
+    logger: string,
+    level: Level,
+    color: string,
+    message: string;
+    additionalDetails: any[];
+    markers: Markers;
 };
 
 export interface Sink {
@@ -122,15 +123,15 @@ export class Logger {
     constructor(name: string);
     static create(name: string): Logger;
     verbose(message: string, additionalDetails?: any): void;
-    verbose(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    verbose(markers:Markers, message: string, additionalDetails?: any): void;
     debug(message: string, additionalDetails?: any): void;
-    debug(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    debug(markers:Markers, message: string, additionalDetails?: any): void;
     info(message: string, additionalDetails?: any): void;
-    info(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    info(markers:Markers, message: string, additionalDetails?: any): void;
     warn(message: string, additionalDetails?: any): void;
-    warn(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    warn(markers:Markers, message: string, additionalDetails?: any): void;
     error(message: string, additionalDetails?: any): void;
-    error(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    error(markers:Markers, message: string, additionalDetails?: any): void;
 }
 
 export interface ISchedulerService {

@@ -10,15 +10,16 @@ export enum Level {
     none
 };
 
-export type MarkerLabels = {[key:string]: string};
+export type Markers = {[key:string]: string};
 
 export type LogEvent = {
     timestamp: Date,
     logger: string,
     level: Level,
     color: string,
-    args: any[];
-    labels: MarkerLabels;
+    message: string;
+    additionalDetails: any[];
+    markers: Markers;
 }
 
 export interface Sink {
@@ -28,8 +29,8 @@ export interface Sink {
 export class ConsoleSink implements Sink {
     public log(logEvent: LogEvent) : void {
         let dateTime = new Date();
-        const toLog = [`%c[${dateTime.toLocaleString()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}]`, `color:${logEvent.color}`];
-        toLog.push.apply(toLog, logEvent.args);
+        const toLog = [`%c[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logEvent.message}`, `color:${logEvent.color}`];
+        toLog.push.apply(toLog, logEvent.additionalDetails);
         console.log.apply(console, toLog);
     };
 }
@@ -80,7 +81,7 @@ export default class Logger {
      * verbose(message [, ...args]): expects a string log message and optional object to dump to console
      */
     verbose(message: string, additionalDetails?: any): void;
-    verbose(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    verbose(markers:Markers, message: string, additionalDetails?: any): void;
     verbose(...args: any[]) : void {
         if (_currentLevel <= Level.verbose) {
             this._log(Level.verbose, null, args);
@@ -91,7 +92,7 @@ export default class Logger {
      * debug(message [, ...args]): expects a string log message and optional object to dump to console
      */
     debug(message: string, additionalDetails?: any): void;
-    debug(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    debug(markers:Markers, message: string, additionalDetails?: any): void;
     debug(...args: any[]) : void {
         if (_currentLevel <= Level.debug) {
             this._log(Level.debug, null, args);
@@ -102,7 +103,7 @@ export default class Logger {
      * info(message [, ...args]): expects a string log message and optional object to dump to console
      */
     info(message: string, additionalDetails?: any): void;
-    info(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    info(markers:Markers, message: string, additionalDetails?: any): void;
     info(...args: any[]) : void {
         if (_currentLevel <= Level.info) {
             this._log(Level.info, 'blue', args);
@@ -113,7 +114,7 @@ export default class Logger {
      * warn(message [, ...args]): expects a string log message and optional object to dump to console
      */
     warn(message: string, additionalDetails?: any): void;
-    warn(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    warn(markers:Markers, message: string, additionalDetails?: any): void;
     warn(...args: any[]) : void {
         if (_currentLevel <= Level.warn) {
             this._log(Level.warn, 'orange', args);
@@ -124,7 +125,7 @@ export default class Logger {
      * error(message [, ...args]): expects a string log message and optional object to dump to console
      */
     error(message: string, additionalDetails?: any): void;
-    error(labels:MarkerLabels, message: string, additionalDetails?: any): void;
+    error(markers:Markers, message: string, additionalDetails?: any): void;
     error(...args: any[]) : void {
         if (_currentLevel <= Level.error) {
             this._log(Level.error, 'red', args);
@@ -133,10 +134,17 @@ export default class Logger {
 
     private _log(level: Level, color: string | null, args: any[]): void {
 
-        let labels : MarkerLabels = {};
+        let markers : Markers = {};
+        let message : string;
+        let additionalDetails : any[];
 
         if(!Utils.isString(args[0])) {
-            labels = args[0];
+            markers = args[0];
+            message = args[1];
+            additionalDetails = args.splice(2, args.length - 2);
+        } else {
+            message = args[0];
+            additionalDetails = args.splice(1, args.length - 1);
         }
 
         _sink.log({
@@ -144,8 +152,9 @@ export default class Logger {
             logger: this._name,
             level: level,
             color: color || 'black',
-            args: args,
-            labels: labels
+            message: message,
+            additionalDetails: additionalDetails,
+            markers: markers
          });
     }
 }

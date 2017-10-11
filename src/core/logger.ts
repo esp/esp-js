@@ -29,9 +29,12 @@ export interface Sink {
 export class ConsoleSink implements Sink {
     public log(logEvent: LogEvent) : void {
         let dateTime = new Date();
-        const toLog = [`%c[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logEvent.message}`, `color:${logEvent.color}`];
-        toLog.push.apply(toLog, logEvent.additionalDetails);
-        console.log.apply(console, toLog);
+        let message = `[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logEvent.message}`;
+        if(logEvent.markers && Object.keys(logEvent.markers).length) {
+            console.log(message, logEvent.markers, ...logEvent.additionalDetails);
+        } else {
+            console.log(message, ...logEvent.additionalDetails);
+        }
     };
 }
 

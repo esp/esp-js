@@ -29,13 +29,13 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
         .lazyConnect<LoadResult>(loadDisposable);
     }
 
-    public registerAction(action: () => void, name: string) {
+    public registerAction(action: () => void, name: string, errorMessage?: (e: Error) => string): void {
         let stream = Rx.Observable.create<any>(obs => {
             action();
             obs.onNext(Unit.default);
             obs.onCompleted();
         });
-        this.registerStream(stream, name);
+        this.registerStream(stream, name, errorMessage);
     }
 
     public load(): Rx.Observable<LoadResult> {
@@ -44,12 +44,12 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
         return this._publishedStream;
     }
 
-    public registerStream(stream: Rx.Observable<Unit>, name: string): void {
-        let builtStream = this._buildStream(stream, name);
+    public registerStream(stream: Rx.Observable<Unit>, name: string, errorMessage?: (e: Error) => string): void {
+        let builtStream = this._buildStream(stream, name, errorMessage);
         this._stream = this._stream.concat(builtStream);
     }
 
-    private _buildStream(stream: Rx.Observable<Unit>, name: string) : Rx.Observable<LoadResult> {
+    private _buildStream(stream: Rx.Observable<Unit>, name: string, errorMessage: (e: Error) => string = e => e.message) : Rx.Observable<LoadResult> {
         return Rx.Observable.create<LoadResult>(obs => {
             obs.onNext({
                 stage: 'starting',
@@ -63,7 +63,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
                 obs.onNext({
                     stage: 'error',
                     name,
-                    errorMessage: message
+                    errorMessage: errorMessage(e)
                 });
             };
 

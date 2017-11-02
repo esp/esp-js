@@ -257,12 +257,14 @@ export interface ModuleLoadChange {
     type: 'loadChange';
     moduleName: string;
     description: string;
+    prerequisiteResult: LoadResult;
 }
 
 export interface ModuleLoadErrorChange {
     type: 'loadError';
     moduleName: string;
     errorMessage: string;
+    prerequisiteResult: LoadResult;
 }
 
 export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;
@@ -433,7 +435,6 @@ export interface ErroredResult extends BaseResult {
 export type LoadResult = StartingResult | CompletedResult | ErroredResult;
 
 export interface PrerequisiteRegistrar {
-    registerStream(stream: Rx.Observable<Unit>, name: string): void;
-    registerAction(action: () => void, name: string);
+    registerStream(stream: Rx.Observable<Unit>, name: string, errorMessage?: (e: Error) => string): void;
+    registerAction(action: () => void, name: string, errorMessage?: (e: Error) => string): void;
 }
-

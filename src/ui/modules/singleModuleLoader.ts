@@ -123,7 +123,6 @@ export default class SingleModuleLoader {
                 return {
                     type: 'loadError',
                     moduleName: this._descriptor.moduleName,
-                    description: `Error executing pre-requisite ${result.name}`,
                     errorMessage: result.errorMessage,
                     prerequisiteResult: result
                 };

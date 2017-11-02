@@ -9,7 +9,7 @@ import {
     SingleItemRegionModel,
     ModuleLoader,
     IdFactory,
-    ModuleLoadChange
+    ModuleLoadResult
 } from 'esp-js-ui';
 
 let _log = Logger.create('ShellModel');
@@ -36,12 +36,17 @@ export default class ShellModel extends ModelBase {
                 message: `Loading Modules`
             };
 
-            this.addDisposable(this._moduleLoader.loadModules().subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadChange) => {
+            this.addDisposable(this._moduleLoader.loadModules().subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
                 _log.debug(`Load Change detected`, change);
-                this.splashScreen = {
-                    state: SplashScreenState.Loading,
-                    message: change.description
-                };
+
+                if (change.type === 'loadError') {
+                    _log.error(`Pre-requisite failed. Pre Req Name: ${change.prerequisiteResult.name}, Error Message: ${change.errorMessage}`);
+                } else {
+                    this.splashScreen = {
+                        state: SplashScreenState.Loading,
+                        message: change.description
+                    };
+                }
             },
             e => {
                 _log.error(`Error in the module load stream.`, e);

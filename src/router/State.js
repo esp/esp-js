@@ -23,6 +23,7 @@ import Status from './Status.js';
 export default class State {
     constructor() {
         this._currentStatus = Status.Idle;
+        this._eventsDispatched = [];
     }
     get currentStatus() {
         return this._currentStatus;
@@ -32,6 +33,9 @@ export default class State {
     }
     get currentModel() {
         return this._currentModel;
+    }
+    get eventsProcessed() {
+        return this._eventsDispatched;
     }
     moveToIdle() {
         this._currentStatus = Status.Idle;
@@ -65,8 +69,12 @@ export default class State {
         this._currentStatus = Status.Halted;
         this._clear();
     }
+    clearEventDispatchQueue() {
+        this._eventsDispatched = [];
+    }
     _clear() {
         this._currentModelId = undefined;
         this._currentModel = undefined;
+        this.clearEventDispatchQueue();
     }
 }

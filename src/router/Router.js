@@ -122,7 +122,8 @@ export default class Router extends DisposableBase {
                 this._state.currentModelId,
                 this._state.currentModel,
                 event,
-                eventType
+                eventType,
+                this._state.eventsProcessed
             );
         });
     }
@@ -338,7 +339,12 @@ export default class Router extends DisposableBase {
                             this._diagnosticMonitor.dispatchingAction(modelRecord.modelId);
                             eventRecord.action(modelRecord.model);
                         } else {
-                            wasDispatched = this._dispatchEventToEventProcessors(modelRecord.modelId, modelRecord.model, eventRecord.event, eventRecord.eventType);
+                            wasDispatched = this._dispatchEventToEventProcessors(
+                                modelRecord.modelId, 
+                                modelRecord.model, 
+                                eventRecord.event, 
+                                eventRecord.eventType, 
+                                this._state.eventsProcessed);
                         }
                         if (modelRecord.wasRemoved) break;
                         if (!modelRecord.hasChanges && wasDispatched) {
@@ -353,7 +359,8 @@ export default class Router extends DisposableBase {
                     if (!modelRecord.wasRemoved) {
                         this._diagnosticMonitor.postProcessingModel();
                         this._state.moveToPostProcessing();
-                        modelRecord.runPostEventProcessor(modelRecord.model);
+                        modelRecord.runPostEventProcessor(modelRecord.model, this._state.eventsProcessed);
+                        this._state.clearEventDispatchQueue();
                         if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
                             modelRecord.model.lock();
                         }
@@ -371,7 +378,7 @@ export default class Router extends DisposableBase {
             this._diagnosticMonitor.dispatchLoopEnd();
         }
     }
-    _dispatchEventToEventProcessors(modelId, model, event, eventType) {
+    _dispatchEventToEventProcessors(modelId, model, event, eventType, eventsProcessed) {
         let dispatchEvent = (model1, event1, context, subject, stage) => {
             let wasDispatched = false;
             if (subject.getObserverCount() > 0) {
@@ -381,6 +388,7 @@ export default class Router extends DisposableBase {
                 if(subject.hasError) {
                     throw subject.error;
                 }
+                eventsProcessed.push(eventType);
                 wasDispatched = true;
             }
             return wasDispatched;

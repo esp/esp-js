@@ -38,8 +38,8 @@ describe('Router', () => {
                 preEventProcessor: (model) => {
                     _modelsSentForPreProcessing.push(model);
                 },
-                postEventProcessor: (model) => {
-                    _modelsSentForPostProcessing.push(model);
+                postEventProcessor: (model, eventsProcessed) => {
+                    _modelsSentForPostProcessing.push({model, eventsProcessed});
                 }
             };
 
@@ -53,8 +53,9 @@ describe('Router', () => {
                 preProcess() {
                     this.preProcessCount++;
                 },
-                postProcess() {
+                postProcess(eventsProcessed) {
                     this.postProcessCount++;
+                    this.eventsProcessed = eventsProcessed;
                 }
             };
             _testPassed = false;
@@ -86,6 +87,12 @@ describe('Router', () => {
             expect(_model5.postProcessCount).toBe(1);
         });
 
+        it('postProcess() passes the events published to postProcess', () => {
+            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            expect(_model5.eventsProcessed.length).toBe(1);
+            expect(_model5.eventsProcessed[0]).toBe('startEvent');
+        });
+
         it('only calls a models preProcess() function if the model is observing the published event', () => {
             _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
             expect(_model5.preProcessCount).toBe(0);
@@ -113,13 +120,13 @@ describe('Router', () => {
                 /* noop */
             });
             _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
-                _testPassed = _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0] === _model1;
+                _testPassed = _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].model === _model1;
             });
             _router.getEventObservable('modelId3', 'Event1').subscribe(() => {
-                _testPassed = _testPassed && _modelsSentForPostProcessing.length === 2 && _modelsSentForPostProcessing[1] === _model2;
+                _testPassed = _testPassed && _modelsSentForPostProcessing.length === 2 && _modelsSentForPostProcessing[1].model === _model2;
             });
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
-            _testPassed = _testPassed && _modelsSentForPostProcessing.length === 3 && _modelsSentForPostProcessing[2] === _model3;
+            _testPassed = _testPassed && _modelsSentForPostProcessing.length === 3 && _modelsSentForPostProcessing[2].model === _model3;
             expect(_testPassed).toBe(true);
         });
 
@@ -152,7 +159,7 @@ describe('Router', () => {
             expect(wasPublished).toEqual(true);
         });
 
-        it('should allow a postEventProcessor to publishs an event', () => {
+        it('should allow a postEventProcessor to publish an event', () => {
             let eventReceived = false,
                 eventWasRaisedInNewEventLoop = false,
                 postProcessorPublished = false;

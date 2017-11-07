@@ -32,31 +32,36 @@ export default class SmartComponent extends React.Component {
     }
     constructor() {
         super();
-        this._isObservingModel = false;
+        this._currentObservingModelId = false;
         this._observationSubscription = null;
         this._view = null;
-        this.state = {
-
-        };
+        this.state = {};
     }
-    componentWillReceiveProps() {
-        this._tryObserveModel();
+    componentWillReceiveProps(nextProps) {
+        this._tryObserveModel(nextProps.modelId);
     }
     componentWillMount() {
-        this._tryObserveModel();
+        this._tryObserveModel(this.props.modelId);
     }
     componentWillUnmount() {
-        if(this._observationSubscription) {
-            this._observationSubscription.dispose();
-        }
+        this._tryDisposeObservationSubscription();
     }
-    _tryObserveModel() {
-        let modelId = this.props.modelId;
-        if (!this._isObservingModel && modelId) {
-            this._isObservingModel = true;
+    _tryObserveModel(modelId) {
+        if(!modelId) {
+            this._tryDisposeObservationSubscription();
+            this.setState({model: null});
+        } else if (modelId !== this._currentObservingModelId) {
+            this._tryDisposeObservationSubscription();
+            this._currentObservingModelId = modelId;
             this._observationSubscription = this.context.router.getModelObservable(modelId).subscribe(model => {
                 this.setState({model: model});
             });
+        }
+    }
+    _tryDisposeObservationSubscription() {
+        this._currentObservingModelId = null;
+        if(this._observationSubscription) {
+            this._observationSubscription.dispose();
         }
     }
     render() {

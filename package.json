@@ -1,6 +1,6 @@
 {
   "name": "esp-js-react",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Evented State Processor (ESP) React Components",
   "keywords": [
     "esp",

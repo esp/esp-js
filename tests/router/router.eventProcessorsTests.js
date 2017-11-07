@@ -38,8 +38,8 @@ describe('Router', () => {
                 preEventProcessor: (model) => {
                     _modelsSentForPreProcessing.push(model);
                 },
-                postEventProcessor: (model, eventDispatchQueue) => {
-                    _modelsSentForPostProcessing.push({model, eventDispatchQueue});
+                postEventProcessor: (model, eventsProcessed) => {
+                    _modelsSentForPostProcessing.push({model, eventsProcessed});
                 }
             };
 
@@ -53,9 +53,9 @@ describe('Router', () => {
                 preProcess() {
                     this.preProcessCount++;
                 },
-                postProcess(eventDispatchQueue) {
+                postProcess(eventsProcessed) {
                     this.postProcessCount++;
-                    this.eventDispatchQueue = eventDispatchQueue;
+                    this.eventsProcessed = eventsProcessed;
                 }
             };
             _testPassed = false;
@@ -89,8 +89,8 @@ describe('Router', () => {
 
         it('postProcess() passes the events published to postProcess', () => {
             _router.publishEvent('modelId5', 'startEvent', 'theEvent');
-            expect(_model5.eventDispatchQueue.length).toBe(1);
-            expect(_model5.eventDispatchQueue[0]).toBe('startEvent');
+            expect(_model5.eventsProcessed.length).toBe(1);
+            expect(_model5.eventsProcessed[0]).toBe('startEvent');
         });
 
         it('only calls a models preProcess() function if the model is observing the published event', () => {

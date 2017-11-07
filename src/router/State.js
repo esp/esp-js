@@ -34,7 +34,7 @@ export default class State {
     get currentModel() {
         return this._currentModel;
     }
-    get eventDispatchQueue() {
+    get eventsProcessed() {
         return this._eventsDispatched;
     }
     moveToIdle() {

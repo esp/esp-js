@@ -73,7 +73,7 @@ Note the [sample below](#workflow-sample) uses this approach.
 class MyModel {
     preProcess() {
     }
-    postProcess() {
+    postProcess(eventDispatchQueue) {
     }
 }
 ```

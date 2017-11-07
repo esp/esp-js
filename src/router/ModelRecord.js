@@ -60,25 +60,25 @@ export default class ModelRecord {
         let externalProcessor1 = () => { /*noop */ };
         if(typeof externalProcessor !== 'undefined') {
             if(typeof externalProcessor === 'function') {
-                externalProcessor1 = model => {
-                    externalProcessor(model);
+                externalProcessor1 = (model, eventDispatchQueue) => {
+                    externalProcessor(model, eventDispatchQueue);
                 };
             } else if (typeof externalProcessor.process === 'function') {
-                externalProcessor1 = model => {
-                    externalProcessor.process(model);
+                externalProcessor1 = (model, eventDispatchQueue) => {
+                    externalProcessor.process(model, eventDispatchQueue);
                 };
             } else {
                 throw new Error(name + " on the options parameter is neither a function nor an object with a process() method");
             }
         }
-        let modelProcessor = model => {
+        let modelProcessor = (model, eventDispatchQueue) => {
             if(model[modelProcessMethod] && (typeof model[modelProcessMethod] === 'function')) {
-                model[modelProcessMethod]();
+                model[modelProcessMethod](eventDispatchQueue);
             }
         };
-        return (model) => {
-            externalProcessor1(model);
-            modelProcessor(model);
+        return (model, eventDispatchQueue) => {
+            externalProcessor1(model, eventDispatchQueue);
+            modelProcessor(model, eventDispatchQueue);
         };
     }
 }

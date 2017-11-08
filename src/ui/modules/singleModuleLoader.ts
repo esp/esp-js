@@ -109,19 +109,22 @@ export default class SingleModuleLoader {
                 return {
                     type: 'loadChange',
                     moduleName: this._descriptor.moduleName,
-                    description: result.name
+                    description: `Starting ${result.name}`,
+                    prerequisiteResult: result
                 };
             case 'completed':
                 return {
                     type: 'loadChange',
                     moduleName: this._descriptor.moduleName,
-                    description: `Finished ${result.name}`
+                    description: `Finished ${result.name}`,
+                    prerequisiteResult: result
                 };
             case 'error':
                 return {
                     type: 'loadError',
                     moduleName: this._descriptor.moduleName,
-                    errorMessage: `Error loading ${result.name} ${result.errorMessage}`
+                    errorMessage: result.errorMessage,
+                    prerequisiteResult: result
                 };
             default:
                 let errorMessage = `Unknown stage from the pre-req loader for ${this._descriptor.moduleName}.`;

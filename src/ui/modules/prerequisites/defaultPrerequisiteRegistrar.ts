@@ -59,12 +59,12 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
             let handleError = (e: Error) => {
                 let message = `Error in async load for ${name}`;
                 this._log.error(message, e);
-
                 obs.onNext({
                     stage: 'error',
                     name,
                     errorMessage: errorMessage(e)
                 });
+                obs.onCompleted();
             };
 
             return stream

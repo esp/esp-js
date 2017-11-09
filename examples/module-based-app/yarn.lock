@@ -665,6 +665,10 @@ decamelize@^1.0.0, decamelize@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
 
+decode-uri-component@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
+
 deep-extend@~0.4.0:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.4.2.tgz#48b699c27e334bf89f10892be432f6e4c7d34a7f"
@@ -813,28 +817,28 @@ escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
 
-esp-js-react@0.1.6:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-0.1.6.tgz#5ad5926cd08b71b1feebfbf27967681bd237b131"
-
 esp-js-react@0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-0.2.0.tgz#a1e822119c4476b896fa43acd7aff85e932331ca"
 
-esp-js-ui@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/esp-js-ui/-/esp-js-ui-0.6.0.tgz#7a39293499d191dde563602005bcde3b6b1fbe7d"
+esp-js-ui@0.9.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/esp-js-ui/-/esp-js-ui-0.8.1.tgz#5f3670794dce744b36ff7140f644945ed5c6dee2"
   dependencies:
     classnames "2.2.5"
     esp-js "^1.3.0"
-    esp-js-react "0.1.6"
+    esp-js-react "0.2.0"
     microdi-js "^1.1.0"
-    query-string "^4.3.2"
-    react "15.3.2"
+    query-string "5.0.0"
+    react "16.0.0"
     rx "4.1.0"
-    uuid "3.0.1"
+    uuid "3.1.0"
 
-esp-js@1.4.0, esp-js@^1.3.0:
+esp-js@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/esp-js/-/esp-js-1.5.0.tgz#5e244894466951a729e515cd5735ef814c87400b"
+
+esp-js@^1.3.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/esp-js/-/esp-js-1.4.0.tgz#c29b8778ba23ac94a605c9534efa79a6104b792f"
 
@@ -936,7 +940,7 @@ faye-websocket@~0.11.0:
   dependencies:
     websocket-driver ">=0.5.1"
 
-fbjs@^0.8.16, fbjs@^0.8.4:
+fbjs@^0.8.16:
   version "0.8.16"
   resolved "https://registry.yarnpkg.com/fbjs/-/fbjs-0.8.16.tgz#5e67432f550dc41b572bf55847b8aca64e5337db"
   dependencies:
@@ -1987,10 +1991,11 @@ qs@~6.4.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.4.0.tgz#13e26d28ad6b0ffaa91312cd3bf708ed351e7233"
 
-query-string@^4.3.2:
-  version "4.3.4"
-  resolved "https://registry.yarnpkg.com/query-string/-/query-string-4.3.4.tgz#bbb693b9ca915c232515b228b1a02b609043dbeb"
+query-string@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-5.0.0.tgz#fbdf7004b4d2aff792f9871981b7a2794f555947"
   dependencies:
+    decode-uri-component "^0.2.0"
     object-assign "^4.1.0"
     strict-uri-encode "^1.0.0"
 
@@ -2053,14 +2058,6 @@ react-dom@16.0.0:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.0"
-
-react@15.3.2:
-  version "15.3.2"
-  resolved "https://registry.yarnpkg.com/react/-/react-15.3.2.tgz#a7bccd2fee8af126b0317e222c28d1d54528d09e"
-  dependencies:
-    fbjs "^0.8.4"
-    loose-envify "^1.1.0"
-    object-assign "^4.1.0"
 
 react@16.0.0:
   version "16.0.0"
@@ -2620,6 +2617,10 @@ utils-merge@1.0.1:
 uuid@3.0.1, uuid@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.0.1.tgz#6544bba2dfda8c1cf17e629a3a305e2bb1fee6c1"
+
+uuid@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
 
 uuid@^2.0.2:
   version "2.0.3"

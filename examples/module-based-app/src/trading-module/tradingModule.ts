@@ -56,7 +56,7 @@ export default class TradingModule extends ModuleBase {
     }
 
     registerPrerequisites(registrar: PrerequisiteRegistrar): void {
+        registrar.registerStream(Rx.Observable.timer(2000).take(1).concat(Rx.Observable.throw(new Error('Load error'))), 'Loading Module That Fails', e => `Custom message: ${e.message}`);
         registrar.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
-        registrar.registerStream(Rx.Observable.throw(new Error('Load error')), 'Loading Module That Fails', e => `Custom message: ${e.message}`);
     }
 }

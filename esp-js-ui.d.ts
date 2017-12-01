@@ -80,12 +80,12 @@ export class Guard {
 }
 
 export declare enum Level {
-    verbose = 0,
-    debug = 1,
-    info = 2,
-    warn = 3,
-    error = 4,
-    none = 5
+    verbose = 'verbose',
+    debug = 'debug',
+    info = 'info',
+    warn = 'warn',
+    error = 'error',
+    none = 'none'
 }
 
 export type Markers = {[key:string]: string};
@@ -117,11 +117,22 @@ export class CompositeSink implements Sink {
 export class LoggingConfig {
     static setLevel(level: Level): void;
     static addSinks(...sink: Sink[]): void;
+    static defaultLoggerConfig : LoggerConfig;
+    static getLoggerConfig(loggerName: string): LoggerConfig;
+}
+
+export interface LoggerConfig {
+    dumpAdditionalDetailsToConsole: boolean;
+    level: Level;
 }
 
 export class Logger {
     constructor(name: string);
     static create(name: string): Logger;
+    loggerConfig : LoggerConfig;
+    group(...args: any[]);
+    groupCollapsed(...args: any[]);
+    groupEnd();
     verbose(message: string, additionalDetails?: any): void;
     verbose(markers:Markers, message: string, additionalDetails?: any): void;
     debug(message: string, additionalDetails?: any): void;

@@ -9,7 +9,8 @@ import {
 } from 'esp-js-ui';
 import CashTileState from './cashTileState';
 
-let _log = Logger.create('BlotterTileModel');
+let _log = Logger.create('CashTileModel');
+let _log2 = Logger.create('CashTileModel2');
 
 @viewBinding(CashTileView)
 export default class CashTileModel extends ModelBase {
@@ -31,6 +32,7 @@ export default class CashTileModel extends ModelBase {
     public get symbol(): string {
         return this._initialState.symbol;
     }
+
     observeEvents():void {
         super.observeEvents();
         this._regionManager.addToRegion(
@@ -43,5 +45,16 @@ export default class CashTileModel extends ModelBase {
     }
     _close() {
         this._regionManager.removeFromRegion(this._initialState.regionName, this);
+    }
+
+    @observeEvent('log-something')
+    private onLogSomething() {
+        var additionalDetails = { time:new Date(), value:'foo' };
+
+        _log.info('Log 1 Something logged', additionalDetails);
+        _log.debug('Log 1 Something logged', additionalDetails);
+
+        _log2.info('Log 2 Something logged', additionalDetails);
+        _log2.debug('Log 2 Something logged', additionalDetails);
     }
 }

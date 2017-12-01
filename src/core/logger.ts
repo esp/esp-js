@@ -2,12 +2,12 @@ import Guard from './guard';
 import Utils from './utils';
 
 export enum Level {
-    verbose,
-    debug,
-    info,
-    warn,
-    error,
-    none
+    verbose = 'verbose',
+    debug = 'debug',
+    info = 'info',
+    warn = 'warn',
+    error = 'error',
+    none = 'none'
 };
 
 export type Markers = {[key:string]: string};
@@ -19,6 +19,7 @@ export type LogEvent = {
     color: string,
     message: string;
     additionalDetails: any[];
+    dumpAdditionalDetailsToConsole: boolean;
     markers: Markers;
 }
 
@@ -31,9 +32,17 @@ export class ConsoleSink implements Sink {
         let dateTime = new Date();
         let message = `[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logEvent.message}`;
         if(logEvent.markers && Object.keys(logEvent.markers).length) {
-            console.log(message, logEvent.markers, ...logEvent.additionalDetails);
+            if(logEvent.dumpAdditionalDetailsToConsole) {
+                console.log(message, logEvent.markers, ...logEvent.additionalDetails);
+            } else {
+                console.log(message, logEvent.markers);
+            }
         } else {
-            console.log(message, ...logEvent.additionalDetails);
+            if(logEvent.dumpAdditionalDetailsToConsole) {
+                console.log(message, ...logEvent.additionalDetails);
+            } else {
+                console.log(message);
+            }
         }
     };
 }
@@ -52,32 +61,79 @@ export class CompositeSink implements Sink {
     }
 }
 
-// note: if you want verbose you need to change this explictly, this is just the initial default
+// note: if you want verbose you need to change this explicitly, this is just the initial default
 let _currentLevel = Level.debug;
 
 let _sink = new CompositeSink(new ConsoleSink());
 
+let _loggerConfigs : {[key: string]: LoggerConfig} = {};
+
+export interface LoggerConfig {
+    dumpAdditionalDetailsToConsole: boolean;
+    level: Level;
+}
+
+function getOrCreateLoggerConfig(loggerName: string) {
+    let loggerConfig = _loggerConfigs[loggerName];
+    if (!loggerConfig) {
+        loggerConfig = Object.create(LoggingConfig.defaultLoggerConfig, {});
+        _loggerConfigs[loggerName] = loggerConfig;
+    }
+    return loggerConfig;
+}
+
 export class LoggingConfig {
+    private static _defaultLoggerConfig = { dumpAdditionalDetailsToConsole:true, level: _currentLevel };
+
     static setLevel(level: Level): void {
         _currentLevel = level;
+        LoggingConfig._defaultLoggerConfig.level = _currentLevel;
     }
 
     static addSinks(...sink: Array<Sink>): void {
         _sink.addSinks(...sink);
     }
-
+    static get defaultLoggerConfig()  : LoggerConfig {
+        return LoggingConfig._defaultLoggerConfig;
+    }
+    static getLoggerConfig(loggerName: string): LoggerConfig {
+        return getOrCreateLoggerConfig(loggerName);
+    }
 }
-export default class Logger {
-    private _name: string;
 
-    constructor(name: string) {
-        this._name = name;
+declare global {
+    interface Window { _esp: { LoggingConfig:LoggingConfig }; }
+}
+
+(<any>window)._esp = {
+    LoggingConfig : LoggingConfig
+};
+
+export default class Logger {
+    constructor(
+        private _name: string,
+        private _loggerConfig: LoggerConfig
+    ) {
     }
 
     static create(name: string): Logger {
         Guard.isDefined(name, 'The name argument should be defined');
         Guard.isString(name, 'The name argument should be a string');
-        return new Logger(name);
+
+        let loggerConfig = getOrCreateLoggerConfig(name);
+        return new Logger(name, loggerConfig);
+    }
+
+    group(...args: any[]) {
+        console.group(...args);
+    }
+
+    groupCollapsed(...args: any[]) {
+        console.groupCollapsed(...args);
+    }
+
+    groupEnd() {
+        console.groupEnd();
     }
 
     /**
@@ -86,7 +142,7 @@ export default class Logger {
     verbose(message: string, additionalDetails?: any): void;
     verbose(markers:Markers, message: string, additionalDetails?: any): void;
     verbose(...args: any[]) : void {
-        if (_currentLevel <= Level.verbose) {
+        if (this._loggerConfig.level <= Level.verbose) {
             this._log(Level.verbose, null, args);
         }
     }
@@ -97,7 +153,7 @@ export default class Logger {
     debug(message: string, additionalDetails?: any): void;
     debug(markers:Markers, message: string, additionalDetails?: any): void;
     debug(...args: any[]) : void {
-        if (_currentLevel <= Level.debug) {
+        if (this._loggerConfig.level <= Level.debug) {
             this._log(Level.debug, null, args);
         }
     }
@@ -108,7 +164,7 @@ export default class Logger {
     info(message: string, additionalDetails?: any): void;
     info(markers:Markers, message: string, additionalDetails?: any): void;
     info(...args: any[]) : void {
-        if (_currentLevel <= Level.info) {
+        if (this._loggerConfig.level <= Level.info) {
             this._log(Level.info, 'blue', args);
         }
     }
@@ -119,7 +175,7 @@ export default class Logger {
     warn(message: string, additionalDetails?: any): void;
     warn(markers:Markers, message: string, additionalDetails?: any): void;
     warn(...args: any[]) : void {
-        if (_currentLevel <= Level.warn) {
+        if (this._loggerConfig.level <= Level.warn) {
             this._log(Level.warn, 'orange', args);
         }
     }
@@ -130,7 +186,7 @@ export default class Logger {
     error(message: string, additionalDetails?: any): void;
     error(markers:Markers, message: string, additionalDetails?: any): void;
     error(...args: any[]) : void {
-        if (_currentLevel <= Level.error) {
+        if (this._loggerConfig.level <= Level.error) {
             this._log(Level.error, 'red', args);
         }
     }
@@ -157,6 +213,7 @@ export default class Logger {
             color: color || 'black',
             message: message,
             additionalDetails: additionalDetails,
+            dumpAdditionalDetailsToConsole: this._loggerConfig.dumpAdditionalDetailsToConsole,
             markers: markers
          });
     }

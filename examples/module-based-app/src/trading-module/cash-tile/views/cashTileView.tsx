@@ -8,6 +8,9 @@ export default class CashTileView extends React.Component<{model:CashTileModel, 
         return (
             <div>
                 <h1>{model.symbol}, Cash Tile</h1>
+                <button onClick={e => { this.props.router.publishEvent(this.props.model.modelId, 'log-something', {}); }}>
+                    Something that logs stuff
+                </button>
             </div>
         );
     }

@@ -817,30 +817,26 @@ escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
 
-esp-js-react@0.2.0:
+esp-js-react@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-0.2.0.tgz#a1e822119c4476b896fa43acd7aff85e932331ca"
 
-esp-js-ui@0.9.1:
-  version "0.8.1"
-  resolved "https://registry.yarnpkg.com/esp-js-ui/-/esp-js-ui-0.8.1.tgz#5f3670794dce744b36ff7140f644945ed5c6dee2"
+esp-js-ui@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/esp-js-ui/-/esp-js-ui-0.9.1.tgz#6872dd22800e7434522a60cfd1e3828e0eb3befa"
   dependencies:
     classnames "2.2.5"
-    esp-js "^1.3.0"
-    esp-js-react "0.2.0"
+    esp-js "^1.5.0"
+    esp-js-react "^0.2.0"
     microdi-js "^1.1.0"
     query-string "5.0.0"
     react "16.0.0"
     rx "4.1.0"
     uuid "3.1.0"
 
-esp-js@1.5.0:
+esp-js@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/esp-js/-/esp-js-1.5.0.tgz#5e244894466951a729e515cd5735ef814c87400b"
-
-esp-js@^1.3.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/esp-js/-/esp-js-1.4.0.tgz#c29b8778ba23ac94a605c9534efa79a6104b792f"
 
 etag@~1.8.1:
   version "1.8.1"

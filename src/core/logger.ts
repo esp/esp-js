@@ -10,6 +10,25 @@ export enum Level {
     none = 'none'
 };
 
+function getLevelNumber(level:Level) : number {
+    switch(level)  {
+        case Level.verbose:
+            return 0;
+        case Level.debug:
+            return 1;
+        case Level.info:
+            return 2;
+        case Level.warn:
+            return 3;
+        case Level.error:
+            return 4;
+        case Level.none:
+            return 5;
+        default:
+            return 5;
+    }
+}
+
 export type Markers = {[key:string]: string};
 
 export type LogEvent = {
@@ -142,9 +161,13 @@ export default class Logger {
     verbose(message: string, additionalDetails?: any): void;
     verbose(markers:Markers, message: string, additionalDetails?: any): void;
     verbose(...args: any[]) : void {
-        if (this._loggerConfig.level <= Level.verbose) {
+        if (this._isLevelEnabled(Level.verbose)) {
             this._log(Level.verbose, null, args);
         }
+    }
+
+    private _isLevelEnabled(level: Level) : boolean {
+        return getLevelNumber(this._loggerConfig.level) <= getLevelNumber(level);
     }
 
     /**
@@ -153,7 +176,7 @@ export default class Logger {
     debug(message: string, additionalDetails?: any): void;
     debug(markers:Markers, message: string, additionalDetails?: any): void;
     debug(...args: any[]) : void {
-        if (this._loggerConfig.level <= Level.debug) {
+        if (this._isLevelEnabled(Level.debug)) {
             this._log(Level.debug, null, args);
         }
     }
@@ -164,7 +187,7 @@ export default class Logger {
     info(message: string, additionalDetails?: any): void;
     info(markers:Markers, message: string, additionalDetails?: any): void;
     info(...args: any[]) : void {
-        if (this._loggerConfig.level <= Level.info) {
+        if (this._isLevelEnabled(Level.info)) {
             this._log(Level.info, 'blue', args);
         }
     }
@@ -175,7 +198,7 @@ export default class Logger {
     warn(message: string, additionalDetails?: any): void;
     warn(markers:Markers, message: string, additionalDetails?: any): void;
     warn(...args: any[]) : void {
-        if (this._loggerConfig.level <= Level.warn) {
+        if (this._isLevelEnabled(Level.warn)) {
             this._log(Level.warn, 'orange', args);
         }
     }
@@ -186,7 +209,7 @@ export default class Logger {
     error(message: string, additionalDetails?: any): void;
     error(markers:Markers, message: string, additionalDetails?: any): void;
     error(...args: any[]) : void {
-        if (this._loggerConfig.level <= Level.error) {
+        if (this._isLevelEnabled(Level.error)) {
             this._log(Level.error, 'red', args);
         }
     }

@@ -53,12 +53,14 @@ export class ConsoleSink implements Sink {
         if(logEvent.markers && Object.keys(logEvent.markers).length) {
             if(logEvent.dumpAdditionalDetailsToConsole) {
                 console.log(message, logEvent.markers, ...logEvent.additionalDetails);
+                return;
             } else {
-                console.log(message, logEvent.markers);
+                console.log(message);
             }
         } else {
             if(logEvent.dumpAdditionalDetailsToConsole) {
                 console.log(message, ...logEvent.additionalDetails);
+                return;
             } else {
                 console.log(message);
             }

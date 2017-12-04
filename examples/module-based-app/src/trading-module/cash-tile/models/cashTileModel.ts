@@ -51,10 +51,10 @@ export default class CashTileModel extends ModelBase {
     private onLogSomething() {
         var additionalDetails = { time:new Date(), value:'foo' };
 
-        _log.info('Log 1 Something logged', additionalDetails);
-        _log.debug('Log 1 Something logged', additionalDetails);
+        _log.info({marker1:'marker1'}, 'Log 1 Something logged', additionalDetails);
+        _log.debug({marker1:'marker1'}, 'Log 1 Something logged', additionalDetails);
 
-        _log2.info('Log 2 Something logged', additionalDetails);
-        _log2.debug('Log 2 Something logged', additionalDetails);
+        _log2.info({marker1:'marker2'}, 'Log 2 Something logged', additionalDetails);
+        _log2.debug({marker1:'marker2'}, 'Log 2 Something logged', additionalDetails);
     }
 }

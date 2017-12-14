@@ -9,7 +9,7 @@
     "jsx": "react",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
     "noEmit": false,
     "declaration": false,

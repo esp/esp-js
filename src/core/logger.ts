@@ -8,7 +8,7 @@ export enum Level {
     warn = 'warn',
     error = 'error',
     none = 'none'
-};
+}
 
 function getLevelNumber(level:Level) : number {
     switch(level)  {
@@ -40,7 +40,7 @@ export type LogEvent = {
     additionalDetails: any[];
     dumpAdditionalDetailsToConsole: boolean;
     markers: Markers;
-}
+};
 
 export interface Sink {
     log(logEvent:LogEvent): void;
@@ -65,7 +65,7 @@ export class ConsoleSink implements Sink {
                 console.log(message);
             }
         }
-    };
+    }
 }
 
 export class CompositeSink implements Sink {

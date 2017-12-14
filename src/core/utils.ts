@@ -11,7 +11,7 @@ export default class Utils {
             default:
                 return false;
         }
-    };
+    }
     static isString(value: any) {
         return typeof value === 'string' || value instanceof String;
     }

@@ -449,3 +449,9 @@ export interface PrerequisiteRegistrar {
     registerStream(stream: Rx.Observable<Unit>, name: string, errorMessage?: (e: Error) => string): void;
     registerAction(action: () => void, name: string, errorMessage?: (e: Error) => string): void;
 }
+
+export class DefaultPrerequisiteRegistrar extends DisposableBase implements PrerequisiteRegistrar  {
+    registerAction(action: () => void, name: string)
+    load(): Rx.Observable<LoadResult>;
+    registerStream(stream: Rx.Observable<Unit>, name: string): void;
+}

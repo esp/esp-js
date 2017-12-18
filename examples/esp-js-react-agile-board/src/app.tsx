@@ -1,12 +1,12 @@
-import esp from 'esp-js'
-import React from 'react';
-import ReactDOM from 'react-dom';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import { RouterProvider, SmartComponent} from 'esp-js-react';
-import Workspace from './models/workspace';
-import Modal from './models/modal';
+import { Workspace } from './models/workspace';
+import { Modal } from './models/modal';
+import { Router } from 'esp-js';
 
 // create an app wide router
-let router = new esp.Router();
+let router = new Router();
 
 // create a model responsible for displaying app wide modal windows
 let modal = new Modal(router);
@@ -23,5 +23,5 @@ ReactDOM.render(
             <SmartComponent modelId={modal.modelId} />
         </div>
     </RouterProvider>,
-    document.getElementById('react')
+    document.getElementById('root')
 );

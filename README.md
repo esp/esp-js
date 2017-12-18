@@ -48,13 +48,6 @@ It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](h
 
 ![ESP Agile board Example](./docs/images/esp-agile-demo.gif)
 
-## Reactive Trader Cloud
-
-[Reactive Trader Cloud](https://github.com/AdaptiveConsulting/ReactiveTraderCloud) is a more elaborate and comprehensive reference implementation done by [Adaptive Financial](http://weareadaptive.com/). 
-The GUI state is modeled using [esp-js](https://www.npmjs.com/package/esp-js) with dynamic view resolution done using [esp-js-react](https://www.npmjs.com/package/esp-js-react).
-
-![ESP Agile board Example](./docs/images/esp-rt-electron.gif)
-
 # ESP at the React London Meetup group
 Watch [this](https://youtu.be/Pj-RakjfHDI?t=5m33s) 25min talk on using ESP with React at the [React London meetup](https://meetup.react.london/).
 Slides for the talk are available [here](http://goo.gl/40jie4).

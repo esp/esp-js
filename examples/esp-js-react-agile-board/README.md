@@ -10,28 +10,25 @@ It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](h
 - [Documentation](http://keithwoods.gitbooks.io/esp-js/content)
 
 ### Get help from other users:
-
-- [esp/chat on Gitter Chat](https://gitter.im/esp/chat)
-- [Questions tagged esp-js on StackOverflow](http://stackoverflow.com/questions/tagged/esp-js)
 - [GitHub Issues](https://github.com/esp/esp-js/issues)
 
 *Let us [know](https://github.com/esp/esp-js/issues) if you discover anything worth sharing!*
 
 ## Running
 
-You must have [npm](https://www.npmjs.org/) installed on your computer.
+You must have [npm](https://www.npmjs.org/) or yarn installed on your computer.
 From the root project directory run these commands from the command line:
 
-`npm install`
+`yarn install`
 
 This will install all dependencies.
 
 To build the project, first run this command:
 
-`npm start`
+`yarn start`
 
-This will perform an initial build and bundle using webpack and babel, it's then start webpacks dev server.
-Webpack has babel and JSX support built in so the final bundle is ready for consumption via a script tag.
+This will perform an initial build and bundle using webpack and typescript, it's then start webpacks dev server.
+Webpack has typescript and JSX support built in so the final bundle is ready for consumption via a script tag.
 
-Browser to [http://localhost:4000](http://localhost:4000) to view the app.
+Browse to [http://localhost:4000](http://localhost:4000) to view the app.
 

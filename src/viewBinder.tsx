@@ -18,14 +18,15 @@
 
 import * as esp from 'esp-js';
 import * as React from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { createViewForModel } from './viewBindingDecorator';
 
-export default class ViewBinder extends React.Component {
-    static propTypes = {
-        model: PropTypes.object,
-        viewContext: PropTypes.string,
-    };
+export interface ViewBinderProps {
+    model: any;
+    viewContext: string;
+}
+
+export class ViewBinder extends React.Component<ViewBinderProps> {
 
     static contextTypes = {
         router: PropTypes.instanceOf(esp.Router).isRequired

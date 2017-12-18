@@ -16,19 +16,25 @@
  */
 // notice_end
 //
-export { default as RouterProvider } from './routerProvider.jsx';
-export { default as SmartComponent } from './smartComponent.jsx';
-export { default as ViewBinder } from './viewBinder.jsx';
+export { RouterProvider } from './routerProvider';
+export { SmartComponent } from './smartComponent';
+export { ViewBinder } from './viewBinder';
 export { viewBinding } from './viewBindingDecorator';
+export { ModelSelector } from './modelSelector';
+export { shouldUpdateMixin } from './shouldUpdateMixin';
 
-import RouterProvider from './routerProvider.jsx';
-import SmartComponent from './smartComponent.jsx';
-import ViewBinder from './viewBinder.jsx';
+import { RouterProvider } from './routerProvider';
+import { SmartComponent } from './smartComponent';
+import { ViewBinder } from './viewBinder';
 import { viewBinding } from './viewBindingDecorator';
+import { ModelSelector } from './modelSelector';
+import { shouldUpdateMixin } from './shouldUpdateMixin';
 
 export default {
     RouterProvider,
     SmartComponent,
     ViewBinder,
-    viewBinding
-}
+    viewBinding,
+    ModelSelector,
+    shouldUpdateMixin
+};

@@ -16,13 +16,17 @@
  */
 // notice_end
 
-import esp from 'esp-js';
-import React from 'react';
-import PropTypes from 'prop-types';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
+import { Router } from 'esp-js';
 
-export default class RouterProvider extends React.Component {
+export interface RouterProviderProps {
+    router: Router;
+}
+
+export class RouterProvider extends React.Component<RouterProviderProps, any> {
     static childContextTypes = {
-        router: PropTypes.instanceOf(esp.Router).isRequired
+        router: PropTypes.instanceOf(Router).isRequired
     };
     getChildContext() {
         return {
@@ -30,6 +34,6 @@ export default class RouterProvider extends React.Component {
         };
     }
     render() {
-        return React.Children.only(this.props.children)
+        return React.Children.only(this.props.children);
     }
 }

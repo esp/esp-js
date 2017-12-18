@@ -37,7 +37,11 @@ export interface SmartComponentProps {
     [key: string]: any // other props which will be passed through to the SmartComponent's view
 }
 
-export class SmartComponent extends React.Component<SmartComponentProps, {}> {
+export interface SmartComponentState {
+    model: any;
+}
+
+export class SmartComponent extends React.Component<SmartComponentProps, SmartComponentState> {
     constructor(props: any);
     render(): JSX.Element;
 }

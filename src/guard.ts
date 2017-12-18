@@ -16,5 +16,24 @@
  */
  // notice_end
 
-var testsContext = require.context('.', true, /Tests.js$/);
-testsContext.keys().forEach(testsContext);
+import * as utils from './utils';
+
+export class Guard {
+    static isDefined(value: any, message: string) {
+        if (typeof value === 'undefined' || value === null) {
+            doThrow(message);
+        }
+    }
+    static isString(value: string, message: string) {
+        if (!utils.isString(value)) {
+            doThrow(message);
+        }
+    }
+}
+
+function doThrow(message: string) {
+    if(typeof message === 'undefined' || message === '') {
+        throw new Error('Argument error');
+    }
+    throw new Error(message);
+}

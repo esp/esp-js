@@ -45,3 +45,16 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
     constructor(props: any);
     render(): JSX.Element;
 }
+
+export interface ModelSelectorProps {
+    model: any;
+    view: any;
+    modelSelector: (props: any) => any;
+}
+
+export class ModelSelector extends React.Component<ModelSelectorProps, any> {
+    constructor(props: any);
+    render(): JSX.Element;
+}
+
+export function shouldUpdateMixin<TProps>(itemsThatEffectUpdateSelector: (nextProps: TProps) => any);

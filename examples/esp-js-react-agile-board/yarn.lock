@@ -1097,9 +1097,12 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-esp-js-react@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-0.3.0.tgz#0c1cb6496ace56b336d42850bd8ef1fd0485c82e"
+esp-js-react@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-0.4.0.tgz#b75a8730228be7aa55db06ae74b31cab881ff5ca"
+  dependencies:
+    esp-js "^1.5.0"
+    react "16.2.0"
 
 esp-js@^1.5.0:
   version "1.5.0"

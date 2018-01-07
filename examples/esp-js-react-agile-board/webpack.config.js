@@ -10,20 +10,13 @@ let config = {
     entry: {
         'esp-js-react-agile-board': './src/app.tsx'
     },
-    // externals: {
-    //     'rx': 'rx',
-    //     'react': 'react',
-    //     'classnames': 'classnames',
-    //     'esp-js': 'esp-js',
-    //     'esp-js-react': 'esp-js-react'
-    // },
     output: {
         path: process.cwd() + '/dist',
         libraryTarget: 'umd',
         filename: '[name].js'
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.json'],
+        extensions: ['.ts', '.tsx', '.js', '.json']
     },
     devtool: 'source-map',
     module: {

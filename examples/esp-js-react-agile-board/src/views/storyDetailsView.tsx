@@ -12,7 +12,11 @@ export interface StoryDetailsViewProps {
 
 export class StoryDetailsView extends React.Component<StoryDetailsViewProps, {}> {
 
-    shouldComponentUpdate(nextProps, nextState) {
+    constructor(props?: StoryDetailsViewProps, context?: any) {
+        super();
+    }
+
+    public shouldComponentUpdate(nextProps: Readonly<StoryDetailsViewProps>, nextState: Readonly<StoryDetailsViewProps>, nextContext: any) : boolean {
         return true;
     }
 
@@ -73,3 +77,14 @@ export class StoryDetailsView extends React.Component<StoryDetailsViewProps, {}>
         );
     }
 }
+//
+// export const StoryDetailsView = propsProviderBinding(
+//     StoryDetailsViewRaw,
+//     (nextProps: StoryDetailsViewProps) => {
+//     return {
+//         name : nextProps.story.name,
+//         description : nextProps.story.description,
+//         isDone : nextProps.story.isDone,
+//         status : nextProps.story.status
+//     };
+// });

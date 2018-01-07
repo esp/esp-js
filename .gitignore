@@ -8,3 +8,5 @@ dist
 www/app/*
 *.orig
 esp-js-*.tgz
+.tsbuild
+npm-debug.log

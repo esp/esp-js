@@ -45,6 +45,7 @@ It's suggested you take a look at the [agile board](./examples/esp-js-react-agil
 
 [This example](./examples/esp-js-react-agile-board/README.md) demonstrates a simple agile planning board.
 It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](https://www.npmjs.com/package/esp-js-react) to build a unidirectional, model first application.
+It's written in [TypeScript](https://www.typescriptlang.org/).
 
 ![ESP Agile board Example](./docs/images/esp-agile-demo.gif)
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { RouterProvider, SmartComponent} from 'esp-js-react';
+import { RouterProvider, SmartComponent } from 'esp-js-react';
 import { Workspace } from './models/workspace';
 import { Modal } from './models/modal';
 import { Router } from 'esp-js';
@@ -19,8 +19,8 @@ workspace.observeEvents();
 ReactDOM.render(
     <RouterProvider router={router}>
         <div>
-            <SmartComponent modelId={workspace.modelId} />
-            <SmartComponent modelId={modal.modelId} />
+            <SmartComponent modelId={workspace.modelId}/>
+            <SmartComponent modelId={modal.modelId}/>
         </div>
     </RouterProvider>,
     document.getElementById('root')

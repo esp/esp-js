@@ -16,28 +16,32 @@
  */
 // notice_end
 
-import * as esp from 'esp-js';
 import * as React from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { createViewForModel } from './viewBindingDecorator';
+import { Router } from 'esp-js';
 
-export default class SmartComponent extends React.Component {
-    static propTypes = {
-        modelId: PropTypes.string.isRequired,
-        view: PropTypes.func,
-        viewContext: PropTypes.string,
-    }
+export interface SmartComponentProps {
+    modelId: string;
+    view?: any;
+    viewContext?: string;
+    [key: string]: any; // other props which will be passed through to the SmartComponent's view
+}
+
+export interface SmartComponentState {
+    model: any;
+}
+
+export class SmartComponent extends React.Component<SmartComponentProps, SmartComponentState> {
+    private _currentObservingModelId = false;
+    private _observationSubscription = null;
+    private _view = null;
+
     static contextTypes = {
-        router: PropTypes.instanceOf(esp.Router).isRequired
-    }
-    constructor() {
-        super();
-        this._currentObservingModelId = false;
-        this._observationSubscription = null;
-        this._view = null;
-        this.state = {};
-    }
-    componentWillReceiveProps(nextProps) {
+        router: PropTypes.instanceOf(Router).isRequired
+    };
+
+    componentWillReceiveProps(nextProps: SmartComponentProps) {
         this._tryObserveModel(nextProps.modelId);
     }
     componentWillMount() {
@@ -81,6 +85,6 @@ export default class SmartComponent extends React.Component {
             model: this.state.model,
             router: this.context.router
         };
-        return Object.assign({}, newProps, other)
+        return Object.assign({}, newProps, other);
     }
 }

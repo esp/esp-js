@@ -16,8 +16,8 @@
  */
 // notice_end
 
-import React from 'react';
-import Guard from './guard';
+import * as React from 'react';
+import { Guard } from './guard';
 
 let DEFAULT_VIEW_KEY = 'default-view-key';
 
@@ -30,7 +30,7 @@ function getMetadata(target) {
 
 export function createViewForModel(model, props, displayContext = DEFAULT_VIEW_KEY) {
   // the view decorator isn't on the instance, it's on the constructor function that created that instance
-  var constructorFunction = model.constructor;
+  let constructorFunction = model.constructor;
   if (constructorFunction._viewMetadata) {
     let viewMetadata = constructorFunction._viewMetadata;
     if(viewMetadata.hasRegisteredViewContext(displayContext)) {
@@ -60,12 +60,8 @@ export function viewBinding(view, displayContext = DEFAULT_VIEW_KEY) {
   };
 }
 
-class ViewMetadata {
-  _viewRegistrations;
-
-  constructor() {
-    this._viewRegistrations = {};
-  }
+export class ViewMetadata {
+  private _viewRegistrations = {};
 
   get viewRegistrations() {
     return this._viewRegistrations;
@@ -76,10 +72,9 @@ class ViewMetadata {
   }
 }
 
-class ViewMetadataRegistration {
-  constructor(view, context) {
-    this._view = view;
-    this._displayContext = context;
+export  class ViewMetadataRegistration {
+
+  constructor(private _view, private _displayContext) {
   }
 
   get view() {

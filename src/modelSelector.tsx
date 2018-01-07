@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 // notice_end
-//
-export { default as RouterProvider } from './routerProvider.jsx';
-export { default as SmartComponent } from './smartComponent.jsx';
-export { default as ViewBinder } from './viewBinder.jsx';
-export { viewBinding } from './viewBindingDecorator';
 
-import RouterProvider from './routerProvider.jsx';
-import SmartComponent from './smartComponent.jsx';
-import ViewBinder from './viewBinder.jsx';
-import { viewBinding } from './viewBindingDecorator';
+import * as React from 'react';
 
-export default {
-    RouterProvider,
-    SmartComponent,
-    ViewBinder,
-    viewBinding
+export interface ModelSelectorProps {
+    model: any;
+    view: any;
+    modelSelector: (model: any) => any;
+}
+
+export class ModelSelector extends React.Component<ModelSelectorProps, any> {
+    render() {
+        let {model, view, modelSelector, ...other} = this.props;
+        let childProps = Object.assign({}, {model: modelSelector(model)}, other);
+        return React.createElement(view, childProps);
+    }
 }

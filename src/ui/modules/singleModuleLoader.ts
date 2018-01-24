@@ -72,6 +72,27 @@ export default class SingleModuleLoader {
         });
     }
 
+    public loadModuleLayout(layoutMode:string) : void {
+        if (!this.functionalModule) {
+            return;
+        }
+        this.functionalModule.loadLayout(layoutMode);
+    }
+
+    public unloadModuleLayout(): void {
+        if (!this.functionalModule) {
+            return;
+        }
+        this.functionalModule.unloadLayout();
+    }
+
+    public disposeModule(): void {
+        if (!this.functionalModule) {
+            return;
+        }
+        this.functionalModule.dispose();
+    }
+
     private _buildInitStream(functionalModule: Module): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             try {

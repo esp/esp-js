@@ -53,8 +53,8 @@ export default class ModuleLoader {
         this._modules
             .forEach(moduleItem => {
                 _log.debug(`Unloading module ${moduleItem.name}`);
-                moduleItem.moduleLoader.functionalModule.unloadLayout();
-                moduleItem.moduleLoader.functionalModule.dispose();
+                moduleItem.moduleLoader.unloadModuleLayout();
+                moduleItem.moduleLoader.disposeModule();
             });
         this._modules.length = 0;
     }
@@ -62,7 +62,7 @@ export default class ModuleLoader {
     public loadLayout(layoutMode:string): void {
         this._modules.forEach(moduleItem => {
             _log.debug(`Loading layout for ${moduleItem.name}`);
-            moduleItem.moduleLoader.functionalModule.loadLayout(layoutMode);
+            moduleItem.moduleLoader.loadModuleLayout(layoutMode);
         });
     }
 }

@@ -821,9 +821,9 @@ esp-js-react@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-0.2.0.tgz#a1e822119c4476b896fa43acd7aff85e932331ca"
 
-esp-js-ui@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/esp-js-ui/-/esp-js-ui-0.9.1.tgz#6872dd22800e7434522a60cfd1e3828e0eb3befa"
+esp-js-ui@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/esp-js-ui/-/esp-js-ui-0.10.2.tgz#dc5de6640ace5d81ea20db7dfa61e48f953f4715"
   dependencies:
     classnames "2.2.5"
     esp-js "^1.5.0"

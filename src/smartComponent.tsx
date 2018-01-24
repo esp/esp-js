@@ -25,6 +25,7 @@ export interface SmartComponentProps {
     modelId: string;
     view?: any;
     viewContext?: string;
+    modelSelector?: (model: any) => any;
     [key: string]: any; // other props which will be passed through to the SmartComponent's view
 }
 
@@ -57,9 +58,16 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
         } else if (modelId !== this._currentObservingModelId) {
             this._tryDisposeObservationSubscription();
             this._currentObservingModelId = modelId;
-            this._observationSubscription = this.context.router.getModelObservable(modelId).subscribe(model => {
-                this.setState({model: model});
-            });
+            this._observationSubscription = this.context.router
+                .getModelObservable(modelId)
+                .map(model => {
+                    return this.props.modelSelector
+                        ? this.props.modelSelector(model)
+                        : model;
+                })
+                .subscribe(model => {
+                    this.setState({model: model});
+                });
         }
     }
     _tryDisposeObservationSubscription() {
@@ -80,7 +88,7 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
     }
     _getChildProps() {
         // 'consume' the props we own, pass the rest down
-        let {modelId, viewContext, view, ...other} = this.props;
+        let {modelId, viewContext, view, modelSelector, ...other} = this.props;
         let newProps = {
             model: this.state.model,
             router: this.context.router

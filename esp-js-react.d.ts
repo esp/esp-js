@@ -34,6 +34,7 @@ export interface SmartComponentProps {
     modelId: string;
     view?: any;
     viewContext?: string;
+    modelSelector?: (model: any) => any;
     [key: string]: any // other props which will be passed through to the SmartComponent's view
 }
 

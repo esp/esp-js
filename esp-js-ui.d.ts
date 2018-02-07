@@ -283,6 +283,7 @@ export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;
 interface ModuleDescriptor {
     factory: ModuleConstructor;
     moduleName: string;
+    permissions?: Array<string>;
 }
 
 export class ModuleLoader {
@@ -291,13 +292,12 @@ export class ModuleLoader {
         _componentRegistryModel: ComponentRegistryModel,
         _stateService:StateService);
 
-    public registerModules(...functionalModules: ModuleDescriptor[]): void;
-
     /**
      * takes an array of modules class that will be new-ed up, i.e. constructor functions
      */
-    public loadModules(): Rx.Observable<ModuleLoadResult>;
-    public unloadModules(): void;
+    public loadModules(moduleDescriptors: Array<ModuleDescriptor>): Rx.Observable<ModuleLoadResult>;
+    public loadModule(moduleDescriptor: ModuleDescriptor): Rx.Observable<ModuleLoadResult>;
+    public unloadModule(moduleName: string): void;
     public loadLayout(layoutMode:string): void;
 }
 

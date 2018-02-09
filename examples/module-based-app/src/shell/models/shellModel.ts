@@ -9,8 +9,10 @@ import {
     SingleItemRegionModel,
     ModuleLoader,
     IdFactory,
-    ModuleLoadResult
+    ModuleLoadResult,
+    ModuleDescriptor
 } from 'esp-js-ui';
+import TradingModule from '../../trading-module/tradingModule';
 
 let _log = Logger.create('ShellModel');
 
@@ -36,7 +38,18 @@ export default class ShellModel extends ModelBase {
                 message: `Loading Modules`
             };
 
-            this.addDisposable(this._moduleLoader.loadModules().subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
+            let permissions = ['fx-trading']; // hardcoded
+            let modulesToLoad: ModuleDescriptor[] = [];
+            if(permissions.indexOf(TradingModule.requiredPermission) >= 0) {
+                let descriptor: ModuleDescriptor = {
+                    factory:  TradingModule,
+                    moduleName: 'Trading Module'
+                };
+                modulesToLoad.push(descriptor);
+            }
+
+            var loadModules = this._moduleLoader.loadModules(modulesToLoad);
+            this.addDisposable(loadModules.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
                 _log.debug(`Load Change detected`, change);
 
                 if (change.type === 'loadError') {

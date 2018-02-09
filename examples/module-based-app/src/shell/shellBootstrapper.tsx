@@ -33,7 +33,6 @@ class ShellBootstrapper {
         SystemContainerConfiguration.configureContainer(this._container);
         this._configureContainer();
         this._displayShell();
-        this._loadModules(['fx-trading']);
     }
 
     _configureContainer() {
@@ -63,22 +62,6 @@ class ShellBootstrapper {
             );
     }
 
-    _loadModules(permissions:Array<string>) {
-        this._moduleLoader = this._container.resolve<ModuleLoader>(ShellModuleContainerConst.module_loader);
-        let modulesToLoad: ModuleDescriptor[] = [];
-        if(permissions.indexOf(TradingModule.requiredPermission) >= 0) {
-            let descriptor: ModuleDescriptor = {
-                factory:  TradingModule,
-                moduleName: 'Trading Module'
-            };
-            modulesToLoad.push(descriptor);
-        }
-        this._moduleLoader.registerModules(...modulesToLoad);
-
-        let shellModel = this._container.resolve<ShellModel>(ShellModuleContainerConst.shell_model);
-        shellModel.init();
-    }
-
     _displayShell() {
         let shellModel = this._container.resolve<ShellModel>(ShellModuleContainerConst.shell_model);
         let router = this._container.resolve<Router>(SystemContainerConst.router);
@@ -92,6 +75,7 @@ class ShellBootstrapper {
             </RouterProvider>,
             document.getElementById('root')
         );
+        shellModel.init();
     }
 }
 

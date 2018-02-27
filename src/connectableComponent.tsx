@@ -8,7 +8,7 @@ export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => T
 export type MapModelToProps<TModel, TProps> = (model: TModel) => TProps;
 export type ConnectableComponentProps = {modelId: string, viewContext?: string};
 
-interface Props<TModel, TProps, TPublishProps> extends ConnectableComponentProps {
+export interface Props<TModel, TProps, TPublishProps> extends ConnectableComponentProps {
     view?: React.ComponentClass | React.SFC;
     mapPublish?: MapPublishToProps<TPublishProps>;
     modelSelector?: MapModelToProps<TModel, TProps>;

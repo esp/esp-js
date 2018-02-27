@@ -30,23 +30,6 @@ export class RouterProvider extends React.Component<RouterProviderProps, {}> {
     render(): JSX.Element;
 }
 
-export interface SmartComponentProps {
-    modelId: string;
-    view?: any;
-    viewContext?: string;
-    modelSelector?: (model: any) => any;
-    [key: string]: any // other props which will be passed through to the SmartComponent's view
-}
-
-export interface SmartComponentState {
-    model: any;
-}
-
-export class SmartComponent extends React.Component<SmartComponentProps, SmartComponentState> {
-    constructor(props: any);
-    render(): JSX.Element;
-}
-
 export interface ModelSelectorProps {
     model: any;
     view: any;

@@ -30,32 +30,27 @@ export class RouterProvider extends React.Component<RouterProviderProps, {}> {
     render(): JSX.Element;
 }
 
-export interface SmartComponentProps {
-    modelId: string;
-    view?: any;
-    viewContext?: string;
-    modelSelector?: (model: any) => any;
-    [key: string]: any // other props which will be passed through to the SmartComponent's view
-}
-
-export interface SmartComponentState {
-    model: any;
-}
-
-export class SmartComponent extends React.Component<SmartComponentProps, SmartComponentState> {
-    constructor(props: any);
-    render(): JSX.Element;
-}
-
-export interface ModelSelectorProps {
-    model: any;
-    view: any;
-    modelSelector: (props: any) => any;
-}
-
-export class ModelSelector extends React.Component<ModelSelectorProps, any> {
-    constructor(props: any);
-    render(): JSX.Element;
-}
-
 export function shouldUpdateMixin<TProps>(itemsThatEffectUpdateSelector: (nextProps: TProps) => any);
+
+export type PublishEvent = (type: string, event: any) => void;
+export function publishEvent(router: esp.Router, modelId: string);
+
+
+export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => TPublishProps;
+export type MapModelToProps<TModel, TProps> = (model: TModel) => TProps;
+export type ConnectableComponentProps = {modelId: string, viewContext?: string};
+
+export function connect<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>);
+
+export interface Props<TModel, TProps, TPublishProps> extends ConnectableComponentProps {
+    view?: React.ComponentClass | React.SFC;
+    mapPublish?: MapPublishToProps<TPublishProps>;
+    modelSelector?: MapModelToProps<TModel, TProps>;
+}
+
+export interface State {
+    model?: any;
+    publishProps?: any;
+}
+
+export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.Component<Props<TModel, TProps, TPublishProps>, State> {}

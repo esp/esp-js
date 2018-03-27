@@ -34,7 +34,7 @@
     "@types/query-string": "5.1.0",
     "@types/react": "16.0.9",
     "@types/uuid": "3.4.3",
-    "awesome-typescript-loader": "^3.4.1",
+    "awesome-typescript-loader": "^4.0.1",
     "clean-webpack-plugin": "0.1.16",
     "copy-webpack-plugin": "4.3.0",
     "expect": "21.2.1",

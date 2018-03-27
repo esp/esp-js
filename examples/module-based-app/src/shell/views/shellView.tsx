@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Router} from 'esp-js';
-import {SmartComponent} from 'esp-js-react';
+import {ConnectableComponent} from 'esp-js-react';
 import {MultiItemRegionView, SingleItemRegionView} from 'esp-js-ui';
 import ShellModel from '../models/shellModel';
 import { SplashScreenState } from '../models/splashScreenModel';
@@ -13,13 +13,13 @@ export default class ShellView extends React.Component<{model:ShellModel, router
         if(model.splashScreen.state === SplashScreenState.Idle) {
             mainContent = (<div className='main-content'>
                     <div className='workspace'>
-                        <SmartComponent
+                        <ConnectableComponent
                             view={MultiItemRegionView}
                             modelId={model.workspaceRegion.modelId}
                         />
                     </div>
                     <div className='blotter'>
-                        <SmartComponent
+                        <ConnectableComponent
                             view={SingleItemRegionView}
                             className='blotter-container'
                             modelId={model.blotterRegion.modelId}

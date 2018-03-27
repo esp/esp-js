@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { RouterProvider, SmartComponent} from 'esp-js-react';
+import { RouterProvider, ConnectableComponent} from 'esp-js-react';
 import { Container } from 'microdi-js';
 import {
     Logger,
@@ -70,7 +70,7 @@ class ShellBootstrapper {
         ReactDOM.render(
             <RouterProvider router={router}>
                 <div>
-                    <SmartComponent modelId={shellModel.modelId} />
+                    <ConnectableComponent modelId={shellModel.modelId} />
                 </div>
             </RouterProvider>,
             document.getElementById('root')

@@ -2,7 +2,7 @@ import * as Rx from 'rx';
 import '../../../../src/core/observableExt';
 import DefaultPrerequisiteRegistrar from '../../../../src/ui/modules/prerequisites/defaultPrerequisiteRegistrar';
 import Unit from '../../../../src/core/unit';
-import {LoadResult} from '../../../../src/ui/modules/prerequisites/loadResult';
+import {LoadResult, ResultStage} from '../../../../src/ui/modules/prerequisites/loadResult';
 
 describe('Default Prerequisite Registrar Tests', () => {
     let registrar: DefaultPrerequisiteRegistrar;
@@ -38,7 +38,7 @@ describe('Default Prerequisite Registrar Tests', () => {
            expect(errorCount).toEqual(0);
            expect(onCompletedCount).toEqual(1);
            expect(onNextCount).toEqual(2);
-           expect(actualResult.stage).toEqual('error');
+           expect(actualResult.stage).toEqual(ResultStage.Error);
         });
 
         it('Should not run subsequent streams after an error', () => {
@@ -69,7 +69,7 @@ describe('Default Prerequisite Registrar Tests', () => {
             stream.onError(new Error('Spanner in the works'));
             expect(onCompletedCount).toEqual(1);
             expect(onNextCount).toEqual(2);
-            expect(actualResult.stage).toEqual('error');
+            expect(actualResult.stage).toEqual(ResultStage.Error);
             expect(actualResult.name).toEqual('Cohagen');
             expect(subscribed).toEqual(false);
         });
@@ -99,7 +99,7 @@ describe('Default Prerequisite Registrar Tests', () => {
             expect(errorCount).toEqual(0);
             expect(onCompletedCount).toEqual(1);
             expect(onNextCount).toEqual(2);
-            expect(actualResult.stage).toEqual('completed');
+            expect(actualResult.stage).toEqual(ResultStage.Completed);
             expect(actualResult.name).toEqual('Cohagen');
             expect(called).toEqual(true);
         });
@@ -128,7 +128,7 @@ describe('Default Prerequisite Registrar Tests', () => {
             expect(errorCount).toEqual(0);
             expect(onCompletedCount).toEqual(1);
             expect(onNextCount).toEqual(2);
-            expect(actualResult.stage).toEqual('error');
+            expect(actualResult.stage).toEqual(ResultStage.Error);
             expect(actualResult.name).toEqual('Cohagen');
             expect(called).toEqual(true);
         });
@@ -151,8 +151,8 @@ describe('Default Prerequisite Registrar Tests', () => {
             stream.onNext(1);
 
             expect(results.length).toEqual(2);
-            expect(results[0].stage).toEqual('starting');
-            expect(results[1].stage).toEqual('completed');
+            expect(results[0].stage).toEqual(ResultStage.Starting);
+            expect(results[1].stage).toEqual(ResultStage.Completed);
             expect(completed).toEqual(true);
         });
 
@@ -174,18 +174,18 @@ describe('Default Prerequisite Registrar Tests', () => {
             stream1.onNext(1);
 
             expect(results.length).toEqual(3);
-            expect(results[0].stage).toEqual('starting');
+            expect(results[0].stage).toEqual(ResultStage.Starting);
             expect(results[0].name).toEqual('stream1');
-            expect(results[1].stage).toEqual('completed');
+            expect(results[1].stage).toEqual(ResultStage.Completed);
             expect(results[1].name).toEqual('stream1');
-            expect(results[2].stage).toEqual('starting');
+            expect(results[2].stage).toEqual(ResultStage.Starting);
             expect(results[2].name).toEqual('stream2');
 
             expect(completed).toEqual(false);
 
             stream2.onNext(2);
             expect(results.length).toEqual(4);
-            expect(results[3].stage).toEqual('completed');
+            expect(results[3].stage).toEqual(ResultStage.Completed);
             expect(results[3].name).toEqual('stream2');
             expect(completed).toEqual(true);
         });

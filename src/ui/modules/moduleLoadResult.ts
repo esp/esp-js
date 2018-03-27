@@ -1,17 +1,14 @@
 import {LoadResult} from './prerequisites/loadResult';
 
-export interface ModuleLoadChange {
-    type: 'loadChange';
-    moduleName: string;
-    description: string;
-    prerequisiteResult?: LoadResult;
+export enum ModuleChangeType {
+    Change = 'Change',
+    Error = 'Error',
 }
 
-export interface ModuleLoadErrorChange {
-    type: 'loadError';
+export interface ModuleLoadResult {
+    type: ModuleChangeType;
     moduleName: string;
-    errorMessage: string;
+    description?: string;
     prerequisiteResult?: LoadResult;
+    errorMessage?: string;
 }
-
-export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;

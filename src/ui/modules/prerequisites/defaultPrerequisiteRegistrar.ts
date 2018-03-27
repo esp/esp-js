@@ -1,7 +1,7 @@
 import * as Rx from 'rx';
 import {DisposableBase} from 'esp-js';
 import PrerequisiteRegistrar from './prerequisiteRegistrar';
-import {LoadResult} from './loadResult';
+import {LoadResult, ResultStage} from './loadResult';
 import Logger from '../../../core/logger';
 import Unit from '../../../core/unit';
 
@@ -24,7 +24,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
         })
         // When we load, stop on the first error result we get
         // But yield it back to the consumer so they know it stopped
-        .takeUntilInclusive((result: LoadResult) =>  result.stage === 'error')
+        .takeUntilInclusive((result: LoadResult) =>  result.stage === ResultStage.Error)
         .multicast(new Rx.ReplaySubject<LoadResult>(1))
         .lazyConnect<LoadResult>(loadDisposable);
     }
@@ -44,6 +44,10 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
         return this._publishedStream;
     }
 
+    public registerStreamFactory(factory: () => Rx.Observable<Unit>, name: string): void {
+        return this.registerStream(Rx.Observable.defer(() => factory()), name);
+    }
+
     public registerStream(stream: Rx.Observable<Unit>, name: string, errorMessage?: (e: Error) => string): void {
         let builtStream = this._buildStream(stream, name, errorMessage);
         this._stream = this._stream.concat(builtStream);
@@ -52,7 +56,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
     private _buildStream(stream: Rx.Observable<Unit>, name: string, errorMessage: (e: Error) => string = e => e.message) : Rx.Observable<LoadResult> {
         return Rx.Observable.create<LoadResult>(obs => {
             obs.onNext({
-                stage: 'starting',
+                stage: ResultStage.Starting,
                 name
             });
 
@@ -60,7 +64,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
                 let message = `Error in async load for ${name}`;
                 this._log.error(message, e);
                 obs.onNext({
-                    stage: 'error',
+                    stage: ResultStage.Error,
                     name,
                     errorMessage: errorMessage(e)
                 });
@@ -76,7 +80,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
                     e => handleError(e),
                     () => {
                         obs.onNext({
-                            stage: 'completed',
+                            stage: ResultStage.Completed,
                             name
                         });
                         obs.onCompleted();

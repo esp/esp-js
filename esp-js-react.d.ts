@@ -54,3 +54,35 @@ export interface State {
 }
 
 export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.Component<Props<TModel, TProps, TPublishProps>, State> {}
+
+export function createViewForModel(model, props, displayContext?); {
+
+export interface SmartComponentProps {
+    modelId: string;
+    view?: any;
+    viewContext?: string;
+    modelSelector?: (model: any) => any;
+    [key: string]: any // other props which will be passed through to the SmartComponent's view
+}
+
+export interface SmartComponentState {
+    model: any;
+}
+
+export class SmartComponent extends React.Component<SmartComponentProps, SmartComponentState> {
+    constructor(props: SmartComponentProps);
+    render(): JSX.Element;
+}
+
+export interface ModelSelectorProps {
+    model: any;
+    view: any;
+    modelSelector: (props: any) => any;
+}
+
+export class ModelSelector extends React.Component<ModelSelectorProps, any> {
+    constructor(props: any);
+    render(): JSX.Element;
+}
+
+export function shouldUpdateMixin<TProps>(itemsThatEffectUpdateSelector: (nextProps: TProps) => any); 

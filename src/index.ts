@@ -17,25 +17,31 @@
 // notice_end
 //
 export { RouterProvider } from './routerProvider';
+export { SmartComponent } from './smartComponent';
 export { ViewBinder } from './viewBinder';
 export { viewBinding } from './viewBindingDecorator';
+export { ModelSelector } from './modelSelector';
 export { shouldUpdateMixin } from './shouldUpdateMixin';
-
+ 
 import { RouterProvider } from './routerProvider';
+import { SmartComponent } from './smartComponent';
 import { ViewBinder } from './viewBinder';
 import { viewBinding } from './viewBindingDecorator';
+import { ModelSelector } from './modelSelector';
 import { shouldUpdateMixin } from './shouldUpdateMixin';
 import { createViewForModel } from './viewBindingDecorator';
 import { ConnectableComponent, connect } from './connectableComponent';
 import { publishEvent } from './publishEvent';
-
-export default {
+ 
+ export default {
     RouterProvider,
+    SmartComponent,
     ViewBinder,
     viewBinding,
+    ModelSelector,
     shouldUpdateMixin,
     createViewForModel,
     ConnectableComponent,
     connect,
     publishEvent
-};
+ }; 

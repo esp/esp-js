@@ -2,7 +2,7 @@ import {LoadResult} from './prerequisites/loadResult';
 
 export enum ModuleChangeType {
     Change = 'Change',
-    Error = 'Error',
+    Error = 'Error'
 }
 
 export interface ModuleLoadResult {

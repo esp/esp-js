@@ -38,7 +38,10 @@ export function publishEvent(router: esp.Router, modelId: string);
 
 export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => TPublishProps;
 export type MapModelToProps<TModel, TProps> = (model: TModel) => TProps;
-export type ConnectableComponentProps = {modelId: string, viewContext?: string};
+export type ConnectableComponentProps = {
+    modelId: string, 
+    viewContext?: string
+};
 
 export function connect<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>);
 
@@ -46,6 +49,7 @@ export interface Props<TModel, TProps, TPublishProps> extends ConnectableCompone
     view?: React.ComponentClass | React.SFC;
     mapPublish?: MapPublishToProps<TPublishProps>;
     modelSelector?: MapModelToProps<TModel, TProps>;
+    [key: string]: any;
 }
 
 export interface State {

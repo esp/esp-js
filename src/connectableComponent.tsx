@@ -12,6 +12,7 @@ export interface Props<TModel, TProps, TPublishProps> extends ConnectableCompone
     view?: React.ComponentClass | React.SFC;
     mapPublish?: MapPublishToProps<TPublishProps>;
     modelSelector?: MapModelToProps<TModel, TProps>;
+    [key: string]: any;
 }
 
 export interface State {
@@ -78,12 +79,15 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
     }
 
     private _getChildProps() {
+        let { view, mapPublish, modelSelector, ...rest} = this.props;
+
         const distilledModel = this.props.modelSelector ? this.props.modelSelector(this.state.model) : {};
         return {
             model: this.state.model,
             router: this.context.router,
             ...distilledModel,
-            ...this.state.publishProps
+            ...this.state.publishProps,
+            ...rest
         };
     }
 }

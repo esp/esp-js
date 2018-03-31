@@ -26,7 +26,7 @@ module.exports = {
         sourcePrefix: '    ',
         library: 'esp',
         path: './dist/',
-        filename: 'esp.min.js'
+        filename: 'esp.js'
     },
     devtool: 'source-map',
     debug:false,
@@ -45,7 +45,6 @@ module.exports = {
         configFile: './.eslintrc'
     },
     plugins: [
-        new webpack.optimize.UglifyJsPlugin({minimize: true}),
         new webpack.optimize.OccurenceOrderPlugin(true)
     ]
 };

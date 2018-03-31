@@ -41,7 +41,7 @@
     "awesome-typescript-loader": "^3.4.1",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.1",
-    "expect": "^21.2.1",
+    "expect": "^22.4.3",
     "jest": "^22.4.3",
     "prop-types": "^15.6.1",
     "script-loader": "0.7.2",

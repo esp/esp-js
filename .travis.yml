@@ -1,16 +1,10 @@
 language: node_js
-
 node_js:
-  - 6.9.1
-
-before_install:
-
-install:
-  - 'npm install'
-
-before_script:
-
+  - "node"
 script:
-  - 'npm run test:ci'
-
-after_script:
+    - yarn test:ci
+    - yarn build:prod
+cache:
+  yarn: true
+  directories:
+    - node_modules

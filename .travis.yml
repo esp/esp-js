@@ -4,3 +4,7 @@ node_js:
 script:
     - yarn test
     - yarn build-prod
+cache:
+  yarn: true
+  directories:
+    - node_modules

@@ -15,7 +15,7 @@
   "scripts": {
     "start": "yarn test",
     "test": "jest --watchAll --no-cache --config jest.config",
-    "test:ci": "jest --teamcity --config jest.config --verbose",
+    "test:ci": "jest --config jest.config --verbose",
     "build": "npm run build:dev && npm run build:prod",
     "build:dev": "webpack --config webpack.dev.config.js",
     "build:prod": "webpack -p --config webpack.prod.config.js"
@@ -42,7 +42,6 @@
     "inject-loader": "^2.0.1",
     "jasmine-core": "^2.3.4",
     "jest": "17.0.3",
-    "jest-teamcity-reporter": "0.2.0",
     "source-map-loader": "^0.1.5",
     "typescript": "^2.1.4",
     "webpack": "^1.12.12",

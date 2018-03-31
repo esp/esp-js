@@ -22,7 +22,10 @@ export { ViewBinder } from './viewBinder';
 export { viewBinding } from './viewBindingDecorator';
 export { ModelSelector } from './modelSelector';
 export { shouldUpdateMixin } from './shouldUpdateMixin';
- 
+export { createViewForModel } from './viewBindingDecorator';
+export { ConnectableComponent, connect } from './connectableComponent';
+export { publishEvent } from './publishEvent';
+
 import { RouterProvider } from './routerProvider';
 import { SmartComponent } from './smartComponent';
 import { ViewBinder } from './viewBinder';

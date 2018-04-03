@@ -57,7 +57,14 @@ export interface State {
     publishProps?: any;
 }
 
-export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.Component<Props<TModel, TProps, TPublishProps>, State> {}
+interface ConnectableComponentContext {
+    router: esp.Router;
+    modelId: string;
+}
+
+export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.Component<Props<TModel, TProps, TPublishProps>, State> {
+    context: ConnectableComponentContext;
+}
 
 export function createViewForModel(model, props, displayContext?): any;
 export function shouldUpdateMixin<TProps>(itemsThatEffectUpdateSelector: (nextProps: TProps) => any): any;

@@ -6,7 +6,7 @@ import { PublishEvent, publishEvent } from './publishEvent';
 
 export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => TPublishProps;
 export type MapModelToProps<TModel, TProps> = (model: TModel) => TProps;
-export type ConnectableComponentProps = {modelId: string, viewContext?: string};
+export type ConnectableComponentProps = {modelId?: string, viewContext?: string};
 
 export interface Props<TModel, TProps, TPublishProps> extends ConnectableComponentProps {
     view?: React.ComponentClass | React.SFC;
@@ -20,37 +20,64 @@ export interface State {
     publishProps?: any;
 }
 
+interface ConnectableComponentContext {
+    router: Router;
+    modelId: string;
+}
+
 export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.Component<Props<TModel, TProps, TPublishProps>, State> {
     private _observationSubscription: Disposable = null;
+    context: ConnectableComponentContext;
 
-    constructor(props: Props<TModel,  TProps, TPublishProps>, context: any) {
+    static contextTypes = {
+        router: PropTypes.instanceOf(Router).isRequired,
+        modelId: PropTypes.string
+    };
+
+    constructor(props: Props<TModel,  TProps, TPublishProps>, context: ConnectableComponentContext) {
         super(props, context);
         this.state = {model: null};
     }
 
-    componentWillReceiveProps(nextProps: Props<TModel, TProps, TPublishProps>) {
-        if(nextProps.modelId === this.props.modelId) {
+    componentWillReceiveProps(nextProps: Props<TModel, TProps, TPublishProps>, nextContext: ConnectableComponentContext) {
+        const modelId = nextProps.modelId || nextContext.modelId;
+        const oldModelId = this._getModelId();
+
+        if (modelId === oldModelId) {
+            return;
+        }
+        
+        if(nextProps.modelId === oldModelId) {
             return;
         }
 
-        this._tryObserveModel(nextProps.modelId);
+        this._tryObserveModel(modelId);
     }
 
     componentDidMount() {
-        this._tryObserveModel(this.props.modelId);
+        this._tryObserveModel(this._getModelId());
     }
 
     componentWillUnmount() {
         this._tryDisposeModelSubscription();
     }
 
+    private _getModelId(): string {
+        // props override context
+        return this.props.modelId || this.context.modelId;
+    }
+
     private _tryObserveModel(modelId: string): void {
         this._tryDisposeModelSubscription();
+
+        if (!modelId) {
+            return;
+        }
 
         // We only map the publish props once, as for well behaving components
         // these callbacks should never change
         if(this.props.mapPublish) {
-            const publishProps = this.props.mapPublish(publishEvent(this.context.router, this.props.modelId));
+            const publishProps = this.props.mapPublish(publishEvent(this.context.router, modelId));
             this.setState({publishProps});
         }
 
@@ -71,18 +98,19 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
             return null;
         }
 
+        let props = this._getChildProps();
         if(this.props.view) {
-            return React.createElement(this.props.view, this._getChildProps());
+            return React.createElement(this.props.view, props);
         }
 
-        return createViewForModel(this.state.model, this._getChildProps(), this.props.viewContext);
+        return createViewForModel(this.state.model, props, this.props.viewContext);
     }
 
     private _getChildProps() {
-        let { view, mapPublish, modelSelector, ...rest} = this.props;
-
+        const {children, mapPublish, modelId, modelSelector, view, viewContext, ...rest} = this.props;
         const distilledModel = this.props.modelSelector ? this.props.modelSelector(this.state.model) : {};
         return {
+            modelId: this._getModelId(),
             model: this.state.model,
             router: this.context.router,
             ...distilledModel,

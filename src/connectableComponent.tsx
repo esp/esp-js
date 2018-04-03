@@ -31,8 +31,8 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
 
     static contextTypes = {
         router: PropTypes.instanceOf(Router).isRequired,
-        modelId: PropTypes.string,
-    }
+        modelId: PropTypes.string
+    };
 
     constructor(props: Props<TModel,  TProps, TPublishProps>, context: ConnectableComponentContext) {
         super(props, context);

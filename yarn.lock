@@ -34,9 +34,9 @@
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@types/query-string/-/query-string-5.1.0.tgz#7f40cdea49ddafa0ea4f3db35fb6c24d3bfd4dcc"
 
-"@types/react@16.1.0":
-  version "16.1.0"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.1.0.tgz#6c0e9955ce73f332b4a1948d45decaf18c764c6e"
+"@types/react@16.3.2":
+  version "16.3.2"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.3.2.tgz#8dd45796b33160c60ddf1de068f45729214668bb"
 
 "@types/uuid@3.4.3":
   version "3.4.3"
@@ -283,7 +283,7 @@ atob@^2.0.0:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.0.3.tgz#19c7a760473774468f20b2d2d03372ad7d4cbf5d"
 
-awesome-typescript-loader@^4.0.1:
+awesome-typescript-loader@4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/awesome-typescript-loader/-/awesome-typescript-loader-4.0.1.tgz#bddae8183f06eb65184390d596e4342ca2089281"
   dependencies:
@@ -1346,9 +1346,9 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-esp-js-react@1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-1.2.2.tgz#8a7ec7004dfafc088ff9504794aebacc7e527faa"
+esp-js-react@1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/esp-js-react/-/esp-js-react-1.2.3.tgz#d37d9d865e3e16b0ad056f84077f9202f96b7833"
   dependencies:
     esp-js "^1.5.2"
     react "16.3.0"

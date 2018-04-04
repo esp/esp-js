@@ -2,11 +2,11 @@ import * as Rx from 'rx';
 import DefaultPrerequisiteRegistrar from './prerequisites/defaultPrerequisiteRegistrar';
 import Logger from '../../core/logger';
 import {Container} from 'microdi-js';
-import {ModuleLoadResult} from './moduleLoadResult';
+import {ModuleLoadResult,ModuleChangeType} from './moduleLoadResult';
 import ComponentRegistryModel from '../components/componentRegistryModel';
 import ModuleDescriptor from './moduleDescriptor';
 import StateService from '../state/stateService';
-import {LoadResult} from './prerequisites/loadResult';
+import {ResultStage, LoadResult} from './prerequisites/loadResult';
 import Module from './module';
 
 export default class SingleModuleLoader {
@@ -29,7 +29,7 @@ export default class SingleModuleLoader {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             let moduleName = this._descriptor.moduleName;
             obs.onNext({
-                type: 'loadChange',
+                type: ModuleChangeType.Change,
                 moduleName: moduleName,
                 description: `Starting module ${moduleName}`
             });
@@ -54,7 +54,7 @@ export default class SingleModuleLoader {
             } catch (e) {
                 this._log.error(`Failed to create module ${moduleName}`, e);
                 obs.onNext({
-                    type: 'loadError',
+                    type: ModuleChangeType.Error,
                     moduleName,
                     errorMessage: `Failed to load module ${moduleName}`
                 });
@@ -100,23 +100,23 @@ export default class SingleModuleLoader {
                 // is blocking and halts the UI for a while. We don't control the module
                 // so we'd rather let consumers know where it's stuck
                 obs.onNext({
-                    type: 'loadChange',
+                    type: ModuleChangeType.Change,
                     moduleName: this._descriptor.moduleName,
                     description: `Initialising Module ${this._descriptor.moduleName}`
                 });
 
                 functionalModule.initialise();
                 obs.onNext({
-                    type: 'loadChange',
+                    type: ModuleChangeType.Change,
                     moduleName: this._descriptor.moduleName,
                     description: `Initialised Module ${this._descriptor.moduleName}`
                 });
             } catch (e) {
                 this._log.error(`Failed to initialise module ${this._descriptor.moduleName}`, e);
                 obs.onNext({
-                    type: 'loadError',
+                    type: ModuleChangeType.Error,
                     moduleName: this._descriptor.moduleName,
-                    errorMessage: `Failed to load module $this._descriptor.moduleName}`
+                    errorMessage: `Failed to load module ${this._descriptor.moduleName}`
                 });
                 return () => {};
             }
@@ -126,23 +126,23 @@ export default class SingleModuleLoader {
 
     private _mapLoadResult(result: LoadResult) : ModuleLoadResult {
         switch(result.stage) {
-            case 'starting':
+            case ResultStage.Starting:
                 return {
-                    type: 'loadChange',
+                    type: ModuleChangeType.Change,
                     moduleName: this._descriptor.moduleName,
-                    description: `Starting ${result.name}`,
+                    description: `${result.name} Starting`,
                     prerequisiteResult: result
                 };
-            case 'completed':
+            case ResultStage.Completed:
                 return {
-                    type: 'loadChange',
+                    type: ModuleChangeType.Change,
                     moduleName: this._descriptor.moduleName,
-                    description: `Finished ${result.name}`,
+                    description: `${result.name} Finished`,
                     prerequisiteResult: result
                 };
-            case 'error':
+            case ResultStage.Error:
                 return {
-                    type: 'loadError',
+                    type: ModuleChangeType.Error,
                     moduleName: this._descriptor.moduleName,
                     errorMessage: result.errorMessage,
                     prerequisiteResult: result

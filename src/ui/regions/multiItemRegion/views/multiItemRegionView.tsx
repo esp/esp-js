@@ -1,4 +1,4 @@
-import {SmartComponent} from 'esp-js-react';
+import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
@@ -32,7 +32,7 @@ export default class MultiItemRegionView extends ViewBase<MultiItemRegionView, M
         let items = model.items.map((regionItem:RegionItem) => {
             _log.verbose(`Adding view for model [${regionItem.modelId}] with key [${regionItem.itemKey}]`);
             return (<ItemView key={regionItem.itemKey}>
-                <SmartComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext} />
+                <ConnectableComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext} />
             </ItemView>);
         });
 

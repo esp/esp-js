@@ -1,4 +1,4 @@
-import {SmartComponent} from 'esp-js-react';
+import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
@@ -26,7 +26,7 @@ export default class SingleItemRegionView extends ViewBase<SingleItemRegionView,
             let className = classnames(this.props.className, 'single-item-container');
             return (
                 <div className={className}>
-                    <SmartComponent modelId={model.item.modelId} viewContext={model.item.displayContext} />
+                    <ConnectableComponent modelId={model.item.modelId} viewContext={model.item.displayContext} />
                 </div>
             );
         } else {

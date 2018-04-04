@@ -264,21 +264,18 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     unloadLayout();
 }
 
-export interface ModuleLoadChange {
-    type: 'loadChange';
-    moduleName: string;
-    description: string;
-    prerequisiteResult: LoadResult;
+export enum ModuleChangeType {
+    Change = 'Change',
+    Error = 'Error',
 }
 
-export interface ModuleLoadErrorChange {
-    type: 'loadError';
+export interface ModuleLoadResult {
+    type: ModuleChangeType;
     moduleName: string;
-    errorMessage: string;
-    prerequisiteResult: LoadResult;
+    description?: string;
+    prerequisiteResult?: LoadResult;
+    errorMessage?: string;
 }
-
-export type ModuleLoadResult = ModuleLoadChange | ModuleLoadErrorChange;
 
 interface ModuleDescriptor {
     factory: ModuleConstructor;
@@ -316,7 +313,6 @@ export class MultiItemRegionModel extends RegionModelBase {
     constructor(regionName: string, router: Router, regionManager: RegionManager);
 
     protected _addToRegion(title: string, modelId: string, displayContext?: string): void;
-
     protected _removeFromRegion(modelId: string, displayContext?: string): void;
 }
 
@@ -384,7 +380,6 @@ export abstract class RegionModelBase extends ModelBase {
     public getTitle(): string;
 
     protected abstract _addToRegion(title:string, modelId:string, view:any, displayContext?:string);
-
     protected abstract _removeFromRegion(modelId:string, view:any, displayContext?:string);
 }
 
@@ -425,27 +420,20 @@ export abstract class ViewBase<TComponent, TModel, TProps extends ViewBaseProps<
     // Keeping this here for now, might delete at some point if we don't use it
 }
 
-interface BaseResult {
-    stage: string;
+export enum ResultStage {
+    Starting = 'Starting',
+    Completed = 'Completed',
+    Error = 'Error'
+}
+
+export interface LoadResult {
+    stage: ResultStage;
     name: string;
+    errorMessage?: string;
 }
-
-export interface StartingResult extends BaseResult {
-    stage: 'starting';
-}
-
-export interface CompletedResult extends BaseResult {
-    stage: 'completed';
-}
-
-export interface ErroredResult extends BaseResult {
-    stage: 'error';
-    errorMessage: string;
-}
-
-export type LoadResult = StartingResult | CompletedResult | ErroredResult;
 
 export interface PrerequisiteRegistrar {
+    registerStreamFactory(factory: () => Rx.Observable<Unit>, name: string): void;
     registerStream(stream: Rx.Observable<Unit>, name: string, errorMessage?: (e: Error) => string): void;
     registerAction(action: () => void, name: string, errorMessage?: (e: Error) => string): void;
 }
@@ -453,5 +441,6 @@ export interface PrerequisiteRegistrar {
 export class DefaultPrerequisiteRegistrar extends DisposableBase implements PrerequisiteRegistrar  {
     registerAction(action: () => void, name: string)
     load(): Rx.Observable<LoadResult>;
+    registerStreamFactory(factory: () => Rx.Observable<Unit>, name: string): void;
     registerStream(stream: Rx.Observable<Unit>, name: string): void;
 }

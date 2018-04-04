@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import {SmartComponent} from 'esp-js-react';
+import {ConnectableComponent} from 'esp-js-react';
 import * as classnames from 'classnames';
 import {Logger} from '../../../../core';
 import ViewBase from '../../../viewBase';
@@ -62,7 +62,7 @@ export default class SelectableMultiItemView extends ViewBase<SelectableMultiIte
         let grids = model.items.map((item: RegionItem) => {
             if(item === selectedItem) {
                 return (<ItemView key={item.itemKey} className='single-item-view-container'>
-                    <SmartComponent modelId={item.modelId} viewContext={item.displayContext} />
+                    <ConnectableComponent modelId={item.modelId} viewContext={item.displayContext} />
                 </ItemView>);
             } else {
                 return null;

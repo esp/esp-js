@@ -43,7 +43,8 @@ export type ConnectableComponentProps = {
     viewContext?: string
 };
 
-export function connect<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>);
+export function connect<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>): 
+        (view: React.ComponentClass | React.SFC) => (props: ConnectableComponentProps) => JSX.Element;
 
 export interface Props<TModel, TProps, TPublishProps> extends ConnectableComponentProps {
     view?: React.ComponentClass | React.SFC;

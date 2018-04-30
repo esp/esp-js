@@ -120,7 +120,8 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
     }
 }
 
-export const connect = function<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>) {
+export const connect = function<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>):
+    (view: React.ComponentClass | React.SFC) => (props: ConnectableComponentProps) => JSX.Element {
     return (view: React.ComponentClass | React.SFC) => ({modelId, viewContext}: ConnectableComponentProps) => {
         return <ConnectableComponent modelId={modelId} view={view} viewContext={viewContext} mapPublish={mapPublish} modelSelector={modelSelector} />;
     };

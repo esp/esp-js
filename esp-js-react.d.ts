@@ -39,7 +39,7 @@ export function publishEvent(router: esp.Router, modelId: string);
 export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => TPublishProps;
 export type MapModelToProps<TModel, TProps> = (model: TModel) => TProps;
 export type ConnectableComponentProps = {
-    modelId: string, 
+    modelId?: string, 
     viewContext?: string
 };
 

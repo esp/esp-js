@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ESP-JS-UI Package",
   "main": "dist/esp-js-ui.js",
   "typings": "esp-js-ui.d.ts",

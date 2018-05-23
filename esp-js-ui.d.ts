@@ -220,6 +220,7 @@ export class LiteralResolver<T> implements Resolver<T> {
 export class SystemContainerConfiguration {
     public static configureContainer(rootContainer:Container);
 }
+
 export class SystemContainerConst {
     static readonly router: string;
     static readonly state_service: string;
@@ -277,7 +278,7 @@ export interface ModuleLoadResult {
     errorMessage?: string;
 }
 
-interface ModuleDescriptor {
+export interface ModuleDescriptor {
     factory: ModuleConstructor;
     moduleName: string;
     permissions?: Array<string>;

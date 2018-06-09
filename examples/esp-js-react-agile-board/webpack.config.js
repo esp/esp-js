@@ -19,6 +19,7 @@ let config = {
         extensions: ['.ts', '.tsx', '.js', '.json']
     },
     devtool: 'source-map',
+    mode: 'development',
     module: {
         rules: [
             {

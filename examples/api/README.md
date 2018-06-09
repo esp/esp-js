@@ -26,7 +26,7 @@ This will install all dependencies.
 
 `npm start`
 
-This will call babel to transpile app.js and run it via node.
+This will call babel to transpile app.jsx and run it via node.
 
 There are several examples in the readme, you'll get an option to select which example to run.
 

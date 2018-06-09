@@ -1,5 +1,5 @@
 import React from 'react';
-import ThreadListItem from './ThreadListItem.react';
+import ThreadListItem from './threadListItem';
 
 export default class ThreadSection extends React.Component {
     constructor() {

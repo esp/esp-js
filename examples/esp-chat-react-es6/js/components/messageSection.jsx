@@ -1,5 +1,5 @@
-import MessageComposer from './MessageComposer.react';
-import MessageListItem from './MessageListItem.react';
+import MessageComposer from './messageComposer';
+import MessageListItem from './messageListItem';
 import React from 'react';
 
 export default class MessageSection extends React.Component {

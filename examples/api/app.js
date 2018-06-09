@@ -832,8 +832,8 @@ for (let exampleKey in examples) {
 var properties = [
     {
         name: 'sampleNumber',
-        validator: /^[1-9]$/,
-        warning: 'Sample number must be a number between 1-7 inclusive'
+        validator: /^[1-9].*$/,
+        warning: 'Sample number must be a number between 1-12 inclusive'
     }
 ];
 
@@ -842,6 +842,10 @@ prompt.start();
 prompt.get(properties, function (err, result) {
     if (err) { return onErr(err); }
     var example = examples[result.sampleNumber];
+    if (!example) {
+        console.error('Can\'t find sample with number %s\'', result.sampleNumber);
+        return;
+    }
     console.log('Running sample \'%s\'', example.description);
     examples[result.sampleNumber].action();
 });

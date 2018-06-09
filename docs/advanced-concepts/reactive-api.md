@@ -17,7 +17,7 @@ Given the API is modeled on RX, there is nothing stopping you from extending bot
 Internally this is how operators such as `.Where` and `.Select` have been built. For example:
 
 ``` js
-import Observable from '../Observable';
+import {Observable} from '../Observable';
 import { Guard } from '../../system';
 
 Observable.prototype.where = function(predicate) {

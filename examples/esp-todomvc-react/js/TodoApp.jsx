@@ -8,7 +8,7 @@ window.app = window.app || {};
 		MainSection = app.MainSection,
 		Footer = app.Footer;
 
-	app.TodoApp = React.createClass({
+	app.TodoApp = createReactClass({
 
 		componentWillMount: function () {
 			this.props.router

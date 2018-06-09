@@ -48,9 +48,11 @@ let config = {
     },
     mode: isProduction ? 'production' : 'development',
     output: {
-        path: process.cwd() + '/dist',
         libraryTarget: 'umd',
-        filename: '[name].js'
+        sourcePrefix: '    ',
+        library: 'esp',
+        path: process.cwd() + '/dist',
+        filename: 'esp.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.json'],

@@ -4,7 +4,7 @@ window.app = window.app || {};
 (function () {
 	'use strict';
 
-	app.Footer = React.createClass({
+	app.Footer = createReactClass({
 
 		handleClear: function () {
 			this.props.router.publishEvent(this.props.modelId, 'clearCompleted', {});

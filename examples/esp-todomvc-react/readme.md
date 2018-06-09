@@ -18,10 +18,6 @@ This React example integrates ESP (Evented State Processing) for its model.
 
 ### Get help from other users:
 
-- [esp/chat on Gitter Chat](https://gitter.im/esp/chat)
-- [Questions tagged esp-js on StackOverflow](http://stackoverflow.com/questions/tagged/esp-js)
-- [GitHub Issues](https://github.com/esp/esp-js/issues)
-
 *Let us [know](https://github.com/esp/esp-js/issues) if you discover anything worth sharing!*
 
 ## Learning React
@@ -40,13 +36,13 @@ Here are some links you may find helpful:
 
 ```shell
 cd esp-todomvc-react
-npm install
+yarn install
 ```
 
 Optionally run a local web server ([`ws`](https://www.npmjs.com/package/local-web-server)) and visit [localhost:8000](http://localhost:8000/):
 
 ```shell
 cd esp-todomvc-react
-npm install local-web-server
+yarn install local-web-server
 ws
 ```

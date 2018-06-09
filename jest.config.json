@@ -1,0 +1,21 @@
+{
+  "globals": {
+    "ts-jest": {
+      "tsConfigFile": "tsconfig.json"
+    }
+  },
+  "setupFiles": [
+    "<rootDir>/tests/__jest__/configureEspLogging.ts"
+  ],
+  "transform": {
+    "^.+\\.js$": "<rootDir>/tests/__jest__/babelJest.ts",
+    "^.+\\.tsx?$": "<rootDir>/tests/__jest__/typeScriptPreprocessor.ts"
+  },
+  "testMatch": [
+    "**/tests/**/*Tests.[jt]s"
+  ],
+  "moduleFileExtensions": [
+    "ts",
+    "js"
+  ]
+}

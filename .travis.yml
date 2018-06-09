@@ -2,8 +2,8 @@ language: node_js
 node_js:
   - "node"
 script:
-    - yarn test:ci
-    - yarn build:prod
+    - yarn test-ci
+    - yarn build-prod
 cache:
   yarn: true
   directories:

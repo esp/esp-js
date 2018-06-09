@@ -16,7 +16,7 @@ It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](h
 
 ## Running
 
-You must have [npm](https://www.npmjs.org/) or yarn installed on your computer.
+You must have [yarn](https://yarnpkg.com/) or yarn installed on your computer.
 From the root project directory run these commands from the command line:
 
 `yarn install`

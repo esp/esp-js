@@ -28,7 +28,7 @@ Let us [know](https://github.com/esp/esp-js/issues) if you discover anything wor
 
 ## Running
 
-You must have [npm](https://www.npmjs.org/) installed on your computer.
+You must have [yarn](https://yarnpkg.com/) installed on your computer.
 From the root project directory run these commands from the command line:
 
 `yarn install`

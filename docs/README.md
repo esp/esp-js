@@ -17,13 +17,18 @@ It's lightweight, easy to apply and puts the model at the forefront of your desi
 Get the source from [github](https://github.com/esp/esp-js) and the packages from [npm](https://www.npmjs.com/package/esp-js).
 
 # Installation
-Install from npm: `npm install esp-js --save`.
+Install using yarn: `yarn add esp-js`.
 
 If you're using ES6 with a package manager such as [webpack](https://webpack.github.io) you can import `esp` like this:
 
 ```javascript
 import esp from 'esp-js';
 var router = new esp.Router();
+
+// or
+
+import { Router } from 'esp-js';
+var router = new Router();
 ```
 
 Alternatively you can reference `dist\esp.js` or `dist\esp.min.js` via a `script` tag. These files expose `esp` using the Universal Module Definition (UMD) format. 

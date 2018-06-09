@@ -6,7 +6,7 @@ window.app = window.app || {};
 
 	var ENTER_KEY = 13;
 
-	app.Header = React.createClass({
+	app.Header = createReactClass({
 
 		handleKeyDown: function (event) {
 			if (event.keyCode !== ENTER_KEY) {

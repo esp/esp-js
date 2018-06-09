@@ -7,7 +7,7 @@ window.app = window.app || {};
 	var ESCAPE_KEY = 27,
 		ENTER_KEY = 13;
 
-	app.TodoItem = React.createClass({
+	app.TodoItem = createReactClass({
 
 		getInitialState: function () {
 			return {editText: ''};

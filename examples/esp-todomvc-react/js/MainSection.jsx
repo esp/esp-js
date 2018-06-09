@@ -6,7 +6,7 @@ window.app = window.app || {};
 
 	var TodoItem = app.TodoItem;
 
-	app.MainSection = React.createClass({
+	app.MainSection = createReactClass({
 
 		handleToggleAll: function (event) {
 			this.props.router.publishEvent(this.props.modelId, 'toggleAll', { checked: event.target.checked });

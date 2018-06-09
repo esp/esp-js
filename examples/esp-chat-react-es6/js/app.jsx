@@ -4,8 +4,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import model from './model';
-import components from './components';
 import services from './services';
+import {ChatApp} from './components/chatApp';
 
 // export for http://fb.me/react-devtools
 window.React = React;
@@ -20,7 +20,7 @@ chatAppModel.initialise();
 
 
 ReactDOM.render(
-    <components.ChatApp router={router} />,
+    <ChatApp router={router} />,
     document.getElementById('react')
 );
 

@@ -1,9 +1,9 @@
 # Installation
 
-Install from npm:
+Install using yarn:
 
 ````
-npm install esp-js --save.
+yarn add esp-js
 ```
 usage:
 

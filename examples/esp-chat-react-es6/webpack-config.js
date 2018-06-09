@@ -1,47 +1,27 @@
 var path = require("path");
 
 var webpackConfig = {
-    progress: true,
-    failOnError: true,
     entry: {
         app: [
-            './js/app.js'
+            './js/app.jsx'
         ]
     },
+    mode: 'development',
     output: {
         libraryTarget: 'umd',
         sourcePrefix: '    ',
         library: 'esp-example',
-        path: './build/',
+        path: process.cwd() + '/build',
         filename: 'bundle.js'
     },
+    resolve: {
+        extensions: ['.js', '.jsx', '.json'],
+    },
     module: {
-        loaders: [
-            {
-                loader: "babel-loader",
-
-                // Skip any files outside of your project's `src` directory
-                include: [
-                    path.resolve(__dirname, "js"),
-                ],
-                test: /\.jsx?$/,
-                query: {
-                    presets: ['es2015', 'stage-0', 'react'],
-                    plugins: ['transform-runtime', 'transform-decorators-legacy']
-                }
-            }
+        rules: [
+            { test: /\.jsx?$/, exclude: /node_modules/, loader: "babel-loader" }
         ]
     },
-    devtool: 'source-map',
-    devServer: {
-        port: 4000,
-        contentBase: path.join(__dirname, './'),
-        stats: {
-            colors: true
-        },
-        noInfo: false,
-        quiet: false,
-        hot: true
-    }
+    devtool: 'source-map'
 };
 module.exports = webpackConfig;

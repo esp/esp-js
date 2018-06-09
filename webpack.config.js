@@ -52,7 +52,11 @@ let config = {
         sourcePrefix: '    ',
         library: 'esp',
         path: process.cwd() + '/dist',
-        filename: 'esp.js'
+        filename: 'esp.js',
+        // webpack 4 incorrectly has `window` in the UMD definition
+        // This is a workaround to enable node to consume esp's umc, see
+        // https://github.com/webpack/webpack/issues/6522
+        globalObject: "typeof self !== 'undefined' ? self : this"
     },
     resolve: {
         extensions: ['.ts', '.js', '.json'],

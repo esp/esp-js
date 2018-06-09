@@ -13,7 +13,6 @@
   ],
   "scripts": {
     "test-ci": "jest --config jest.config.json --verbose",
-    "build": "yarn build-dev && yarn build-prod",
     "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
     "start": "webpack --watch",

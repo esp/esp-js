@@ -1,6 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import Thread from '../model/Thread';
+import PropTypes from 'prop-types';
 
 class ThreadListItem extends React.Component {
     // ES7 or babel with the playground flag
@@ -38,6 +39,6 @@ class ThreadListItem extends React.Component {
     }
 }
 ThreadListItem.propTypes = {
-    model: React.PropTypes.instanceOf(Thread)
+    model: PropTypes.instanceOf(Thread)
 }
 export default ThreadListItem;

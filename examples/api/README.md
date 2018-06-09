@@ -17,16 +17,16 @@ This example contains the code showing the lower level APIs in the ESP `Router`.
 
 ## Running
 
-You must have [npm](https://www.npmjs.org/) installed on your computer.
+You must have [yarn](https://yarnpkg.com/) installed on your computer.
 From the same directory as this read me run these commands from the command line:
 
-`npm install`
+`yarn install`
 
 This will install all dependencies.
 
-`npm start`
+`yarn start`
 
-This will call babel to transpile app.js and run it via node.
+This will call babel to transpile app.jsx and run it via node.
 
 There are several examples in the readme, you'll get an option to select which example to run.
 

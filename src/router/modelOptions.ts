@@ -1,6 +1,6 @@
-import {EventProcessor} from './eventProcessorDelegate';
+import {PostEventProcessor, PreEventProcessor} from './eventProcessorDelegate';
 
 export interface ModelOptions {
-    preEventProcessor?: EventProcessor;
-    postEventProcessor?: EventProcessor;
+    preEventProcessor?: PreEventProcessor;
+    postEventProcessor?: PostEventProcessor;
 }

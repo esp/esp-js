@@ -18,19 +18,20 @@
 
 import {Observable} from '../Observable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.map = function (selector: (arg1, arg2, arg3) => any) {
+Observable.prototype.map = function<T>(selector: (item: T) => any) {
     Guard.isDefined(selector, 'selector Required');
     let source = this;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T>  = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
-                let selection = selector(arg1, arg2, arg3);
+            (item: T) => {
+                let selection = selector(item);
                 // we only pass one value on, the result of the selection
                 observer.onNext(selection);
             },
             () => observer.onCompleted()
         );
     };
-    return new Observable(subscribe);
+    return new Observable<T>(subscribe);
 };

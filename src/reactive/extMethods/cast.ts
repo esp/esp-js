@@ -1,6 +1,6 @@
 // notice_start
 /*
- * Copyright 2015 Dev Shop Limited
+ * Copyright 2018 Keith Woods
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
  */
 // notice_end
 
-const fs = require('fs');
-const babelConfig = JSON.parse(fs.readFileSync('.babelrc', "utf8"));
-const babelJest = require('babel-jest');
-// override our .bablerc to have inline source maps, this helps with debugging (line numbers work as expected) in intellij/webstorm.
-const newConfig = Object.assign(babelConfig, {sourceMaps:"inline"});
-module.exports = babelJest.createTransformer(newConfig);
+import {Observable} from '../Observable';
+
+Observable.prototype.cast = function<T, TCast>() {
+    return <Observable<TCast>>this; // a typescript hack
+};

@@ -1,1 +1,7 @@
-export type EventProcessor = (model: any, eventsProcessed: string[]) => void;
+export interface PreEventProcessor {
+    (model: any): void;
+}
+
+export interface PostEventProcessor {
+    (model: any, eventsProcessed: string[]): void;
+}

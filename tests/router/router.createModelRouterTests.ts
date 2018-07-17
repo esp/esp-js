@@ -39,8 +39,8 @@ describe('Router', () => {
             _dispatchedModelNumbers = [];
             _router.addModel(_model.id, _model);
             _modelRouter = _router.createModelRouter(_model.id);
-            _modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {
-                m.aNumber = e;
+            _modelRouter.getEventObservable('fooEvent').subscribe(({event, context, model}) => {
+                model.aNumber = event;
             });
             _modelRouter.getModelObservable().subscribe(m => {
                 _dispatchedModelNumbers.push(m.aNumber);
@@ -53,12 +53,12 @@ describe('Router', () => {
         });
 
         it('should proxy executeEvent to correct model event processor', ()=> {
-            _modelRouter.getEventObservable('barEvent').subscribe((e, c, m) => {
-                m.executePassed = m.anotherNumber === 0;
+            _modelRouter.getEventObservable('barEvent').subscribe(({event, context, model}) => {
+                model.executePassed = model.anotherNumber === 0;
             });
-            _modelRouter.getEventObservable('fooEvent2').subscribe((e, c, m) => {
+            _modelRouter.getEventObservable('fooEvent2').subscribe(({event, context, model}) => {
                 _modelRouter.executeEvent('barEvent', 'theBar');
-                m.anotherNumber = 1;
+                model.anotherNumber = 1;
             });
             _modelRouter.publishEvent('fooEvent2', {});
             expect(_model.executePassed).toEqual(true);

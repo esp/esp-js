@@ -51,7 +51,7 @@ let config = {
         libraryTarget: 'umd',
         sourcePrefix: '    ',
         library: 'esp',
-        path: process.cwd() + '/dist',
+        path: process.cwd() + '/.dist',
         filename: 'esp.js',
         // webpack 4 incorrectly has `window` in the UMD definition
         // This is a workaround to enable node to consume esp's umc, see
@@ -68,7 +68,7 @@ let config = {
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
                 use:[{
-                    loader: 'awesome-typescript-loader',
+                    loader: 'ts-loader',
                 }]
             },
             {

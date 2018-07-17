@@ -18,19 +18,20 @@
 
 import {Observable} from '../Observable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.where = function (predicate) {
+Observable.prototype.where = function<T>(predicate) {
     Guard.isDefined(predicate, 'predicate Required');
     let source = this;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T> = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
-                if (predicate(arg1, arg2, arg3)) {
-                    observer.onNext(arg1, arg2, arg3);
+            (item: T) => {
+                if (predicate(item)) {
+                    observer.onNext(item);
                 }
             },
             () => observer.onCompleted()
         );
     };
-    return new Observable(subscribe);
+    return new Observable<T>(subscribe);
 };

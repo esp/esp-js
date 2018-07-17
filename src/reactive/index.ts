@@ -22,9 +22,11 @@ import './extMethods/asObservable';
 import './extMethods/take';
 import './extMethods/do';
 import './extMethods/map';
+import './extMethods/cast';
 import './extMethods/streamFor';
 import './extMethods/subscribeOn';
 import './extMethods/asRouterObservable';
+import './extMethods/share';
 
 export { Observable } from './Observable';
 export { Observer } from './Observer';

@@ -28,17 +28,13 @@ describe('.asObservable', () => {
     it('.asObservable propagates onNext', () => {
         let receivedItems = [];
         subject.asObservable().subscribe(
-            (a, b, c) => {
+            (a) => {
                 receivedItems.push(a);
-                receivedItems.push(b);
-                receivedItems.push(c);
             }
         );
-        subject.onNext(1, 2, 3);
-        expect(receivedItems.length).toEqual(3);
+        subject.onNext(1);
+        expect(receivedItems.length).toEqual(1);
         expect(receivedItems[0]).toEqual(1);
-        expect(receivedItems[1]).toEqual(2);
-        expect(receivedItems[2]).toEqual(3);
     });
 
     it('.asObservable propagates onCompleted', () => {

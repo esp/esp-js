@@ -18,25 +18,26 @@
 
 import {RouterObservable} from '../RouterObservable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
 /**
  *
  * @param modelId - the modelId who's dispatch loop the changes will be invoked on
  * @returns {Observable}
  */
-RouterObservable.prototype.streamFor = function (modelId) {
+RouterObservable.prototype.streamFor = function<T>(modelId) {
     Guard.isString(modelId, 'modelId must be a string');
     Guard.isTrue(modelId !== '', 'modelId must not be empty');
     let source = this;
     let hasCompleted = false;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T>  = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
+            (item: T) => {
                 if (hasCompleted) {
                     return;
                 }
                 source._router.runAction(modelId, () => {
-                    observer.onNext(arg1, arg2, arg3);
+                    observer.onNext(item);
                 });
             },
             () => {
@@ -47,5 +48,5 @@ RouterObservable.prototype.streamFor = function (modelId) {
             }
         );
     };
-    return new RouterObservable(source._router, subscribe);
+    return new RouterObservable<T>(source._router, subscribe);
 };

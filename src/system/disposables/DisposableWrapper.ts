@@ -17,13 +17,13 @@
 // notice_end
 
 import {Guard} from '../Guard';
-import {Disposable} from './disposable';
+import {Disposable, DisposableOrFunction} from './disposable';
 
 export class DisposableWrapper implements Disposable {
     private _isDisposed: boolean = false;
     private _disposable: Disposable;
 
-    public constructor(disposable: any) {
+    public constructor(disposable: DisposableOrFunction) {
         Guard.isDefined(disposable, 'disposable must be defined');
         let innerDisposable;
         if (typeof disposable === 'function') {

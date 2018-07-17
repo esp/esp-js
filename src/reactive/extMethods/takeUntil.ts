@@ -18,24 +18,25 @@
 
 import {Observable} from '../Observable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.takeUntil = function (predicate, inclusive) {
+Observable.prototype.takeUntil = function<T>(predicate, inclusive) {
     Guard.isFunction(predicate, 'provided predicate isn\'t a function');
     let source = this;
     let done = false;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T>  = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
+            (item: T) => {
                 if (done) return;
-                let shouldTake = predicate(arg1, arg2, arg3);
+                let shouldTake = predicate(item);
                 if (shouldTake || inclusive) {
                     done = true;
-                    observer.onNext(arg1, arg2, arg3);
+                    observer.onNext(item);
                     observer.onCompleted();
                 }
             },
             () => observer.onCompleted()
         );
     };
-    return new Observable(subscribe);
+    return new Observable<T>(subscribe);
 };

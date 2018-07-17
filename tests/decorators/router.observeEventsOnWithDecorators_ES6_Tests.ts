@@ -18,9 +18,9 @@
 
 // NOTE these tests are copied into a few files as they need to run via different transpilers.
 // I could have a single file, then source the tests and using eval to run them thus not having to copy and past this file, however debugging tests for each transpiler gets really hard.
-// For now it's easiest to just copy paste and the test in router.observeEventsOnWithDecorators_TestSynced_Tests.js ensures they all match up.
+// For now it's easiest to just copy paste from the .ts version, then remove the class level private vars from the babel implementation
 
-import esp from '../../src';
+import esp, {Router} from '../../src';
 
 describe('Decorators', () => {
 
@@ -37,6 +37,12 @@ describe('Decorators', () => {
     let _model, _derivedModel1, _derivedModel2, _derivedModel3, _derivedModel4, _derivedModel5;
 
     class Model extends esp.DisposableBase {
+        private _id: string;
+        private _router: Router;
+        private receivedBarEvents: Array<any>;
+        private receivedFruitEvents: Array<any>;
+        private subModel: SubModel;
+
         constructor(id, router) {
             super();
             this._id = id;
@@ -53,47 +59,52 @@ describe('Decorators', () => {
 
         //start-non-standard
         @esp.observeEvent('fooEvent', esp.ObservationStage.preview)
-        _fooEventAtPreview(e, c, m) {
+        _fooEventAtPreview({event, context, model}) {
             previewInvokeCount++;
         }
 
         @esp.observeEvent('fooEvent', esp.ObservationStage.normal)
-        _fooEventAtNormal1(e, c, m) {
+        _fooEventAtNormal1({event, context, model}) {
             normalInvokeCount++;
-            c.commit();
+            context.commit();
         }
 
         @esp.observeEvent('fooEvent')
-        _fooEventAtNormal2(e, c, m) {
+        _fooEventAtNormal2({event, context, model}) {
             normal2InvokeCount++;
         }
 
         @esp.observeEvent('fooEvent', esp.ObservationStage.committed)
-        _fooEventAtCommitted(e, c, m) {
+        _fooEventAtCommitted({event, context, model}) {
             committedInvokeCount++;
         }
 
         @esp.observeEvent('barEvent_1')
-        _barEvent_1(e, c, m) {
-            c.commit();
+        _barEvent_1({event, context, model}) {
+            context.commit();
         }
 
         @esp.observeEvent('barEvent_1', esp.ObservationStage.committed)
         @esp.observeEvent('barEvent_2')
         @esp.observeEvent('barEvent_3', esp.ObservationStage.preview)
-        _allBarEvents(e, c, m) {
-            this.receivedBarEvents.push({event: e, stage: c.currentStage});
+        _allBarEvents({event, context, model}) {
+            this.receivedBarEvents.push({event: event, stage: context.currentStage});
         }
 
-        @esp.observeEvent('fruitEvent', (m, e) => e.type === 'orange')
-        _onFruitEvent(e, c, m) {
-            this.receivedFruitEvents.push(e);
+        @esp.observeEvent('fruitEvent', (model, event) => event.type === 'orange')
+        _onFruitEvent({event, context, model}) {
+            this.receivedFruitEvents.push(event);
         }
 
         //end-non-standard
     }
 
     class SubModel extends esp.DisposableBase {
+        private _id: string;
+        private _router: Router;
+        private carEvents: Array<any>;
+        private tag: string;
+
         constructor(id, router) {
             super();
             this._id = id;
@@ -106,15 +117,19 @@ describe('Decorators', () => {
             this.addDisposable(this._router.observeEventsOn(this._id, this));
         }
 
-        @esp.observeEvent('carEvent', (m, e) => {
-            return e.type === 'bmw' && m.tag === 'submodel';
+        @esp.observeEvent('carEvent', (model, event) => {
+            return event.type === 'bmw' && model.tag === 'submodel';
         })
-        _onFruitEvent(e, c, m) {
-            this.carEvents.push({type: e.type, model: m});
+        _onFruitEvent({event, context, model}) {
+            this.carEvents.push({type: event.type, model: model, eventType: context.eventType});
         }
     }
 
     class BaseModel extends esp.DisposableBase {
+        protected _id: string;
+        protected _router: Router;
+        private baseEventReveivedCount: number;
+
         constructor(id, router) {
             super();
             this._id = id;
@@ -127,19 +142,21 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('aBaseEvent')
-        _aBaseEvent(e, c, m) {
+        _aBaseEvent({event, context, model}) {
             this.baseEventReveivedCount++;
         }
     }
 
     class DerivedModel1 extends BaseModel {
+        private reveivedCount: number;
+
         constructor(id, router) {
             super(id, router);
             this.reveivedCount = 0;
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent(e, c, m) {
+        _derivedEvent({event, context, model}) {
             this.reveivedCount++;
         }
 
@@ -150,13 +167,15 @@ describe('Decorators', () => {
     }
 
     class DerivedModel2 extends BaseModel {
+        private reveivedCount: number;
+
         constructor(id, router) {
             super(id, router);
             this.reveivedCount = 0;
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent(e, c, m) {
+        _derivedEvent({event, context, model}) {
             this.reveivedCount++;
         }
 
@@ -167,13 +186,15 @@ describe('Decorators', () => {
     }
 
     class DerivedModel3 extends BaseModel {
+        private reveivedCount: number;
+
         constructor(id, router) {
             super(id, router);
             this.reveivedCount = 0;
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent(e, c, m) {
+        _derivedEvent({event, context, model}) {
             this.reveivedCount++;
         }
 
@@ -181,13 +202,15 @@ describe('Decorators', () => {
     }
 
     class DerivedModel4 extends BaseModel {
+        private reveivedCount: number;
+
         constructor(id, router) {
             super(id, router);
             this.reveivedCount = 0;
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent(e, c, m) {
+        _derivedEvent({event, context, model}) {
             this.reveivedCount++;
         }
 
@@ -201,25 +224,29 @@ describe('Decorators', () => {
     }
 
     class DerivedModel3_1 extends DerivedModel3 {
+        private reveivedCount1: number;
+
         constructor(id, router) {
             super(id, router);
             this.reveivedCount1 = 0;
         }
 
         @esp.observeEvent('derivedEvent_1')
-        _derivedEvent_1(e, c, m) {
+        _derivedEvent_1({event, context, model}) {
             this.reveivedCount1++;
         }
     }
 
     class DerivedModel4_1 extends DerivedModel4 {
+        private reveivedCount1: number;
+
         constructor(id, router) {
             super(id, router);
             this.reveivedCount1 = 0;
         }
 
         @esp.observeEvent('derivedEvent_1')
-        _derivedEvent_1(e, c, m) {
+        _derivedEvent_1({event, context, model}) {
             this.reveivedCount1++;
         }
     }
@@ -405,13 +432,14 @@ describe('Decorators', () => {
         _router.publishEvent('modelId', 'carEvent', {type: 'bmw'});
         expect(_model.subModel.carEvents.length).toEqual(1);
         expect(_model.subModel.carEvents[0].type).toEqual('bmw');
+        expect(_model.subModel.carEvents[0].eventType).toEqual('carEvent');
     });
 
     it('should allow multiple registrations for the same modelId against different objects', () => {
         _router.addModel('m1', {});
         class e {
             @esp.observeEvent('anEvent')
-            _derivedEvent(e, c, m) {
+            _derivedEvent({event, context, model}) {
             }
         }
         let eventObserver1 = new e();

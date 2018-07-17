@@ -47,21 +47,21 @@ describe('Router', () => {
                 {
                     preEventProcessor: (model)  => {
                         if (model.throwAtPre) {
-                            throw new Error("Boom:Pre");
+                            throw new Error('Boom:Pre');
                         }
                     },
                     postEventProcessor: (model) => {
                         if (model.throwAtPost) {
-                            throw new Error("Boom:Post");
+                            throw new Error('Boom:Post');
                         }
                     }
                 }
             );
             _router.getEventObservable('modelId1', 'Event1').subscribe(
-                (event, context, model) => {
+                ({event, context, model}) => {
                     _eventReceivedCount++;
                     if(model.throwADispatch) {
-                        throw new Error("Boom:Dispatch");
+                        throw new Error('Boom:Dispatch');
                     }
                 }
             );
@@ -69,7 +69,7 @@ describe('Router', () => {
                     model => {
                     _updateReceivedCount++;
                     if(model.throwAtUpdate) {
-                        throw new Error("Boom:Update");
+                        throw new Error('Boom:Update');
                     }
                 }
             );
@@ -80,11 +80,11 @@ describe('Router', () => {
             _model.throwAtPre = true;
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
-            }).toThrow(new Error("Boom:Pre"));
+            }).toThrow(new Error('Boom:Pre'));
             // rethrow on reuse
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', 'payload');
-            }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Pre]"));
+            }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
         });
 
         it('should halt and rethrow if an event stream handler errors ', () => {
@@ -92,11 +92,11 @@ describe('Router', () => {
             // halt and rethrow
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
-            }).toThrow(new Error("Boom:Dispatch"));
+            }).toThrow(new Error('Boom:Dispatch'));
             // rethrow on reuse
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', 'payload');
-            }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Dispatch]"));
+            }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Dispatch]'));
         });
 
         it('should halt and rethrow if a post processor errors', () => {
@@ -104,11 +104,11 @@ describe('Router', () => {
             // halt and rethrow
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
-            }).toThrow(new Error("Boom:Post"));
+            }).toThrow(new Error('Boom:Post'));
             // rethrow on reuse
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', 'payload');
-            }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Post]"));
+            }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Post]'));
         });
 
         it('should halt and rethrow if an update stream handler errors', () => {
@@ -116,11 +116,11 @@ describe('Router', () => {
             // halt and rethrow
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
-            }).toThrow(new Error("Boom:Update"));
+            }).toThrow(new Error('Boom:Update'));
             // rethrow on reuse
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', 'payload');
-            }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Update]"));
+            }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Update]'));
         });
 
         describe('when isHalted', () => {
@@ -128,37 +128,37 @@ describe('Router', () => {
                 _model.throwAtPre = true;
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', { });
-                }).toThrow(new Error("Boom:Pre"));
+                }).toThrow(new Error('Boom:Pre'));
             });
 
             it('should throw on publish', () => {
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', 'payload');
-                }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Pre]"));
+                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
             it('should throw on getEventObservable()', () => {
                 expect(() => {
                     _router.getModelObservable('modelId1').subscribe(() => {});
-                }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Pre]"));
+                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
             it('should throw on executeEvent()', () => {
                 expect(() => {
                     _router.executeEvent('myEventType', {});
-                }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Pre]"));
+                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
             it('should throw on addModel()', () => {
                 expect(() => {
                     _router.addModel('modelId2', {});
-                }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Pre]"));
+                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
             it('should throw on getModelObservable()', () => {
                 expect(() => {
                     _router.getModelObservable('modelId1').subscribe(() => {});
-                }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: Boom:Pre]"));
+                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
             });
         });
 
@@ -166,15 +166,15 @@ describe('Router', () => {
             beforeEach(()=> {
                 expect(() => {
                     _router.runAction('modelId1', () => {
-                        throw new Error("RunActionError");
+                        throw new Error('RunActionError');
                     });
-                }).toThrow(new Error("RunActionError"));
+                }).toThrow(new Error('RunActionError'));
             });
 
             it('should throw on publish', () => {
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', 'payload');
-                }).toThrow(new Error("ESP router halted due to previous unhandled error [Error: RunActionError]"));
+                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: RunActionError]'));
             });
         });
 
@@ -186,31 +186,31 @@ describe('Router', () => {
             it('should throw on publish', () => {
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', 'payload');
-                }).toThrow(new Error("ESP router has been disposed"));
+                }).toThrow(new Error('ESP router has been disposed'));
             });
 
             it('should throw on getEventObservable()', () => {
                 expect(() => {
                     _router.getModelObservable('modelId1').subscribe(() => {});
-                }).toThrow(new Error("ESP router has been disposed"));
+                }).toThrow(new Error('ESP router has been disposed'));
             });
 
             it('should throw on executeEvent()', () => {
                 expect(() => {
                     _router.executeEvent('myEventType', {});
-                }).toThrow(new Error("ESP router has been disposed"));
+                }).toThrow(new Error('ESP router has been disposed'));
             });
 
             it('should throw on addModel()', () => {
                 expect(() => {
                     _router.addModel('modelId2', {});
-                }).toThrow(new Error("ESP router has been disposed"));
+                }).toThrow(new Error('ESP router has been disposed'));
             });
 
             it('should throw on getModelObservable()', () => {
                 expect(() => {
                     _router.getModelObservable('modelId1').subscribe(() => {});
-                }).toThrow(new Error("ESP router has been disposed"));
+                }).toThrow(new Error('ESP router has been disposed'));
             });
         });
     });

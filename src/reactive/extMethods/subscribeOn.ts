@@ -18,12 +18,13 @@
 
 import {RouterObservable} from '../RouterObservable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
-RouterObservable.prototype.subscribeOn = function (modelId) {
+RouterObservable.prototype.subscribeOn = function<T>(modelId) {
     Guard.isString(modelId, 'modelId must be a string');
     Guard.isTrue(modelId !== '', 'modelId must not be empty');
     let source = this;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T>  = observer => {
         let disposable = {
             subscription: null,
             isDisposed: false,
@@ -44,5 +45,5 @@ RouterObservable.prototype.subscribeOn = function (modelId) {
         });
         return disposable;
     };
-    return new RouterObservable(this._router, subscribe);
+    return new RouterObservable<T>(this._router, subscribe);
 };

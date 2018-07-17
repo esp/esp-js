@@ -99,19 +99,19 @@ describe('Router', () => {
                 };
                 _router.addModel('modelId1', {});
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.preview)
-                    .subscribe((event, eventContext) => {
+                    .subscribe(({event, context}) => {
                         receivedAtPreview = true;
-                        actOnEventContext(eventContext, esp.ObservationStage.preview);
+                        actOnEventContext(context, esp.ObservationStage.preview);
                     });
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.normal)
-                    .subscribe((event, eventContext) => {
+                    .subscribe(({event, context}) => {
                         receivedAtNormal = true;
-                        actOnEventContext(eventContext, esp.ObservationStage.normal);
+                        actOnEventContext(context, esp.ObservationStage.normal);
                     });
                 _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.committed)
-                    .subscribe((event, eventContext) => {
+                    .subscribe(({event, context}) => {
                         receivedAtCommitted = true;
-                        actOnEventContext(eventContext, esp.ObservationStage.committed);
+                        actOnEventContext(context, esp.ObservationStage.committed);
                     });
             });
 

@@ -18,20 +18,21 @@
 
 import {Observable} from '../Observable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.take = function (number) {
+Observable.prototype.take = function<T>(number) {
     Guard.isNumber(number, 'provided value isn\'t a number');
     let source = this;
     let itemsReceived = 0;
     let hasCompleted = false;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T>  = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
+            (item: T) => {
                 // there is possibly some strange edge cases if the observer also pumps a new value, this 'should' cover that (no tests yet)
                 itemsReceived++;
                 let shouldYield = !number || itemsReceived <= number;
                 if (shouldYield) {
-                    observer.onNext(arg1, arg2, arg3);
+                    observer.onNext(item);
                 }
                 let shouldComplete = !number || itemsReceived >= number;
                 if (!hasCompleted && shouldComplete) {
@@ -42,5 +43,5 @@ Observable.prototype.take = function (number) {
             () => observer.onCompleted()
         );
     };
-    return new Observable(subscribe);
+    return new Observable<T>(subscribe);
 };

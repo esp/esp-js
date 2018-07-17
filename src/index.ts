@@ -28,13 +28,13 @@
 let foo = () => {};
 
 export { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
-export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';
+export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 export { logging as logging } from './system';
 export { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject } from './reactive';
 
 import { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
-import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';
+import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 import { logging as logging } from './system';
 import { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject  } from './reactive';

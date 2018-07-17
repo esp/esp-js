@@ -17,7 +17,7 @@
 // notice_end
 
 import {DisposableWrapper}  from './DisposableWrapper';
-import {Disposable} from '../../../esp';
+import {Disposable} from './disposable';
 
 export class CompositeDisposable implements Disposable {
     private _disposables: Disposable[];

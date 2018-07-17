@@ -16,11 +16,11 @@
  */
 // notice_end
 
-import {Subject} from '../../src/reactive/Subject';
+import {Subject} from './Subject';
 import {RouterObservable} from './RouterObservable';
-import {Router} from '../router/Router';
+import {Router} from '../router';
 
-export class RouterSubject extends Subject {
+export class RouterSubject<T> extends Subject<T> {
     private _router: Router;
 
     constructor(router) {
@@ -28,9 +28,9 @@ export class RouterSubject extends Subject {
         this._router = router;
     }
 
-    asRouterObservable() {
+    asRouterObservable(router : Router): RouterObservable<T> {
         let source = this;
         let subscribe = observer => source.subscribe(observer);
-        return new RouterObservable(this._router, subscribe);
+        return new RouterObservable<T>(router || this._router, subscribe);
     }
 }

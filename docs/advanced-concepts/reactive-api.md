@@ -25,9 +25,9 @@ Observable.prototype.where = function(predicate) {
     var source = this;
     var subscribe =  observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
-                if(predicate(arg1, arg2, arg3)) {
-                    observer.onNext(arg1, arg2, arg3);
+            (item: T) => {
+                if(predicate(item: T)) {
+                    observer.onNext(item);
                 }
             },
             () => observer.onCompleted()

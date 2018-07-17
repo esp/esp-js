@@ -19,13 +19,13 @@
 import {utils} from '../system';
 import {Observable} from './Observable';
 import {Observer} from './Observer';
+import {Subscribe} from './subscribeDelegate';
 
-export class Subject extends Observable {
+export class Subject<T> extends Observable<T> {
     private _cacheLastValue: boolean;
     private _lastValue: any;
-    private _observers: Observer[];
+    private _observers: Observer<T>[];
     private _hasComplete: boolean;
-    private _hasError: any;
 
     constructor(cacheLastValue = false) {
         super(undefined);
@@ -34,24 +34,21 @@ export class Subject extends Observable {
         this._observers = [];
         this._hasComplete = false;
         // the base object Observable requires _subscribe to be bound to this.
-        this._subscribe = subscribe.bind(this);
+        this._subscribe = <Subscribe<T>>subscribe.bind(this);
     }
 
     // The reactive implementation can push 3 arguments through the stream, initially this was setup to
     // pass all arguments using .apply, however it's performance is about 40% slower than direct method calls
     // given this, and that we only ever push a max of 3 args, it makes sense to hard code them.
-    onNext(arg1, arg2, arg3) {
+    onNext(item: T) {
         if (!this._hasComplete) {
             if (this._cacheLastValue) {
-                this._lastValue = {arg1: arg1, arg2: arg2, arg3: arg3};
+                this._lastValue = item;
             }
             let os = this._observers.slice(0);
             for (let i = 0, len = os.length; i < len; i++) {
-                if (this._hasError) {
-                    break;
-                }
                 let observer = os[i];
-                observer.onNext(arg1, arg2, arg3);
+                observer.onNext(item);
             }
         }
     }
@@ -71,10 +68,10 @@ export class Subject extends Observable {
         return this._observers.length;
     }
 }
-function subscribe(observer: Observer) {
+function subscribe<T>(observer: Observer<T>) {
     this._observers.push(observer);
     if (this._cacheLastValue && typeof this._lastValue !== 'undefined') {
-        observer.onNext(this._lastValue.arg1, this._lastValue.arg2, this._lastValue.arg3);
+        observer.onNext(this._lastValue);
     }
     return {
         dispose: () => {

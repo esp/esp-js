@@ -1,0 +1,9 @@
+2.0.0 update notes, will form basis for release notes
+[x] - Convert to tyepscript
+[ ] - makes observices of T, not t123
+[ ] - remove model changed event
+[ ] - remove all default exports
+[ ] - renam all file types to lower case
+[x] - user generated .d.ts
+[ ] - expose single event subject for all events for a model
+[ ] - remove typeScriptPreprocessor.ts now we're only supporting es6

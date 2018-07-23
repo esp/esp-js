@@ -18,18 +18,19 @@
 
 import {Observable} from '../Observable';
 import {Guard} from '../../system';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.do = function (action: (arg1, arg2, arg3) => void) {
+Observable.prototype.do = function<T>(action: (item: T) => void) {
     Guard.isFunction(action, 'provided value isn\'t a function');
     let source = this;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T>  = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
-                action(arg1, arg2, arg3);
-                observer.onNext(arg1, arg2, arg3);
+            (item: T) => {
+                action(item);
+                observer.onNext(item);
             },
             () => observer.onCompleted()
         );
     };
-    return new Observable(subscribe);
+    return new Observable<T>(subscribe);
 };

@@ -1,6 +1,6 @@
 // notice_start
 /*
- * Copyright 2015 Dev Shop Limited
+ * Copyright 2018 Keith Woods
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-export {
-    observeEvent,
-    DecoratorTypes
-} from './observeEvent';
-export { default as EspDecoratorMetadata } from './espDecoratorMetadata';
+import {Observable} from '../Observable';
+import {AutoConnectedObservable} from '../AutoConnectedObservable';
+
+Observable.prototype.share = function<T>(cacheLastValue = false) {
+    let source = this;
+    return new AutoConnectedObservable<T>(source,cacheLastValue);
+};

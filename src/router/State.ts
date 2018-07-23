@@ -18,13 +18,14 @@
 
 import {Guard} from '../system';
 import {Status} from './Status';
+import {ModelRecord} from './ModelRecord';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
 export class State {
     private _currentStatus: string;
     private _eventsDispatched: any[];
     private _currentModelId: string;
-    private _currentModel: any;
+    private _currentModelRecord: ModelRecord;
 
     public constructor() {
         this._currentStatus = Status.Idle;
@@ -39,11 +40,11 @@ export class State {
         return this._currentModelId;
     }
 
-    public get currentModel() {
-        return this._currentModel;
+    public get currentModelRecord(): ModelRecord {
+        return this._currentModelRecord;
     }
 
-    public get eventsProcessed() {
+    public get eventsProcessed(): string[] {
         return this._eventsDispatched;
     }
 
@@ -52,11 +53,11 @@ export class State {
         this._clear();
     }
 
-    public moveToPreProcessing(modelId, model) {
+    public moveToPreProcessing(modelId: string, modelRecord: ModelRecord) {
         Guard.isString(modelId, 'modelId should be a string');
-        Guard.isDefined(model, 'model should be defined');
+        Guard.isDefined(modelRecord, 'modelRecord should be defined');
         this._currentModelId = modelId;
-        this._currentModel = model;
+        this._currentModelRecord = modelRecord;
         this._currentStatus = Status.PreEventProcessing;
     }
 
@@ -92,7 +93,7 @@ export class State {
 
     private _clear() {
         this._currentModelId = undefined;
-        this._currentModel = undefined;
+        this._currentModelRecord = undefined;
         this.clearEventDispatchQueue();
     }
 }

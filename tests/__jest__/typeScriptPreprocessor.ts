@@ -18,37 +18,28 @@
 
 const tsc = require('typescript');
 const path = require ('path');
+const tsconfig = require('../../tsconfig.json');
 
-let compilerOptions = {
-    allowJs: true,
-    noImplicitAny: false,
-    removeComments: false,
-    preserveConstEnums: true,
-    sourceMap: false,
-    inlineSourceMap: true,
-    inlineSources: true,
-    noEmitOnError: true,
-    jsx: "react",
-    experimentalDecorators: true,
-    target: "es5",
-    module: "commonjs",
-    noEmit: true,
-    pretty: true
-};
+let compilerOptions = tsconfig.compilerOptions;
+// source maps don't work well on the latest of node/tsc/jest/idea, it's a
+// game of pick the settings that work across everything, even then it doesn't really work at times
+// It seems the idea needs the following re-configured so it picks up source maps
+compilerOptions.rootDir = undefined;
+compilerOptions.outDir = undefined;
+compilerOptions.sourceMap = undefined;
+compilerOptions.inlineSourceMap = true;
 
 module.exports = {
     process(src, path) {
         if (path.endsWith('.ts') || path.endsWith('.tsx')) {
-            let options = path.includes('ES6') // bit of a hack
-                ? Object.assign(compilerOptions, { target: "es6" })
-                : compilerOptions
             let compiled = tsc.transpile(
                 src,
-                options,
+                compilerOptions,
                 path,
                 []
             );
-            // console.log('Path '+ path +', with options ['+ JSON.stringify(options) +'], compiled to: ' + compiled);
+            // console.log('CONFIG:' + JSON.stringify(tsconfig.compilerOptions));
+            // console.log('Path '+ path +', with options ['+ JSON.stringify(tsconfig.compilerOptions) +'], compiled to: ' + compiled);
             return compiled;
         }
         return src;

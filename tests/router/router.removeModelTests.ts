@@ -61,7 +61,7 @@ describe('Router', () => {
                     }
                 }
             );
-            _router.getEventObservable('modelId1', 'Event1').subscribe((event, context, model) => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(({event, context, model}) => {
                 _eventReceivedCount1++;
                 if(model.removeAtDispatch) {
                     _router.removeModel('modelId1');
@@ -89,7 +89,7 @@ describe('Router', () => {
         });
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_router.removeModel(); }).toThrow(new Error("The modelId argument should be a string"));
+            expect(() => {_router.removeModel(); }).toThrow(new Error('The modelId argument should be a string'));
         });
 
         it('should onComplete all event streams when the model is removed', () => {

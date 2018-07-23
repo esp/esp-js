@@ -56,27 +56,27 @@ describe('Router', () => {
                 {
                     preEventProcessor: (model)  => {
                         if (model.throwAtPre) {
-                            throw new Error("Boom:Pre");
+                            throw new Error('Boom:Pre');
                         }
                     },
                     postEventProcessor: (model) => {
                         if (model.throwAtPost) {
-                            throw new Error("Boom:Post");
+                            throw new Error('Boom:Post');
                         }
                     }
                 }
             );
             _router.getEventObservable('modelId1', 'Event1').subscribe(
-                (event, context, model) => {
+                ({event, context, model}) => {
                     if(model.throwADispatch) {
-                        throw new Error("Boom:Dispatch");
+                        throw new Error('Boom:Dispatch');
                     }
                 }
             );
             _router.getModelObservable('modelId1').subscribe(
                 model => {
                     if(model.throwAtUpdate) {
-                        throw new Error("Boom:Update");
+                        throw new Error('Boom:Update');
                     }
                 }
             );
@@ -93,7 +93,7 @@ describe('Router', () => {
             it('Should throw trying to remove a handler that does not exist', () => {
                 expect(() => {
                     _router.removeOnErrorHandler(() => {});
-                }).toThrow(new Error("Unknown error handler."));
+                }).toThrow(new Error('Unknown error handler.'));
             });
 
             it('Should ignore errors from onErrorHandlers', () => {
@@ -145,7 +145,7 @@ describe('Router', () => {
                 _model.throwAtPre = true;
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', { });
-                }).toThrow(new Error("Boom:Pre"));
+                }).toThrow(new Error('Boom:Pre'));
                 _onErrorHandlerCallCount = 0;
             });
 
@@ -179,9 +179,9 @@ describe('Router', () => {
             beforeEach(()=> {
                 expect(() => {
                     _router.runAction('modelId1', () => {
-                        throw new Error("RunActionError");
+                        throw new Error('RunActionError');
                     });
-                }).toThrow(new Error("RunActionError"));
+                }).toThrow(new Error('RunActionError'));
                 _onErrorHandlerCallCount = 0;
             });
 

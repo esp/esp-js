@@ -31,7 +31,7 @@ describe('Router', () => {
             expect(() => {_router.publishEvent(undefined, 'Foo', 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', undefined, 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', 'Foo', undefined); }).toThrow();
-            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('The modelId argument should be a string');
         });
 
         it('queues and processes events received during event loop by model id', () => {
@@ -57,22 +57,22 @@ describe('Router', () => {
             let testPassed = false;
             let lastEventDelivered = false;
             _router.addModel('modelId1', {});
-            _router.getEventObservable('modelId1', 'startEvent').subscribe((event, eventContext) => {
-                eventContext.commit();
+            _router.getEventObservable('modelId1', 'startEvent').subscribe(({event, context}) => {
+                context.commit();
                 _router.publishEvent('modelId1', 'Event1', 'theEvent1');
                 _router.publishEvent('modelId1', 'Event2', 'theEvent2');
                 _router.publishEvent('modelId1', 'Event3', 'theEvent3');
             });
-            _router.getEventObservable('modelId1', 'Event1').subscribe((event, eventContext) => {
-                testPassed = eventContext.isCommitted === false;
-                eventContext.commit();
+            _router.getEventObservable('modelId1', 'Event1').subscribe(({event, context}) => {
+                testPassed = context.isCommitted === false;
+                context.commit();
             });
-            _router.getEventObservable('modelId1', 'Event2').subscribe((event, eventContext) => {
-                testPassed = testPassed && eventContext.isCommitted === false;
-                eventContext.commit();
+            _router.getEventObservable('modelId1', 'Event2').subscribe(({event, context}) => {
+                testPassed = testPassed && context.isCommitted === false;
+                context.commit();
             });
-            _router.getEventObservable('modelId1', 'Event3').subscribe((event, eventContext) => {
-                testPassed = testPassed && eventContext.isCommitted === false;
+            _router.getEventObservable('modelId1', 'Event3').subscribe(({event, context}) => {
+                testPassed = testPassed && context.isCommitted === false;
                 lastEventDelivered = true;
             });
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');

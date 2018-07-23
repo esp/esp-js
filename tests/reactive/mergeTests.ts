@@ -99,7 +99,7 @@ describe('.merge', () => {
             router.getEventObservable('myEvent2'),
             router.getEventObservable('myEvent3'),
         );
-        mergedEventStream.subscribe(e => receivedEvents.push(e));
+        mergedEventStream.subscribe(({event}) => receivedEvents.push(event));
 
         router.publishEvent('myEvent1', 1);
         expect(receivedEvents).toEqual([1]);

@@ -89,8 +89,7 @@ describe('Router', () => {
 
         it('postProcess() passes the events published to postProcess', () => {
             _router.publishEvent('modelId5', 'startEvent', 'theEvent');
-            expect(_model5.eventsProcessed.length).toBe(1);
-            expect(_model5.eventsProcessed[0]).toBe('startEvent');
+            expect(_model5.eventsProcessed).toEqual(['startEvent']);
         });
 
         it('only calls a models preProcess() function if the model is observing the published event', () => {
@@ -175,7 +174,7 @@ describe('Router', () => {
                         }
                     }
                 });
-            _router.getEventObservable('modelId4', 'Event1').subscribe((event, eventContext, model) => {
+            _router.getEventObservable('modelId4', 'Event1').subscribe(({event, context, model}) => {
                 eventReceived = true;
                 eventWasRaisedInNewEventLoop = model.version ===2;
             });

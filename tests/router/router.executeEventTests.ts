@@ -2,14 +2,14 @@
 /*
  * Copyright 2015 Dev Shop Limited
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -45,19 +45,19 @@ describe('Router', () => {
         });
 
         it('should only allow execute during processor and event dispatch stages', () => {
-            let model1 = { value: ""}, updateStreamTestRan = false;
+            let model1 = { value: ''}, updateStreamTestRan = false;
             _router.addModel(
                 'myModel',
                 model1,
                 {
-                    preEventProcessor: () => _router.executeEvent('ExecutedEvent', "a"),
-                    postEventProcessor: () => _router.executeEvent('ExecutedEvent', "c")
+                    preEventProcessor: () => _router.executeEvent('ExecutedEvent', 'a'),
+                    postEventProcessor: () => _router.executeEvent('ExecutedEvent', 'c')
                 }
             );
             _router.getEventObservable('myModel', 'TriggerExecuteEvent').subscribe(()=> {
-                _router.executeEvent('ExecutedEvent', "b");
+                _router.executeEvent('ExecutedEvent', 'b');
             });
-            _router.getEventObservable('myModel', 'ExecutedEvent').subscribe((event, eventContext, model) => {
+            _router.getEventObservable('myModel', 'ExecutedEvent').subscribe(({event, context, model}) => {
                 model.value += event;
             });
             _router.getModelObservable('myModel').subscribe(() => {
@@ -67,7 +67,7 @@ describe('Router', () => {
                 }).toThrow();
             });
             _router.publishEvent('myModel', 'TriggerExecuteEvent', 'theEvent');
-            expect(model1.value).toEqual("abc");
+            expect(model1.value).toEqual('abc');
             expect(updateStreamTestRan).toEqual(true);
         });
 
@@ -85,7 +85,7 @@ describe('Router', () => {
 
         it('should execute the event against the current event loops model', () => {
             let actualModel;
-            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe((event, eventContext, model) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe(({event, context, model}) => {
                 actualModel = model;
             });
             raiseStartEvent();
@@ -113,9 +113,9 @@ describe('Router', () => {
             _router.getEventObservable('modelId1', 'ExecutedEvent', 'preview').subscribe(() => {
                 previewReceived = true;
             });
-            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').subscribe((event, eventContext, model) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').subscribe(({event, context, model}) => {
                 normalReceived = true;
-                eventContext.commit();
+                context.commit();
             });
             _router.getEventObservable('modelId1', 'ExecutedEvent', 'committed').subscribe(() => {
                 committedReceived = true;

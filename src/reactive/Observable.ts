@@ -20,34 +20,42 @@ import {Guard} from '../system';
 import {Observer} from './Observer';
 import {Subscribe} from './subscribeDelegate';
 import {RouterObservable} from './RouterObservable';
-import {Router} from '../router/Router';
-import {DisposableWrapper} from '../system/disposables/DisposableWrapper';
-import {DictionaryDisposable} from '../system/disposables/DictionaryDisposable';
+import {Router} from '../router';
+import {DisposableWrapper} from '../system/disposables';
+import {DictionaryDisposable} from '../system/disposables';
+import {DisposableOrFunction} from '../system/disposables/disposable';
+import {AutoConnectedObservable} from './AutoConnectedObservable';
 
-export interface Observable {
-    asObservable?(): Observable;
-    do?(action: (arg1, arg2, arg3) => void): Observable;
-    map?(action: (arg1, arg2, arg3) => any): Observable;
-    take?(count: number): Observable;
-    takeUntil?(predicate: (arg1, arg2, arg3) => boolean, inclusive: boolean): Observable;
-    where?(filter: (arg1, arg2, arg3) => boolean, inclusive: boolean): Observable;
+export interface Observable<T> {
+    asObservable?(): Observable<T>;
+    do?(action: (item: T) => void): Observable<T>;
+    map?(action: (item: T) => any): Observable<T>;
+    cast?<TDownstream>(): Observable<TDownstream>;
+    take?(count: number): Observable<T>;
+    takeUntil?(predicate: (item: T) => boolean, inclusive: boolean): Observable<T>;
+    where?(filter: (item: T) => boolean): Observable<T>;
+    share?(cacheLastValue?: boolean): AutoConnectedObservable<T>;
 
-    asRouterObservable?(router: Router): RouterObservable;
+    asRouterObservable?(router: Router): RouterObservable<T>;
 }
 
-export class Observable implements Observable {
+export interface OnObserve<T>  {
+    (observer: Observer<T>): DisposableOrFunction;
+}
 
-    public static create(onObserve) {
+export class Observable<T> implements Observable<T> {
+
+    public static create<T>(onObserve: OnObserve<T>) {
         Guard.isDefined(onObserve, 'onObserve not defined');
-        let subscribe = observer => {
+        let subscribe: Subscribe<T> = observer => {
             let disposable = onObserve(observer);
             // if there was no disposable returned from the onObserve handler we default it to a noop here
             return new DisposableWrapper(disposable || (() => { /*noop*/ }));
         };
-        return new Observable(subscribe);
+        return new Observable<T>(subscribe);
     }
 
-    public static merge(...observables: Observable[]) {
+    public static merge<T>(...observables: Observable<T>[]) {
         Guard.lengthIsAtLeast(observables, 1, 'You must provide at least 1 observable to a merge call');
         let subscribe = observer => {
             let observablesLength = observables.length;
@@ -57,8 +65,8 @@ export class Observable implements Observable {
                 disposables.add(
                     j.toString(),
                     observables[j].subscribe(
-                        (arg1, arg2, arg3) => {
-                            observer.onNext(arg1, arg2, arg3);
+                        (item: T) => {
+                            observer.onNext(item);
                         },
                         () => {
                             observablesLength--;
@@ -72,17 +80,22 @@ export class Observable implements Observable {
             }
             return disposables;
         };
-        return new Observable(subscribe);
+        return new Observable<T>(subscribe);
     }
 
-    protected _subscribe: Subscribe;
+    protected _subscribe: Subscribe<T>;
 
-    public constructor(subscribe: Subscribe) {
+    public constructor(subscribe: Subscribe<T>) {
         this._subscribe = subscribe;
     }
 
-    public subscribe(...args) {
-        let observer = Observer.wrap(...args);
+    public subscribe(observer: Observer<T>);
+    public subscribe(onNext: () => void);
+    public subscribe(onNext: (item: T) => void);
+    public subscribe(onNext: () => void, onCompleted: () => void);
+    public subscribe(onNext: (item: T) => void, onCompleted: () => void);
+    public subscribe(...args: any[]) {
+        let observer = (<any>Observer).wrap(...args);
         Guard.isDefined(this._subscribe, '_subscribe not set');
         return this._subscribe(observer);
     }

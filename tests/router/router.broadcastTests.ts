@@ -36,10 +36,10 @@ describe('Router', () => {
             let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
-            _router.getEventObservable('modelId1', 'Event1').subscribe((event) => {
+            _router.getEventObservable('modelId1', 'Event1').subscribe(({event}) => {
                 model1ProcessorReceived+=event;
             });
-            _router.getEventObservable('modelId2', 'Event1').subscribe((event) => {
+            _router.getEventObservable('modelId2', 'Event1').subscribe(({event}) => {
                 model2ProcessorReceived+=event;
             });
             _router.broadcastEvent('Event1', 10);

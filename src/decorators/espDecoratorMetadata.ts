@@ -17,12 +17,22 @@
 // notice_end
 
 import {ObservationStage} from '../router';
+import {ObserveEventPredicate} from './observeEvent';
+
+export interface EventObservationMetadata {
+    functionName: string;
+    eventName: string;
+    decoratorType: any;
+    observationStage: ObservationStage;
+    predicate?: ObserveEventPredicate;
+    modelId: string;
+}
 
 let EspDecoratorMetadata = {
     /**
      * Gets all events for an object instance
      */
-    getAllEvents(objectInstance) {
+    getAllEvents(objectInstance): Array<EventObservationMetadata> {
         if (!objectInstance) {
             return [];
         }
@@ -36,7 +46,7 @@ let EspDecoratorMetadata = {
      * @param objectInstance
      * @returns {boolean}
      */
-    hasMetadata(objectInstance) {
+    hasMetadata(objectInstance): boolean {
         if (!objectInstance) {
             return false;
         }
@@ -55,12 +65,12 @@ let EspDecoratorMetadata = {
     }
 };
 
-let Metadata = {
+let Metadata= {
     init() {
         this._events = [];
         return this;
     },
-    addEvent(functionName, eventName, decoratorType, observationStage, predicate, modelId) {
+    addEvent(functionName: string, eventName: string, decoratorType, observationStage: ObservationStage, predicate: (object: any) => boolean, modelId: string) {
         this._events.push({
             functionName,
             eventName,

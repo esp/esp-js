@@ -2,11 +2,11 @@
 node_modules/
 examples/esp-chat-react/js/bundle.js
 examples/esp-chat-react-es6/js/bundle.js*
-dist
 # other
 **/.idea
 www/app/*
 *.orig
 esp-js-*.tgz
 .tsbuild
+.dist
 npm-debug.log

@@ -18,15 +18,24 @@
 
 import { Guard } from '../system';
 
-export class Observer implements Observer {
+export interface Observer<T> {
+    onNext(item: T);
+    onCompleted();
+}
+
+export class Observer<T> implements Observer<T> {
     private _hasCompleted: boolean;
-    private _onNext: (arg1, arg2, arg3) => void;
+    private _onNext: (item: T) => void;
     private _onCompleted: () => any;
     /**
-     * Wraps the provided args in an Observer
+     * Wraps the provided args in an Observer,
+     * Effectively plugs onNext and onCompleted if you don't provide them
      * @returns DefaultObserver
      */
-    static wrap(...args: any[]) {
+    public static wrap<T>();
+    public static wrap<T>(onNext: (item: T) => void);
+    public static wrap<T>(onNext: (item: T) => void, onCompleted: () => void);
+    public static wrap<T>(...args: any[]) {
         let observer;
         if(args.length === 0) {
             // create a no-op observer
@@ -45,7 +54,7 @@ export class Observer implements Observer {
         }
         return observer;
     }
-    constructor(onNext: ((arg1, arg2, arg3) => void), onCompleted: () => void) {
+    constructor(onNext: (item: T) => void, onCompleted: () => void) {
         Guard.isDefined(onNext, 'onObserve Required');
         this._hasCompleted = false;
         this._onNext = onNext;
@@ -55,9 +64,9 @@ export class Observer implements Observer {
             }
         };
     }
-    onNext(arg1, arg2, arg3) {
+    onNext(item: T) {
         if(!this._hasCompleted) {
-            this._onNext(arg1, arg2, arg3);
+            this._onNext(item);
         }
     }
     onCompleted() {

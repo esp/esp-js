@@ -25,42 +25,49 @@ export let DecoratorTypes = {
     observeModelChangedEvent: 'observeModelChangedEvent'
 };
 
-export function observeEvent() {
-    let args = Array.prototype.slice.call(arguments);
+export interface ObserveEventPredicate {
+    (model: any, event: any): boolean;
+}
+
+export function observeEvent(eventName: string);
+export function observeEvent(eventName: string, observationStage: ObservationStage);
+export function observeEvent(eventName: string, predicate: ObserveEventPredicate);
+export function observeEvent(eventName: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEvent(...args: any[]) {
     return function (target, name, descriptor) {
-        let eventName, observationStage, predicate;
+        let eventName1, observationStage1, predicate1;
         if(args.length >= 0) {
-            eventName = args[0];
+            eventName1 = args[0];
         }
         if(args.length >= 1) {
             if(utils.isString(args[1])) {
-                observationStage = args[1];
+                observationStage1 = args[1];
             } else if (utils.isFunction(args[1])) {
-                predicate = args[1];
+                predicate1 = args[1];
             }
         }
-        if(!predicate && args.length >= 2) {
-            predicate = args[2];
+        if(!predicate1 && args.length >= 2) {
+            predicate1 = args[2];
         }
-        if (eventName === Consts.modelChangedEvent) {
+        if (eventName1 === Consts.modelChangedEvent) {
             throw new Error(`Can not use observeEvent to observe the ${Consts.modelChangedEvent} on function target ${name}. Use the observeModelChangedEvent decorator instead`);
         }
-        Guard.isString(eventName, 'eventName passed to an observeEvent decorator must be a string');
-        Guard.isTrue(eventName !== '', 'eventName passed to an observeEvent decorator must not be \'\'');
-        if(observationStage) {
-            Guard.isString(observationStage, 'observationStage passed to an observeEvent decorator must be a string');
-            Guard.isTrue(observationStage !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
+        Guard.isString(eventName1, 'eventName passed to an observeEvent decorator must be a string');
+        Guard.isTrue(eventName1 !== '', 'eventName passed to an observeEvent decorator must not be \'\'');
+        if(observationStage1) {
+            Guard.isString(observationStage1, 'observationStage passed to an observeEvent decorator must be a string');
+            Guard.isTrue(observationStage1 !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
         }
-        if(predicate) {
-            Guard.isFunction(predicate, 'predicate passed to an observeEvent decorator must be a function');
+        if(predicate1) {
+            Guard.isFunction(predicate1, 'predicate passed to an observeEvent decorator must be a function');
         }
         let metadata = EspDecoratorMetadata.getOrCreateMetaData(target.constructor);
         metadata.addEvent(
             name,
-            eventName,
+            eventName1,
             DecoratorTypes.observeEvent,
-            observationStage,
-            predicate
+            observationStage1,
+            predicate1
         );
         return descriptor;
     };

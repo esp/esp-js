@@ -17,16 +17,17 @@
 // notice_end
 
 import {Observable} from '../Observable';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.asObservable = function() {
+Observable.prototype.asObservable = function<T>() {
     let source = this;
-    let subscribe = observer => {
+    let subscribe: Subscribe<T> = observer => {
         return source.subscribe(
-            (arg1, arg2, arg3) => {
-                observer.onNext(arg1, arg2, arg3);
+            (item: T) => {
+                observer.onNext(item);
             },
             () => observer.onCompleted()
         );
     };
-    return new Observable(subscribe);
+    return new Observable<T>(subscribe);
 };

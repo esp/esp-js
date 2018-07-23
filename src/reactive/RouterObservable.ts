@@ -17,15 +17,15 @@
 // notice_end
 
 import {Observable} from './Observable';
-import {Guard} from '../system/Guard';
-import {Router} from '../router/Router';
+import {Guard} from '../system';
+import {Router} from '../router';
 
-export interface RouterObservable {
-    streamFor?(modelId: string): RouterObservable;
-    subscribeOn?(modelId: string): RouterObservable;
+export interface RouterObservable<T> extends Observable<T> {
+    streamFor?(modelId: string): RouterObservable<T>;
+    subscribeOn?(modelId: string): RouterObservable<T>;
 }
 
-export class RouterObservable extends Observable implements RouterObservable {
+export class RouterObservable<T> extends Observable<T> implements RouterObservable<T> {
     protected _router: Router;
     constructor(router: Router, subscribe) {
         Guard.isDefined(router, 'router must be defined');

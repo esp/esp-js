@@ -19,11 +19,12 @@
 import {Observable} from '../Observable';
 import {Guard} from '../../system';
 import {RouterObservable} from '../RouterObservable';
-import {Router} from '../../router/Router';
+import {Router} from '../../router';
+import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.asRouterObservable = function (router: Router) {
+Observable.prototype.asRouterObservable = function<T>(router: Router) {
     Guard.isDefined(router, 'router must be defined');
     let source = this;
-    let subscribe = observer => source.subscribe(observer);
-    return new RouterObservable(router, subscribe);
+    let subscribe: Subscribe<T> = observer => source.subscribe(observer);
+    return new RouterObservable<T>(router, subscribe);
 };

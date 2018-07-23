@@ -9,12 +9,13 @@
     "jsx": "react",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "target": "es5",
+    "target": "es6",
     "module": "commonjs",
     "noEmit": false,
-    "declaration": false,
+    "declaration": true,
     "strictNullChecks": false,
-    "outDir" : "./.tsbuild"
+    "outDir" : "./.tsbuild",
+    "declarationDir": "./typings"
   },
   "files": [
     "typings/custom.d.ts"

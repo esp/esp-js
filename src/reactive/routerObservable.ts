@@ -16,27 +16,21 @@
  */
 // notice_end
 
-import {CompositeDisposable} from './CompositeDisposable';
-import {Disposable} from './disposable';
+import {Observable} from './observable';
+import {Guard} from '../system';
+import {Router} from '../router';
 
-export class DisposableBase implements Disposable {
-    private _disposables: CompositeDisposable;
+export interface RouterObservable<T> extends Observable<T> {
+    streamFor?(modelId: string): RouterObservable<T>;
+    subscribeOn?(modelId: string): RouterObservable<T>;
+}
 
-    constructor() {
-        this._disposables = new CompositeDisposable();
-    }
-
-    public get isDisposed(): boolean {
-        return this._disposables.isDisposed;
-    }
-
-    public addDisposable(disposable: () => void);
-    public addDisposable(disposable: Disposable);
-    public addDisposable(disposable: any) {
-        this._disposables.add(disposable);
-    }
-
-    public dispose(): void {
-        this._disposables.dispose();
+export class RouterObservable<T> extends Observable<T> implements RouterObservable<T> {
+    protected _router: Router;
+    constructor(router: Router, subscribe) {
+        Guard.isDefined(router, 'router must be defined');
+        Guard.isDefined(subscribe, 'subscribe must be defined');
+        super(subscribe);
+        this._router = router;
     }
 }

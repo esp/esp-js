@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {Guard} from '../Guard';
+import {Guard} from '../guard';
 import {Level} from './level';
 import {consoleSink} from './consoleSink';
 import {Sink} from './sink';

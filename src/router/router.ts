@@ -17,12 +17,12 @@
 // notice_end
 
 import {Consts, Status, State, ModelRecord, ObservationStage, EventContext, SingleModelRouter} from './';
-import {ModelChangedEvent} from './ModelChangedEvent';
+import {ModelChangedEvent} from './modelChangedEvent';
 import {Subject, Observable} from '../reactive';
 import {Guard, utils, logging} from '../system';
 import {DisposableBase, CompositeDisposable} from '../system/disposables';
 import {EspDecoratorMetadata} from '../decorators';
-import {DecoratorObservationRegister} from './DecoratorObservationRegister';
+import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {RouterSubject} from '../reactive';
 import {RouterObservable} from '../reactive';
 import {CompositeDiagnosticMonitor} from './devtools';
@@ -30,7 +30,7 @@ import {ModelOptions} from './modelOptions';
 import {EventEnvelope, ModelEnvelope} from './envelopes';
 import {DispatchType} from './envelopes';
 import {EventType, isModelChangedEventType, isStringEventType} from './eventType';
-import {EventStreamsRegistration} from './ModelRecord';
+import {EventStreamsRegistration} from './modelRecord';
 
 let _log = logging.Logger.create('Router');
 

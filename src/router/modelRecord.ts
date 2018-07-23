@@ -20,7 +20,7 @@ import {PreEventProcessor, PostEventProcessor} from './eventProcessorDelegate';
 import {ModelOptions} from './modelOptions';
 import {Observable} from '../reactive';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
-import {AutoConnectedObservable} from '../reactive/AutoConnectedObservable';
+import {AutoConnectedObservable} from '../reactive/autoConnectedObservable';
 import {Guard} from '../system';
 import {EventType, isModelChangedEventType, isStringEventType, ModelChangedEventType} from './eventType';
 import {Consts, ObservationStage} from './index';

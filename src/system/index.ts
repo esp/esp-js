@@ -5,4 +5,4 @@ import * as disposables from './disposables';
 export {logging};
 export {utils};
 export {disposables};
-export {Guard} from './Guard';
+export {Guard} from './guard';

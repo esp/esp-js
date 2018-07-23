@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {DisposableWrapper} from './DisposableWrapper';
+import {DisposableWrapper} from './disposableWrapper';
 import {Disposable} from './disposable';
 
 export class DictionaryDisposable implements Disposable {

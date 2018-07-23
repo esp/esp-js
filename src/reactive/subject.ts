@@ -17,8 +17,8 @@
 // notice_end
 
 import {utils} from '../system';
-import {Observable} from './Observable';
-import {Observer} from './Observer';
+import {Observable} from './observable';
+import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
 
 export class Subject<T> extends Observable<T> {

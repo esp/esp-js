@@ -16,10 +16,10 @@
  */
 // notice_end
 
-import {Observable} from './Observable';
+import {Observable} from './observable';
 import {Guard} from '../system';
 import {Disposable} from '../system/disposables';
-import {Subject} from './Subject';
+import {Subject} from './subject';
 
 export interface AutoConnectedObservable<T> extends Observable<T> {
     disconnect(): void;

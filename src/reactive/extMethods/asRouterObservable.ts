@@ -16,9 +16,9 @@
  */
 // notice_end
 
-import {Observable} from '../Observable';
+import {Observable} from '../observable';
 import {Guard} from '../../system';
-import {RouterObservable} from '../RouterObservable';
+import {RouterObservable} from '../routerObservable';
 import {Router} from '../../router';
 import {Subscribe} from '../subscribeDelegate';
 

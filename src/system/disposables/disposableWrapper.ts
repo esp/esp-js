@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {Guard} from '../Guard';
+import {Guard} from '../guard';
 import {Disposable, DisposableOrFunction} from './disposable';
 
 export class DisposableWrapper implements Disposable {

@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {RouterObservable} from '../RouterObservable';
+import {RouterObservable} from '../routerObservable';
 import {Guard} from '../../system';
 import {Subscribe} from '../subscribeDelegate';
 

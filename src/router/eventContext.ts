@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {ObservationStage} from './ObservationStage';
+import {ObservationStage} from './observationStage';
 
 export class EventContext {
     private _modelId: string;

@@ -16,12 +16,12 @@
  */
 // notice_end
 
-import {Router}  from './Router';
+import {Router}  from './router';
 import {Guard} from '../system';
 import {Observable, RouterObservable} from '../reactive';
-import {ObservationStage} from './ObservationStage';
+import {ObservationStage} from './observationStage';
 import {EventEnvelope} from './envelopes';
-import {OnObserve} from '../reactive/Observable';
+import {OnObserve} from '../reactive/observable';
 
 export class SingleModelRouter<TModel> {
     private _underlying: Router;

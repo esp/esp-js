@@ -16,8 +16,8 @@
  */
 // notice_end
 
-import {Observable} from '../Observable';
-import {AutoConnectedObservable} from '../AutoConnectedObservable';
+import {Observable} from '../observable';
+import {AutoConnectedObservable} from '../autoConnectedObservable';
 
 Observable.prototype.share = function<T>(cacheLastValue = false) {
     let source = this;

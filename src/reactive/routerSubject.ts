@@ -16,8 +16,8 @@
  */
 // notice_end
 
-import {Subject} from './Subject';
-import {RouterObservable} from './RouterObservable';
+import {Subject} from './subject';
+import {RouterObservable} from './routerObservable';
 import {Router} from '../router';
 
 export class RouterSubject<T> extends Subject<T> {

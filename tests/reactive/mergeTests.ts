@@ -17,7 +17,7 @@
 // notice_end
 
 import * as reactive from '../../src/reactive/index';
-import {SingleModelRouter} from '../../src/router/SingleModelRouter';
+import {SingleModelRouter} from '../../src/router/singleModelRouter';
 
 describe('.merge', () => {
     let subject1,

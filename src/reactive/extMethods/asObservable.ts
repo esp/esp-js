@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {Observable} from '../Observable';
+import {Observable} from '../observable';
 import {Subscribe} from '../subscribeDelegate';
 
 Observable.prototype.asObservable = function<T>() {

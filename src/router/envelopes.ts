@@ -1,5 +1,5 @@
-import {EventContext} from './EventContext';
-import {ObservationStage} from './ObservationStage';
+import {EventContext} from './eventContext';
+import {ObservationStage} from './observationStage';
 
 export enum DispatchType {
     'Event',

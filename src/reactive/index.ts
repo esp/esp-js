@@ -28,8 +28,8 @@ import './extMethods/subscribeOn';
 import './extMethods/asRouterObservable';
 import './extMethods/share';
 
-export { Observable } from './Observable';
-export { Observer } from './Observer';
-export { Subject } from './Subject';
-export { RouterSubject } from './RouterSubject';
-export { RouterObservable } from './RouterObservable';
+export { Observable } from './observable';
+export { Observer } from './observer';
+export { Subject } from './subject';
+export { RouterSubject } from './routerSubject';
+export { RouterObservable } from './routerObservable';

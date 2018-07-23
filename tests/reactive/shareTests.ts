@@ -18,7 +18,7 @@
 
 import * as reactive from '../../src/reactive/index';
 import {Disposable} from '../../src/system/disposables';
-import {AutoConnectedObservable} from '../../src/reactive/AutoConnectedObservable';
+import {AutoConnectedObservable} from '../../src/reactive/autoConnectedObservable';
  
 describe('.share', () => {
     let subject;

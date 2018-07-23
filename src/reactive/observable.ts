@@ -17,14 +17,14 @@
 // notice_end
 
 import {Guard} from '../system';
-import {Observer} from './Observer';
+import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
-import {RouterObservable} from './RouterObservable';
+import {RouterObservable} from './routerObservable';
 import {Router} from '../router';
 import {DisposableWrapper} from '../system/disposables';
 import {DictionaryDisposable} from '../system/disposables';
 import {DisposableOrFunction} from '../system/disposables/disposable';
-import {AutoConnectedObservable} from './AutoConnectedObservable';
+import {AutoConnectedObservable} from './autoConnectedObservable';
 
 export interface Observable<T> {
     asObservable?(): Observable<T>;

@@ -17,8 +17,8 @@
 // notice_end
 
 import {Guard} from '../system';
-import {Status} from './Status';
-import {ModelRecord} from './ModelRecord';
+import {Status} from './status';
+import {ModelRecord} from './modelRecord';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
 export class State {

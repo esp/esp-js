@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {Observable} from '../Observable';
+import {Observable} from '../observable';
 
 Observable.prototype.cast = function<T, TCast>() {
     return <Observable<TCast>>this; // a typescript hack

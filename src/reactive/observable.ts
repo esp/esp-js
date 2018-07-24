@@ -29,7 +29,7 @@ import {AutoConnectedObservable} from './autoConnectedObservable';
 export interface Observable<T> {
     asObservable?(): Observable<T>;
     do?(action: (item: T) => void): Observable<T>;
-    map?(action: (item: T) => any): Observable<T>;
+    map?<TResult>(action: (item: T) => TResult): Observable<TResult>;
     cast?<TDownstream>(): Observable<TDownstream>;
     take?(count: number): Observable<T>;
     takeUntil?(predicate: (item: T) => boolean, inclusive: boolean): Observable<T>;

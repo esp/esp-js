@@ -14,13 +14,13 @@ This is modeled on [RxJs's](https://github.com/Reactive-Extensions/RxJS) observa
 ## Extending the API
 
 Given the API is modeled on RX, there is nothing stopping you from extending both `EventObservable` and `ModelObservable` to add additional operators.
-Internally this is how operators such as `.Where` and `.Select` have been built. For example:
+Internally this is how operators such as `.filter` and `.map` have been built. For example:
 
 ``` js
 import {Observable} from '../Observable';
 import { Guard } from '../../system';
 
-Observable.prototype.where = function(predicate) {
+Observable.prototype.filter = function(predicate) {
     Guard.isDefined(predicate, 'predicate Required');
     var source = this;
     var subscribe =  observer => {
@@ -39,4 +39,4 @@ Observable.prototype.where = function(predicate) {
 
 Reference:
 
-* [js](https://github.com/esp/esp-js/blob/master/src/reactive/extMethods/where.js)
+* [js](https://github.com/esp/esp-js/blob/master/src/reactive/extMethods/filter.js)

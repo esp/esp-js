@@ -409,7 +409,7 @@ var runObserveApiBasicExample = () => {
         // run an action when the stream yields
         .do((event, eventContext, model) => console.log("Price received"))
         // only procure the event if the condition matches
-        .where((event, eventContext, model) => model.staticData.initialised)
+        .filter((event, eventContext, model) => model.staticData.initialised)
         .subscribe((event, eventContext, model) => {
             model.newPrice =
                 event.price +
@@ -417,7 +417,7 @@ var runObserveApiBasicExample = () => {
             console.log("Price with margin was set to " + model.newPrice);
         });
 
-    // publish some prices, the first 2 will get ignored as the .where() waits until the
+    // publish some prices, the first 2 will get ignored as the .filter() waits until the
     // static data has been set on the model.
     router.publishEvent('modelId', 'priceReceivedEvent', { price: 100 });
     router.publishEvent('modelId', 'priceReceivedEvent', { price: 101 });
@@ -624,7 +624,7 @@ var modelToModelCommunicationsWithObservables2 = () => {
         _observePriceStream() {
             let subscription = this._pricingModel.priceStream
                 .streamFor(this.modelId)
-                .where(price => price.symbol === this._currentSymbol)
+                .filter(price => price.symbol === this._currentSymbol)
                 .subscribe(price => {
                     let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
                     console.log(`TradingModel: Price received: ${price.symbol} - ${price.bid} - ${price.ask}. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);

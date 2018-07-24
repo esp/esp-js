@@ -25,14 +25,14 @@
 // import { Router } from 'esp-js';
 // let router = new Router()
 
-export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent } from './router';
+export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent, DispatchType, EventEnvelope, ModelEnvelope } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
 export { logging as logging } from './system';
 export { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject } from './reactive';
 
-import { ObservationStage, Router, SingleModelRouter, DefaultEventContext, ModelChangedEvent } from './router';
-import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
+import { ObservationStage, Router, SingleModelRouter, DefaultEventContext, ModelChangedEvent, DispatchType, EventEnvelope, ModelEnvelope } from './router';
+import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper } from './system/disposables';
 import { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
 import { logging as logging } from './system';
 import { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject  } from './reactive';
@@ -55,5 +55,6 @@ export default {
     EventObservable,
     Subject,
     RouterObservable,
-    RouterSubject
+    RouterSubject,
+    DispatchType
 };

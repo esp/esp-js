@@ -246,7 +246,7 @@ It could wire the observer up to an RX or ESP subject, or cache the observers an
 
 ### Shared Stream
 Sometimes you just want to hook onto a 'fat pipe' of notifications. 
-Regardless of the caller you get the same pipe, if the caller want's it can filter using `.where(item -> boolean)`, or take a number of items using `.take(number)`. 
+Regardless of the caller you get the same pipe, if the caller want's it can filter using `.filter(item -> boolean)`, or take a number of items using `.take(number)`. 
 Lets re-work our example for one last time and assume all prices get pushed down a share stream.
 
 ```js
@@ -264,7 +264,7 @@ class TradingModel extends BaseModel {
     _observePriceStream() {
         let subscription = this._pricingModel.priceStream
             .streamFor(this.modelId)
-            .where(price => price.symbol === this._currentSymbol)
+            .filter(price => price.symbol === this._currentSymbol)
             .subscribe(price => {
                 let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
                 console.log(`TradingModel: Price received: ${price.symbol} - ${price.bid} - ${price.ask}. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);

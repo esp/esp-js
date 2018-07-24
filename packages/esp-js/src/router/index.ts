@@ -28,3 +28,4 @@ export {State} from './state';
 export {Status} from './status';
 export {Consts} from './const';
 export {ModelChangedEvent} from './modelChangedEvent';
+export {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';

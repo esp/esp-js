@@ -1,0 +1,39 @@
+{
+  "name": "polimer",
+  "version": "2.0.0-next.0",
+  "description": "Polimer adds redux-like reducers for esp-js",
+  "keywords": [
+    "state processor",
+    "evented state processor",
+    "reactive",
+    "event loop",
+    "complex state processor",
+    "router",
+    "event router",
+    "polimer",
+    "reducer"
+  ],
+  "scripts": {
+    "clean": "task clean",
+    "build-dev": "task build-dev",
+    "build-prod": "task build-prod",
+    "test": "task test",
+    "test-ci": "task test-ci",
+    "start": "task start --watch"
+  },
+  "main": ".dist/polimer.js",
+  "typings": ".dist/typings/index.d.ts",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "tools": "2.0.0-next.0",
+    "typescript": "2.9.2",
+    "webpack": "4.16.2",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "3.1.5"
+  },
+  "dependencies": {
+    "esp-js": "^2.0.0-next.0",
+    "immer": "1.3.1",
+    "rx": "4.1.0"
+  }
+}

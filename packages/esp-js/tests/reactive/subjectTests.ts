@@ -131,7 +131,7 @@ describe('subject', () => {
             },
             () => onCompleteCalled = true
         );
-        subject.where(_=>true).subscribe(observer);
+        subject.filter(_=>true).subscribe(observer);
         subject.onNext(1);
         subject.onCompleted();
         expect(onCompleteCalled).toEqual(true);

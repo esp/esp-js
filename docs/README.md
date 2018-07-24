@@ -108,7 +108,7 @@ Observe the model for changes, typically done in a view.
 ```js
 let subscription = router
   .getModelObservable(loginModelId)
-  // the router has a built-in observable API with basic methods, where(), do(), map(), take() 
+  // the router has a built-in observable API with basic methods, filter(), do(), map(), take() 
   .do(model =>  { /* gets invoked on each update */ })
   .subscribe(model => {
       console.log(`Updating view. Username is: ${model.username}`);

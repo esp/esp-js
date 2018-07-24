@@ -33,7 +33,7 @@ export interface Observable<T> {
     cast?<TDownstream>(): Observable<TDownstream>;
     take?(count: number): Observable<T>;
     takeUntil?(predicate: (item: T) => boolean, inclusive: boolean): Observable<T>;
-    where?(filter: (item: T) => boolean): Observable<T>;
+    filter?(predicate: (item: T) => boolean): Observable<T>;
     share?(cacheLastValue?: boolean): AutoConnectedObservable<T>;
 
     asRouterObservable?(router: Router): RouterObservable<T>;

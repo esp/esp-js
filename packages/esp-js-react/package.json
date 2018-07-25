@@ -1,6 +1,6 @@
 {
   "name": "esp-js-react",
-  "version": "1.2.5",
+  "version": "2.0.0",
   "description": "Evented State Processor (ESP) React Components",
   "keywords": [
     "esp",
@@ -37,24 +37,13 @@
     }
   },
   "devDependencies": {
-    "@types/react": "16.1.0",
-    "awesome-typescript-loader": "^3.4.1",
-    "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^4.5.1",
-    "expect": "^22.4.3",
     "jest": "^22.4.3",
-    "prop-types": "^15.6.1",
-    "script-loader": "0.7.2",
-    "sinon": "4.5.0",
-    "ts-jest": "^22.4.2",
-    "tslint": "5.9.1",
-    "tslint-loader": "3.6.0",
     "typescript": "^2.8.1",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.9.7"
   },
   "dependencies": {
-    "esp-js": "^1.5.2",
+    "esp-js": "2.0.0",
     "react": "16.3.0"
   }
 }

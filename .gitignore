@@ -10,3 +10,7 @@ esp-js-*.tgz
 .tsbuild
 .dist
 npm-debug.log
+yarn-error.log
+dist/
+lerna-debug.log
+package-lock.json

@@ -29,8 +29,8 @@ import {CompositeDiagnosticMonitor} from './devtools';
 import {ModelOptions} from './modelOptions';
 import {EventEnvelope, ModelEnvelope} from './envelopes';
 import {DispatchType} from './envelopes';
-import {EventType, isModelChangedEventType, isStringEventType} from './eventType';
 import {EventStreamsRegistration} from './modelRecord';
+import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
 
 let _log = logging.Logger.create('Router');
 
@@ -49,12 +49,13 @@ export class Router extends DisposableBase {
         super();
         this._models = new Map();
         this._haltingException = undefined;
-        this._state = new State();
         this._dispatchSubject = new Subject<Envelope>();
         this._onErrorHandlers = [];
 
         this._diagnosticMonitor = new CompositeDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
+
+        this._state = new State(this._diagnosticMonitor);
 
         this._decoratorObservationRegister = new DecoratorObservationRegister();
     }
@@ -123,8 +124,7 @@ export class Router extends DisposableBase {
             this._dispatchEventToEventProcessors(
                 this._state.currentModelRecord,
                 event,
-                eventType,
-                this._state.eventsProcessed
+                eventType
             );
         });
     }
@@ -148,12 +148,13 @@ export class Router extends DisposableBase {
         }
     }
 
-    public getEventObservable<TEvent, TModel>(modelId: string, eventType: EventType, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
+    public getEventObservable<TEvent, TModel>(modelId: string, eventType: string, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
         return Observable.create<EventEnvelope<TEvent, TModel>>(o => {
             this._throwIfHaltedOrDisposed();
+            this._guardAgainstLegacyModelChangedEventSubscription(eventType);
             Guard.isString(modelId, 'The modelId argument should be a string');
+            Guard.isString(eventType, 'The eventType must be a string');
             Guard.isDefined(modelId, 'The modelId argument should be defined');
-            Guard.isDefined(eventType, 'The eventType argument should be defined');
             if (stage) {
                 Guard.isString(stage, 'The stage argument should be a string');
                 Guard.isTrue(stage === ObservationStage.preview || stage === ObservationStage.normal || stage === ObservationStage.committed, 'The stage argument value of [' + stage + '] is incorrect. It should be preview, normal or committed.');
@@ -178,7 +179,33 @@ export class Router extends DisposableBase {
         });
     }
 
-    public getModelObservable<TModel>(modelId): Observable<TModel> {
+    public getAllEventsObservable<TModel>(): Observable<EventEnvelope<any, TModel>> {
+        return Observable.create(o => {
+            this._throwIfHaltedOrDisposed();
+            return this._dispatchSubject
+                .where(envelope => envelope.dispatchType === DispatchType.Event)
+                .cast<EventEnvelope<any, any>>()
+                .subscribe(o);
+        });
+    }
+
+    public getModelChangedEventObservable<TObservingModel, TChangedModel>(observingModelId: string, changedModelId: string): Observable<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>> {
+        return Observable.create<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>(o => {
+            this._throwIfHaltedOrDisposed();
+            Guard.isString(observingModelId, 'The modelId argument should be a string');
+            Guard.isString(changedModelId, 'The eventType must be a string');
+            const modelRecord = this._getOrCreateModelRecord(observingModelId);
+            return this._dispatchSubject
+                .cast<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>()
+                .where(envelope => envelope.dispatchType === DispatchType.ModelChangedEvent && envelope.eventType === Consts.modelChangedEvent && envelope.event.modelId === changedModelId)
+                .map(envelope => ({...envelope, modelId: observingModelId, model: modelRecord.model}))
+                .asRouterObservable(this)
+                .streamFor(observingModelId)
+                .subscribe(o);
+        });
+    }
+
+    public getModelObservable<TModel>(modelId: string): Observable<TModel> {
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
             Guard.isString(modelId, 'The modelId should be a string');
@@ -187,7 +214,7 @@ export class Router extends DisposableBase {
         });
     }
 
-    public createObservableFor<TModel>(modelId, observer): RouterObservable<TModel> {
+    public createObservableFor<TModel>(modelId: string, observer): RouterObservable<TModel> {
         return Observable
             .create<TModel>(observer)
             .asRouterObservable(this)
@@ -228,21 +255,21 @@ export class Router extends DisposableBase {
         return this._diagnosticMonitor.getLoggingDiagnosticSummary();
     }
 
-    public enableDiagnostics() {
-        this._diagnosticMonitor.enableLoggingDiagnostic();
+    public get enableDiagnosticLogging() {
+        return this._diagnosticMonitor.enableDiagnosticLogging;
     }
 
-    public disableDiagnostics() {
-        this._diagnosticMonitor.disableLoggingDiagnostic();
+    public set enableDiagnosticLogging(isEnabled: boolean) {
+        this._diagnosticMonitor.enableDiagnosticLogging = isEnabled;
     }
 
-    public isOnDispatchLoopFor(modelId) {
+    public isOnDispatchLoopFor(modelId: string) {
         Guard.isString(modelId, 'modelId must be a string');
         Guard.isFalsey(modelId === '', 'modelId must not be empty');
         return this._state.currentModelId === modelId;
     }
 
-    private _getOrCreateModelRecord(modelId, model?: any, options?: ModelOptions) {
+    private _getOrCreateModelRecord(modelId: string, model?: any, options?: ModelOptions) {
         let modelRecord: ModelRecord = this._models.get(modelId);
         if (modelRecord) {
             if (!modelRecord.hasModel) {
@@ -259,7 +286,7 @@ export class Router extends DisposableBase {
         return modelRecord;
     }
 
-    private _tryEnqueueEvent(modelId, eventType: string, event: any) {
+    private _tryEnqueueEvent(modelId: string, eventType: string, event: any) {
         // don't enqueue a model changed event for the same model that changed
         if (eventType === Consts.modelChangedEvent && event.modelId === modelId) {
             return;
@@ -270,12 +297,9 @@ export class Router extends DisposableBase {
             try {
                 if (this._models.has(modelId)) {
                     let modelRecord = this._getOrCreateModelRecord(modelId);
-                    if (modelRecord.tryEnqueueEvent(eventType, event)) {
-                        this._diagnosticMonitor.eventEnqueued(modelId, eventType);
-                        this._purgeEventQueues();
-                    } else {
-                        this._diagnosticMonitor.eventIgnored(modelId, eventType);
-                    }
+                    modelRecord.enqueueEvent(eventType, event);
+                    this._diagnosticMonitor.eventEnqueued(modelId, eventType);
+                    this._purgeEventQueues();
                 }
             } catch (err) {
                 this._halt(err);
@@ -301,23 +325,20 @@ export class Router extends DisposableBase {
                     this._state.moveToEventDispatch();
                     this._diagnosticMonitor.dispatchingEvents();
                     while (hasEvents) {
-                        let wasDispatched = true;
                         if (eventRecord.eventType === '__runAction') {
                             this._diagnosticMonitor.dispatchingAction();
                             eventRecord.action(modelRecord.model);
                         } else {
-                            wasDispatched = this._dispatchEventToEventProcessors(
+                            this._state.eventsProcessed.push(eventRecord.eventType);
+                            this._dispatchEventToEventProcessors(
                                 modelRecord,
                                 eventRecord.event,
-                                eventRecord.eventType,
-                                this._state.eventsProcessed);
+                                eventRecord.eventType);
                         }
                         if (modelRecord.wasRemoved) {
                             break;
                         }
-                        if (!modelRecord.hasChanges && wasDispatched) {
-                            modelRecord.hasChanges = true;
-                        }
+                        modelRecord.hasChanges = true;
                         hasEvents = modelRecord.eventQueue.length > 0;
                         if (hasEvents) {
                             eventRecord = modelRecord.eventQueue.shift();
@@ -334,7 +355,7 @@ export class Router extends DisposableBase {
                         }
                     }
                 }
-                this.broadcastEvent(Consts.modelChangedEvent, new ModelChangedEvent(modelRecord.modelId, modelRecord.model));
+                this._dispatchModelChangedEvent(modelRecord);
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
@@ -347,53 +368,55 @@ export class Router extends DisposableBase {
         }
     }
 
-    private _dispatchEventToEventProcessors(modelRecord: ModelRecord, event, eventType, eventsProcessed: string[]) {
-        let dispatchEvent = (modelRecord1, event1, context, stage) => {
-            let wasDispatched1 = false;
-            if (modelRecord1.hasObserversForEventType(eventType)) {
-                this._diagnosticMonitor.dispatchingEvent(eventType, stage);
-                this._dispatchSubject.onNext({
-                    event: event1,
-                    eventType: eventType,
-                    modelId: modelRecord1.modelId,
-                    model: modelRecord1.model,
-                    context: context,
-                    observationStage: stage,
-                    dispatchType: DispatchType.Event
-                });
-                wasDispatched1 = true;
-            }
-            return wasDispatched1;
-        };
-        let eventContext = new EventContext(
+    private _dispatchEventToEventProcessors(modelRecord: ModelRecord, event, eventType): void {
+        let eventContext = new DefaultEventContext(
             modelRecord.modelId,
             eventType
         );
-        let wasDispatched = false;
-        if (modelRecord.hasObserversForEventType(eventType)) {
-            wasDispatched = dispatchEvent(modelRecord, event, eventContext, ObservationStage.preview);
+        this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.preview);
+        if (eventContext.isCommitted) {
+            throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
+        }
+        if (!eventContext.isCanceled) {
+            eventContext.updateCurrentState(ObservationStage.normal);
+            this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.normal);
+            if (eventContext.isCanceled) {
+                throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
+            }
             if (eventContext.isCommitted) {
-                throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
-            }
-            if (!eventContext.isCanceled) {
-                eventContext.updateCurrentState(ObservationStage.normal);
-                wasDispatched = dispatchEvent(modelRecord, event, eventContext, ObservationStage.normal);
+                eventContext.updateCurrentState(ObservationStage.committed);
+                this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.committed);
                 if (eventContext.isCanceled) {
-                    throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
-                }
-                if (wasDispatched && eventContext.isCommitted) {
-                    eventContext.updateCurrentState(ObservationStage.committed);
-                    dispatchEvent(modelRecord, event, eventContext, ObservationStage.committed);
-                    if (eventContext.isCanceled) {
-                        throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
-                    }
+                    throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
                 }
             }
         }
-        if (wasDispatched) {
-            eventsProcessed.push(eventType);
-        }
-        return wasDispatched;
+    }
+
+    private _dispatchModelChangedEvent(modelRecordThatChanged: ModelRecord) {
+        this._diagnosticMonitor.dispatchingEvent(Consts.modelChangedEvent, ObservationStage.normal);
+        this._dispatchSubject.onNext({
+            event: new ModelChangedEvent(modelRecordThatChanged.modelId, modelRecordThatChanged.model),
+            eventType: Consts.modelChangedEvent,
+            modelId: null,
+            model: null,
+            context: new ModelChangedEventContext(),
+            observationStage: ObservationStage.normal,
+            dispatchType: DispatchType.ModelChangedEvent
+        });
+    }
+
+    private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
+        this._diagnosticMonitor.dispatchingEvent(eventType, stage);
+        this._dispatchSubject.onNext({
+            event: event,
+            eventType: eventType,
+            modelId: modelRecord.modelId,
+            model: modelRecord.model,
+            context: context,
+            observationStage: stage,
+            dispatchType: DispatchType.Event
+        });
     }
 
     private _dispatchModelUpdates() {
@@ -490,6 +513,15 @@ export class Router extends DisposableBase {
         }
         if (this.isDisposed) {
             throw new Error(`ESP router has been disposed`);
+        }
+    }
+
+    private _guardAgainstLegacyModelChangedEventSubscription(eventType: string) {
+        let errorMessage = 'You can not observe a modelChangedEvent via router.getEventObservable(), use router.getModelChangedEvent() instead';
+        Guard.isFalsey(eventType === Consts.modelChangedEvent, errorMessage);
+        if ((<any>eventType).modelId) {
+            // guard against the old format modelChangedEvents
+            throw new Error(errorMessage);
         }
     }
 

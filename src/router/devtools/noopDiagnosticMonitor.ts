@@ -45,9 +45,6 @@ export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticM
     eventEnqueued() {
     }
 
-    eventIgnored() {
-    }
-
     dispatchLoopStart() {
     }
 

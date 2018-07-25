@@ -19,6 +19,7 @@
 import {Guard} from '../system';
 import {Status} from './status';
 import {ModelRecord} from './modelRecord';
+import {CompositeDiagnosticMonitor} from './devtools/compositeDiagnosticMonitor';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
 export class State {
@@ -26,8 +27,10 @@ export class State {
     private _eventsDispatched: any[];
     private _currentModelId: string;
     private _currentModelRecord: ModelRecord;
+    private _circularEventDispatchLimit = 20;
+    private _currentDispatchCount = 0;
 
-    public constructor() {
+    public constructor(private _compositeDiagnosticMonitor: CompositeDiagnosticMonitor) {
         this._currentStatus = Status.Idle;
         this._eventsDispatched = [];
     }
@@ -51,6 +54,7 @@ export class State {
     public moveToIdle() {
         this._currentStatus = Status.Idle;
         this._clear();
+        this._currentDispatchCount = 0;
     }
 
     public moveToPreProcessing(modelId: string, modelRecord: ModelRecord) {
@@ -62,6 +66,14 @@ export class State {
     }
 
     public moveToEventDispatch() {
+        this._currentDispatchCount++;
+        if (this._currentDispatchCount >= this._circularEventDispatchLimit) {
+            if (this._compositeDiagnosticMonitor.enableDiagnosticLogging) {
+                throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount} events processed :\r\n${this._compositeDiagnosticMonitor.getLoggingDiagnosticSummary()}`);
+            } else {
+                throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount}. Enable diagnostic logging for a more detailed error message (routerInstance.enableDiagnostics = true)`);
+            }
+        }
         this._currentStatus = Status.EventProcessorDispatch;
     }
 

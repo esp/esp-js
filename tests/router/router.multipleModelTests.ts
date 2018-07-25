@@ -101,15 +101,15 @@ describe('Router', () => {
         describe('model changed events', () => {
             let _receivedModel, _receivedEvent, _workflowDone;
 
-            it('throws if you observe a modelChangedEvent using a string identifier', () => {
+            it('throws if you observe a modelChangedEvent via getEventObservable', () => {
                 expect(() => {
                     _router.getEventObservable(_model2.id, 'modelChangedEvent').subscribe(({event, context, model}) => {});
-                }).toThrow(new Error('You can not observe a modelChangedEvent using only the eventType string. You must pass an object identifying the modelId to monitor. E.g. replace the eventType param with: { eventType: \'modelChangedEvent\', modelId: \'yourRelatedModelId\' }'));
+                }).toThrow(new Error('You can not observe a modelChangedEvent via router.getEventObservable(), use router.getModelChangedEvent() instead'));
             });
 
             it('can observe a modelChangedEvent when child\'s event workflow done', () => {
                 _router.getEventObservable(_model1.id, 'fooEvent').subscribe(({event, context, model}) => { /* noop */});
-                _router.getEventObservable(_model2.id, { eventType: "modelChangedEvent", modelId: _model1.id }).subscribe(({event, context, model}) => {
+                _router.getModelChangedEventObservable(_model2.id, _model1.id).subscribe(({event, context, model}) => {
                     _receivedModel = model;
                     _receivedEvent = event;
                     _workflowDone = _model1OptionsHelper.modelsSentForPostProcessing.length === 1;
@@ -128,14 +128,14 @@ describe('Router', () => {
                 let _model2ReceivedItems = [],
                     _model3ReceivedItems = [];
                 _router.getEventObservable(_model1.id, 'fooEvent').subscribe(({event, context, model}) => { /* noop */});
-                _router.getEventObservable(_model2.id, { eventType: "modelChangedEvent", modelId: _model1.id }).subscribe(({event, context, model}) => {
+                _router.getModelChangedEventObservable(_model2.id, _model1.id).subscribe(({event, context, model}) => {
                     _model2ReceivedItems.push({event, context, model});
                 });
                 // model 3 observes model 1 and 2
-                _router.getEventObservable(_model3.id, { eventType: "modelChangedEvent", modelId: _model1.id }).subscribe(({event, context, model}) => {
+                _router.getModelChangedEventObservable(_model3.id, _model1.id).subscribe(({event, context, model}) => {
                     _model3ReceivedItems.push({event, context, model});
                 });
-                _router.getEventObservable(_model3.id, { eventType: "modelChangedEvent", modelId: _model2.id }).subscribe(({event, context, model}) => {
+                _router.getModelChangedEventObservable(_model3.id, _model2.id).subscribe(({event, context, model}) => {
                     _model3ReceivedItems.push({event, context, model});
                 });
                 _router.publishEvent(_model1.id, 'fooEvent', 1);
@@ -146,9 +146,9 @@ describe('Router', () => {
 
             it.skip('detects and errors when models are observing each other', () => {
                 _router.getEventObservable(_model1.id, 'fooEvent').subscribe(({event, context, model}) => { /* noop */});
-                _router.getEventObservable(_model1.id, { eventType: "modelChangedEvent", modelId: _model2.id }).subscribe(({event, context, model}) => {
+                _router.getModelChangedEventObservable(_model1.id, _model2.id).subscribe(({event, context, model}) => {
                 });
-                _router.getEventObservable(_model2.id, { eventType: "modelChangedEvent", modelId: _model1.id }).subscribe(({event, context, model}) => {
+                _router.getModelChangedEventObservable(_model2.id, _model1.id).subscribe(({event, context, model}) => {
                 });
                 _router.publishEvent(_model1.id, 'fooEvent', 1);
             });

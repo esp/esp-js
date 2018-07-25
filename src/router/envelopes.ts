@@ -3,6 +3,7 @@ import {ObservationStage} from './observationStage';
 
 export enum DispatchType {
     'Event',
+    'ModelChangedEvent',
     'Model'
 }
 

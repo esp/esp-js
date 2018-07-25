@@ -24,6 +24,7 @@ describe('Router', () => {
 
     beforeEach(() => {
         _router = new esp.Router();
+        _router.enableDiagnosticLogging = true;
     });
 
     describe('.broadcast()', function() {

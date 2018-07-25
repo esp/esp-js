@@ -69,12 +69,6 @@ export class LoggingDiagnosticMonitor extends DisposableBase implements Diagnost
         this._decrementDepth();
     }
 
-    eventIgnored(modelId, eventType) {
-        this._incrementDepth();
-        this._pushStep(`[EventIgnored(no observers)]:${modelId}:${eventType}`);
-        this._decrementDepth();
-    }
-
     dispatchLoopStart() {
         this._incrementDepth();
         this._pushStep(`[DispatchLoopStart]`);

@@ -34,16 +34,16 @@ describe('Router', () => {
     describe('diagnostics', () => {
 
         it('when enableDiagnostics called getDispatchLoopDiagnostics returns diagnostics', ()=> {
-            _router.enableDiagnostics();
+            _router.enableDiagnosticLogging = true;
             _router.publishEvent('modelId1', 'startEvent', {});
             let dispatchLoopDiagnostics = _router.getDispatchLoopDiagnostics();
             expect(dispatchLoopDiagnostics).toBeDefined();
         });
 
         it('when enableDiagnostics called getDispatchLoopDiagnostics returns diagnostics', ()=> {
-            _router.enableDiagnostics();
+            _router.enableDiagnosticLogging = true;
             _router.publishEvent('modelId1', 'startEvent', {});
-            _router.disableDiagnostics();
+            _router.enableDiagnosticLogging = false;
             _router.publishEvent('modelId1', 'startEvent', {});
             expect(_router.getDispatchLoopDiagnostics()).toEqual('Call router.enableDiagnostics() to enable diagnostics. If in a browser use esp-js-devtools.');
         });

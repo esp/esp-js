@@ -16,13 +16,13 @@
  */
  // notice_end
 
-import { EventContext } from '../../src';
+import {DefaultEventContext, EventContext} from '../../src';
 
 describe('EventContext', () => {
     let ec;
 
     beforeEach(function(){
-        ec = new EventContext('modekId', 'eventType', "event1Data");
+        ec = new DefaultEventContext('modelId', 'eventType');
     });
 
     it('throws if canceled twice', () => {

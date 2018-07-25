@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "noEmitOnError": true,
+    "allowJs": false,
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "es6",
+    "module": "commonjs",
+    "noEmit": false,
+    "declaration": false,
+    "strictNullChecks": false,
+    "outDir" : "./.tsbuild"
+  },
+  "files": [
+    "typings/index.d.ts",
+    "typings/custom.d.ts",
+    "node_modules/rx/ts/rx.all.d.ts"
+  ],
+  "include": [
+    "src/**/*"
+  ]
+}

@@ -10,3 +10,5 @@ esp-js-*.tgz
 .tsbuild
 .dist
 npm-debug.log
+yarn-error.log
+dist/

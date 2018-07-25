@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "workspaces": [
+    "esp-js",
+    "esp-js-react",
+    "esp-js-ui"
+  ],
+  "devDependencies": {
+    "init": "^0.1.2",
+    "lerna": "^2.11.0"
+  }
+}

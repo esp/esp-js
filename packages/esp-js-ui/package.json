@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "ESP-JS-UI Package",
   "main": "dist/esp-js-ui.js",
   "typings": "esp-js-ui.d.ts",
@@ -30,28 +30,14 @@
     }
   },
   "devDependencies": {
-    "@types/classnames": "2.2.3",
-    "@types/query-string": "5.1.0",
-    "@types/react": "16.3.2",
-    "@types/uuid": "3.4.3",
-    "awesome-typescript-loader": "4.0.1",
-    "clean-webpack-plugin": "0.1.19",
-    "copy-webpack-plugin": "4.5.1",
-    "expect": "22.4.3",
     "jest": "22.4.3",
-    "script-loader": "0.7.2",
-    "sinon": "4.5.0",
-    "ts-jest": "22.4.2",
-    "tslint": "5.9.1",
-    "tslint-loader": "3.6.0",
     "typescript": "2.8.1",
-    "webpack": "3.10.0",
-    "webpack-fail-plugin": "2.0.0"
+    "webpack": "3.10.0"
   },
   "dependencies": {
     "classnames": "2.2.5",
-    "esp-js": "1.5.2",
-    "esp-js-react": "1.2.3",
+    "esp-js": "2.0.0",
+    "esp-js-react": "2.0.0",
     "microdi-js": "1.1.0",
     "query-string": "6.0.0",
     "react": "16.3.0",

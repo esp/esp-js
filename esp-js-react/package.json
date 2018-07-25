@@ -1,0 +1,60 @@
+{
+  "name": "esp-js-react",
+  "version": "1.2.5",
+  "description": "Evented State Processor (ESP) React Components",
+  "keywords": [
+    "esp",
+    "state processor",
+    "evented state processor",
+    "reactive",
+    "react"
+  ],
+  "main": "dist/esp-react.js",
+  "author": "Dev Shop Limited",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/esp/esp-js-react",
+  "typings": "./esp-js-react.d.ts",
+  "scripts": {
+    "build": "yarn build:dev && yarn build:prod",
+    "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
+    "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
+    "start": "webpack --watch",
+    "test": "jest"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
+    }
+  },
+  "devDependencies": {
+    "@types/react": "16.1.0",
+    "awesome-typescript-loader": "^3.4.1",
+    "clean-webpack-plugin": "^0.1.19",
+    "copy-webpack-plugin": "^4.5.1",
+    "expect": "^22.4.3",
+    "jest": "^22.4.3",
+    "prop-types": "^15.6.1",
+    "script-loader": "0.7.2",
+    "sinon": "4.5.0",
+    "ts-jest": "^22.4.2",
+    "tslint": "5.9.1",
+    "tslint-loader": "3.6.0",
+    "typescript": "^2.8.1",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.7"
+  },
+  "dependencies": {
+    "esp-js": "^1.5.2",
+    "react": "16.3.0"
+  }
+}

@@ -1,0 +1,8 @@
+examples/
+.git
+.gitignore
+.npmignore
+.idea
+node_modules/
+*.log
+esp-js-react-*.tgz

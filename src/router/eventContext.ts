@@ -17,8 +17,18 @@
 // notice_end
 
 import {ObservationStage} from './observationStage';
+import {Consts} from './const';
 
-export class EventContext {
+export interface EventContext {
+    readonly currentStage: string;
+    readonly eventType: string;
+    readonly isCanceled: boolean;
+    readonly isCommitted: boolean;
+    cancel(): void;
+    commit(): void;
+}
+
+export class DefaultEventContext implements EventContext {
     private _modelId: string;
     private _eventType: string;
     private _isCanceled: boolean;
@@ -33,11 +43,11 @@ export class EventContext {
         this._currentStage = ObservationStage.preview; // initial state
     }
 
-    public get currentStage() {
+    get currentStage() {
         return this._currentStage;
     }
 
-    public get eventType() {
+    get eventType() {
         return this._eventType;
     }
 
@@ -45,15 +55,15 @@ export class EventContext {
         this._currentStage = newState;
     }
 
-    public get isCanceled() {
+    get isCanceled() {
         return this._isCanceled;
     }
 
-    public get isCommitted() {
+    get isCommitted() {
         return this._isCommitted;
     }
 
-    public cancel() {
+    cancel() {
         if (!this._isCanceled) {
             this._isCanceled = true;
         } else {
@@ -61,11 +71,33 @@ export class EventContext {
         }
     }
 
-    public commit() {
+    commit() {
         if (!this._isCommitted) {
             this._isCommitted = true;
         } else {
             throw 'event [' + this._eventType + '] for model [' + this._modelId + '] is already committed';
         }
+    }
+}
+
+export class ModelChangedEventContext implements EventContext {
+    public get currentStage(): string {
+        return ObservationStage.normal;
+    }
+    public get eventType(): string {
+        return Consts.modelChangedEvent;
+    }
+    public get isCanceled(): boolean {
+        return false;
+    }
+    public get isCommitted(): boolean {
+        return false;
+    }
+    public cancel(): void {
+        throw new Error(`You can not cancel event of type ${this.eventType}`);
+    }
+
+    public commit(): void {
+        throw new Error(`You can not commit event of type ${this.eventType}`);
     }
 }

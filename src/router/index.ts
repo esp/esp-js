@@ -19,7 +19,7 @@
 import * as devtools from './devtools';
 
 export {devtools};
-export {EventContext} from './eventContext';
+export {EventContext, DefaultEventContext, ModelChangedEventContext} from './eventContext';
 export {ModelRecord} from './modelRecord';
 export {ObservationStage} from './observationStage';
 export {Router} from './router';

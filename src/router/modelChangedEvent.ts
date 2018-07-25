@@ -16,18 +16,18 @@
  */
  // notice_end
 
-export class ModelChangedEvent {
+export class ModelChangedEvent<TChangedModel> {
     private _modelId: string;
     private _model: any;
 
-    constructor(modelId, model) {
+    constructor(modelId: string, model: TChangedModel) {
         this._modelId = modelId;
         this._model = model;
     }
-    get modelId() {
+    get modelId(): string {
         return this._modelId;
     }
-    get model() {
+    get model(): TChangedModel {
         return this._model;
     }
 }

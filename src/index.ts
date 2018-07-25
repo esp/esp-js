@@ -22,18 +22,16 @@
 // let eventContext = new esp.EventContext();
 //
 // 1) import single items
-// import { EventContext } from 'esp-js';
-// let eventContext = new EventContext()
+// import { Router } from 'esp-js';
+// let router = new Router()
 
-let foo = () => {};
-
-export { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
+export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 export { logging as logging } from './system';
 export { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject } from './reactive';
 
-import { ObservationStage, Router, SingleModelRouter, EventContext, ModelChangedEvent } from './router';
+import { ObservationStage, Router, SingleModelRouter, DefaultEventContext, ModelChangedEvent } from './router';
 import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
 import { logging as logging } from './system';
@@ -48,7 +46,7 @@ export default {
     observeEvent,
     observeModelChangedEvent,
     logging,
-    EventContext,
+    DefaultEventContext,
     CompositeDisposable,
     DictionaryDisposable,
     DisposableWrapper,

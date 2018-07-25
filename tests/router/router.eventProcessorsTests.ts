@@ -27,10 +27,16 @@ describe('Router', () => {
     });
 
     describe('eventProcessors', () => {
-        let _model1 = {},
-            _model2 = {},
-            _model3 = {},
-            _model5 = {},
+        let _model1: { },
+            _model2: { },
+            _model3: { },
+            _model5: {
+                preProcessCount: number,
+                postProcessCount: number,
+                eventsProcessed: string[],
+                preProcess: ()=> void;
+                postProcess: (eventsProcessed: string[])=> void;
+            },
             _testPassed = false,
             _modelsSentForPreProcessing = [],
             _modelsSentForPostProcessing = [],
@@ -44,12 +50,13 @@ describe('Router', () => {
             };
 
         beforeEach(() => {
-            _model1 = { id: 1 };
-            _model2 = { id: 2 };
-            _model3 = { id: 3};
+            _model1 = { };
+            _model2 = { };
+            _model3 = { };
             _model5 = {
                 preProcessCount : 0,
                 postProcessCount : 0,
+                eventsProcessed: [],
                 preProcess() {
                     this.preProcessCount++;
                 },
@@ -92,25 +99,25 @@ describe('Router', () => {
             expect(_model5.eventsProcessed).toEqual(['startEvent']);
         });
 
-        it('only calls a models preProcess() function if the model is observing the published event', () => {
+        it('calls a models preProcess() function if the model is NOT observing the published event', () => {
             _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
-            expect(_model5.preProcessCount).toBe(0);
+            expect(_model5.preProcessCount).toBe(1);
         });
 
-        it('only calls a models postProcess() function if the model is observing the published event', () => {
+        it('calls a models postProcess() function if the model is NOT observing the published event', () => {
             _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
-            expect(_model5.postProcessCount).toBe(0);
+            expect(_model5.postProcessCount).toBe(1);
         });
 
-        it('only calls a models pre event processor if the model is observing the published event', () => {
+        it('calls a models pre event processor even if the model is not observing the published event', () => {
             _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
-            _testPassed = _modelsSentForPreProcessing.length === 0;
+            _testPassed = _modelsSentForPreProcessing.length === 1
             expect(_testPassed).toBe(true);
         });
 
-        it('only calls a models post event processor if the model is observing the published event', () => {
+        it('calls a models post event processor even if the model is not observing the published event', () => {
             _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
-            _testPassed = _modelsSentForPostProcessing.length === 0;
+            _testPassed = _modelsSentForPostProcessing.length === 1;
             expect(_testPassed).toBe(true);
         });
 

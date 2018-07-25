@@ -24,6 +24,7 @@ import {DiagnosticMonitor} from './diagnosticMonitor';
 export class CompositeDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
     private _devToolsDiagnostic: DiagnosticMonitor;
     private _currentLoggingDiagnosticMonitor: DiagnosticMonitor;
+    private _enableDiagnosticLogging = false;
 
     constructor() {
         super();
@@ -40,12 +41,18 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
         return this._currentLoggingDiagnosticMonitor.getSummary();
     }
 
-    enableLoggingDiagnostic() {
-        this._currentLoggingDiagnosticMonitor = new LoggingDiagnosticMonitor();
+    public get enableDiagnosticLogging() {
+        return this._enableDiagnosticLogging;
     }
 
-    disableLoggingDiagnostic() {
-        this._currentLoggingDiagnosticMonitor = new NoopDiagnosticMonitor();
+    public set enableDiagnosticLogging(isEnabled: boolean) {
+        if (isEnabled) {
+            this._enableDiagnosticLogging = true;
+            this._currentLoggingDiagnosticMonitor = new LoggingDiagnosticMonitor();
+        } else {
+            this._enableDiagnosticLogging = false;
+            this._currentLoggingDiagnosticMonitor = new NoopDiagnosticMonitor();
+        }
     }
 
     public addModel(modelId) {
@@ -81,11 +88,6 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
     eventEnqueued(modelId, eventType) {
         this._currentLoggingDiagnosticMonitor.eventEnqueued(modelId, eventType);
         this._devToolsDiagnostic.eventEnqueued(modelId, eventType);
-    }
-
-    eventIgnored(modelId, eventType) {
-        this._currentLoggingDiagnosticMonitor.eventIgnored(modelId, eventType);
-        this._devToolsDiagnostic.eventIgnored(modelId, eventType);
     }
 
     dispatchLoopStart() {

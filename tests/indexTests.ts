@@ -4,7 +4,7 @@ import {
     Router,
     ObservationStage,
     SingleModelRouter,
-    EventContext,
+    DefaultEventContext,
     CompositeDisposable,
     DictionaryDisposable,
     DisposableBase,
@@ -16,7 +16,6 @@ import {
     RouterSubject,
     observeEvent,
     observeModelChangedEvent,
-    model,
     logging,
     DisposableWrapper
 } from '../src';
@@ -37,9 +36,9 @@ describe('index exports', () => {
         expect(SingleModelRouter).toBeDefined();
     });
 
-    it('should export EventContext', () => {
-        expect(esp.EventContext).toBeDefined();
-        expect(EventContext).toBeDefined();
+    it('should export DefaultEventContext', () => {
+        expect(esp.DefaultEventContext).toBeDefined();
+        expect(DefaultEventContext).toBeDefined();
     });
 
     it('should export CompositeDisposable', () => {

@@ -30,7 +30,6 @@ export interface DiagnosticMonitor extends DisposableBase {
     executingEvent(eventType): void;
     runAction(modelId: string): void;
     eventEnqueued(modelId, eventType): void;
-    eventIgnored(modelId, eventType): void;
     dispatchLoopStart(): void;
     startingModelEventLoop(modelId, initiatingEventType): void;
     preProcessingModel(): void;

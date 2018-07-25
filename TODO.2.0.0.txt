@@ -1,0 +1,13 @@
+2.0.0 update notes, will form basis for release notes
+[x] - Convert to tyepscript
+[x] - makes observices of T, not t123
+[x] - remove model changed event (fixed, or modified, not deleted)
+[ ] - remove all default exports
+[x] - merge repos
+[x] - renam all file types to lower case in esp-js
+[x] - user generated .d.ts
+[x] - expose single event subject for all events for a model
+[ ] - merge all readmes and restructure docs
+[ ] - single travis build with lerna
+[ ] - single publish step via lerna
+[ ] - shared test setups

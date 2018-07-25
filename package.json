@@ -5,16 +5,15 @@
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "compile": "lerna run compile",
     "build-dev": "lerna run build-dev",
-    "clean": "lerna run clean",
+    "build-prod": "lerna run build-prod",
+    "clean": "./scripts/clean.sh && lerna run clean && yarn rmnm",
     "rmnm": "rm -rf ./node_modules && lerna clean",
     "test": "lerna run test",
-    "update-version": "lerna publish --skip-git --skip-npm --force-publish '*'",
+    "update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next",
+    "update-prerelease-version": "yarn update-version --cd-version=prerelease",
+    "update-premajor-version": "yarn update-version --cd-version=premajor",
     "check-packages": "yarn clean && yarn compile && yarn test"
-  },
-  "dependencies": {
-    "react": "16.3.0"
   },
   "devDependencies": {
     "lerna": "^2.11.0",

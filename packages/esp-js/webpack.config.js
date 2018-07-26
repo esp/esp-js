@@ -21,11 +21,6 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp': './src/index'
-    },
-    output: {
-        ...baseConfig.output,
-        library: 'esp',
-        filename: 'esp.js',
+        'esp-js': './src/index'
     }
 };

@@ -51,10 +51,11 @@ module.exports = {
         // webpack 4 incorrectly has `window` in the UMD definition
         // This is a workaround to enable node to consume esp's umc, see
         // https://github.com/webpack/webpack/issues/6522
-        globalObject: "typeof self !== 'undefined' ? self : this"
+        globalObject: "typeof self !== 'undefined' ? self : this",
+        filename: '[name].js'
     },
     resolve: {
-        extensions: ['.ts', '.js', '.json'],
+        extensions: ['.ts', '.tsx', '.js', '.json'],
     },
     devtool: 'source-map',
     module: {

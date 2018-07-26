@@ -1,7 +1,9 @@
 {
   "private": true,
   "workspaces": [
-    "packages/*",
+    "packages/esp-js",
+    "packages/esp-js-react",
+    "packages/esp-js-ui",
     "examples/*"
   ],
   "scripts": {

@@ -1,19 +1,6 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noImplicitAny": false,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "noEmitOnError": true,
-    "allowJs": false,
-    "jsx": "react",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "target": "es6",
-    "module": "commonjs",
-    "noEmit": false,
-    "declaration": true,
-    "strictNullChecks": false,
     "outDir" : "./.tsbuild",
     "declarationDir": "./typings"
   },

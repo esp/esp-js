@@ -129,7 +129,7 @@ export class Router extends DisposableBase {
         });
     }
 
-    public runAction(modelId: string, action: () => void) {
+    public runAction<TModel>(modelId: string, action: (model: TModel) => void) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'modelId must be a string');
         Guard.isTrue(modelId !== '', 'modelId must not be empty');

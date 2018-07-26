@@ -1,27 +1,18 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noImplicitAny": false,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "noEmitOnError": true,
-    "allowJs": false,
-    "jsx": "react",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "target": "es6",
-    "module": "commonjs",
-    "noEmit": false,
-    "declaration": false,
-    "strictNullChecks": false,
-    "outDir" : "./.tsbuild"
+    "outDir" : "./.tsbuild",
+    "declarationDir": "./typings"
   },
-  "files": [
-    "typings/index.d.ts",
-    "typings/custom.d.ts",
-    "node_modules/rx/ts/rx.all.d.ts"
-  ],
   "include": [
     "src/**/*"
+  ],
+  "files": [
+    "typings/custom.d.ts",
+    "../../node_modules/rx/ts/rx.all.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
   ]
 }

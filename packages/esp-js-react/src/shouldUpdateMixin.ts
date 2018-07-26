@@ -22,7 +22,7 @@ import { shallowEqual } from './shallowEqual';
 export function shouldUpdateMixin<TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TPropBindings) => any) {
     return (Component:any ) => {
         return class extends React.Component<any, any> {
-            private _propBindings : {};
+             _propBindings : {};
             shouldComponentUpdate(nextProps, nextState) {
                 let newBindings = itemsThatEffectUpdateSelector(nextProps);
                 let bindingsAreEqual = shallowEqual(this._propBindings, newBindings);

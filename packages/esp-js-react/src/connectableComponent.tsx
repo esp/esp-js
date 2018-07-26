@@ -120,9 +120,12 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
     }
 }
 
+// Lifting 'ConnectableView' into it's own type so it can be exported, else tsc doesn't correctly generated declaration files
+export type ConnectableView = React.ComponentClass | React.SFC;
+
 export const connect = function<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>):
-    (view: React.ComponentClass | React.SFC) => (props: ConnectableComponentProps) => JSX.Element {
-    return (view: React.ComponentClass | React.SFC) => ({modelId, viewContext}: ConnectableComponentProps) => {
+    (view: ConnectableView) => (props: ConnectableComponentProps) => JSX.Element {
+    return (view: ConnectableView) => ({modelId, viewContext}: ConnectableComponentProps) => {
         return <ConnectableComponent modelId={modelId} view={view} viewContext={viewContext} mapPublish={mapPublish} modelSelector={modelSelector} />;
     };
 };

@@ -1,6 +1,6 @@
 {
   "name": "esp-js",
-  "version": "2.0.0",
+  "version": "2.0.0-next.0",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",
@@ -15,6 +15,7 @@
     "test-ci": "jest --verbose",
     "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
+    "clean": "rm -rf ./.dist && rm -rf ./.tsbuild",
     "start": "webpack --watch",
     "test": "jest --watchAll --no-cache"
   },
@@ -25,11 +26,10 @@
   "typings": "./.dist/typings/index.d.ts",
   "devDependencies": {
     "typescript": "2.9.2",
-    "webpack": "4.16.0",
+    "webpack": "4.16.2",
     "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "3.1.4"
+    "webpack-dev-server": "3.1.5"
   },
-  "dependencies": {},
   "jest": {
     "globals": {
       "ts-jest": {

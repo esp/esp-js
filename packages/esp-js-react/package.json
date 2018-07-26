@@ -1,6 +1,6 @@
 {
   "name": "esp-js-react",
-  "version": "2.0.0",
+  "version": "2.0.0-next.0",
   "description": "Evented State Processor (ESP) React Components",
   "keywords": [
     "esp",
@@ -13,13 +13,14 @@
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js-react",
-  "typings": "./esp-js-react.d.ts",
+  "typings": "./.dist/typings/index.d.ts",
   "scripts": {
     "build": "yarn build:dev && yarn build:prod",
     "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
+    "clean": "rm -rf ./.dist && rm -rf ./.tsbuild",
     "start": "webpack --watch",
-    "test": "jest"
+    "test-ci": "jest"
   },
   "jest": {
     "transform": {
@@ -37,13 +38,13 @@
     }
   },
   "devDependencies": {
-    "jest": "^22.4.3",
-    "typescript": "^2.8.1",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7"
+    "typescript": "2.9.2",
+    "webpack": "4.16.2",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "3.1.5"
   },
   "dependencies": {
-    "esp-js": "2.0.0",
-    "react": "16.3.0"
+    "esp-js": "^2.0.0-next.0",
+    "react": "16.4.1"
   }
 }

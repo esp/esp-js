@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "2.0.0",
+  "version": "2.0.0-next.0",
   "description": "ESP-JS-UI Package",
   "main": "dist/esp-js-ui.js",
   "typings": "esp-js-ui.d.ts",
@@ -12,7 +12,7 @@
     "dev-for-example": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details && npm pack && rm -rf ./examples/module-based-app/node_modules/esp-js-ui && mkdir ./examples/module-based-app/node_modules/esp-js-ui && tar -xzf esp-js-ui-1.0.0.tgz -C ./examples/module-based-app/node_modules/esp-js-ui --strip 1",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
     "start": "webpack --watch",
-    "test": "jest"
+    "test-ci": "jest"
   },
   "jest": {
     "transform": {
@@ -30,18 +30,18 @@
     }
   },
   "devDependencies": {
-    "jest": "22.4.3",
-    "typescript": "2.8.1",
-    "webpack": "3.10.0"
+    "jest": "23.4.1",
+    "typescript": "2.9.2",
+    "webpack": "4.16.2"
   },
   "dependencies": {
-    "classnames": "2.2.5",
-    "esp-js": "2.0.0",
-    "esp-js-react": "2.0.0",
+    "classnames": "2.2.6",
+    "esp-js": "^2.0.0-next.0",
+    "esp-js-react": "^2.0.0-next.0",
     "microdi-js": "1.1.0",
-    "query-string": "6.0.0",
-    "react": "16.3.0",
+    "query-string": "6.1.0",
+    "react": "16.4.1",
     "rx": "4.1.0",
-    "uuid": "3.2.1"
+    "uuid": "3.3.2"
   }
 }

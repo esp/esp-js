@@ -1,6 +1,6 @@
 {
-  "name": "simple-module-based-app",
-  "version": "1.0.0",
+  "name": "esp-js-ui-module-based-app",
+  "version": "2.0.0-next.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "awesome-typescript-loader": "3.1.2",
-    "esp-js": "1.5.2",
-    "esp-js-react": "1.2.3",
-    "esp-js-ui": "0.11.0",
+    "esp-js": "2.0.0-next.0",
+    "esp-js-react": "2.0.0-next.0",
+    "esp-js-ui": "2.0.0-next.0",
     "html-webpack-plugin": "2.28.0",
     "lodash": "4.17.4",
     "microdi-js": "1.1.0",

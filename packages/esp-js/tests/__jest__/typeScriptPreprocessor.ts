@@ -18,7 +18,7 @@
 
 const tsc = require('typescript');
 const path = require ('path');
-const tsconfig = require('../../tsconfig.json');
+const tsconfig = require('../../../../tsconfig.base.json');
 
 let compilerOptions = tsconfig.compilerOptions;
 // source maps don't work well on the latest of node/tsc/jest/idea, it's a
@@ -29,6 +29,8 @@ compilerOptions.outDir = undefined;
 compilerOptions.sourceMap = undefined;
 compilerOptions.inlineSourceMap = true;
 
+// console.log('CONFIG:' + JSON.stringify(tsconfig.compilerOptions));
+
 module.exports = {
     process(src, path) {
         if (path.endsWith('.ts') || path.endsWith('.tsx')) {
@@ -38,10 +40,9 @@ module.exports = {
                 path,
                 []
             );
-            // console.log('CONFIG:' + JSON.stringify(tsconfig.compilerOptions));
             // console.log('Path '+ path +', with options ['+ JSON.stringify(tsconfig.compilerOptions) +'], compiled to: ' + compiled);
             return compiled;
         }
         return src;
-    },
+    }
 };

@@ -1,0 +1,10 @@
+{
+  "name": "tools",
+  "version": "2.0.0-next.0",
+  "description": "tools for esp builds",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "bin": {
+    "task": "./task.sh"
+  }
+}

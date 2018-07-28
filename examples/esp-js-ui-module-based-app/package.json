@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "webpack --progress --display-chunks --colors --config webpack-config.js",
+    "build-dev": "webpack --progress --display-chunks --colors --config webpack-config.js",
     "start": "webpack-dev-server --inline --hot --watch --progress --colors --config webpack-config.js"
   },
   "dependencies": {

@@ -29,6 +29,7 @@
     "webpack-dev-server": "3.1.5"
   },
   "scripts": {
+    "build-dev": "--display-reasons --display-error-details",
     "start": "webpack-dev-server --inline --watch --progress --colors"
   }
 }

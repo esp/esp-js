@@ -12,7 +12,7 @@
     "dev-for-example": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details && npm pack && rm -rf ./examples/module-based-app/node_modules/esp-js-ui && mkdir ./examples/module-based-app/node_modules/esp-js-ui && tar -xzf esp-js-ui-1.0.0.tgz -C ./examples/module-based-app/node_modules/esp-js-ui --strip 1",
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
     "start": "webpack --watch",
-    "test-ci": "jest"
+    "test-ci": "jest --verbose"
   },
   "jest": {
     "transform": {

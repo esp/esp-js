@@ -20,7 +20,7 @@
     "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
     "clean": "rm -rf ./.dist && rm -rf ./.tsbuild",
     "start": "webpack --watch",
-    "test-ci": "jest"
+    "test-ci": "jest --verbose"
   },
   "jest": {
     "transform": {

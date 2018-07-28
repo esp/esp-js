@@ -12,12 +12,12 @@
     "event router"
   ],
   "scripts": {
-    "test-ci": "jest --verbose",
-    "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
-    "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
-    "clean": "rm -rf ./.dist && rm -rf ./.tsbuild",
-    "start": "webpack --watch",
-    "test": "jest --watchAll --no-cache"
+    "clean": "task clean",
+    "build-dev": "task build-dev",
+    "build-prod": "task build-prod",
+    "test": "task test",
+    "test-ci": "task test-ci",
+    "start": "task start --watch"
   },
   "main": "dist/esp.js",
   "author": "Keith Woods",
@@ -28,7 +28,9 @@
     "typescript": "2.9.2",
     "webpack": "4.16.2",
     "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "3.1.5"
+    "webpack-dev-server": "3.1.5",
+    "jest": "23.4.1",
+    "tools": "2.0.0-next.0"
   },
   "jest": {
     "globals": {

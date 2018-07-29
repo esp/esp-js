@@ -589,7 +589,7 @@ atob@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.1.tgz#ae2d5a729477f289d60dd7f96a6314a22dd6c22a"
 
-awesome-typescript-loader@5.2.0, awesome-typescript-loader@^5.2.0:
+awesome-typescript-loader@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/awesome-typescript-loader/-/awesome-typescript-loader-5.2.0.tgz#d7bccf4823c45096ec24da4c12a1507d276ba15a"
   dependencies:

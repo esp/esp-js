@@ -9,4 +9,3 @@ interface PrerequisiteRegistrar {
 }
 
 export default PrerequisiteRegistrar;
-

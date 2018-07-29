@@ -25,12 +25,12 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-js-react-agile-board': './src/app.tsx'
+        'esp-js-ui-module-based-app': './src/shell/shellBootstrapper.tsx'
     },
     plugins:  [
         ...baseConfig.plugins,
         new HtmlWebpackPlugin({
-            template: __dirname +  '/index.html'
+            template: __dirname +  '/src/index.template.html'
         }),
         new webpack.HotModuleReplacementPlugin()
     ],

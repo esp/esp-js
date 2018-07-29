@@ -44,6 +44,3 @@ export default class ShellView extends React.Component<{model:ShellModel, router
         );
     }
 }
-
-
-

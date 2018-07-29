@@ -59,40 +59,40 @@ describe('Decorators', () => {
 
         //start-non-standard
         @esp.observeEvent('fooEvent', esp.ObservationStage.preview)
-        _fooEventAtPreview({event, context, model}) {
+        _fooEventAtPreview(event, context, model) {
             previewInvokeCount++;
         }
 
         @esp.observeEvent('fooEvent', esp.ObservationStage.normal)
-        _fooEventAtNormal1({event, context, model}) {
+        _fooEventAtNormal1(event, context, model) {
             normalInvokeCount++;
             context.commit();
         }
 
         @esp.observeEvent('fooEvent')
-        _fooEventAtNormal2({event, context, model}) {
+        _fooEventAtNormal2(event, context, model) {
             normal2InvokeCount++;
         }
 
         @esp.observeEvent('fooEvent', esp.ObservationStage.committed)
-        _fooEventAtCommitted({event, context, model}) {
+        _fooEventAtCommitted(event, context, model) {
             committedInvokeCount++;
         }
 
         @esp.observeEvent('barEvent_1')
-        _barEvent_1({event, context, model}) {
+        _barEvent_1(event, context, model) {
             context.commit();
         }
 
         @esp.observeEvent('barEvent_1', esp.ObservationStage.committed)
         @esp.observeEvent('barEvent_2')
         @esp.observeEvent('barEvent_3', esp.ObservationStage.preview)
-        _allBarEvents({event, context, model}) {
+        _allBarEvents(event, context, model) {
             this.receivedBarEvents.push({event: event, stage: context.currentStage});
         }
 
         @esp.observeEvent('fruitEvent', (model, event) => event.type === 'orange')
-        _onFruitEvent({event, context, model}) {
+        _onFruitEvent(event, context, model) {
             this.receivedFruitEvents.push(event);
         }
 
@@ -120,7 +120,7 @@ describe('Decorators', () => {
         @esp.observeEvent('carEvent', (model, event) => {
             return event.type === 'bmw' && model.tag === 'submodel';
         })
-        _onFruitEvent({event, context, model}) {
+        _onFruitEvent(event, context, model) {
             this.carEvents.push({type: event.type, model: model, eventType: context.eventType});
         }
     }
@@ -142,7 +142,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('aBaseEvent')
-        _aBaseEvent({event, context, model}) {
+        _aBaseEvent(event, context, model) {
             this.baseEventReveivedCount++;
         }
     }
@@ -156,7 +156,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent({event, context, model}) {
+        _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
 
@@ -175,7 +175,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent({event, context, model}) {
+        _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
 
@@ -194,7 +194,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent({event, context, model}) {
+        _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
 
@@ -210,7 +210,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('derivedEvent')
-        _derivedEvent({event, context, model}) {
+        _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
 
@@ -232,7 +232,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('derivedEvent_1')
-        _derivedEvent_1({event, context, model}) {
+        _derivedEvent_1(event, context, model) {
             this.reveivedCount1++;
         }
     }
@@ -246,7 +246,7 @@ describe('Decorators', () => {
         }
 
         @esp.observeEvent('derivedEvent_1')
-        _derivedEvent_1({event, context, model}) {
+        _derivedEvent_1(event, context, model) {
             this.reveivedCount1++;
         }
     }
@@ -439,7 +439,7 @@ describe('Decorators', () => {
         _router.addModel('m1', {});
         class e {
             @esp.observeEvent('anEvent')
-            _derivedEvent({event, context, model}) {
+            _derivedEvent(event, context, model) {
             }
         }
         let eventObserver1 = new e();

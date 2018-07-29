@@ -19,10 +19,16 @@
 import {ObservationStage} from '../router';
 import {ObserveEventPredicate} from './observeEvent';
 
+export enum DecoratorTypes {
+    observeEvent = 'observeEvent',
+    observeEventEnvelope = 'observeEventEnvelope',
+    observeModelChangedEvent = 'observeModelChangedEvent'
+}
+
 export interface EventObservationMetadata {
     functionName: string;
     eventName: string;
-    decoratorType: any;
+    decoratorType: DecoratorTypes;
     observationStage: ObservationStage;
     predicate?: ObserveEventPredicate;
     modelId: string;

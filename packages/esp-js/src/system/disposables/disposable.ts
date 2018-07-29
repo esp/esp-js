@@ -1,6 +1,6 @@
 export type DisposableOrFunction = Disposable | (() => void);
 
 export interface Disposable {
-    readonly isDisposed: boolean;
+    readonly isDisposed?: boolean;
     dispose (): void;
 }

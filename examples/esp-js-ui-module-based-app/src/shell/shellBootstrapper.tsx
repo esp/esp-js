@@ -4,23 +4,17 @@ import { RouterProvider, ConnectableComponent} from 'esp-js-react';
 import { Container } from 'microdi-js';
 import {
     Logger,
-    ModuleBase,
-    StateService,
-    ComponentFactoryBase,
     MultiItemRegionModel,
     SingleItemRegionModel,
     LiteralResolver,
     SystemContainerConfiguration,
     SystemContainerConst,
-    ModuleLoader,
-    ModuleDescriptor,
-    ModuleLoadChange
+    ModuleLoader
 } from 'esp-js-ui';
 import ShellModel from './models/shellModel';
 import ShellModuleContainerConst from './shellModuleContainerConst';
 import RegionNames from './regionNames';
 import {Router} from 'esp-js';
-import TradingModule from '../trading-module/tradingModule';
 
 let _log = Logger.create('ShellBootstrapper');
 

@@ -31,6 +31,7 @@ import {EventEnvelope, ModelEnvelope} from './envelopes';
 import {DispatchType} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
+import {DecoratorTypes} from '../decorators/espDecoratorMetadata';
 
 let _log = logging.Logger.create('Router');
 
@@ -462,7 +463,11 @@ export class Router extends DisposableBase {
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
                 if (!details.predicate || details.predicate(object, eventEnvelope.event)) {
                     this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
-                    object[details.functionName](eventEnvelope);
+                    if (details.decoratorType === DecoratorTypes.observeEvent) {
+                        object[details.functionName](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);
+                    } else {
+                        object[details.functionName](eventEnvelope);
+                    }
                 }
             }));
         }

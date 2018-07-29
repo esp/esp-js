@@ -27,13 +27,13 @@
 
 export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
-export { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
+export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
 export { logging as logging } from './system';
 export { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject } from './reactive';
 
 import { ObservationStage, Router, SingleModelRouter, DefaultEventContext, ModelChangedEvent } from './router';
 import { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
-import { observeEvent, observeModelChangedEvent } from './decorators/observeEvent';
+import { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
 import { logging as logging } from './system';
 import { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject  } from './reactive';
 
@@ -45,6 +45,7 @@ export default {
     ModelChangedEvent,
     observeEvent,
     observeModelChangedEvent,
+    observeEventEnvelope,
     logging,
     DefaultEventContext,
     CompositeDisposable,

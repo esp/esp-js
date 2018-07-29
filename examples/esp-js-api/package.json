@@ -3,6 +3,7 @@
   "scripts": {
     "start": "./node_modules/.bin/babel-node --presets es2015,stage-0 --plugins transform-decorators-legacy app.js"
   },
+  "private": true,
   "dependencies": {
     "esp-js": "2.0.0-next.0",
     "prompt": "1.0.0"

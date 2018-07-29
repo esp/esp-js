@@ -6,13 +6,15 @@ set -e
 green=`tput setaf 2`
 reset=`tput sgr0`
 
+ENVIRONMENT=$1
+
 log () {
     echo "${green}>>>>>>>>> $1${reset}"
 }
 
 build () {
     log "Building $1"
-    lerna run build-$ENVIRONMENT --scope $1 --stream
+    lerna run build-${ENVIRONMENT} --scope $1 --stream
 }
 
 test () {
@@ -20,7 +22,6 @@ test () {
     lerna run test-ci --scope $1 --stream
 }
 
-ENVIRONMENT=$1
 
 export NODE_ENV=$1
 
@@ -36,9 +37,8 @@ test esp-js-ui
 build esp-js-ui
 test esp-js-ui
 
-# build esp-js-react-agile-board
-# build esp-js-api
-# build esp-js-chat-react-es6
-# build esp-js-react-agile-board
-# build esp-js-todomvc-react
-# build esp-js-ui-module-based-app
+# build esp-js-api // no build-dev target
+# build esp-js-chat-react-es6 // haven't migrated build-dev yet
+build esp-js-react-agile-board
+# build esp-js-todomvc-react // no build-dev target
+build esp-js-ui-module-based-app

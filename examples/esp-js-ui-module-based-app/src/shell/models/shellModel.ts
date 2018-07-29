@@ -1,4 +1,3 @@
-import { observeEvent } from 'esp-js';
 import { viewBinding } from 'esp-js-react';
 import ShellView from '../views/shellView';
 import { SplashScreenModel,  SplashScreenState } from './splashScreenModel'; 
@@ -13,6 +12,7 @@ import {
     ModuleDescriptor
 } from 'esp-js-ui';
 import TradingModule from '../../trading-module/tradingModule';
+import {ModuleChangeType} from '../../../../../packages/esp-js-ui/src/ui/modules/moduleLoadResult';
 
 let _log = Logger.create('ShellModel');
 
@@ -48,11 +48,11 @@ export default class ShellModel extends ModelBase {
                 modulesToLoad.push(descriptor);
             }
 
-            var loadModules = this._moduleLoader.loadModules(modulesToLoad);
+            let loadModules = this._moduleLoader.loadModules(modulesToLoad);
             this.addDisposable(loadModules.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
                 _log.debug(`Load Change detected`, change);
 
-                if (change.type === 'loadError') {
+                if (change.type === ModuleChangeType.Error) {
                     _log.error(`Pre-requisite failed. Pre Req Name: ${change.prerequisiteResult.name}, Error Message: ${change.errorMessage}`);
                 } else {
                     this.splashScreen = {

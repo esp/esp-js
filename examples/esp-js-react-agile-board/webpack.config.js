@@ -28,11 +28,6 @@ module.exports = {
     entry: {
         'esp-js-react-agile-board': './src/app.tsx'
     },
-    externals: {
-        'react': 'react',
-        'prop-types': 'prop-types',
-        'esp-js': 'esp-js'
-    },
     plugins:  [
         ...baseConfig.plugins,
         new HtmlWebpackPlugin({
@@ -50,5 +45,4 @@ module.exports = {
         quiet: false,
         hot: true
     }
-
 };

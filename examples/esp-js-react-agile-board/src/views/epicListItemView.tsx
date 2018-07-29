@@ -1,10 +1,10 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
-import { EventConst } from '../eventConst';
-import { EpicLabel } from './epicLabel';
-import { Epic } from '../models/epic';
-import { Router } from 'esp-js';
-import { shouldUpdateMixin } from 'esp-js-react';
+import {EventConst} from '../eventConst';
+import {EpicLabel} from './epicLabel';
+import {Epic} from '../models/epic';
+import {Router} from 'esp-js';
+import {shouldUpdateMixin} from 'esp-js-react';
 
 export interface EpicListItemViewProps {
     epic: Epic;
@@ -27,7 +27,9 @@ export class EpicListItemView extends React.Component<EpicListItemViewProps, {}>
         let className = classnames('epicListItem', {'selectedItem': epic.isSelected});
         return (
             <div className={className}
-                 onClick={() => {router.publishEvent(epic.modelId, EventConst.EPIC_SELECTED, {epic});}}>
+                 onClick={() => {
+                     router.publishEvent(epic.modelId, EventConst.EPIC_SELECTED, {epic});
+                 }}>
                 <div>
                     <label>Epic:</label>
                     <input
@@ -40,7 +42,9 @@ export class EpicListItemView extends React.Component<EpicListItemViewProps, {}>
                 </div>
                 <input
                     type='button'
-                    onClick={() => {this.props.router.publishEvent(epic.modelId, EventConst.ADD_STORY, {epic});}}
+                    onClick={() => {
+                        this.props.router.publishEvent(epic.modelId, EventConst.ADD_STORY, {epic});
+                    }}
                     value='Add story'/>
                 <EpicLabel colour={epic.colour} displayText={epic.epicId}/>
                 {epic.stories.count() > 0 ?

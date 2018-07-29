@@ -29,7 +29,7 @@ case $CMD in
     ;;
 
   start)
-    exe "./node_modules/.bin/webpack --watch"
+    exe "./node_modules/.bin/webpack-dev-server --inline --watch --progress --colors"
     ;;
 
   *)

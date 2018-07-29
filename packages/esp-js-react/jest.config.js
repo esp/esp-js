@@ -1,0 +1,1 @@
+module.exports = require('../../__jest__/jest.config');

@@ -1,53 +1,40 @@
-/*eslint-env node */
-'use strict';
+// notice_start
+/*
+ * Copyright 2015 Dev Shop Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the 'License');
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an 'AS IS' BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// notice_end
 
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
-let config = {
+const baseConfig = require("../../webpack.config.base");
+
+module.exports = {
+    ...baseConfig,
     entry: {
         'esp-js-react-agile-board': './src/app.tsx'
     },
-    output: {
-        path: process.cwd() + '/dist',
-        libraryTarget: 'umd',
-        filename: '[name].js'
+    externals: {
+        'react': 'react',
+        'prop-types': 'prop-types',
+        'esp-js': 'esp-js'
     },
-    resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.json']
-    },
-    devtool: 'source-map',
-    mode: 'development',
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                exclude: /node_modules/,
-                use:[{
-                    loader: 'awesome-typescript-loader',
-                }]
-            },
-            {
-                test: /\.tsx?$/,
-                exclude: /node_modules/,
-                enforce: 'pre',
-                use:[{
-                    loader: 'tslint-loader',
-                    options: {
-                        failOnHint: true
-                    }
-                }]
-            }
-        ]
-    },
-    plugins: [
-        new CleanWebpackPlugin('dist', {
-            root: process.cwd(),
-            verbose: true,
-            dry: false
-        }),
+    plugins:  [
+        ...baseConfig.plugins,
         new HtmlWebpackPlugin({
             template: __dirname +  '/index.html'
         }),
@@ -63,5 +50,5 @@ let config = {
         quiet: false,
         hot: true
     }
+
 };
-module.exports = config;

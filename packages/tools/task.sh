@@ -21,11 +21,11 @@ case $CMD in
     ;;
 
   test)
-    exe "./node_modules/.bin/jest --watchAll --verbose --no-cache --rootDir ."
+    exe "./node_modules/.bin/jest --watchAll --verbose --no-cache -c $(pwd)/jest.config.js --rootDir ."
     ;;
 
   test-ci)
-    exe "./node_modules/.bin/jest --verbose --no-cache --rootDir ."
+    exe "./node_modules/.bin/jest --verbose --no-cache -c $(pwd)/jest.config.js --rootDir ."
     ;;
 
   start)

@@ -18,11 +18,28 @@
 
 import * as React from 'react';
 import { shallowEqual } from './shallowEqual';
-
+//
+// export function shouldUpdateMixin<S, P, T extends { new (... args:any[]): React.Component<S, P>  }, TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TPropBindings) => any) {
+//     return (Component: any ) => {
+//         return class extends React.Component<P, S> {
+//             _propBindings: {};
+//             shouldComponentUpdate(nextProps, nextState) {
+//                 let newBindings = itemsThatEffectUpdateSelector(nextProps);
+//                 let bindingsAreEqual = shallowEqual(this._propBindings, newBindings);
+//                 this._propBindings = newBindings;
+//                 return !bindingsAreEqual;
+//             }
+//
+//             render() {
+//                 return React.createElement(Component, this.props);
+//             }
+//         };
+//     };
+// }
 export function shouldUpdateMixin<TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TPropBindings) => any) {
     return (Component:any ) => {
         return class extends React.Component<any, any> {
-             _propBindings : {};
+            _propBindings : {};
             shouldComponentUpdate(nextProps, nextState) {
                 let newBindings = itemsThatEffectUpdateSelector(nextProps);
                 let bindingsAreEqual = shallowEqual(this._propBindings, newBindings);

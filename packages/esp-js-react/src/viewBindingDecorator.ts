@@ -47,16 +47,15 @@ export function createViewForModel(model, props, displayContext = DEFAULT_VIEW_K
  * @param displayContext an optional context allowing for different views to display the same model
  * @returns {Function}
  */
-export function viewBinding(view, displayContext = DEFAULT_VIEW_KEY) {
+export function viewBinding(view: any, displayContext: string = DEFAULT_VIEW_KEY) {
   Guard.isDefined(view, 'view must be defined');
   Guard.isString(displayContext, 'displayContext must be a string');
-  return function (target, name, descriptor) {
+  return function (target) {
     let viewMetadata = getMetadata(target);
     if (viewMetadata.hasRegisteredViewContext(displayContext)) {
       throw new Error(`Context ${displayContext} already registered for view`);
     }
     viewMetadata.viewRegistrations[displayContext] = new ViewMetadataRegistration(view, displayContext);
-    return descriptor;
   };
 }
 

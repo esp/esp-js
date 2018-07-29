@@ -10,9 +10,12 @@ log () {
     echo "${green}>>>>>>>>> $1${reset}"
 }
 
-build-and-test () {
+build () {
     log "Building $1"
     lerna run build-$ENVIRONMENT --scope $1 --stream
+}
+
+test () {
     log "Testing $1"
     lerna run test-ci --scope $1 --stream
 }
@@ -21,19 +24,21 @@ ENVIRONMENT=$1
 
 export NODE_ENV=$1
 
-log "Cleaning$"
+log "Cleaning"
 lerna run clean
 
-build-and-test esp-js
-build-and-test esp-js-react
-build-and-test esp-js-ui
+build esp-js
+test esp-js
 
-#
-# lerna run build-$ENVIRONMENT -- --scope esp-js-ui --stream
-# lerna run test-ci --scope esp-js-ui
-#
-# lerna run build-$ENVIRONMENT --scope esp-js-api --stream
-# lerna run build-$ENVIRONMENT --scope esp-js-chat-react-es6 --stream
-# lerna run build-$ENVIRONMENT --scope esp-js-react-agile-board --stream
-# lerna run build-$ENVIRONMENT --scope esp-js-todomvc-react --stream
-# lerna run build-$ENVIRONMENT --scope esp-js-ui-module-based-app --stream
+build esp-js-react
+test esp-js-ui
+
+build esp-js-ui
+test esp-js-ui
+
+# build esp-js-react-agile-board
+# build esp-js-api
+# build esp-js-chat-react-es6
+# build esp-js-react-agile-board
+# build esp-js-todomvc-react
+# build esp-js-ui-module-based-app

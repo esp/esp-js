@@ -11,3 +11,4 @@
 [ ] - single travis build with lerna
 [ ] - single publish step via lerna
 [ ] - shared test setups
+[ ] - document monorepo setup

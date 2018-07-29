@@ -19,11 +19,11 @@
     "test-ci": "task test-ci",
     "start": "task start --watch"
   },
-  "main": "dist/esp.js",
+  "main": ".dist/esp-js.js",
+  "typings": ".dist/typings/index.d.ts",
   "author": "Keith Woods",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
-  "typings": "./.dist/typings/index.d.ts",
   "devDependencies": {
     "typescript": "2.9.2",
     "webpack": "4.16.2",
@@ -31,26 +31,5 @@
     "webpack-dev-server": "3.1.5",
     "jest": "23.4.1",
     "tools": "2.0.0-next.0"
-  },
-  "jest": {
-    "globals": {
-      "ts-jest": {
-        "tsConfigFile": "tsconfig.json"
-      }
-    },
-    "setupFiles": [
-      "<rootDir>/tests/__jest__/configureEspLogging.ts"
-    ],
-    "transform": {
-      "^.+\\.jsx?$": "babel-jest",
-      "^.+\\.tsx?$": "<rootDir>/tests/__jest__/typeScriptPreprocessor.ts"
-    },
-    "testMatch": [
-      "**/tests/**/*Tests.[jt]s"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ]
   }
 }

@@ -9,42 +9,30 @@
     "reactive",
     "react"
   ],
-  "main": "dist/esp-react.js",
+  "main": ".dist/esp-react.js",
+  "types": ".dist/typings/index.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js-react",
-  "typings": "./.dist/typings/index.d.ts",
+  "repository": "https://github.com/esp/esp-js",
   "scripts": {
-    "build": "yarn build:dev && yarn build:prod",
-    "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
-    "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
-    "clean": "rm -rf ./.dist && rm -rf ./.tsbuild",
-    "start": "webpack --watch",
-    "test-ci": "jest --verbose"
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
-      "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
-    }
+    "clean": "task clean",
+    "build-dev": "task build-dev",
+    "build-prod": "task build-prod",
+    "test": "task test",
+    "test-ci": "task test-ci",
+    "start": "task start --watch"
   },
   "devDependencies": {
     "typescript": "2.9.2",
     "webpack": "4.16.2",
     "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "3.1.5"
+    "webpack-dev-server": "3.1.5",
+    "jest": "23.4.1",
+    "tools": "2.0.0-next.0"
   },
   "dependencies": {
     "esp-js": "^2.0.0-next.0",
+    "prop-types": "^15.6.2",
     "react": "16.4.1"
   }
 }

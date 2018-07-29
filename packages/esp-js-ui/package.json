@@ -2,37 +2,26 @@
   "name": "esp-js-ui",
   "version": "2.0.0-next.0",
   "description": "ESP-JS-UI Package",
-  "main": "dist/esp-js-ui.js",
-  "typings": "esp-js-ui.d.ts",
+  "main": ".dist/esp-js-ui.js",
+  "types": "esp-js-ui.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js-ui",
+  "repository": "https://github.com/esp/esp-js",
   "scripts": {
-    "build-dev": "export NODE_ENV=dev&& webpack --display-reasons --display-error-details",
-    "dev-for-example": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details && npm pack && rm -rf ./examples/module-based-app/node_modules/esp-js-ui && mkdir ./examples/module-based-app/node_modules/esp-js-ui && tar -xzf esp-js-ui-1.0.0.tgz -C ./examples/module-based-app/node_modules/esp-js-ui --strip 1",
-    "build-prod": "export NODE_ENV=prod&& webpack --display-reasons --display-error-details",
-    "start": "webpack --watch",
-    "test-ci": "jest"
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
-      "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
-    }
+    "clean": "task clean",
+    "build-dev": "task build-dev",
+    "build-prod": "task build-prod",
+    "test": "task test",
+    "test-ci": "task test-ci",
+    "start": "task start --watch"
   },
   "devDependencies": {
-    "jest": "23.4.1",
     "typescript": "2.9.2",
-    "webpack": "4.16.2"
+    "webpack": "4.16.2",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "3.1.5",
+    "jest": "23.4.1",
+    "tools": "2.0.0-next.0"
   },
   "dependencies": {
     "classnames": "2.2.6",

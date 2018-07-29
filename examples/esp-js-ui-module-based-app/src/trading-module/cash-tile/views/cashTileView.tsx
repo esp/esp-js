@@ -15,6 +15,3 @@ export default class CashTileView extends React.Component<{model:CashTileModel, 
         );
     }
 }
-
-
-

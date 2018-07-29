@@ -17,8 +17,16 @@
 // notice_end
 
 const tsc = require('typescript');
-const path = require ('path');
-const tsconfig = require('../../tsconfig.json');
+const npath = require ('path');
+const tsconfig = require('../tsconfig.base.json');
+// const tsconfig = require(path.resolve('.', 'tsconfig.json'));
+
+/*
+*
+*  types?: string[];
+* typeRoots?: string[];
+* jsx
+*/
 
 let compilerOptions = tsconfig.compilerOptions;
 // source maps don't work well on the latest of node/tsc/jest/idea, it's a
@@ -28,20 +36,25 @@ compilerOptions.rootDir = undefined;
 compilerOptions.outDir = undefined;
 compilerOptions.sourceMap = undefined;
 compilerOptions.inlineSourceMap = true;
+compilerOptions.declaration = false;
+
+// console.log('TS_CONFIG:' + JSON.stringify(tsconfig.compilerOptions));
+// console.log('PATH IS: ' + npath.resolve('.'));
 
 module.exports = {
     process(src, path) {
         if (path.endsWith('.ts') || path.endsWith('.tsx')) {
-            let compiled = tsc.transpile(
+            let transpilerOptions =  {
+                compilerOptions: compilerOptions,
+                fileName: path
+            };
+            let transpileOutput = tsc.transpileModule(
                 src,
-                compilerOptions,
-                path,
-                []
+                transpilerOptions
             );
-            // console.log('CONFIG:' + JSON.stringify(tsconfig.compilerOptions));
-            // console.log('Path '+ path +', with options ['+ JSON.stringify(tsconfig.compilerOptions) +'], compiled to: ' + compiled);
-            return compiled;
+            // console.log('Path '+ path +' compiled to: ' + transpileOutput.outputText);
+            return transpileOutput.outputText;
         }
         return src;
-    },
+    }
 };

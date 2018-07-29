@@ -49,7 +49,7 @@ export default class CashTileModel extends ModelBase {
 
     @observeEvent('log-something')
     private onLogSomething() {
-        var additionalDetails = { time:new Date(), value:'foo' };
+        let additionalDetails = { time:new Date(), value:'foo' };
 
         _log.info({marker1:'marker1'}, 'Log 1 Something logged', additionalDetails);
         _log.debug({marker1:'marker1'}, 'Log 1 Something logged', additionalDetails);

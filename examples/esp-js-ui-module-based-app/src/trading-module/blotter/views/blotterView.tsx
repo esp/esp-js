@@ -12,6 +12,3 @@ export default class BlotterView extends React.Component<{model:BlotterModel, ro
         );
     }
 }
-
-
-

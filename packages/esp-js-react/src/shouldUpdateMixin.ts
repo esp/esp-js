@@ -17,12 +17,31 @@
 // notice_end
 
 import * as React from 'react';
-import { shallowEqual } from './shallowEqual';
+import {shallowEqual} from './shallowEqual';
 
-export function shouldUpdateMixin<TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TPropBindings) => any) {
-    return (Component:any ) => {
-        return class extends React.Component<any, any> {
-             _propBindings : {};
+// WORKS (compiles at least):
+//
+// export function shouldUpdateMixin<TProps, TState, TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TProps) => TPropBindings) {
+//     return function <T extends {new(...args:any[]):{}}>(constructor:T) {
+//         return class extends constructor {
+//             _propBindings : {};
+//             shouldComponentUpdate(nextProps, nextState) {
+//                 let newBindings = itemsThatEffectUpdateSelector(nextProps);
+//                 let bindingsAreEqual = shallowEqual(this._propBindings, newBindings);
+//                 this._propBindings = newBindings;
+//                 return !bindingsAreEqual;
+//             }
+//             render() {
+//                 return React.createElement(<any>constructor, (<any>this).props);
+//             }
+//         };
+//     };
+// }
+
+export function shouldUpdateMixin<TProps, TState, TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TProps) => TPropBindings) {
+    return function <TConstructor extends { new(...args: any[]): {} }>(Constructor: TConstructor) {
+        return class extends Constructor {
+            _propBindings: {};
             shouldComponentUpdate(nextProps, nextState) {
                 let newBindings = itemsThatEffectUpdateSelector(nextProps);
                 let bindingsAreEqual = shallowEqual(this._propBindings, newBindings);
@@ -30,8 +49,25 @@ export function shouldUpdateMixin<TPropBindings>(itemsThatEffectUpdateSelector: 
                 return !bindingsAreEqual;
             }
             render() {
-                return React.createElement(Component, this.props);
+                return React.createElement(<any>Constructor, (<any>this).props);
             }
         };
     };
 }
+
+// export function shouldUpdateMixin<TProps, TState, TPropBindings>(itemsThatEffectUpdateSelector: (nextProps: TProps) => TPropBindings) {
+//     return function(Comp: React.ComponentClass<TProps, TState>) {
+//         return class extends React.Component<TProps, TState> {
+//             _propBindings : {};
+//             shouldComponentUpdate(nextProps, nextState) {
+//                 let newBindings = itemsThatEffectUpdateSelector(nextProps);
+//                 let bindingsAreEqual = shallowEqual(this._propBindings, newBindings);
+//                 this._propBindings = newBindings;
+//                 return !bindingsAreEqual;
+//             }
+//             render() {
+//                 return React.createElement(Comp, this.props);
+//             }
+//         };
+//     };
+// }

@@ -61,7 +61,7 @@ export class ItemNameDialog extends ModelBase {
     }
 
     public get resultsStream() {
-        return this._resultsSubject.asRouterObservable();
+        return this._resultsSubject.asRouterObservable(this.router);
     }
 
     public observeEvents() {

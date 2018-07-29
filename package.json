@@ -1,28 +1,23 @@
 {
   "private": true,
   "workspaces": [
-    "packages/esp-js",
-    "packages/esp-js-react",
-    "packages/esp-js-ui",
+    "packages/*",
     "examples/*"
   ],
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "build-dev": "lerna run build-dev",
-    "build-prod": "lerna run build-prod",
-    "trash": "./scripts/trash.sh && yarn clean && lerna clean && rm -rf ./node_modules",
-    "clean": "lerna run clean",
+    "build-dev": "./scripts/build-all.sh dev",
+    "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
     "test": "lerna run test",
-    "update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next",
-    "update-prerelease-version": "yarn update-version --cd-version=prerelease",
-    "update-premajor-version": "yarn update-version --cd-version=premajor",
-    "check-packages": "yarn clean && yarn compile && yarn test"
+    "update-prerelease-version": "yarn _update-version --cd-version=prerelease",
+    "update-premajor-version": "yarn _update-version --cd-version=premajor",
+    "_update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next"
   },
   "devDependencies": {
     "@types/classnames": "2.2.6",
     "@types/jest": "23.3.0",
     "@types/query-string": "6.1.0",
     "@types/react": "16.4.7",
+    "@types/rx": "4.1.1",
     "@types/uuid": "3.4.3",
     "awesome-typescript-loader": "^5.2.0",
     "babel-core": "^6.26.3",
@@ -49,12 +44,14 @@
     "script-loader": "0.7.2",
     "sinon": "6.1.4",
     "source-map-loader": "0.2.3",
+    "tools": "2.0.0-next.0",
     "ts-loader": "4.4.2",
     "tslint": "^5.9.1",
     "tslint-loader": "^3.6.0",
     "typescript": "2.9.2",
     "webpack": "4.16.2",
     "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "3.1.5"
+    "webpack-dev-server": "3.1.5",
+    "html-webpack-plugin": "3.2.0"
   }
 }

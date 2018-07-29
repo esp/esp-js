@@ -17,7 +17,7 @@ export interface StoryListItemViewProps {
         isSelected: nextProps.story.isSelected,
         name: nextProps.story.name,
         description: nextProps.story.description,
-        sataus: nextProps.story.status,
+        status: nextProps.story.status,
         epicName: nextProps.story.epic.name,
         epicColour: nextProps.story.epic.colour
     };
@@ -25,11 +25,6 @@ export interface StoryListItemViewProps {
 export class StoryListItemView extends React.Component<StoryListItemViewProps, {}> {
     _publishEvent(eventName, event) {
         this.props.router.publishEvent(this.props.story.modelId, eventName, event);
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        // return nextProps.story.isDirty; when https://github.com/esp/esp-js-react/issues/1 is implemented
-        return true;
     }
 
     render() {

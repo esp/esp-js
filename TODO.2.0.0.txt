@@ -11,3 +11,9 @@
 [ ] - single travis build with lerna
 [ ] - single publish step via lerna
 [ ] - shared test setups
+[ ] - document monorepo setup
+[ ] - document observeEventEnvelope
+
+breaking changes:
+ - model changed event support
+ - reactive api now pushes envelopes, not T1, T2, T3

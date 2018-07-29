@@ -17,23 +17,14 @@
 // notice_end
 
 import {ObservationStage, Consts} from '../router';
-import EspDecoratorMetadata from './espDecoratorMetadata';
+import EspDecoratorMetadata, {DecoratorTypes} from './espDecoratorMetadata';
 import { Guard, utils } from '../system';
-
-export let DecoratorTypes = {
-    observeEvent: 'observeEvent',
-    observeModelChangedEvent: 'observeModelChangedEvent'
-};
 
 export interface ObserveEventPredicate {
     (model: any, event: any): boolean;
 }
 
-export function observeEvent(eventName: string);
-export function observeEvent(eventName: string, observationStage: ObservationStage);
-export function observeEvent(eventName: string, predicate: ObserveEventPredicate);
-export function observeEvent(eventName: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
-export function observeEvent(...args: any[]) {
+const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
     return function (target, name, descriptor) {
         let eventName1, observationStage1, predicate1;
         if(args.length >= 0) {
@@ -65,12 +56,28 @@ export function observeEvent(...args: any[]) {
         metadata.addEvent(
             name,
             eventName1,
-            DecoratorTypes.observeEvent,
+            observeEnvelope ? DecoratorTypes.observeEventEnvelope : DecoratorTypes.observeEvent,
             observationStage1,
             predicate1
         );
         return descriptor;
     };
+};
+
+export function observeEvent(eventName: string);
+export function observeEvent(eventName: string, observationStage: ObservationStage);
+export function observeEvent(eventName: string, predicate: ObserveEventPredicate);
+export function observeEvent(eventName: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEvent(...args: any[]) {
+    return _observeEvent(false, ...args);
+}
+
+export function observeEventEnvelope(eventName: string);
+export function observeEventEnvelope(eventName: string, observationStage: ObservationStage);
+export function observeEventEnvelope(eventName: string, predicate: ObserveEventPredicate);
+export function observeEventEnvelope(eventName: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEventEnvelope(...args: any[]) {
+    return _observeEvent(true, ...args);
 }
 
 export function observeModelChangedEvent(modelId) {

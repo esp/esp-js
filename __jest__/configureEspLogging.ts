@@ -16,6 +16,6 @@
  */
 // notice_end
 
-const esp = require('../../src');
+const esp = require('../packages/esp-js/src/index');
 // comment this out if you want more verbose logging, i.e. any esp logging (mostly for unhappy path test cases) spat out.
 esp.logging.Logger.setSink(() => { /* noop */});

@@ -180,12 +180,17 @@ export class Router extends DisposableBase {
         });
     }
 
-    public getAllEventsObservable<TModel>(): Observable<EventEnvelope<any, TModel>> {
+    public getAllEventsObservable<TModel>(...eventTypes: string[]): Observable<EventEnvelope<any, TModel>> {
+        let set = new Set(eventTypes);
+        let eventFilter = eventTypes.length > 0
+            ? eventType => set.has(eventType)
+            : () => true;
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
             return this._dispatchSubject
                 .filter(envelope => envelope.dispatchType === DispatchType.Event)
                 .cast<EventEnvelope<any, any>>()
+                .filter(envelope => eventFilter(envelope.eventType))
                 .subscribe(o);
         });
     }

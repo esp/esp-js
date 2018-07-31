@@ -5,6 +5,7 @@
     "examples/*"
   ],
   "scripts": {
+    "bootstrap": "lerna bootstrap",
     "build-dev": "./scripts/build-all.sh dev",
     "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
     "test": "lerna run test",

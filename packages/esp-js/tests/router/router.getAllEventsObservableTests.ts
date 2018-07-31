@@ -32,14 +32,15 @@ describe('Router', () => {
         _receivedEvents = [];
         _router.addModel('modelId1', _model1);
         _router.addModel('modelId2', _model2);
-        _router.getAllEventsObservable().subscribe((envelope: EventEnvelope<any, any>) => {
-            _receivedEvents.push(envelope);
-        });
     });
 
     describe('.getAllEventsObservable()', () => {
 
         it('dispatches events to processors by modelid', () => {
+            _router.getAllEventsObservable().subscribe((envelope: EventEnvelope<any, any>) => {
+                _receivedEvents.push(envelope);
+            });
+
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
             _router.publishEvent('modelId2', 'Event1', 'theEvent');
             expect(_receivedEvents.length).toBe(4);
@@ -59,6 +60,22 @@ describe('Router', () => {
             expect(_receivedEvents[3].modelId).toEqual('modelId2');
             expect(_receivedEvents[3].observationStage).toEqual(ObservationStage.normal);
             expect(_receivedEvents[3].model).toBe(_model2);
+        });
+
+        it('it filters by events', () => {
+            _router.getAllEventsObservable('Event2', 'Event3').subscribe((envelope: EventEnvelope<any, any>) => {
+                _receivedEvents.push(envelope);
+            });
+
+            _router.publishEvent('modelId1', 'Event1', 'theEvent');
+            _router.publishEvent('modelId2', 'Event1', 'theEvent');
+            expect(_receivedEvents.length).toBe(0);
+
+            _router.publishEvent('modelId1', 'Event2', 'theEvent');
+            expect(_receivedEvents.length).toBe(2);
+
+            _router.publishEvent('modelId2', 'Event3', 'theEvent');
+            expect(_receivedEvents.length).toBe(4);
         });
     });
 });

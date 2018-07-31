@@ -37,6 +37,9 @@ test esp-js-ui
 build esp-js-ui
 test esp-js-ui
 
+build polimer
+# test polimer - No tests yet
+
 # build esp-js-api // no build-dev target
 # build esp-js-chat-react-es6 // haven't migrated build-dev yet
 build esp-js-react-agile-board

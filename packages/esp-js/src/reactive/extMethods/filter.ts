@@ -20,7 +20,7 @@ import {Observable} from '../observable';
 import {Guard} from '../../system';
 import {Subscribe} from '../subscribeDelegate';
 
-Observable.prototype.where = function<T>(predicate) {
+Observable.prototype.filter = function<T>(predicate) {
     Guard.isDefined(predicate, 'predicate Required');
     let source = this;
     let subscribe: Subscribe<T> = observer => {

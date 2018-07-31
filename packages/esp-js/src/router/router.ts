@@ -184,7 +184,7 @@ export class Router extends DisposableBase {
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
             return this._dispatchSubject
-                .where(envelope => envelope.dispatchType === DispatchType.Event)
+                .filter(envelope => envelope.dispatchType === DispatchType.Event)
                 .cast<EventEnvelope<any, any>>()
                 .subscribe(o);
         });
@@ -198,7 +198,7 @@ export class Router extends DisposableBase {
             const modelRecord = this._getOrCreateModelRecord(observingModelId);
             return this._dispatchSubject
                 .cast<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>()
-                .where(envelope => envelope.dispatchType === DispatchType.ModelChangedEvent && envelope.eventType === Consts.modelChangedEvent && envelope.event.modelId === changedModelId)
+                .filter(envelope => envelope.dispatchType === DispatchType.ModelChangedEvent && envelope.eventType === Consts.modelChangedEvent && envelope.event.modelId === changedModelId)
                 .map(envelope => ({...envelope, modelId: observingModelId, model: modelRecord.model}))
                 .asRouterObservable(this)
                 .streamFor(observingModelId)
@@ -279,7 +279,7 @@ export class Router extends DisposableBase {
         } else {
             let modelObservationStream =  this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
-                .where(envelope => envelope.dispatchType === DispatchType.Model && envelope.modelId === modelId)
+                .filter(envelope => envelope.dispatchType === DispatchType.Model && envelope.modelId === modelId)
                 .share(true);
             modelRecord = new ModelRecord(modelId, model, modelObservationStream, options);
             this._models.set(modelId, modelRecord);

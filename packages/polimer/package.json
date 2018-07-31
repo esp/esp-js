@@ -1,12 +1,18 @@
 {
-  "name": "esp-js-ui",
+  "name": "polimer",
   "version": "2.0.0-next.0",
-  "description": "ESP-JS-UI Package",
-  "main": ".dist/esp-js-ui.js",
-  "types": "esp-js-ui.d.ts",
-  "author": "Dev Shop Limited",
-  "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js",
+  "description": "Polimer adds redux-like reducers for esp-js",
+  "keywords": [
+    "state processor",
+    "evented state processor",
+    "reactive",
+    "event loop",
+    "complex state processor",
+    "router",
+    "event router",
+    "polimer",
+    "reducer"
+  ],
   "scripts": {
     "clean": "task clean",
     "build-dev": "task build-dev",
@@ -15,8 +21,10 @@
     "test-ci": "task test-ci",
     "start": "task start --watch"
   },
+  "main": ".dist/polimer.js",
+  "typings": ".dist/typings/index.d.ts",
+  "license": "Apache-2.0",
   "devDependencies": {
-    "jest": "23.4.2",
     "tools": "2.0.0-next.0",
     "typescript": "2.9.2",
     "webpack": "4.16.3",
@@ -24,13 +32,8 @@
     "webpack-dev-server": "3.1.5"
   },
   "dependencies": {
-    "classnames": "2.2.6",
     "esp-js": "^2.0.0-next.0",
-    "esp-js-react": "^2.0.0-next.0",
-    "microdi-js": "1.1.0",
-    "query-string": "6.1.0",
-    "react": "16.4.1",
-    "rx": "4.1.0",
-    "uuid": "3.3.2"
+    "immer": "1.3.1",
+    "rx": "4.1.0"
   }
 }

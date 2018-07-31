@@ -18,7 +18,7 @@
 
 import * as reactive from '../../src/reactive/index';
  
-describe('.where', () => {
+describe('.filter', () => {
     let subject;
 
     beforeEach(() => {
@@ -28,7 +28,7 @@ describe('.where', () => {
     it('should pass yielded item to observer', () => {
         let receivedItems = [];
         subject
-            .where(i => {
+            .filter(i => {
                 receivedItems.push(i);
                 return true; })
             .subscribe(i => { });
@@ -41,7 +41,7 @@ describe('.where', () => {
     it('should propagate items based on the predicate result', () => {
         let receivedItems = [];
         subject
-            .where(i => {
+            .filter(i => {
                 return i > 5; })
             .subscribe(i => { receivedItems.push(i); });
 
@@ -55,7 +55,7 @@ describe('.where', () => {
     it('doesn\'t propagate to disposed streams', () => {
         let receivedItems = 0;
         let disposable = subject
-            .where(i => {
+            .filter(i => {
                 return true; })
             .subscribe(i => { receivedItems++; });
 
@@ -69,7 +69,7 @@ describe('.where', () => {
 
     it('should bubble errors', () => {
         let disposable = subject
-            .where(i => {
+            .filter(i => {
                 throw new Error('Boom'); })
             .subscribe(
                 i => { });
@@ -81,7 +81,7 @@ describe('.where', () => {
 
     it('should bubble errors in observer', () => {
         let disposable = subject
-            .where(i => {
+            .filter(i => {
                 return true; })
             .subscribe(
                 i => {
@@ -96,7 +96,7 @@ describe('.where', () => {
     it('should propagate onCompleted', () => {
         let onCompleteCalled = false;
         subject
-            .where(i => i > 0)
+            .filter(i => i > 0)
             .subscribe(
                 () => { },
                 () => onCompleteCalled = true

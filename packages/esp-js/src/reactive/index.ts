@@ -17,7 +17,7 @@
  // notice_end
 
 // these scripts have no exports, they add functionality to Observable
-import './extMethods/where';
+import './extMethods/filter';
 import './extMethods/asObservable';
 import './extMethods/take';
 import './extMethods/do';

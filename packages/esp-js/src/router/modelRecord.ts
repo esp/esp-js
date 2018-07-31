@@ -89,7 +89,7 @@ export class ModelRecord {
     public getOrCreateEventStreamsRegistration(eventType: string, dispatchObservable: Observable<EventEnvelope<any, any>>): EventStreamsRegistration {
         let eventStreamsRegistration = this._eventStreams.get(eventType);
         if (!eventStreamsRegistration) {
-            let eventStream =  dispatchObservable.where(
+            let eventStream =  dispatchObservable.filter(
                 envelope =>
                     envelope.dispatchType === DispatchType.Event &&
                     envelope.modelId === this.modelId &&
@@ -98,13 +98,13 @@ export class ModelRecord {
             eventStreamsRegistration = {
                 streams: {
                     preview: eventStream
-                        .where(envelope => envelope.observationStage === ObservationStage.preview)
+                        .filter(envelope => envelope.observationStage === ObservationStage.preview)
                         .share(false),
                     normal: eventStream
-                        .where(envelope => envelope.observationStage === ObservationStage.normal)
+                        .filter(envelope => envelope.observationStage === ObservationStage.normal)
                         .share(false),
                     committed: eventStream
-                        .where(envelope => envelope.observationStage === ObservationStage.committed)
+                        .filter(envelope => envelope.observationStage === ObservationStage.committed)
                         .share(false)
                 }
             };

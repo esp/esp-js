@@ -4,7 +4,7 @@
 [x] - remove model changed event (fixed, or modified, not deleted)
 [ ] - remove all default exports
 [x] - merge repos
-[x] - renam all file types to lower case in esp-js
+[x] - rename all file types to lower case in esp-js
 [x] - user generated .d.ts
 [x] - expose single event subject for all events for a model
 [ ] - merge all readmes and restructure docs
@@ -13,7 +13,10 @@
 [ ] - shared test setups
 [ ] - document monorepo setup
 [ ] - document observeEventEnvelope
+[ ] - Add Breaking Changes to release notes
+[ ] - Ensure dependencies are exact versions
 
 breaking changes:
  - model changed event support
  - reactive api now pushes envelopes, not T1, T2, T3
+ - .where renamed to .filter

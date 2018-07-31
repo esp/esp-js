@@ -43,7 +43,7 @@ export const eventStreamFactory = <TStore>(router: Router, modelId: string, stor
     const disposable = new Rx.CompositeDisposable();
     const streamFactory: EventStreamFactory<TStore> = createEventStreamFactory(router, modelId, store);
 
-    logger.debug(`Subscribed to esp-js router with modelId=${modelId}`)
+    logger.debug(`Subscribed to esp-js router with modelId=${modelId}`);
     disposable.add(
         eventStreamObs(streamFactory)
             .filter(output => output != null)

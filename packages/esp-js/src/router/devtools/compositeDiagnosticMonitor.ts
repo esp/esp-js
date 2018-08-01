@@ -55,7 +55,7 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
         }
     }
 
-    public addModel(modelId) {
+    addModel(modelId) {
         this._currentLoggingDiagnosticMonitor.addModel(modelId);
         this._devToolsDiagnostic.addModel(modelId);
     }

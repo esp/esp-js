@@ -1,4 +1,4 @@
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 import Message from './Message';
 
 export default class MessageSection extends esp.DisposableBase {

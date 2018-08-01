@@ -20,17 +20,17 @@
 // I could have a single file, then source the tests and using eval to run them thus not having to copy and past this file, however debugging tests for each transpiler gets really hard.
 // For now it's easiest to just copy paste from the .ts version, then remove the class level private vars from the babel implementation
 
-import esp, {Router} from '../../src';
+import {DisposableBase, Router, observeEventEnvelope} from '../../src';
 
 describe('Decorators', () => {
 
     let _router, _model: Model;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _router = new Router();
     });
 
-    class Model extends esp.DisposableBase {
+    class Model extends DisposableBase {
         private _id: string;
         private _router: Router;
         public receivedEvent: Array<any>;
@@ -48,7 +48,7 @@ describe('Decorators', () => {
         }
 
         //start-non-standard
-        @esp.observeEventEnvelope('fooEvent')
+        @observeEventEnvelope('fooEvent')
         _fooEventAtPreview(envelope) {
             this.receivedEvent.push(envelope);
         }

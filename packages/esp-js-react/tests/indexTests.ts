@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import espReact from '../src/index';
+import * as espReact from '../src/index';
 import {
     RouterProvider,
     SmartComponent,

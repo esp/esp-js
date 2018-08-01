@@ -1,4 +1,4 @@
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 import MessageSection from './MessageSection';
 import ThreadSection from './ThreadSection';
 

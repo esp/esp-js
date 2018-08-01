@@ -22,7 +22,7 @@ import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
 
 export class Subject<T> extends Observable<T> {
-    private _cacheLastValue: boolean;
+    private readonly _cacheLastValue: boolean;
     private _lastValue: any;
     private _observers: Observer<T>[];
     private _hasComplete: boolean;

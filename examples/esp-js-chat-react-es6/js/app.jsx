@@ -1,5 +1,5 @@
-import esp from 'esp-js'
-import espDevTools from 'esp-js-devtools';
+import * as esp from 'esp-js'
+import * as espDevTools from 'esp-js-devtools';
 import React from 'react';
 import ReactDOM from 'react-dom';
 

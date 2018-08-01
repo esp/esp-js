@@ -21,14 +21,11 @@ import {RouterObservable} from './routerObservable';
 import {Router} from '../router';
 
 export class RouterSubject<T> extends Subject<T> {
-    private _router: Router;
-
-    constructor(router) {
+    constructor(private _router: Router) {
         super();
-        this._router = router;
     }
 
-    asRouterObservable(router : Router): RouterObservable<T> {
+    public asRouterObservable(router : Router): RouterObservable<T> {
         let source = this;
         let subscribe = observer => source.subscribe(observer);
         return new RouterObservable<T>(router || this._router, subscribe);

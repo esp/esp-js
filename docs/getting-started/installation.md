@@ -8,7 +8,7 @@ yarn add esp-js
 usage:
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 var router = new esp.Router();
 
 // or

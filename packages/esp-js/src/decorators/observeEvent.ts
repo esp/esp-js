@@ -17,7 +17,7 @@
 // notice_end
 
 import {ObservationStage, Consts} from '../router';
-import EspDecoratorMetadata, {DecoratorTypes} from './espDecoratorMetadata';
+import {EspDecoratorMetadata, DecoratorTypes} from './espDecoratorMetadata';
 import { Guard, utils } from '../system';
 
 export interface ObserveEventPredicate {

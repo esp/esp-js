@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import {DefaultEventContext, EventContext} from '../../src';
+import {DefaultEventContext} from '../../src';
 
 describe('EventContext', () => {
     let ec;

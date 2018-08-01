@@ -19,10 +19,7 @@
 import { removeAll } from '../system/utils';
 
 export class DecoratorObservationRegister {
-    private _registrations: {};
-    public constructor() {
-        this._registrations = {};
-    }
+    private readonly _registrations = {};
 
     public register(modelId: string, object) {
         let items = this._registrations[modelId];

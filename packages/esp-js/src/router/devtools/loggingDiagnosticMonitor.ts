@@ -18,7 +18,7 @@
 
 import {logging} from '../../system';
 import {DiagnosticMonitor} from './diagnosticMonitor';
-import {DisposableBase} from '../../system/disposables/disposableBase';
+import {DisposableBase} from '../../system/disposables';
 
 let _log = logging.Logger.create('LoggingDiagnosticMonitor');
 

@@ -1,4 +1,4 @@
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 import Thread from './Thread'
 
 export default class ThreadSection extends esp.DisposableBase {

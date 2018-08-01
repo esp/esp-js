@@ -1,11 +1,8 @@
 import React from 'react';
-import Message from '../model/Message';
+import {Message} from '../model/Message';
 import PropTypes from 'prop-types';
 
 export class MessageListItem extends React.Component {
-    constructor() {
-        super();
-    }
     render() {
         var message = this.props.model;
         return (
@@ -21,4 +18,4 @@ export class MessageListItem extends React.Component {
 }
 MessageListItem.propTypes = {
     model: PropTypes.instanceOf(Message)
-}
+};

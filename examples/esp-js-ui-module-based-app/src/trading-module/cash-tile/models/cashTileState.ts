@@ -1,5 +1,5 @@
-import RegionNames from '../../../shell/regionNames';
-export default class CashTileState {
+import {RegionNames} from '../../../shell/regionNames';
+export class CashTileState {
     public symbol: string;
     public regionName: string;
 

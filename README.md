@@ -28,10 +28,10 @@ Install using yarn: `yarn add esp-js`.
 If you're using ES6 with a package manager such as [webpack](https://webpack.github.io) you can import `esp` like this:
 
 ```javascript
-import * esp from 'esp-js';
+import * as esp from 'esp-js';
 var router = new esp.Router();
 
-// o
+// or
 
 import { Router } from 'esp-js';
 var router = new Router();

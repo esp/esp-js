@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Router} from 'esp-js';
-import CashTileModel from '../models/cashTileModel';
+import {CashTileModel} from '../models/cashTileModel';
 
 export class CashTileView extends React.Component<{model:CashTileModel, router:Router}, any> {
     render() {

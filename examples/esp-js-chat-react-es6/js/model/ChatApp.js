@@ -1,6 +1,6 @@
 import * as esp from 'esp-js';
-import MessageSection from './MessageSection';
-import ThreadSection from './ThreadSection';
+import {MessageSection} from './MessageSection';
+import {ThreadSection} from './ThreadSection';
 
 export class ChatApp extends esp.DisposableBase {
     constructor(messageService, router) {

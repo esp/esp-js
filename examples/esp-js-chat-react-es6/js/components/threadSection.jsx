@@ -1,5 +1,5 @@
 import React from 'react';
-import ThreadListItem from './threadListItem';
+import {ThreadListItem} from './threadListItem';
 
 export class ThreadSection extends React.Component {
     constructor() {
@@ -21,15 +21,15 @@ export class ThreadSection extends React.Component {
         if (this.state === null) {
             return null;
         }
-        var router = this.props.router;
-        var threadListItems = this.state.sortedThreads.map(thread => {
+        const router = this.props.router;
+        const threadListItems = this.state.sortedThreads.map(thread => {
                 return (
                     <li key={thread.id}>
                         <ThreadListItem model={thread} router={router} />
                     </li>
                 );
             }, this);
-        var unread = null;
+        let unread = null;
         if (this.state.unreadCount.isVisible) {
             unread = <span>Unread threads: {this.state.unreadCount.value}</span>;
         }

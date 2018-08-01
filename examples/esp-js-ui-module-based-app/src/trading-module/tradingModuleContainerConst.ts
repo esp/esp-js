@@ -1,4 +1,4 @@
-export default class TradingModuleContainerConst {
+export class TradingModuleContainerConst {
     static get cashTileComponentFactory() { return 'cashModule_cashTileComponentFactory'; }
     static get cashTileModel() { return 'cashModule_cashTileModel'; }
 

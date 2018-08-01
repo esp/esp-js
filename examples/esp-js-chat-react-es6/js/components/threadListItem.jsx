@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import Thread from '../model/Thread';
+import {Thread} from '../model/Thread';
 import PropTypes from 'prop-types';
 
 export class ThreadListItem extends React.Component {

@@ -8,8 +8,7 @@
     "src/**/*"
   ],
   "files": [
-    "typings/custom.d.ts",
-    "../../node_modules/rx/ts/rx.all.d.ts"
+    "typings/custom.d.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import * as Rx from 'rx';
-import { Container, MicroDiConsts } from 'microdi-js';
+import {Container, MicroDiConsts} from 'microdi-js';
 import {
     ModuleBase,
     StateService,
@@ -9,29 +9,29 @@ import {
     PrerequisiteRegistrar,
     Logger
 } from 'esp-js-ui';
-import TradingModuleDefautStateProvider from './tradingModuleDefaultStateProvider';
-import TradingModuleContainerConst from './tradingModuleContainerConst';
-import CashTileComponentFactory from './cash-tile/cashTileComponentFactory';
-import CashTileModel from './cash-tile/models/cashTileModel';
-import BlotterComponentFactory from './blotter/blotterComponentFactory';
-import BlotterModel from './blotter/models/blotterModel';
+import {TradingModuleContainerConst} from './tradingModuleContainerConst';
+import {CashTileComponentFactory} from './cash-tile/cashTileComponentFactory';
+import {CashTileModel} from './cash-tile/models/cashTileModel';
+import {BlotterComponentFactory} from './blotter/blotterComponentFactory';
+import {BlotterModel} from './blotter/models/blotterModel';
+import {TradingModuleDefaultStateProvider} from './tradingModuleDefaultStateProvider';
 
 let _log = Logger.create('TradingModule');
 
-export default class TradingModule extends ModuleBase {
-    _componentFactoryGroupId:string;
+export class TradingModule extends ModuleBase {
+    _componentFactoryGroupId: string;
 
-    constructor(container:Container, stateService:StateService) {
+    constructor(container: Container, stateService: StateService) {
         super(
             'trading-module',
             container,
             stateService,
-            new TradingModuleDefautStateProvider()
+            new TradingModuleDefaultStateProvider()
         );
         this._componentFactoryGroupId = uuid.v4();
     }
 
-    static get requiredPermission():string {
+    static get requiredPermission(): string {
         return 'fx-trading';
     }
 
@@ -66,7 +66,7 @@ export default class TradingModule extends ModuleBase {
         _log.groupEnd();
     }
 
-    getComponentsFactories():Array<ComponentFactoryBase> {
+    getComponentsFactories(): Array<ComponentFactoryBase> {
         return this.container.resolveGroup(this._componentFactoryGroupId);
     }
 

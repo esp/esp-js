@@ -1,5 +1,5 @@
-import MessageComposer from './messageComposer';
-import MessageListItem from './messageListItem';
+import {MessageComposer} from './messageComposer';
+import {MessageListItem} from './messageListItem';
 import React from 'react';
 
 export class MessageSection extends React.Component {
@@ -42,7 +42,7 @@ export class MessageSection extends React.Component {
                 </li>
             );
         });
-        var router = this.props.router;
+        const router = this.props.router;
         return (
             <div className="message-section">
                 <h3 className="message-thread-heading">{this.state.threadName}</h3>

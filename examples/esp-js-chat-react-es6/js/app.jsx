@@ -3,8 +3,8 @@ import * as espDevTools from 'esp-js-devtools';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import model from './model';
-import services from './services';
+import * as model from './model';
+import * as services from './services';
 import {ChatApp} from './components/chatApp';
 
 // export for http://fb.me/react-devtools

@@ -1,7 +1,7 @@
 import React from 'react';
 import ThreadListItem from './threadListItem';
 
-export default class ThreadSection extends React.Component {
+export class ThreadSection extends React.Component {
     constructor() {
         super();
         this._subscription = null;

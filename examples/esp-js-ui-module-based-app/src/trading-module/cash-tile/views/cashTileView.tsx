@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Router} from 'esp-js';
 import CashTileModel from '../models/cashTileModel';
 
-export default class CashTileView extends React.Component<{model:CashTileModel, router:Router}, any> {
+export class CashTileView extends React.Component<{model:CashTileModel, router:Router}, any> {
     render() {
         let model : CashTileModel = this.props.model;
         return (

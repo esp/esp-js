@@ -1,1 +1,1 @@
-export { default as StateService } from './stateService';
+export { StateService } from './stateService';

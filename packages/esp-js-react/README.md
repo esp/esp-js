@@ -106,7 +106,7 @@ import { viewBinding } from 'esp-js-react';
 import WorkspaceView from '../views/workspaceView.jsx';
 
 @viewBinding(WorkspaceView)
-export default class Workspace {
+export class Workspace {
    
 }
 ```
@@ -136,7 +136,7 @@ import WorkspaceSummaryView from '../views/workspaceSumamryView.jsx';
 
 @viewBinding(WorkspaceView)
 @viewBinding(WorkspaceSummaryView, 'workspace-summary-view')
-export default class Workspace {
+export class Workspace {
 
 }
 ```

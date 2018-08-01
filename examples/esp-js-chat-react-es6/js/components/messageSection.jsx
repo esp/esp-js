@@ -2,7 +2,7 @@ import MessageComposer from './messageComposer';
 import MessageListItem from './messageListItem';
 import React from 'react';
 
-export default class MessageSection extends React.Component {
+export class MessageSection extends React.Component {
     constructor( ) {
         super();
         this._subscription = null;

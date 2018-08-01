@@ -1,3 +1,3 @@
-export default class MultiItemRegionEventConst {
+export class MultiItemRegionEventConst {
     static selectedItemChanged =  'selectedItemChanged';
 }

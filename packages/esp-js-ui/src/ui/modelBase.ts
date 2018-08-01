@@ -1,7 +1,7 @@
 import {Router, DisposableBase } from 'esp-js';
 import { Logger, Guard } from '../core';
 
-abstract class ModelBase extends DisposableBase {
+export abstract class ModelBase extends DisposableBase {
     private _log: Logger;
 
     constructor(protected _modelId:string, protected _router:Router) {
@@ -50,5 +50,3 @@ abstract class ModelBase extends DisposableBase {
         return this._router;
     }
 }
-
-export default ModelBase;

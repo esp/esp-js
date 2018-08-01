@@ -12,7 +12,7 @@ import chatExampleData from './chatExampleData';
 // we'll just model the same observable API here for demo purposes.
 
 var messageId = 0;
-export default class MessageService {
+export class MessageService {
     constructor() {
         this._observers = [];
         // load some fake data into localstorage

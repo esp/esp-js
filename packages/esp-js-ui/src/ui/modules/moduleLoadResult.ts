@@ -1,4 +1,4 @@
-import {LoadResult} from './prerequisites/loadResult';
+import {LoadResult} from './prerequisites';
 
 export enum ModuleChangeType {
     Change = 'Change',

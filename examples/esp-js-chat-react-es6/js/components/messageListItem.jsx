@@ -2,7 +2,7 @@ import React from 'react';
 import Message from '../model/Message';
 import PropTypes from 'prop-types';
 
-class MessageListItem extends React.Component {
+export class MessageListItem extends React.Component {
     constructor() {
         super();
     }
@@ -22,4 +22,3 @@ class MessageListItem extends React.Component {
 MessageListItem.propTypes = {
     model: PropTypes.instanceOf(Message)
 }
-export default MessageListItem

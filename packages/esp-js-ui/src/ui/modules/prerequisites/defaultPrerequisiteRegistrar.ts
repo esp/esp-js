@@ -1,14 +1,14 @@
 import * as Rx from 'rx';
 import {DisposableBase} from 'esp-js';
-import PrerequisiteRegistrar from './prerequisiteRegistrar';
+import {PrerequisiteRegistrar} from './prerequisiteRegistrar';
 import {LoadResult, ResultStage} from './loadResult';
-import Logger from '../../../core/logger';
-import Unit from '../../../core/unit';
+import {Logger, Unit} from '../../../core';
 
-export default class DefaultPrerequisiteRegistrar extends DisposableBase implements PrerequisiteRegistrar  {
+const _log: Logger = Logger.create('PrerequisiteRegistrar');
+
+export class DefaultPrerequisiteRegistrar extends DisposableBase implements PrerequisiteRegistrar  {
     private _stream: Rx.Observable<LoadResult> = Rx.Observable.empty<LoadResult>();
-    private _publishedStream: Rx.Observable<LoadResult>;
-    private _log: Logger = Logger.create('PrerequisiteRegistrar');
+    private readonly _publishedStream: Rx.Observable<LoadResult>;
 
     constructor() {
         super();
@@ -62,7 +62,7 @@ export default class DefaultPrerequisiteRegistrar extends DisposableBase impleme
 
             let handleError = (e: Error) => {
                 let message = `Error in async load for ${name}`;
-                this._log.error(message, e);
+                _log.error(message, e);
                 obs.onNext({
                     stage: ResultStage.Error,
                     name,

@@ -1,8 +1,8 @@
-import Utils from './utils';
-import Guard from './guard';
-import DecimalFormat from './decimalFormat';
+import *  as Utils from './utils';
+import {Guard} from './guard';
+import {DecimalFormat} from './decimalFormat';
 
-export default class Decimal {
+export class Decimal {
     private _unscaledValue: number;
     private _scale: number;
 

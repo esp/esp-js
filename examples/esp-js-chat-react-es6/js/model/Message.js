@@ -1,4 +1,4 @@
-export default class Message {
+export class Message {
     constructor(id, authorName, text, time) {
         this.id = id;
         this.authorName = authorName;

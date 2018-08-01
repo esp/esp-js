@@ -1,2 +1,1 @@
-import MessageService from './MessageService';
-export default { MessageService };
+export {MessageService} from './MessageService';

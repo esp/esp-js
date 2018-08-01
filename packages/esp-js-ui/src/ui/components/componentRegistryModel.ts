@@ -1,11 +1,11 @@
-import { Router, observeEvent } from 'esp-js';
-import { Logger, Guard } from '../../core';
-import ModelBase from '../modelBase';
-import { getComponentFactoryMetadata, ComponentFactoryMetadata } from './index';
-import ComponentFactoryBase from './componentFactoryBase';
-import IdFactory from '../idFactory';
+import {Router, observeEvent} from 'esp-js';
+import {Logger, Guard} from '../../core';
+import {ModelBase} from '../modelBase';
+import {getComponentFactoryMetadata, ComponentFactoryMetadata} from './index';
+import {ComponentFactoryBase} from './componentFactoryBase';
+import {IdFactory} from '../idFactory';
 
-let _log = Logger.create('ComponentRegistryModel');
+const _log = Logger.create('ComponentRegistryModel');
 
 export interface ComponentMetadata {
     componentFactoryKey: string;
@@ -22,16 +22,16 @@ interface KeyToFactoryEntryMap {
     [key: string]: FactoryEntry;
 }
 
-export default class ComponentRegistryModel extends ModelBase {
+export class ComponentRegistryModel extends ModelBase {
     private _componentFactoriesEntries: KeyToFactoryEntryMap = {};
     public componentsMetadata: Array<ComponentMetadata>;
 
-    constructor(router:Router) {
+    constructor(router: Router) {
         super(IdFactory.createId('component-registry'), router);
         this.observeEvents();
     }
 
-    public getTitle() : string {
+    public getTitle(): string {
         return 'Components';
     }
 
@@ -44,13 +44,13 @@ export default class ComponentRegistryModel extends ModelBase {
     }
 
     public postProcess(): void {
-        this.componentsMetadata=[...this._getComponentsMetaData()];
+        this.componentsMetadata = [...this._getComponentsMetaData()];
     }
 
-    public registerComponentFactory(componentFactory:ComponentFactoryBase): void {
+    public registerComponentFactory(componentFactory: ComponentFactoryBase): void {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(componentFactory, 'componentFactory must be defined');
-            let metadata:ComponentFactoryMetadata = getComponentFactoryMetadata(componentFactory);
+            let metadata: ComponentFactoryMetadata = getComponentFactoryMetadata(componentFactory);
             Guard.isFalse(this._componentFactoriesEntries.hasOwnProperty(metadata.componentKey), `component with id [${metadata.componentKey}] already added`);
             _log.debug(`registering component factory with key [${metadata.componentKey}], shortname [${metadata.shortName}]`);
             this._componentFactoriesEntries[metadata.componentKey] = {
@@ -61,29 +61,29 @@ export default class ComponentRegistryModel extends ModelBase {
         });
     }
 
-    public unregisterComponentFactory(componentFactory:ComponentFactoryBase): void {
+    public unregisterComponentFactory(componentFactory: ComponentFactoryBase): void {
         this.ensureOnDispatchLoop(() => {
-            let metadata:ComponentFactoryMetadata = getComponentFactoryMetadata(componentFactory);
+            let metadata: ComponentFactoryMetadata = getComponentFactoryMetadata(componentFactory);
             Guard.isDefined(componentFactory, 'componentFactory must be defined');
             _log.debug(`unregistering component factory with componentFactoryKey [${metadata.componentKey}]`);
             delete this._componentFactoriesEntries[metadata.componentKey];
-        });        
+        });
     }
-    
+
     @observeEvent('createComponent')
     private _onCreateComponent(event): void {
         _log.verbose('Creating component with id {0}', event.componentFactoryKey);
         this._createComponent(event.componentFactoryKey);
     }
 
-    public getComponentFactory(componentFactoryKey:string): ComponentFactoryBase {
+    public getComponentFactory(componentFactoryKey: string): ComponentFactoryBase {
         Guard.isFalse((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] already added`);
-        let entry : FactoryEntry = this._componentFactoriesEntries[componentFactoryKey];
+        let entry: FactoryEntry = this._componentFactoriesEntries[componentFactoryKey];
         Guard.isDefined(entry, `componentFactory with key ${componentFactoryKey} not registered`);
-        return entry.factory; 
+        return entry.factory;
     }
 
-    private _getComponentsMetaData() : Array<ComponentMetadata> {
+    private _getComponentsMetaData(): Array<ComponentMetadata> {
         let entries = [];
         for (let key in this._componentFactoriesEntries) { //tslint:disable-line
             let entry = this._componentFactoriesEntries[key];

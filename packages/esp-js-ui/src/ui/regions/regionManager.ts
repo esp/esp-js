@@ -1,5 +1,5 @@
 import { Logger, Guard } from '../../core';
-import ModelBase from '../modelBase';
+import {ModelBase} from '../modelBase';
 
 const _log = Logger.create('RegionManager');
 
@@ -15,7 +15,7 @@ interface RegionKeyToCallbackMap {
 }
 
 // exists to decouple all the region and their models from the rest of the app
-export default class RegionManager {
+export class RegionManager {
     private _regions: RegionKeyToCallbackMap = {};
     
     // adds a region to the region manager

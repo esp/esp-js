@@ -1,7 +1,5 @@
-import ComponentFactoryState from './componentFactoryState';
+import {ComponentFactoryState} from './componentFactoryState';
 
-interface DefaultStateProvider {
+export interface DefaultStateProvider {
     getComponentFactoriesState(layoutMode:string):Array<ComponentFactoryState>;
 }
-
-export default DefaultStateProvider;

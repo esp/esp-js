@@ -1,6 +1,6 @@
 import * as Rx from 'rx';
-import Logger from '../logger';
-import RetryPolicy from './retryPolicy';
+import {Logger} from '../logger';
+import {RetryPolicy} from './retryPolicy';
 
 const _log = Logger.create('retryWithPolicy');
 

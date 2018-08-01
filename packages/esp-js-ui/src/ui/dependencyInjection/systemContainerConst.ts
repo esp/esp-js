@@ -1,4 +1,4 @@
-export default class SystemContainerConst {
+export class SystemContainerConst {
     static get router() { return 'router'; }
     static get state_service() { return 'state_service'; }
     static get components_registry_model() { return 'components_registry_model'; }

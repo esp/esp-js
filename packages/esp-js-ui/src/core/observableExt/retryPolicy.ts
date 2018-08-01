@@ -1,4 +1,4 @@
-export default class RetryPolicy {
+export class RetryPolicy {
     static defaultPolicy(errorMessage: string): RetryPolicy {
         return new RetryPolicy('DefaultRetryPolicy', 3, 5000, errorMessage); // retry after 2 seconds, do the retry upto a max of 3 times
     }
@@ -9,19 +9,16 @@ export default class RetryPolicy {
         return new RetryPolicy(description, -1, retryAfterElapsedMs, null);
     }
 
-    private _description: string;
-    private _retryLimit: number;
     private _retryCount: number;
-    private _errorMessage: string | null;
-    private _retryAfterElapsedMs: number;
 
     // TODO a backoff policy, i.e. backoff to a given time then retry at max backoff
-    constructor(description: string, retryLimit: number, retryAfterElapsedMs: number, errorMessage: string | null) {
-        this._description = description;
-        this._retryLimit = retryLimit;
+    constructor(
+        private readonly _description: string,
+        private readonly _retryLimit: number,
+        private readonly _retryAfterElapsedMs: number,
+        private readonly _errorMessage: string | null) {
+
         this._retryCount = 0;
-        this._errorMessage = errorMessage;
-        this._retryAfterElapsedMs = retryAfterElapsedMs;
     }
     get description(): string {
         return this._description;

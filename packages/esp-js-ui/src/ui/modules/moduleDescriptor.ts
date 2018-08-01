@@ -1,9 +1,7 @@
-import ModuleConstructor from './moduleConstructor';
+import {ModuleConstructor} from './moduleConstructor';
 
-interface ModuleDescriptor {
+export interface ModuleDescriptor {
     factory: ModuleConstructor;
     moduleName: string;
     permissions?: Array<string>;
 }
-
-export default ModuleDescriptor;

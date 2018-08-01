@@ -1,15 +1,13 @@
-
 import * as React from 'react';
 import {ConnectableComponent} from 'esp-js-react';
 import * as classnames from 'classnames';
 import {Logger} from '../../../../core';
-import ViewBase from '../../../viewBase';
-import ItemView from './itemView';
-import MultiItemRegionModel from '../model/multiItemRegionModel';
-import RegionItem from '../../regionItem';
+import {ViewBase} from '../../../viewBase';
+import {ItemView} from './itemView';
+import {MultiItemRegionModel} from '../model';
+import {RegionItem} from '../../regionItem';
 import {ViewBaseProps} from '../../../viewBase';
-import {SelectedItemChangedEvent} from '../model/multiItemRegionModel';
-import MultiItemRegionEventConst from '../model/multiItemRegionEventConst';
+import {MultiItemRegionEventConst, SelectedItemChangedEvent} from '../model';
 
 const _log = Logger.create('MultiItemRegionView');
 
@@ -17,8 +15,7 @@ export interface SelectableMultiItemViewProps extends ViewBaseProps<MultiItemReg
     className?: string;
 }
 
-export default class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, MultiItemRegionModel, SelectableMultiItemViewProps> {
-  
+export class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, MultiItemRegionModel, SelectableMultiItemViewProps> {
     private _onItemClicked(item: RegionItem) : void {
         let ev : SelectedItemChangedEvent = { selectedItem: item };
         this.props.router.publishEvent(this.props.model.modelId, MultiItemRegionEventConst.selectedItemChanged, ev);

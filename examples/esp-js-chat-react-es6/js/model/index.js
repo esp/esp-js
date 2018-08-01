@@ -1,4 +1,3 @@
-import ChatApp from './ChatApp';
-import MessageSection from './MessageSection';
-import ThreadSection from './ThreadSection';
-export default { ChatApp, MessageSection, ThreadSection };
+export {ChatApp} from './ChatApp';
+export {MessageSection} from './MessageSection';
+export {ThreadSection} from './ThreadSection';

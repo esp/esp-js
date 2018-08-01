@@ -1,3 +1,3 @@
-export { default as ComponentRegistryModel, ComponentMetadata, FactoryEntry} from './componentRegistryModel';
-export { default as ComponentFactoryBase, ComponentStateSet } from './componentFactoryBase';
+export { ComponentRegistryModel, ComponentMetadata, FactoryEntry} from './componentRegistryModel';
+export { ComponentFactoryBase, ComponentStateSet } from './componentFactoryBase';
 export { componentFactory, getComponentFactoryMetadata, ComponentFactoryMetadata } from './componentDecorator';

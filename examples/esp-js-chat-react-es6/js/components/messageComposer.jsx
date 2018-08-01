@@ -2,7 +2,7 @@ import React from 'react';
 
 var ENTER_KEY = 13;
 
-export default class MessageComposer extends React.Component {
+export class MessageComposer extends React.Component {
     constructor() {
         super();
         this.state = {text: ''};

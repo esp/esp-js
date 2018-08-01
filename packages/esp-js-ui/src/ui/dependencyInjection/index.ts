@@ -1,3 +1,3 @@
-export {default as LiteralResolver } from './literalResolver';
-export {default as SystemContainerConfiguration } from './systemContainerConfiguration';
-export {default as SystemContainerConst } from './systemContainerConst';
+export {LiteralResolver } from './literalResolver';
+export {SystemContainerConfiguration } from './systemContainerConfiguration';
+export {SystemContainerConst } from './systemContainerConst';

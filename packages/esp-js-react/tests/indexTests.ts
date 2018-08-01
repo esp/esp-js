@@ -24,7 +24,7 @@ import {
     viewBinding,
     ModelSelector,
     shouldUpdateMixin
-} from '../src/index';
+} from '../src';
 
 describe('index exports', () => {
     it('should export RouterProvider', () => {

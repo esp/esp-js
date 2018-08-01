@@ -36,7 +36,6 @@ export interface SmartComponentState {
 export class SmartComponent extends React.Component<SmartComponentProps, SmartComponentState> {
     private _currentObservingModelId = false;
     private _observationSubscription = null;
-    private _view = null;
 
     static contextTypes = {
         router: PropTypes.instanceOf(Router).isRequired

@@ -19,7 +19,7 @@
 import {Guard} from '../system';
 import {Status} from './status';
 import {ModelRecord} from './modelRecord';
-import {CompositeDiagnosticMonitor} from './devtools/compositeDiagnosticMonitor';
+import {CompositeDiagnosticMonitor} from './devtools';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
 export class State {

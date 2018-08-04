@@ -21,7 +21,7 @@ var router = new esp.Router();
 ### Using a Multi Model Router
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 
 class MyModel2 {
 }
@@ -58,7 +58,7 @@ You can simply new a single model router up, or call `router.createModelRouter(m
 ### Creating a Single Model Router
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 
 ////////////////////////////////////////////////////////////
 // method 1, useful when the model needs the router.
@@ -102,7 +102,7 @@ The interfaces is slimmed down as the add/remove model methods have gone.
 Additionally you don't pass the `modelId` or type parameters (.Net).
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 
 class MyModel2 {
 }

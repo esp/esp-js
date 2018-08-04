@@ -1,5 +1,5 @@
-import Guard from './guard';
-import Utils from './utils';
+import {Guard} from './guard';
+import *  as Utils from './utils';
 
 export enum Level {
     verbose = 'verbose',
@@ -84,9 +84,7 @@ export class CompositeSink implements Sink {
 
 // note: if you want verbose you need to change this explicitly, this is just the initial default
 let _currentLevel = Level.debug;
-
 let _sink = new CompositeSink(new ConsoleSink());
-
 let _loggerConfigs : {[key: string]: LoggerConfig} = {};
 
 export interface LoggerConfig {
@@ -130,7 +128,7 @@ declare global {
     LoggingConfig : LoggingConfig
 };
 
-export default class Logger {
+export class Logger {
     constructor(
         private _name: string,
         private _loggerConfig: LoggerConfig

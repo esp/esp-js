@@ -1,2 +1,2 @@
-export { default as MultiItemRegionEventConst } from './multiItemRegionEventConst';
-export { default as MultiItemRegionModel, SelectedItemChangedEvent } from './multiItemRegionModel';
+export { MultiItemRegionEventConst } from './multiItemRegionEventConst';
+export { MultiItemRegionModel, SelectedItemChangedEvent } from './multiItemRegionModel';

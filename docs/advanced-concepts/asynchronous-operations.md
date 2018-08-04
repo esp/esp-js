@@ -56,7 +56,7 @@ router
 Here is a more concrete example using attributes/decorators to wire up events:
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 
 class OrderScreen {
     constructor(router)
@@ -102,7 +102,7 @@ For example many model entities may respond to static data changes, they could a
 Below is an example using the attributes/decorators to achieve this.
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 
 class OrderScreen {
     constructor(router)

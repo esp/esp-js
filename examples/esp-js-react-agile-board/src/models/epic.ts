@@ -7,7 +7,7 @@ import { observeEvent, Router } from 'esp-js';
 import { ItemNameDialog, ItemNameDialogResult, ItemNameDialogResultType } from './itemNameDialog';
 // All epics share the same views so events fired from these views get routed to all instances of a epics.
 // `observeEvent` optionally takes a predicate we can use to filter out events for the right instance.
-let epicEventPredicate = (epic, event) => epic === event.epic;
+const epicEventPredicate = (epic, event) => epic === event.epic;
 
 export class Epic extends ModelBase {
     static _epicCounterId = 0;

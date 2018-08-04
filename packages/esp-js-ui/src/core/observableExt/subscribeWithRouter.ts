@@ -1,6 +1,6 @@
 import * as Rx from 'rx';
-import { Router } from 'esp-js';
-import Guard from '../guard';
+import {Router} from 'esp-js';
+import {Guard} from '../guard';
 
 /**
  * Helper method to ease integration between Rx and Esp.
@@ -17,38 +17,38 @@ import Guard from '../guard';
  * @param onError
  * @param onCompleted
  */
-Rx.Observable.prototype.subscribeWithRouter = function<T, TModel>(
-  router: Router,
-  modelId: string,
-  onNext?: (value: T, model: TModel) => void,
-  onError?: (exception: any, model: TModel) => void,
-  onCompleted?: (model: TModel) => void): Rx.Disposable {
+Rx.Observable.prototype.subscribeWithRouter = function <T, TModel>(
+    router: Router,
+    modelId: string,
+    onNext?: (value: T, model: TModel) => void,
+    onError?: (exception: any, model: TModel) => void,
+    onCompleted?: (model: TModel) => void): Rx.Disposable {
 
-  Guard.isDefined(router, 'router should be defined');
-  Guard.isString(modelId, 'modelId should be defined and a string');
-  let source = this;
+    Guard.isDefined(router, 'router should be defined');
+    Guard.isString(modelId, 'modelId should be defined and a string');
+    let source = this;
 
-  return source.materialize().subscribe(i => {
-    switch (i.kind) {
-      case 'N':
-        if (onNext !== null && onNext !== undefined) {
-          router.runAction<TModel>(modelId, model => onNext(i.value, model));
+    return source.materialize().subscribe(i => {
+        switch (i.kind) {
+            case 'N':
+                if (onNext !== null && onNext !== undefined) {
+                    router.runAction<TModel>(modelId, model => onNext(i.value, model));
+                }
+                break;
+            case 'E':
+                if (onError === null || onError === undefined) {
+                    throw i.error;
+                } else {
+                    router.runAction<TModel>(modelId, model => onError(i.error, model));
+                }
+                break;
+            case 'C':
+                if (onCompleted !== null && onCompleted !== undefined) {
+                    router.runAction<TModel>(modelId, model => onCompleted(model));
+                }
+                break;
+            default:
+                throw new Error(`Unknown Notification Type. Type was ${i.kind}`);
         }
-        break;
-      case 'E':
-        if (onError === null || onError === undefined) {
-          throw i.error;
-        } else {
-          router.runAction<TModel>(modelId, model => onError(i.error, model));
-        }
-        break;
-      case 'C':
-        if (onCompleted !== null && onCompleted !== undefined) {
-          router.runAction<TModel>(modelId, model => onCompleted(model));
-        }
-        break;
-      default:
-        throw new Error(`Unknown Notification Type. Type was ${i.kind}`);
-    }
-  });
+    });
 };

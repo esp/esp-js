@@ -1,14 +1,14 @@
 import { Router, observeEvent } from 'esp-js';
-import RegionItem from '../../regionItem';
-import RegionModelBase from '../../regionModelBase';
-import RegionManager from '../../regionManager';
-import MultiItemRegionEventConst from './multiItemRegionEventConst';
+import {RegionItem} from '../../regionItem';
+import {RegionModelBase} from '../../regionModelBase';
+import {RegionManager} from '../../regionManager';
+import {MultiItemRegionEventConst} from './multiItemRegionEventConst';
 
 export interface SelectedItemChangedEvent {
     selectedItem: RegionItem;
 }
 
-export default class MultiItemRegionModel extends RegionModelBase {
+export class MultiItemRegionModel extends RegionModelBase {
     public items : Array<RegionItem> = [];
     public selectedItem: RegionItem;
 

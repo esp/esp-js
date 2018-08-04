@@ -1,26 +1,24 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { RouterProvider, ConnectableComponent} from 'esp-js-react';
-import { Container } from 'microdi-js';
+import {RouterProvider, ConnectableComponent} from 'esp-js-react';
+import {Container} from 'microdi-js';
 import {
     Logger,
     MultiItemRegionModel,
     SingleItemRegionModel,
     LiteralResolver,
     SystemContainerConfiguration,
-    SystemContainerConst,
-    ModuleLoader
+    SystemContainerConst
 } from 'esp-js-ui';
-import ShellModel from './models/shellModel';
-import ShellModuleContainerConst from './shellModuleContainerConst';
-import RegionNames from './regionNames';
+import {ShellModel} from './models/shellModel';
+import {ShellModuleContainerConst} from './shellModuleContainerConst';
+import {RegionNames} from './regionNames';
 import {Router} from 'esp-js';
 
-let _log = Logger.create('ShellBootstrapper');
+const _log = Logger.create('ShellBootstrapper');
 
 class ShellBootstrapper {
-    private _container:Container;
-    private _moduleLoader:ModuleLoader;
+    private _container: Container;
 
     start() {
         this._container = new Container();
@@ -33,7 +31,7 @@ class ShellBootstrapper {
         this._container
             .register(ShellModuleContainerConst.workspace_region, MultiItemRegionModel)
             .inject(
-                {resolver:LiteralResolver.resolverName, value: RegionNames.workspaceRegion},
+                {resolver: LiteralResolver.resolverName, value: RegionNames.workspaceRegion},
                 SystemContainerConst.router,
                 SystemContainerConst.region_manager
             )
@@ -41,7 +39,7 @@ class ShellBootstrapper {
         this._container
             .register(ShellModuleContainerConst.blotter_region, SingleItemRegionModel)
             .inject(
-                {resolver:LiteralResolver.resolverName, value: RegionNames.blotterRegion},
+                {resolver: LiteralResolver.resolverName, value: RegionNames.blotterRegion},
                 SystemContainerConst.router,
                 SystemContainerConst.region_manager
             )
@@ -64,7 +62,7 @@ class ShellBootstrapper {
         ReactDOM.render(
             <RouterProvider router={router}>
                 <div>
-                    <ConnectableComponent modelId={shellModel.modelId} />
+                    <ConnectableComponent modelId={shellModel.modelId}/>
                 </div>
             </RouterProvider>,
             document.getElementById('root')

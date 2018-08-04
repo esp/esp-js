@@ -1,17 +1,16 @@
 import * as Rx from 'rx';
 import { Container } from 'microdi-js';
-import ComponentRegistryModel from '../components/componentRegistryModel';
-import StateService from '../state/stateService';
-import Logger from '../../core/logger';
-import ModuleDescriptor from './moduleDescriptor';
+import { ComponentRegistryModel} from '../components';
+import {StateService} from '../state/stateService';
+import {Logger} from '../../core';
+import {ModuleDescriptor} from './moduleDescriptor';
 import {ModuleLoadResult} from './moduleLoadResult';
-import SingleModuleLoader from './singleModuleLoader';
+import {SingleModuleLoader} from './singleModuleLoader';
 
-let _log = Logger.create('ModuleLoader');
+const _log = Logger.create('ModuleLoader');
 
-export default class ModuleLoader {
+export class ModuleLoader {
     private _modules: Array<{moduleLoader: SingleModuleLoader, name: string}> = [];
-    private _moduleDescriptors: ModuleDescriptor[];
 
     constructor(
         private _container: Container,

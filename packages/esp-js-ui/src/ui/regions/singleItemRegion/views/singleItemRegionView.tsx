@@ -2,9 +2,8 @@ import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { Logger } from '../../../../core';
-import SingleItemRegionModel from '../model/singleItemRegionModel';
-import ViewBase from '../../../viewBase';
-import {ViewBaseProps} from '../../../viewBase';
+import {SingleItemRegionModel} from '../model/singleItemRegionModel';
+import {ViewBase, ViewBaseProps} from '../../../viewBase';
 
 const _log = Logger.create('SingleItemRegionView');
 
@@ -12,7 +11,7 @@ export interface SingleItemRegionViewProps extends ViewBaseProps<SingleItemRegio
     className?: string;
 }
 
-export default class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionModel, SingleItemRegionViewProps> {
+export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleItemRegionModel, SingleItemRegionViewProps> {
     render() {
         _log.verbose('Rendering');
 

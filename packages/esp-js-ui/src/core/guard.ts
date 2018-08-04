@@ -1,6 +1,6 @@
-import Utils from './utils';
+import *  as Utils from './utils';
 
-export default class Guard {
+export class Guard {
     static isDefined(value: any, message: string): void {
         if (typeof value === 'undefined') {
             doThrow(message);

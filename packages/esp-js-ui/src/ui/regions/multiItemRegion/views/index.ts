@@ -1,3 +1,3 @@
-export { default as ItemView, ItemViewProps } from './itemView';
-export { default as MultiItemRegionView, MultiItemRegionViewProps } from './multiItemRegionView';
-export { default as SelectableMultiItemView, SelectableMultiItemViewProps } from './selectableMultiItemView';
+export { ItemView, ItemViewProps } from './itemView';
+export { MultiItemRegionView, MultiItemRegionViewProps } from './multiItemRegionView';
+export { SelectableMultiItemView, SelectableMultiItemViewProps } from './selectableMultiItemView';

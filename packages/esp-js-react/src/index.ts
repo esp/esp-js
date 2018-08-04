@@ -25,26 +25,3 @@ export {shouldUpdateMixin} from './shouldUpdateMixin';
 export {createViewForModel} from './viewBindingDecorator';
 export {ConnectableComponent, connect} from './connectableComponent';
 export {publishEvent} from './publishEvent';
-
-import {RouterProvider} from './routerProvider';
-import {SmartComponent} from './smartComponent';
-import {ViewBinder} from './viewBinder';
-import {viewBinding} from './viewBindingDecorator';
-import {ModelSelector} from './modelSelector';
-import {shouldUpdateMixin} from './shouldUpdateMixin';
-import {createViewForModel} from './viewBindingDecorator';
-import {ConnectableComponent, connect} from './connectableComponent';
-import {publishEvent} from './publishEvent';
-
-export default {
-    RouterProvider,
-    SmartComponent,
-    ViewBinder,
-    viewBinding,
-    ModelSelector,
-    shouldUpdateMixin,
-    createViewForModel,
-    ConnectableComponent,
-    connect,
-    publishEvent
-};

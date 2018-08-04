@@ -2,7 +2,7 @@
 [x] - Convert to tyepscript
 [x] - makes observices of T, not t123
 [x] - remove model changed event (fixed, or modified, not deleted)
-[ ] - remove all default exports
+[x] - remove all default exports
 [x] - merge repos
 [x] - rename all file types to lower case in esp-js
 [x] - user generated .d.ts
@@ -20,3 +20,4 @@ breaking changes:
  - model changed event support
  - reactive api now pushes envelopes, not T1, T2, T3
  - .where renamed to .filter
+ - all default exports are now removed

@@ -1,6 +1,6 @@
 "use strict";
 
-export default class Thread {
+export class Thread {
     constructor(id, name, lastMessageTime, lastMessageText) {
         this.id = id;
         this.threadName = name;

@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import esp, {ObservationStage} from '../../src';
+import * as esp from '../../src';
 import {EventEnvelope} from '../../src/router/envelopes';
 
 describe('Router', () => {
@@ -46,19 +46,19 @@ describe('Router', () => {
             expect(_receivedEvents.length).toBe(4);
 
             expect(_receivedEvents[0].modelId).toEqual('modelId1');
-            expect(_receivedEvents[0].observationStage).toEqual(ObservationStage.preview);
+            expect(_receivedEvents[0].observationStage).toEqual(esp.ObservationStage.preview);
             expect(_receivedEvents[0].model).toBe(_model1);
 
             expect(_receivedEvents[1].modelId).toEqual('modelId1');
-            expect(_receivedEvents[1].observationStage).toEqual(ObservationStage.normal);
+            expect(_receivedEvents[1].observationStage).toEqual(esp.ObservationStage.normal);
             expect(_receivedEvents[1].model).toBe(_model1);
 
             expect(_receivedEvents[2].modelId).toEqual('modelId2');
-            expect(_receivedEvents[2].observationStage).toEqual(ObservationStage.preview);
+            expect(_receivedEvents[2].observationStage).toEqual(esp.ObservationStage.preview);
             expect(_receivedEvents[2].model).toBe(_model2);
 
             expect(_receivedEvents[3].modelId).toEqual('modelId2');
-            expect(_receivedEvents[3].observationStage).toEqual(ObservationStage.normal);
+            expect(_receivedEvents[3].observationStage).toEqual(esp.ObservationStage.normal);
             expect(_receivedEvents[3].model).toBe(_model2);
         });
 

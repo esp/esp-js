@@ -1,7 +1,7 @@
 import {Container} from 'microdi-js';
-import { getComponentFactoryMetadata } from './componentDecorator';
+import {getComponentFactoryMetadata} from './componentDecorator';
 import {DisposableBase} from 'esp-js';
-import ModelBase from '../modelBase';
+import {ModelBase} from '../modelBase';
 import {ComponentFactoryMetadata} from './componentDecorator';
 
 export interface ComponentStateSet {
@@ -13,7 +13,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
     private _metadata: ComponentFactoryMetadata;
 
-    constructor(private _container : Container) {
+    constructor(private _container: Container) {
         super();
         this._currentComponents = [];
         this._metadata = getComponentFactoryMetadata(this);
@@ -31,7 +31,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
 
     public createComponent(state = null): void {
         let childContainer = this._container.createChildContainer();
-        let component : ModelBase = this._createComponent(childContainer, state);
+        let component: ModelBase = this._createComponent(childContainer, state);
         component.addDisposable(childContainer);
         component.addDisposable(() => {
             let index = this._currentComponents.indexOf(component);
@@ -45,7 +45,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
     }
 
     public getAllComponentsState(): ComponentStateSet {
-        if(this._currentComponents.length === 0) {
+        if (this._currentComponents.length === 0) {
             return null;
         }
         let componentsState = this._currentComponents
@@ -66,4 +66,3 @@ export abstract class ComponentFactoryBase extends DisposableBase {
         this._currentComponents.length = 0;
     }
 }
-export default ComponentFactoryBase;

@@ -1,8 +1,8 @@
 import * as Rx from 'rx';
 import '../../../../src/core/observableExt';
-import DefaultPrerequisiteRegistrar from '../../../../src/ui/modules/prerequisites/defaultPrerequisiteRegistrar';
-import Unit from '../../../../src/core/unit';
-import {LoadResult, ResultStage} from '../../../../src/ui/modules/prerequisites/loadResult';
+import {DefaultPrerequisiteRegistrar} from '../../../../src/ui/modules/prerequisites';
+import {Unit} from '../../../../src/core';
+import {LoadResult, ResultStage} from '../../../../src/ui/modules/prerequisites';
 
 describe('Default Prerequisite Registrar Tests', () => {
     let registrar: DefaultPrerequisiteRegistrar;

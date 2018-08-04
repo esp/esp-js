@@ -18,7 +18,7 @@ It's designed to wrap your app, however it can be lower if you're doing somethin
 The following example shows you how to use it:
 
 ```js
-import esp from 'esp-js'
+import * as esp from 'esp-js'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider } from 'esp-js-react';
@@ -48,7 +48,7 @@ Building on from our previous example, we additionally import a top level model 
 Note we pass the view as a prop to `SmartComponent`.
 
 ```js
-import esp from 'esp-js'
+import * as esp from 'esp-js'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider, SmartComponent} from 'esp-js-react';
@@ -78,7 +78,7 @@ This is less apparent in this basic example, however in building modular applica
 The only change below is the removal of the view import and `view` prop on `SmartComponent:
 
 ```js
-import esp from 'esp-js'
+import * as esp from 'esp-js'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider, SmartComponent} from 'esp-js-react';
@@ -106,7 +106,7 @@ import { viewBinding } from 'esp-js-react';
 import WorkspaceView from '../views/workspaceView.jsx';
 
 @viewBinding(WorkspaceView)
-export default class Workspace {
+export class Workspace {
    
 }
 ```
@@ -136,7 +136,7 @@ import WorkspaceSummaryView from '../views/workspaceSumamryView.jsx';
 
 @viewBinding(WorkspaceView)
 @viewBinding(WorkspaceSummaryView, 'workspace-summary-view')
-export default class Workspace {
+export class Workspace {
 
 }
 ```

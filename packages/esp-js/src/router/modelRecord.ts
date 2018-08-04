@@ -35,15 +35,15 @@ interface InternalEventStreamsRegistration {
 }
 
 export class ModelRecord {
-    private _modelId: string;
+    private readonly _modelId: string;
+    private readonly _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
+    private readonly _eventQueue: any[];
     private _model: any;
-    private _eventQueue: any[];
     private _hasChanges: boolean;
     private _wasRemoved: boolean;
     private _preEventProcessor: PreEventProcessor;
     private _postEventProcessor: PostEventProcessor;
     private _eventStreams: Map<string, InternalEventStreamsRegistration>;
-    private _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
 
     constructor(modelId: string, model: any, modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>, options?: ModelOptions) {
         this._modelId = modelId;

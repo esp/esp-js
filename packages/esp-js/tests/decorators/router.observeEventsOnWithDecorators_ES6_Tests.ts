@@ -20,14 +20,13 @@
 // I could have a single file, then source the tests and using eval to run them thus not having to copy and past this file, however debugging tests for each transpiler gets really hard.
 // For now it's easiest to just copy paste from the .ts version, then remove the class level private vars from the babel implementation
 
-import esp, {Router} from '../../src';
+import {observeEvent, ObservationStage, DisposableBase, Router} from '../../src';
 
 describe('Decorators', () => {
-
     let _router;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _router = new Router();
     });
 
     let previewInvokeCount = 0;
@@ -36,7 +35,7 @@ describe('Decorators', () => {
     let committedInvokeCount = 0;
     let _model, _derivedModel1, _derivedModel2, _derivedModel3, _derivedModel4, _derivedModel5;
 
-    class Model extends esp.DisposableBase {
+    class Model extends DisposableBase {
         private _id: string;
         private _router: Router;
         private receivedBarEvents: Array<any>;
@@ -58,40 +57,40 @@ describe('Decorators', () => {
         }
 
         //start-non-standard
-        @esp.observeEvent('fooEvent', esp.ObservationStage.preview)
+        @observeEvent('fooEvent', ObservationStage.preview)
         _fooEventAtPreview(event, context, model) {
             previewInvokeCount++;
         }
 
-        @esp.observeEvent('fooEvent', esp.ObservationStage.normal)
+        @observeEvent('fooEvent', ObservationStage.normal)
         _fooEventAtNormal1(event, context, model) {
             normalInvokeCount++;
             context.commit();
         }
 
-        @esp.observeEvent('fooEvent')
+        @observeEvent('fooEvent')
         _fooEventAtNormal2(event, context, model) {
             normal2InvokeCount++;
         }
 
-        @esp.observeEvent('fooEvent', esp.ObservationStage.committed)
+        @observeEvent('fooEvent', ObservationStage.committed)
         _fooEventAtCommitted(event, context, model) {
             committedInvokeCount++;
         }
 
-        @esp.observeEvent('barEvent_1')
+        @observeEvent('barEvent_1')
         _barEvent_1(event, context, model) {
             context.commit();
         }
 
-        @esp.observeEvent('barEvent_1', esp.ObservationStage.committed)
-        @esp.observeEvent('barEvent_2')
-        @esp.observeEvent('barEvent_3', esp.ObservationStage.preview)
+        @observeEvent('barEvent_1', ObservationStage.committed)
+        @observeEvent('barEvent_2')
+        @observeEvent('barEvent_3', ObservationStage.preview)
         _allBarEvents(event, context, model) {
             this.receivedBarEvents.push({event: event, stage: context.currentStage});
         }
 
-        @esp.observeEvent('fruitEvent', (model, event) => event.type === 'orange')
+        @observeEvent('fruitEvent', (model, event) => event.type === 'orange')
         _onFruitEvent(event, context, model) {
             this.receivedFruitEvents.push(event);
         }
@@ -99,7 +98,7 @@ describe('Decorators', () => {
         //end-non-standard
     }
 
-    class SubModel extends esp.DisposableBase {
+    class SubModel extends DisposableBase {
         private _id: string;
         private _router: Router;
         private carEvents: Array<any>;
@@ -117,7 +116,7 @@ describe('Decorators', () => {
             this.addDisposable(this._router.observeEventsOn(this._id, this));
         }
 
-        @esp.observeEvent('carEvent', (model, event) => {
+        @observeEvent('carEvent', (model, event) => {
             return event.type === 'bmw' && model.tag === 'submodel';
         })
         _onFruitEvent(event, context, model) {
@@ -125,7 +124,7 @@ describe('Decorators', () => {
         }
     }
 
-    class BaseModel extends esp.DisposableBase {
+    class BaseModel extends DisposableBase {
         protected _id: string;
         protected _router: Router;
         private baseEventReveivedCount: number;
@@ -141,7 +140,7 @@ describe('Decorators', () => {
             this.addDisposable(this._router.observeEventsOn(this._id, this));
         }
 
-        @esp.observeEvent('aBaseEvent')
+        @observeEvent('aBaseEvent')
         _aBaseEvent(event, context, model) {
             this.baseEventReveivedCount++;
         }
@@ -155,7 +154,7 @@ describe('Decorators', () => {
             this.reveivedCount = 0;
         }
 
-        @esp.observeEvent('derivedEvent')
+        @observeEvent('derivedEvent')
         _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
@@ -174,7 +173,7 @@ describe('Decorators', () => {
             this.reveivedCount = 0;
         }
 
-        @esp.observeEvent('derivedEvent')
+        @observeEvent('derivedEvent')
         _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
@@ -193,7 +192,7 @@ describe('Decorators', () => {
             this.reveivedCount = 0;
         }
 
-        @esp.observeEvent('derivedEvent')
+        @observeEvent('derivedEvent')
         _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
@@ -209,7 +208,7 @@ describe('Decorators', () => {
             this.reveivedCount = 0;
         }
 
-        @esp.observeEvent('derivedEvent')
+        @observeEvent('derivedEvent')
         _derivedEvent(event, context, model) {
             this.reveivedCount++;
         }
@@ -231,7 +230,7 @@ describe('Decorators', () => {
             this.reveivedCount1 = 0;
         }
 
-        @esp.observeEvent('derivedEvent_1')
+        @observeEvent('derivedEvent_1')
         _derivedEvent_1(event, context, model) {
             this.reveivedCount1++;
         }
@@ -245,7 +244,7 @@ describe('Decorators', () => {
             this.reveivedCount1 = 0;
         }
 
-        @esp.observeEvent('derivedEvent_1')
+        @observeEvent('derivedEvent_1')
         _derivedEvent_1(event, context, model) {
             this.reveivedCount1++;
         }
@@ -284,21 +283,21 @@ describe('Decorators', () => {
     it('should throw if event name is omitted', () => {
         expect(() => {
             class Foo {
-                @esp.observeEvent()
+                @observeEvent()
                 _anObserveFunction() {
                 }
             }
         }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
         expect(() => {
             class Foo {
-                @esp.observeEvent(null)
+                @observeEvent(null)
                 _anObserveFunction() {
                 }
             }
         }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
         expect(() => {
             class Foo {
-                @esp.observeEvent(undefined)
+                @observeEvent(undefined)
                 _anObserveFunction() {
                 }
             }
@@ -308,7 +307,7 @@ describe('Decorators', () => {
     it('should throw if event name is empty', () => {
         expect(() => {
             class Foo {
-                @esp.observeEvent('')
+                @observeEvent('')
                 _anObserveFunction() {
                 }
             }
@@ -318,7 +317,7 @@ describe('Decorators', () => {
     it('should throw if event name is an invalid type', () => {
         expect(() => {
             class Foo {
-                @esp.observeEvent({})
+                @observeEvent({})
                 _anObserveFunction() {
                 }
             }
@@ -352,17 +351,17 @@ describe('Decorators', () => {
         _router.publishEvent('modelId', 'barEvent_1', 1);
         expect(_model.receivedBarEvents.length).toBe(1);
         expect(_model.receivedBarEvents[0].event).toBe(1);
-        expect(_model.receivedBarEvents[0].stage).toBe(esp.ObservationStage.committed);
+        expect(_model.receivedBarEvents[0].stage).toBe(ObservationStage.committed);
 
         _router.publishEvent('modelId', 'barEvent_2', 2);
         expect(_model.receivedBarEvents.length).toBe(2);
         expect(_model.receivedBarEvents[1].event).toBe(2);
-        expect(_model.receivedBarEvents[1].stage).toBe(esp.ObservationStage.normal);
+        expect(_model.receivedBarEvents[1].stage).toBe(ObservationStage.normal);
 
         _router.publishEvent('modelId', 'barEvent_3', 3);
         expect(_model.receivedBarEvents.length).toBe(3);
         expect(_model.receivedBarEvents[2].event).toBe(3);
-        expect(_model.receivedBarEvents[2].stage).toBe(esp.ObservationStage.preview);
+        expect(_model.receivedBarEvents[2].stage).toBe(ObservationStage.preview);
 
         _model.dispose();
         _router.publishEvent('modelId', 'barEvent_1', 1);
@@ -438,7 +437,7 @@ describe('Decorators', () => {
     it('should allow multiple registrations for the same modelId against different objects', () => {
         _router.addModel('m1', {});
         class e {
-            @esp.observeEvent('anEvent')
+            @observeEvent('anEvent')
             _derivedEvent(event, context, model) {
             }
         }

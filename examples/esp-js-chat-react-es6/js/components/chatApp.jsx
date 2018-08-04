@@ -1,6 +1,6 @@
 import React from 'react';
-import MessageSection from './messageSection';
-import ThreadSection from './threadSection';
+import {MessageSection} from './messageSection';
+import {ThreadSection} from './threadSection';
 
 export class ChatApp extends React.Component {
     constructor() {

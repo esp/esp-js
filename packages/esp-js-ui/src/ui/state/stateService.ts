@@ -1,8 +1,7 @@
 import { Logger, Guard } from '../../core';
-
 const _log = Logger.create('StateService');
 
-export default class StateService {
+export class StateService {
     public saveApplicationState<T>(moduleKey:string, layoutMode:string, state:T): void {
         Guard.isString(moduleKey, 'appKey must be a string');
         Guard.isString(layoutMode, 'layoutMode must be a string');

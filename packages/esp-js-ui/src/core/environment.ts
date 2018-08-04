@@ -1,5 +1,5 @@
 import * as queryString from 'query-string';
-import Utils from './utils';
+import *  as Utils from './utils';
 
 const _isRunningOnTablet = (): boolean =>  {
     /* tslint:disable */
@@ -15,9 +15,9 @@ const _isRunningOnTablet = (): boolean =>  {
      }
     })(navigator.userAgent || navigator.vendor || window['opera']);
     return check;
-}
+};
 
-export default class Environment {
+export class Environment {
     private static _memoised: boolean = null;
 
     static get isRunningOnTablet(): boolean {

@@ -1,33 +1,33 @@
-import { observeEvent } from 'esp-js';
-import { viewBinding } from 'esp-js-react';
-import { RegionManager } from 'esp-js-ui';
-import BlotterView from '../views/blotterView';
+import {viewBinding} from 'esp-js-react';
+import {RegionManager} from 'esp-js-ui';
+import {BlotterView} from '../views/blotterView';
 import {
     Logger,
     ModelBase,
     IdFactory
 } from 'esp-js-ui';
-import BlotterState from './blotterState';
-
-let _log = Logger.create('BlotterTileModel');
+import {BlotterState} from './blotterState';
 
 @viewBinding(BlotterView)
-export default class BlotterModel extends ModelBase {
-    private _regionManager:RegionManager;
-    private _initialState:BlotterState;
+export class BlotterModel extends ModelBase {
+    private _regionManager: RegionManager;
+    private _initialState: BlotterState;
+
     constructor(
         router,
-        regionManager:RegionManager,
-        initialState:BlotterState // needs to be last due to how it's resolved via the container
+        regionManager: RegionManager,
+        initialState: BlotterState // needs to be last due to how it's resolved via the container
     ) {
         super(IdFactory.createId('blotterModel'), router);
         this._regionManager = regionManager;
         this._initialState = initialState;
     }
+
     public getTitle(): string {
         return 'Blotter';
     }
-    observeEvents():void {
+
+    observeEvents(): void {
         super.observeEvents();
         this._regionManager.addToRegion(
             this._initialState.regionName,
@@ -37,6 +37,7 @@ export default class BlotterModel extends ModelBase {
             this._close();
         });
     }
+
     _close() {
         this._regionManager.removeFromRegion(this._initialState.regionName, this);
     }

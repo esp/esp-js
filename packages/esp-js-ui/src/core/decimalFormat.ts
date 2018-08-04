@@ -1,6 +1,6 @@
-import Decimal from './decimal';
+import {Decimal} from './decimal';
 
-export default class DecimalFormat {
+export class DecimalFormat {
     public static ToString = (decimal: Decimal) => decimal.value.toFixed(decimal.scale);
     public static ToLocal = (decimal: Decimal) => decimal.value.toLocaleString();
 }

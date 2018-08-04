@@ -17,7 +17,7 @@
 // notice_end
 
 import {DiagnosticMonitor} from './diagnosticMonitor';
-import {DisposableBase} from '../../system/disposables/disposableBase';
+import {DisposableBase} from '../../system/disposables';
 
 export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
     addModel() {

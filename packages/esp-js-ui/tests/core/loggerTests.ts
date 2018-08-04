@@ -1,4 +1,4 @@
-import { default as Logger, LoggingConfig, LogEvent } from '../../src/core/logger';
+import { Logger, LoggingConfig, LogEvent } from '../../src/core';
 describe('Logger', () => {
     let _logger:Logger,
         _logEvent:LogEvent;

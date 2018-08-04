@@ -1,4 +1,4 @@
-import Decimal from '../../src/core/decimal';
+import {Decimal} from '../../src/core/decimal';
 describe('Decimal', () => {
     describe('parse', () => {
         it('returns null when passed invalid value', () => {

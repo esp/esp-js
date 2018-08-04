@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import esp from '../../src';
+import * as esp from '../../src';
 
 describe('.subscribeOn', () => {
     let _router;

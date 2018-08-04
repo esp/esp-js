@@ -1,4 +1,4 @@
-import esp from '../src';
+import * as esp from '../src';
 
 import {
     Router,

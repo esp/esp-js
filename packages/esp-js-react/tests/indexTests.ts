@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import espReact from '../src/index';
+import * as espReact from '../src/index';
 import {
     RouterProvider,
     SmartComponent,
@@ -24,7 +24,7 @@ import {
     viewBinding,
     ModelSelector,
     shouldUpdateMixin
-} from '../src/index';
+} from '../src';
 
 describe('index exports', () => {
     it('should export RouterProvider', () => {

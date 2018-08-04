@@ -34,7 +34,7 @@ export interface EventObservationMetadata {
     modelId: string;
 }
 
-let EspDecoratorMetadata = {
+export const EspDecoratorMetadata = {
     /**
      * Gets all events for an object instance
      */
@@ -135,5 +135,3 @@ function _createMetadata(prototype) {
     });
     return metadata;
 }
-
-export default EspDecoratorMetadata;

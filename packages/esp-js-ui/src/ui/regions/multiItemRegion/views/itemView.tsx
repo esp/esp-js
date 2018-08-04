@@ -5,7 +5,7 @@ export interface ItemViewProps  {
     style?: any;
 }
 
-export default class ItemView extends React.Component<ItemViewProps, any> {
+export class ItemView extends React.Component<ItemViewProps, any> {
     render() {
         let className = this.props.className ? this.props.className : 'item-item-container'; 
 

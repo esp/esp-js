@@ -1,23 +1,23 @@
 import * as Rx from 'rx';
-import DefaultPrerequisiteRegistrar from './prerequisites/defaultPrerequisiteRegistrar';
-import Logger from '../../core/logger';
+import {DefaultPrerequisiteRegistrar} from './prerequisites';
+import {Logger} from '../../core';
 import {Container} from 'microdi-js';
-import {ModuleLoadResult,ModuleChangeType} from './moduleLoadResult';
-import ComponentRegistryModel from '../components/componentRegistryModel';
-import ModuleDescriptor from './moduleDescriptor';
-import StateService from '../state/stateService';
-import {ResultStage, LoadResult} from './prerequisites/loadResult';
-import Module from './module';
+import {ModuleLoadResult, ModuleChangeType} from './moduleLoadResult';
+import {ComponentRegistryModel} from '../components';
+import {ModuleDescriptor} from './moduleDescriptor';
+import {StateService} from '../state';
+import {ResultStage, LoadResult} from './prerequisites';
+import {Module} from './module';
 
-export default class SingleModuleLoader {
-    private _preReqsLoader: DefaultPrerequisiteRegistrar;
+export class SingleModuleLoader {
+    private readonly _preReqsLoader: DefaultPrerequisiteRegistrar;
     private _log: Logger;
-    
+
     public functionalModule: Module;
 
     constructor(private _container: Container,
                 private _componentRegistryModel: ComponentRegistryModel,
-                private _stateService:StateService,
+                private _stateService: StateService,
                 private _descriptor: ModuleDescriptor
     ) {
 
@@ -59,7 +59,8 @@ export default class SingleModuleLoader {
                     errorMessage: `Failed to load module ${moduleName}`
                 });
                 obs.onCompleted();
-                return () => {};
+                return () => {
+                };
             }
 
             let initStream = this._buildInitStream(this.functionalModule);
@@ -72,7 +73,7 @@ export default class SingleModuleLoader {
         });
     }
 
-    public loadModuleLayout(layoutMode:string) : void {
+    public loadModuleLayout(layoutMode: string): void {
         if (!this.functionalModule) {
             return;
         }
@@ -118,14 +119,15 @@ export default class SingleModuleLoader {
                     moduleName: this._descriptor.moduleName,
                     errorMessage: `Failed to load module ${this._descriptor.moduleName}`
                 });
-                return () => {};
+                return () => {
+                };
             }
         })
-        .take(1);
+            .take(1);
     }
 
-    private _mapLoadResult(result: LoadResult) : ModuleLoadResult {
-        switch(result.stage) {
+    private _mapLoadResult(result: LoadResult): ModuleLoadResult {
+        switch (result.stage) {
             case ResultStage.Starting:
                 return {
                     type: ModuleChangeType.Change,

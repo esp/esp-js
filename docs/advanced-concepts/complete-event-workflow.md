@@ -109,7 +109,7 @@ Here is a small sample app demonstrating some feature of the event workflow.
 > The example uses the [auto event observation](./auto-event-observation.md) approach which does away with much of the plumbing code that interacts with the router.
 
 ``` js
-import esp from 'esp-js';
+import * as esp from 'esp-js';
 
 class Cart  {
     constructor(router) {

@@ -20,7 +20,7 @@ import {DisposableWrapper}  from './disposableWrapper';
 import {Disposable} from './disposable';
 
 export class CompositeDisposable implements Disposable {
-    private _disposables: Disposable[];
+    private readonly _disposables: Disposable[];
     private _isDisposed: boolean;
 
     public constructor(...disposables: Disposable[]) {

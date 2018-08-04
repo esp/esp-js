@@ -13,7 +13,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
     private _metadata: ComponentFactoryMetadata;
 
-    constructor(private _container: Container) {
+    protected constructor(private _container: Container) {
         super();
         this._currentComponents = [];
         this._metadata = getComponentFactoryMetadata(this);
@@ -25,6 +25,10 @@ export abstract class ComponentFactoryBase extends DisposableBase {
 
     public get shortName(): string {
         return this._metadata.shortName;
+    }
+
+    public get customMetadata(): any {
+        return this._metadata.customMetadata;
     }
 
     protected abstract _createComponent(childContainer: Container, state?: any): any;

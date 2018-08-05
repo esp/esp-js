@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "2.0.0-next.1",
+  "version": "2.0.0-0-alpha.a2170e34",
   "description": "ESP-JS-UI Package",
   "main": ".dist/esp-js-ui.js",
   "types": "esp-js-ui.d.ts",
@@ -11,13 +11,14 @@
     "clean": "task clean",
     "build-dev": "task build-dev",
     "build-prod": "task build-prod",
+    "pack": "task pack",
     "test": "task test",
     "test-ci": "task test-ci",
     "start": "task start --watch"
   },
   "devDependencies": {
     "jest": "23.4.2",
-    "tools": "^2.0.0-next.1",
+    "tools": "^2.0.0-0-alpha.a2170e34",
     "typescript": "2.9.2",
     "webpack": "4.16.3",
     "webpack-cli": "^3.0.8",
@@ -25,8 +26,8 @@
   },
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^2.0.0-next.1",
-    "esp-js-react": "^2.0.0-next.1",
+    "esp-js": "^2.0.0-0-alpha.a2170e34",
+    "esp-js-react": "^2.0.0-0-alpha.a2170e34",
     "microdi-js": "1.1.0",
     "query-string": "6.1.0",
     "react": "16.4.1",

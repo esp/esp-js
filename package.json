@@ -6,12 +6,13 @@
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "clean": "lerna run clean --sort --stream",
     "build-dev": "lerna run build-dev --sort --stream",
-    "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
+    "build-prod": "lerna run build-prod --sort --stream",
     "test": "lerna run test --stream --sort",
-    "update-prerelease-version": "yarn _update-version --cd-version=prerelease",
-    "update-premajor-version": "yarn _update-version --cd-version=premajor",
-    "_update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next"
+    "create-package": "yarn clean && yarn build-prod && lerna run pack",
+    "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
+    "publish-prerelease-version": "yarn clean && yarn build-prod && lerna publish --sort --stream --canary --preid next --npm-tag next --cd-version=premajor"
   },
   "devDependencies": {
     "@types/classnames": "2.2.6",

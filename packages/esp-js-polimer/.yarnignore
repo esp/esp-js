@@ -1,0 +1,17 @@
+.git
+.idea
+node_modules/
+*.log
+book.json
+esp-js-*.tgz
+.tsbuild
+!dist
+examples
+src
+tests
+typings
+!.dist/typings
+jest.config.js
+webpack.config.js
+docs
+tsconfig.json

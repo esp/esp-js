@@ -1,9 +1,0 @@
-.git
-.idea
-node_modules/
-*.log
-book.json
-esp-js-*.tgz
-.tsbuild
-!dist
-examples

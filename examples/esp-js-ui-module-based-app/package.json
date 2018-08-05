@@ -1,13 +1,13 @@
 {
   "name": "esp-js-ui-module-based-app",
-  "version": "2.0.0-next.1",
+  "version": "2.0.0-0-alpha.a2170e34",
   "license": "MIT",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "esp-js": "^2.0.0-next.1",
-    "esp-js-react": "^2.0.0-next.1",
-    "esp-js-ui": "^2.0.0-next.1",
+    "esp-js": "^2.0.0-0-alpha.a2170e34",
+    "esp-js-react": "^2.0.0-0-alpha.a2170e34",
+    "esp-js-ui": "^2.0.0-0-alpha.a2170e34",
     "lodash": "4.17.10",
     "microdi-js": "1.1.0",
     "react": "16.4.1",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "jest": "23.4.2",
-    "tools": "^2.0.0-next.1",
+    "tools": "^2.0.0-0-alpha.a2170e34",
     "typescript": "2.9.2",
     "webpack": "4.16.3",
     "webpack-cli": "^3.0.8",

@@ -1,6 +1,6 @@
 {
   "name": "esp-js-chat-react-es6",
-  "version": "2.0.0-next.1",
+  "version": "2.0.0-0-alpha.a2170e34",
   "description": "ESP port of Facebook Flux example chat application.",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.4.3",
     "classnames": "^2.2.3",
-    "esp-js": "^2.0.0-next.1",
+    "esp-js": "^2.0.0-0-alpha.a2170e34",
     "prop-types": "^15.6.1",
     "react": "16.4.1",
     "react-dom": "16.4.1"

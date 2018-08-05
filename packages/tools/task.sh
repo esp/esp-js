@@ -20,7 +20,9 @@ runTests() {
 }
 
 clean() {
-    rm -rf $(pwd)/.dist && rm -rf $(pwd)/.tsbuild
+    rm -rf $(pwd)/.dist
+    rm -rf $(pwd)/.tsbuild
+    find $(pwd) -name esp*.tgz -delete
 }
 
 case $CMD in
@@ -44,6 +46,10 @@ case $CMD in
 
   test)
     runTests --watchAll
+    ;;
+
+  pack)
+    yarn pack
     ;;
 
   start)

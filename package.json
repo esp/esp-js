@@ -6,9 +6,9 @@
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build-dev": "./scripts/build-all.sh dev",
+    "build-dev": "lerna run build-dev --sort --stream",
     "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
-    "test": "lerna run test --stream",
+    "test": "lerna run test --stream --sort",
     "update-prerelease-version": "yarn _update-version --cd-version=prerelease",
     "update-premajor-version": "yarn _update-version --cd-version=premajor",
     "_update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next"
@@ -45,7 +45,6 @@
     "script-loader": "0.7.2",
     "sinon": "6.1.4",
     "source-map-loader": "0.2.3",
-    "tools": "2.0.0-next.0",
     "ts-loader": "4.4.2",
     "tslint": "^5.9.1",
     "tslint-loader": "^3.6.0",

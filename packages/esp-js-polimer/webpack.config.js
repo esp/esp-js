@@ -21,7 +21,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'polimer': './src/index.ts'
+        'esp-js-polimer': './src/index.ts'
     },
     externals: {
         'rx': 'rx',

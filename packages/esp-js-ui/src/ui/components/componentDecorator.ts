@@ -8,7 +8,7 @@ export function getComponentFactoryMetadata(target): ComponentFactoryMetadata {
     throw new Error('No metadata found on component');
 }
 
-export function componentFactory(componentKey: string, shortName: string) {
+export function componentFactory(componentKey: string, shortName: string, customMetadata?: any) {
     Guard.isDefined(componentKey, 'componentKey must be defined');
     return (target) => {
         target.__componentMetadata = new ComponentFactoryMetadata(componentKey, shortName);
@@ -16,7 +16,7 @@ export function componentFactory(componentKey: string, shortName: string) {
 }
 
 export class ComponentFactoryMetadata {
-    constructor(public readonly componentKey: string, public readonly shortName: string) {
+    constructor(public readonly componentKey: string, public readonly shortName: string, public readonly customMetadata?: any) {
         Guard.isString(componentKey, 'componentKey must be defined and be a string');
         Guard.isString(shortName, 'shortName must be defined and be a string');
     }

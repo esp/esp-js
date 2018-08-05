@@ -8,7 +8,7 @@
     "bootstrap": "lerna bootstrap",
     "build-dev": "./scripts/build-all.sh dev",
     "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
-    "test": "lerna run test",
+    "test": "lerna run test --stream",
     "update-prerelease-version": "yarn _update-version --cd-version=prerelease",
     "update-premajor-version": "yarn _update-version --cd-version=premajor",
     "_update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next"

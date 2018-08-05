@@ -5,31 +5,49 @@ shift
 
 TEST_CI_COMMAND="test -f $(pwd)/jest.config.js && ./node_modules/.bin/jest --verbose --no-cache -c $(pwd)/jest.config.js --rootDir . || echo \"Skipping tests no test config found\""
 
+build() {
+    export NODE_ENV=$1
+    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details
+}
+
+runTests() {
+    if [ -f $(pwd)/jest.config.js ]
+    then
+        $(pwd)/node_modules/.bin/jest --verbose --no-cache -c $(pwd)/jest.config.js --rootDir . $1
+    else
+        echo "Skipping tests no test config found"
+    fi
+}
+
+clean() {
+    rm -rf $(pwd)/.dist && rm -rf $(pwd)/.tsbuild
+}
+
 case $CMD in
   clean)
-    eval "rm -rf ./.dist && rm -rf ./.tsbuild"
+    clean
     ;;
 
   build-dev)
-    export NODE_ENV=dev
-    eval "$(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details && ${TEST_CI_COMMAND}"
+    build dev
+    runTests
     ;;
 
   build-prod)
-    export NODE_ENV=prod
-    eval "./node_modules/.bin/webpack --display-reasons --display-error-details && ${TEST_CI_COMMAND}"
-    ;;
-
-  test)
-    eval "${TEST_CI_COMMAND} --watchAll"
+    build prod
+    runTests
     ;;
 
   test-ci)
-    eval "${TEST_CI_COMMAND}"
+    runTests
+    ;;
+
+  test)
+    runTests --watchAll
     ;;
 
   start)
-    eval "./node_modules/.bin/webpack-dev-server --inline --watch --progress --colors"
+    $(pwd)/node_modules/.bin/webpack-dev-server --inline --watch --progress --colors
     ;;
 
   *)

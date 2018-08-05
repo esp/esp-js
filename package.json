@@ -9,9 +9,9 @@
     "build-dev": "lerna run build-dev --sort --stream",
     "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
     "test": "lerna run test --stream --sort",
-    "update-prerelease-version": "yarn _update-version --cd-version=prerelease",
-    "update-premajor-version": "yarn _update-version --cd-version=premajor",
-    "_update-version": "lerna publish --skip-git --skip-npm --force-publish '*' --preid=next"
+    "publish-prerelease-version": "yarn _publish-pre --cd-version=prerelease",
+    "publish-premajor-version": "yarn _publish-pre --cd-version=premajor",
+    "_publish-pre": "lerna publish --force-publish '*' --preid=next"
   },
   "devDependencies": {
     "@types/classnames": "2.2.6",

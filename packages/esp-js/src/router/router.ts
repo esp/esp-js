@@ -20,7 +20,7 @@ import {Consts, Status, State, ModelRecord, ObservationStage, EventContext, Sing
 import {ModelChangedEvent} from './modelChangedEvent';
 import {Subject, Observable} from '../reactive';
 import {Guard, utils, logging} from '../system';
-import {DisposableBase, CompositeDisposable} from '../system/disposables';
+import {DisposableBase, CompositeDisposable, Disposable} from '../system/disposables';
 import {EspDecoratorMetadata} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {RouterSubject} from '../reactive';
@@ -227,7 +227,7 @@ export class Router extends DisposableBase {
             .subscribeOn(modelId);
     }
 
-    public createSubject<T>() {
+    public createSubject<T>(): RouterSubject<T> {
         return new RouterSubject<T>(this);
     }
 
@@ -236,7 +236,7 @@ export class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter<TModel>(this, targetModelId);
     }
 
-    public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_') {
+    public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_'): Disposable {
         if (EspDecoratorMetadata.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object);
         } else {
@@ -482,7 +482,7 @@ export class Router extends DisposableBase {
         return compositeDisposable;
     }
 
-    private _observeEventsUsingConventions(modelId, object, methodPrefix) {
+    private _observeEventsUsingConventions(modelId, object, methodPrefix): Disposable {
         let compositeDisposable = new CompositeDisposable();
         let props = utils.getPropertyNames(object);
         for (let i = 0; i < props.length; i++) {

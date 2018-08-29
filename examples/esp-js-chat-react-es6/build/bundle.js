@@ -24228,7 +24228,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
                 exports.logging = system_1.logging;
                 var reactive_1 = __webpack_require__( /*! ./reactive */"./src/reactive/index.ts");
                 exports.Observable = reactive_1.Observable;
-                exports.EventObservable = reactive_1.Observable;
                 exports.RouterObservable = reactive_1.RouterObservable;
                 exports.Subject = reactive_1.Subject;
                 exports.RouterSubject = reactive_1.RouterSubject;

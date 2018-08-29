@@ -2,7 +2,7 @@ import {Router, DisposableBase } from 'esp-js';
 import { Logger, Guard } from '../core';
 
 export abstract class ModelBase extends DisposableBase {
-    private _log: Logger;
+    protected _log: Logger;
 
     constructor(protected _modelId:string, protected _router:Router) {
         super();

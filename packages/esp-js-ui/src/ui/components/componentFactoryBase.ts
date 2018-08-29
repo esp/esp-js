@@ -13,7 +13,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
     private _metadata: ComponentFactoryMetadata;
 
-    protected constructor(private _container: Container) {
+    protected constructor(protected _container: Container) {
         super();
         this._currentComponents = [];
         this._metadata = getComponentFactoryMetadata(this);

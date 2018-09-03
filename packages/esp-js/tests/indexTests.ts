@@ -10,7 +10,6 @@ import {
     DisposableBase,
     ModelChangedEvent,
     Observable,
-    EventObservable,
     Subject,
     RouterObservable,
     RouterSubject,
@@ -64,11 +63,6 @@ describe('index exports', () => {
     it('should export Observable', () => {
         expect(esp.Observable).toBeDefined();
         expect(Observable).toBeDefined();
-    });
-
-    it('should export EventObservable', () => {
-        expect(esp.EventObservable).toBeDefined();
-        expect(EventObservable).toBeDefined();
     });
 
     it('should export Subject', () => {

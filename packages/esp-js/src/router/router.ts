@@ -20,7 +20,7 @@ import {Consts, Status, State, ModelRecord, ObservationStage, EventContext, Sing
 import {ModelChangedEvent} from './modelChangedEvent';
 import {Subject, Observable} from '../reactive';
 import {Guard, utils, logging} from '../system';
-import {DisposableBase, CompositeDisposable} from '../system/disposables';
+import {DisposableBase, CompositeDisposable, Disposable} from '../system/disposables';
 import {EspDecoratorMetadata} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {RouterSubject} from '../reactive';
@@ -68,7 +68,12 @@ export class Router extends DisposableBase {
         if (options) {
             Guard.isObject(options, 'The options argument should be an object');
         }
-        Guard.isFalsey(this._models.has(modelId), 'The model with id [' + modelId + '] is already registered');
+        let modelRecord = this._models.get(modelId);
+        if (modelRecord) {
+            // It's possible the model was observed first, thus has a model record but not yet an actual model.
+            // If there is a record, we just ensure it's model isn't there yet.
+            Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
+        }
         this._getOrCreateModelRecord(modelId, model, options);
         this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.Model});
         this._diagnosticMonitor.addModel(modelId);
@@ -227,7 +232,7 @@ export class Router extends DisposableBase {
             .subscribeOn(modelId);
     }
 
-    public createSubject<T>() {
+    public createSubject<T>(): RouterSubject<T> {
         return new RouterSubject<T>(this);
     }
 
@@ -236,7 +241,7 @@ export class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter<TModel>(this, targetModelId);
     }
 
-    public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_') {
+    public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_'): Disposable {
         if (EspDecoratorMetadata.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object);
         } else {
@@ -482,7 +487,7 @@ export class Router extends DisposableBase {
         return compositeDisposable;
     }
 
-    private _observeEventsUsingConventions(modelId, object, methodPrefix) {
+    private _observeEventsUsingConventions(modelId, object, methodPrefix): Disposable {
         let compositeDisposable = new CompositeDisposable();
         let props = utils.getPropertyNames(object);
         for (let i = 0; i < props.length; i++) {

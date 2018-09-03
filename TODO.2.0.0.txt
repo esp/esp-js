@@ -21,3 +21,30 @@ breaking changes:
  - reactive api now pushes envelopes, not T1, T2, T3
  - .where renamed to .filter
  - all default exports are now removed
+ - Previously the typings exposed ModelObservable and EventObservable, however underthe covers there was only ever 1 javascript object 'Observable'.
+   Now we're auto generating the types, all that exists is `Observable<T>`
+ - Extending the observable API requires a bit of dancing as typescript doesn't seem to declaration merge correctly when the .d.ts files are in multiple files.
+   It's the same patter as suggested here https://www.typescriptlang.org/docs/handbook/declaration-merging.html.
+   However you need to declare the specific path of the .d.ts you're extending, rather than the root import 'esp-js':
+
+     ```
+        import * as Rx from 'rx';
+        import {Observable } from 'esp-js';
+
+        declare module 'esp-js/.dist/typings/reactive/observable' {
+            export interface Observable<T> {
+                toRxObservable?<T>(): Rx.Observable<T>;
+            }
+        }
+
+        Observable.prototype.toRxObservable = function <T>(): Rx.Observable<T> {
+            const source: Observable<T> = this;
+            return Rx.Observable.create<T>(obs => {
+                const subscription = source.subscribe(
+                    (i: T) => obs.onNext(i),
+                    () => obs.onCompleted()
+                );
+                return subscription;
+            });
+        };
+     ```

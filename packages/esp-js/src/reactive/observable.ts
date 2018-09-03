@@ -26,24 +26,11 @@ import {DictionaryDisposable} from '../system/disposables';
 import {DisposableOrFunction} from '../system/disposables/disposable';
 import {AutoConnectedObservable} from './autoConnectedObservable';
 
-export interface Observable<T> {
-    asObservable?(): Observable<T>;
-    do?(action: (item: T) => void): Observable<T>;
-    map?<TResult>(action: (item: T) => TResult): Observable<TResult>;
-    cast?<TDownstream>(): Observable<TDownstream>;
-    take?(count: number): Observable<T>;
-    takeUntil?(predicate: (item: T) => boolean, inclusive: boolean): Observable<T>;
-    filter?(predicate: (item: T) => boolean): Observable<T>;
-    share?(cacheLastValue?: boolean): AutoConnectedObservable<T>;
-
-    asRouterObservable?(router: Router): RouterObservable<T>;
-}
-
 export interface OnObserve<T>  {
     (observer: Observer<T>): DisposableOrFunction;
 }
 
-export class Observable<T> implements Observable<T> {
+export class Observable<T> {
 
     public static create<T>(onObserve: OnObserve<T>) {
         Guard.isDefined(onObserve, 'onObserve not defined');
@@ -99,4 +86,14 @@ export class Observable<T> implements Observable<T> {
         Guard.isDefined(this._subscribe, '_subscribe not set');
         return this._subscribe(observer);
     }
+
+    public asObservable?(): Observable<T>;
+    public do?(action: (item: T) => void): Observable<T>;
+    public map?<TResult>(action: (item: T) => TResult): Observable<TResult>;
+    public cast?<TDownstream>(): Observable<TDownstream>;
+    public take?(count: number): Observable<T>;
+    public takeUntil?(predicate: (item: T) => boolean, inclusive: boolean): Observable<T>;
+    public filter?(predicate: (item: T) => boolean): Observable<T>;
+    public share?(cacheLastValue?: boolean): AutoConnectedObservable<T>;
+    public asRouterObservable?(router: Router): RouterObservable<T>;
 }

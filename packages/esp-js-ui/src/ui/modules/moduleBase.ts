@@ -7,6 +7,7 @@ import {PrerequisiteRegistrar} from './prerequisites';
 import {Module} from './module';
 import {DefaultStateProvider} from './defaultStateProvider';
 import {ComponentFactoryState} from './componentFactoryState';
+import {ModelBase} from '../modelBase';
 
 const _log: Logger = Logger.create('ModuleBase');
 
@@ -34,7 +35,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
     registerComponents(componentRegistryModel: ComponentRegistryModel) {
         _log.debug('Registering components');
-        let componentFactories: Array<ComponentFactoryBase> = this.getComponentsFactories();
+        let componentFactories: Array<ComponentFactoryBase<any>> = this.getComponentsFactories();
         componentFactories.forEach(componentFactory => {
             componentRegistryModel.registerComponentFactory(componentFactory);
             this.addDisposable(() => {
@@ -44,7 +45,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     }
 
     // override if required
-    getComponentsFactories(): Array<ComponentFactoryBase> {
+    getComponentsFactories(): Array<ComponentFactoryBase<ModelBase>> {
         return [];
     }
 
@@ -65,7 +66,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
         if (componentFactoriesState) {
             componentFactoriesState.forEach((componentFactoryState: ComponentFactoryState) => {
-                let componentFactory: ComponentFactoryBase = this.container.resolve<ComponentFactoryBase>(componentFactoryState.componentFactoryKey);
+                let componentFactory: ComponentFactoryBase<ModelBase> = this.container.resolve<ComponentFactoryBase<ModelBase>>(componentFactoryState.componentFactoryKey);
                 componentFactoryState.componentsState.forEach((state: any) => {
                     componentFactory.createComponent(state);
                 });
@@ -77,14 +78,14 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         if (!this._currentLayout) {
             return;
         }
-        let componentFactories: Array<ComponentFactoryBase> = this.getComponentsFactories();
+        let componentFactories: Array<ComponentFactoryBase<ModelBase>> = this.getComponentsFactories();
         let state = componentFactories
             .map(f => f.getAllComponentsState())
             .filter(f => f != null);
         if (state.length > 0) {
             this._stateService.saveApplicationState(this.moduleKey, this._currentLayout, state);
         }
-        componentFactories.forEach((factory: ComponentFactoryBase) => {
+        componentFactories.forEach((factory: ComponentFactoryBase<ModelBase>) => {
             factory.shutdownAllComponents();
         });
         this._currentLayout = null;

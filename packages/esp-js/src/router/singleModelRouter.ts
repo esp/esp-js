@@ -18,10 +18,11 @@
 
 import {Router}  from './router';
 import {Guard} from '../system';
-import {Observable, RouterObservable} from '../reactive';
+import {Observable, RouterObservable, RouterSubject} from '../reactive';
 import {ObservationStage} from './observationStage';
 import {EventEnvelope} from './envelopes';
 import {OnObserve} from '../reactive/observable';
+import {Disposable} from '../system/disposables';
 
 export class SingleModelRouter<TModel> {
     private _underlying: Router;
@@ -95,11 +96,11 @@ export class SingleModelRouter<TModel> {
             .subscribeOn(this._targetModelId);
     }
 
-    createSubject<T>() {
+    createSubject<T>(): RouterSubject<T> {
         return this._underlying.createSubject<T>();
     }
 
-    observeEventsOn(object: any, methodPrefix = '_observe_') {
+    observeEventsOn(object: any, methodPrefix = '_observe_'): Disposable {
         this._ensureModelIsSet();
         return this._underlying.observeEventsOn(this._targetModelId, object, methodPrefix);
     }

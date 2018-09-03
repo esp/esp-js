@@ -11,7 +11,7 @@ export function getComponentFactoryMetadata(target): ComponentFactoryMetadata {
 export function componentFactory(componentKey: string, shortName: string, customMetadata?: any) {
     Guard.isDefined(componentKey, 'componentKey must be defined');
     return (target) => {
-        target.__componentMetadata = new ComponentFactoryMetadata(componentKey, shortName);
+        target.__componentMetadata = new ComponentFactoryMetadata(componentKey, shortName, customMetadata);
     };
 }
 

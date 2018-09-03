@@ -24226,9 +24226,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
                 exports.observeEventEnvelope = observeEvent_1.observeEventEnvelope;
                 var system_1 = __webpack_require__( /*! ./system */"./src/system/index.ts");
                 exports.logging = system_1.logging;
+                var observable_1 = __webpack_require__( /*! ./reactive/observable */"./src/reactive/observable.ts");
+                exports.Observable = observable_1.Observable;
                 var reactive_1 = __webpack_require__( /*! ./reactive */"./src/reactive/index.ts");
-                exports.Observable = reactive_1.Observable;
-                exports.EventObservable = reactive_1.Observable;
                 exports.RouterObservable = reactive_1.RouterObservable;
                 exports.Subject = reactive_1.Subject;
                 exports.RouterSubject = reactive_1.RouterSubject;
@@ -26222,7 +26222,12 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
                         if (options) {
                             system_1.Guard.isObject(options, 'The options argument should be an object');
                         }
-                        system_1.Guard.isFalsey(this._models.has(modelId), 'The model with id [' + modelId + '] is already registered');
+                        let modelRecord = this._models.get(modelId);
+                        if (modelRecord) {
+                            // It's possible the model was observed first, thus has a model record but not yet an actual model.
+                            // If there is a record, we just ensure it's model isn't there yet.
+                            system_1.Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
+                        }
                         this._getOrCreateModelRecord(modelId, model, options);
                         this._dispatchSubject.onNext({ modelId: modelId, model: model, dispatchType: envelopes_1.DispatchType.Model });
                         this._diagnosticMonitor.addModel(modelId);

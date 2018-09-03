@@ -29,4 +29,5 @@ export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEvent
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
 export { logging } from './system';
-export { Observable, Observable as EventObservable, RouterObservable, Subject, RouterSubject } from './reactive';
+export { Observable } from './reactive/observable';
+export { RouterObservable, Subject, RouterSubject } from './reactive';

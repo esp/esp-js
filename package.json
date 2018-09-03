@@ -9,6 +9,7 @@
     "clean": "lerna run clean --sort --stream",
     "build-dev": "lerna run build-dev --sort --stream",
     "build-prod": "lerna run build-prod --sort --stream",
+    "build-pack": "lerna run build-pack",
     "test": "lerna run test --stream --sort",
     "create-package": "yarn clean && yarn build-prod && lerna run pack",
     "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",

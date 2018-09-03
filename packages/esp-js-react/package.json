@@ -18,7 +18,7 @@
     "clean": "task clean",
     "build-dev": "task build-dev",
     "build-prod": "task build-prod",
-    "pack": "task pack",
+    "build-pack": "task pack",
     "test": "task test",
     "test-ci": "task test-ci",
     "start": "task start --watch"

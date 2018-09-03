@@ -9,7 +9,7 @@ export interface ComponentStateSet {
     componentsState: Array<any>;
 }
 
-export abstract class ComponentFactoryBase extends DisposableBase {
+export abstract class ComponentFactoryBase<T extends ModelBase> extends DisposableBase {
     private _currentComponents: Array<ModelBase>;
     private _metadata: ComponentFactoryMetadata;
 
@@ -31,11 +31,11 @@ export abstract class ComponentFactoryBase extends DisposableBase {
         return this._metadata.customMetadata;
     }
 
-    protected abstract _createComponent(childContainer: Container, state?: any): any;
+    protected abstract _createComponent(childContainer: Container, state?: any): T;
 
-    public createComponent(state = null): void {
+    public createComponent(state = null): T {
         let childContainer = this._container.createChildContainer();
-        let component: ModelBase = this._createComponent(childContainer, state);
+        let component: T = this._createComponent(childContainer, state);
         component.addDisposable(childContainer);
         component.addDisposable(() => {
             let index = this._currentComponents.indexOf(component);
@@ -46,6 +46,7 @@ export abstract class ComponentFactoryBase extends DisposableBase {
             }
         });
         this._currentComponents.push(component);
+        return component;
     }
 
     public getAllComponentsState(): ComponentStateSet {

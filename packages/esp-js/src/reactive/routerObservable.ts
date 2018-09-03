@@ -20,11 +20,6 @@ import {Observable} from './observable';
 import {Guard} from '../system';
 import {Router} from '../router';
 
-export interface RouterObservable<T> extends Observable<T> {
-    streamFor?(modelId: string): RouterObservable<T>;
-    subscribeOn?(modelId: string): RouterObservable<T>;
-}
-
 export class RouterObservable<T> extends Observable<T> implements RouterObservable<T> {
     protected _router: Router;
     constructor(router: Router, subscribe) {
@@ -33,4 +28,7 @@ export class RouterObservable<T> extends Observable<T> implements RouterObservab
         super(subscribe);
         this._router = router;
     }
+
+    streamFor?(modelId: string): RouterObservable<T>;
+    subscribeOn?(modelId: string): RouterObservable<T>;
 }

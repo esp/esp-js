@@ -68,7 +68,12 @@ export class Router extends DisposableBase {
         if (options) {
             Guard.isObject(options, 'The options argument should be an object');
         }
-        Guard.isFalsey(this._models.has(modelId), 'The model with id [' + modelId + '] is already registered');
+        let modelRecord = this._models.get(modelId);
+        if (modelRecord) {
+            // It's possible the model was observed first, thus has a model record but not yet an actual model.
+            // If there is a record, we just ensure it's model isn't there yet.
+            Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
+        }
         this._getOrCreateModelRecord(modelId, model, options);
         this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.Model});
         this._diagnosticMonitor.addModel(modelId);

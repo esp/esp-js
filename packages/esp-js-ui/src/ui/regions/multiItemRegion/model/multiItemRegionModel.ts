@@ -25,6 +25,10 @@ export class MultiItemRegionModel extends RegionModelBase {
         this.items.push(new RegionItem(title, modelId, displayContext));
     }
 
+    public reset() {
+        this.items.length = 0;
+    }
+
     protected _removeFromRegion(modelId:string, displayContext?:string) : void {
         for(let i = this.items.length; i--;) {
             let item = this.items[i];

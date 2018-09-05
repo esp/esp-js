@@ -6,7 +6,12 @@ import {IdFactory} from '../idFactory';
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
 
-export abstract class RegionModelBase extends ModelBase {
+export interface RegionModel extends ModelBase {
+    getTitle(): string;
+    reset(): void;
+}
+
+export abstract class RegionModelBase extends ModelBase implements RegionModel {
     constructor(private _regionName : string, router: Router, private _regionManager) {
         super(IdFactory.createId(`region#${++_modelIdSeed}`), router);
     }
@@ -24,6 +29,8 @@ export abstract class RegionModelBase extends ModelBase {
     protected abstract _addToRegion(title:string, modelId:string, view:any, displayContext?:string);
 
     protected abstract _removeFromRegion(modelId:string, view:any, displayContext?:string);
+
+    public reset() { }
 
     private _registerWithRegionManager(regionName) {
         this._regionManager.registerRegion(

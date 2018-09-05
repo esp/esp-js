@@ -16,4 +16,8 @@ export class SingleItemRegionModel extends RegionModelBase {
     protected _removeFromRegion(modelId:string, displayContext?:string) {
         this.item = null;
     }
+
+    public reset() {
+        this.item = null;
+    }
 }

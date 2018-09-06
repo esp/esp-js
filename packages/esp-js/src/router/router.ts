@@ -302,7 +302,9 @@ export class Router extends DisposableBase {
         if (eventType === Consts.modelChangedEvent && event.modelId === modelId) {
             return;
         }
-        if (!this._models.has(modelId)) {
+        // we allow for lazy model registration, you can observe a model but then register it later,
+        // this means at this point when publishing an event we need to ensure the actual model is there.
+        if (!this._models.has(modelId) || !this._models.get(modelId).model) {
             throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
         } else {
             try {

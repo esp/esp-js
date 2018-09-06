@@ -80,8 +80,23 @@ describe('Router', () => {
             expect(lastEventDelivered).toBe(true);
         });
 
-        it('should copy custom properties on eventContext.custom', () => {
-            pending();
+        it('should throw if you publish without registering the model', () => {
+            expect(() => {
+                _router.publishEvent('fooModel', 'startEvent', 'start');
+            }).toThrow();
+
+            let receivedEvents = [];
+            // cause a lazy model registration
+            _router.getEventObservable('fooModel', 'startEvent').subscribe(ee => receivedEvents.push(ee));
+
+            expect(() => {
+                _router.publishEvent('fooModel', 'startEvent', 'start');
+            }).toThrow();
+
+            _router.addModel('fooModel', {});
+            _router.publishEvent('fooModel', 'startEvent', 'start');
+
+            expect(receivedEvents.length).toEqual(1);
         });
     });
 });

@@ -3,6 +3,7 @@ import { Logger, Guard } from '../core';
 
 export abstract class ModelBase extends DisposableBase {
     protected _log: Logger;
+    private  _observeEventsCalled = false;
 
     constructor(protected _modelId:string, protected _router:Router) {
         super();
@@ -15,6 +16,10 @@ export abstract class ModelBase extends DisposableBase {
     public abstract getTitle(): string;
 
     public observeEvents() {
+        if (this._observeEventsCalled) {
+            throw new Error(`observeEvents already called for model with id ${this._modelId}`);
+        }
+        this._observeEventsCalled = true;
         this._log.debug(`Adding model with id ${this._modelId} to router`);
         this.router.addModel(this._modelId, this);
         this.addDisposable(() => {

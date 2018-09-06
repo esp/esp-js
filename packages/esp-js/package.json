@@ -1,6 +1,6 @@
 {
   "name": "esp-js",
-  "version": "2.0.0-0-alpha.a2170e34",
+  "version": "2.0.0",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",
@@ -28,7 +28,7 @@
   "repository": "https://github.com/esp/esp-js",
   "devDependencies": {
     "jest": "23.4.2",
-    "tools": "^2.0.0-0-alpha.a2170e34",
+    "tools": "^2.0.0",
     "typescript": "2.9.2",
     "webpack": "4.16.3",
     "webpack-cli": "^3.0.8",

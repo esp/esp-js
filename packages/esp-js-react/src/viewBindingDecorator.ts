@@ -17,28 +17,29 @@
 // notice_end
 
 import * as React from 'react';
-import { Guard } from './guard';
+import {Guard} from './guard';
 
 let DEFAULT_VIEW_KEY = 'default-view-key';
 
 function getMetadata(target) {
-  if (!target._viewMetadata) {
-    target._viewMetadata = new ViewMetadata();
-  }
-  return target._viewMetadata;
+    if (!target._viewMetadata) {
+        target._viewMetadata = new ViewMetadata();
+    }
+    return target._viewMetadata;
 }
 
-export function createViewForModel(model, props, displayContext = DEFAULT_VIEW_KEY) {
-  // the view decorator isn't on the instance, it's on the constructor function that created that instance
-  let constructorFunction = model.constructor;
-  if (constructorFunction._viewMetadata) {
-    let viewMetadata = constructorFunction._viewMetadata;
-    if(viewMetadata.hasRegisteredViewContext(displayContext)) {
-      let viewMetadataRegistration = viewMetadata.viewRegistrations[displayContext];
-      return React.createElement(viewMetadataRegistration.view, props);
+export function createViewForModel(model, props, displayContext?: string) {
+    displayContext = displayContext || DEFAULT_VIEW_KEY;
+    // the view decorator isn't on the instance, it's on the constructor function that created that instance
+    let constructorFunction = model.constructor;
+    if (constructorFunction._viewMetadata) {
+        let viewMetadata = constructorFunction._viewMetadata;
+        if (viewMetadata.hasRegisteredViewContext(displayContext)) {
+            let viewMetadataRegistration = viewMetadata.viewRegistrations[displayContext];
+            return React.createElement(viewMetadataRegistration.view, props);
+        }
     }
-  }
-  throw new Error(`No suitable view found for model using '${displayContext}' context `);
+    throw new Error(`No suitable view found for model id '${model.modelId}' using context '${displayContext}'`);
 }
 
 /**
@@ -48,39 +49,39 @@ export function createViewForModel(model, props, displayContext = DEFAULT_VIEW_K
  * @returns {Function}
  */
 export function viewBinding(view: any, displayContext: string = DEFAULT_VIEW_KEY) {
-  Guard.isDefined(view, 'view must be defined');
-  Guard.isString(displayContext, 'displayContext must be a string');
-  return function (target) {
-    let viewMetadata = getMetadata(target);
-    if (viewMetadata.hasRegisteredViewContext(displayContext)) {
-      throw new Error(`Context ${displayContext} already registered for view`);
-    }
-    viewMetadata.viewRegistrations[displayContext] = new ViewMetadataRegistration(view, displayContext);
-  };
+    Guard.isDefined(view, 'view must be defined');
+    Guard.isString(displayContext, 'displayContext must be a string');
+    return function (target) {
+        let viewMetadata = getMetadata(target);
+        if (viewMetadata.hasRegisteredViewContext(displayContext)) {
+            throw new Error(`Context ${displayContext} already registered for view`);
+        }
+        viewMetadata.viewRegistrations[displayContext] = new ViewMetadataRegistration(view, displayContext);
+    };
 }
 
 export class ViewMetadata {
-  private _viewRegistrations = {};
+    private _viewRegistrations = {};
 
-  get viewRegistrations() {
-    return this._viewRegistrations;
-  }
+    get viewRegistrations() {
+        return this._viewRegistrations;
+    }
 
-  hasRegisteredViewContext(displayContext) {
-    return typeof this._viewRegistrations[displayContext] !== 'undefined';
-  }
+    hasRegisteredViewContext(displayContext) {
+        return typeof this._viewRegistrations[displayContext] !== 'undefined';
+    }
 }
 
-export  class ViewMetadataRegistration {
+export class ViewMetadataRegistration {
 
-  constructor(private _view, private _displayContext) {
-  }
+    constructor(private _view, private _displayContext) {
+    }
 
-  get view() {
-    return this._view;
-  }
+    get view() {
+        return this._view;
+    }
 
-  get displayContext() {
-    return this._displayContext;
-  }
+    get displayContext() {
+        return this._displayContext;
+    }
 }

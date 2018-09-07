@@ -40,6 +40,7 @@ describe('Decorators', () => {
         private _router: Router;
         private receivedBarEvents: Array<any>;
         private receivedFruitEvents: Array<any>;
+        private receivedBazzEventsAtAll: Array<any>;
         private subModel: SubModel;
 
         constructor(id, router) {
@@ -48,6 +49,7 @@ describe('Decorators', () => {
             this._router = router;
             this.receivedBarEvents = [];
             this.receivedFruitEvents = [];
+            this.receivedBazzEventsAtAll = [];
             this.subModel = new SubModel(id, router);
         }
 
@@ -93,6 +95,19 @@ describe('Decorators', () => {
         @observeEvent('fruitEvent', (model, event) => event.type === 'orange')
         _onFruitEvent(event, context, model) {
             this.receivedFruitEvents.push(event);
+        }
+
+        @observeEvent('bazzEvent', ObservationStage.all)
+        _bazzEventAtAll(event, context, model) {
+            this.receivedBazzEventsAtAll.push({
+                eventType: context.eventType,
+                event: event,
+                model: model,
+                stage: context.currentStage
+            });
+            if (ObservationStage.isNormal(context.currentStage)) {
+                context.commit();
+            }
         }
 
         //end-non-standard
@@ -331,6 +346,24 @@ describe('Decorators', () => {
         expect(normalInvokeCount).toBe(1);
         expect(normal2InvokeCount).toBe(1);
         expect(committedInvokeCount).toBe(1);
+    });
+
+    it('should observe events by event name and stage when using ObservationStage.all', () => {
+        _model.observeEvents();
+        _router.publishEvent('modelId', 'bazzEvent', 1);
+        expect(_model.receivedBazzEventsAtAll.length).toBe(3);
+
+        expect(_model.receivedBazzEventsAtAll[0].stage).toEqual(ObservationStage.preview);
+        expect(_model.receivedBazzEventsAtAll[0].eventType).toEqual('bazzEvent');
+        expect(_model.receivedBazzEventsAtAll[0].event).toEqual(1);
+
+        expect(_model.receivedBazzEventsAtAll[1].stage).toEqual(ObservationStage.normal);
+        expect(_model.receivedBazzEventsAtAll[1].eventType).toEqual('bazzEvent');
+        expect(_model.receivedBazzEventsAtAll[1].event).toEqual(1);
+
+        expect(_model.receivedBazzEventsAtAll[2].stage).toEqual(ObservationStage.committed);
+        expect(_model.receivedBazzEventsAtAll[2].eventType).toEqual('bazzEvent');
+        expect(_model.receivedBazzEventsAtAll[2].event).toEqual(1);
     });
 
     it('should stop observing events when disposable disposed', () => {

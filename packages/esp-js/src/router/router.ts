@@ -16,19 +16,16 @@
  */
 // notice_end
 
-import {Consts, Status, State, ModelRecord, ObservationStage, EventContext, SingleModelRouter} from './';
+import {Consts, EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {ModelChangedEvent} from './modelChangedEvent';
-import {Subject, Observable} from '../reactive';
-import {Guard, utils, logging} from '../system';
-import {DisposableBase, CompositeDisposable, Disposable} from '../system/disposables';
+import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
+import {Guard, logging, utils} from '../system';
+import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
 import {EspDecoratorMetadata} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
-import {RouterSubject} from '../reactive';
-import {RouterObservable} from '../reactive';
 import {CompositeDiagnosticMonitor} from './devtools';
 import {ModelOptions} from './modelOptions';
-import {EventEnvelope, ModelEnvelope} from './envelopes';
-import {DispatchType} from './envelopes';
+import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
 import {DecoratorTypes} from '../decorators/espDecoratorMetadata';
@@ -161,12 +158,7 @@ export class Router extends DisposableBase {
             Guard.isString(modelId, 'The modelId argument should be a string');
             Guard.isString(eventType, 'The eventType must be a string');
             Guard.isDefined(modelId, 'The modelId argument should be defined');
-            if (stage) {
-                Guard.isString(stage, 'The stage argument should be a string');
-                Guard.isTrue(stage === ObservationStage.preview || stage === ObservationStage.normal || stage === ObservationStage.committed, 'The stage argument value of [' + stage + '] is incorrect. It should be preview, normal or committed.');
-            } else {
-                stage = ObservationStage.normal;
-            }
+            stage = this._tryDefaultObservationStage(stage);
             let modelRecord = this._getOrCreateModelRecord(modelId);
             let eventStreamDetails: EventStreamsRegistration = modelRecord.getOrCreateEventStreamsRegistration(
                 eventType,
@@ -179,21 +171,61 @@ export class Router extends DisposableBase {
                     return eventStreamDetails.normal.subscribe(o);
                 case ObservationStage.committed:
                     return eventStreamDetails.committed.subscribe(o);
+                case ObservationStage.all:
+                    return eventStreamDetails.all.subscribe(o);
                 default:
-                    throw new Error(`Unknown stage ${stage} requested for eventType ${eventType} and modelId: ${modelId}`);
+                    throw new Error(`Unknown stage '${stage}' requested for eventType ${eventType} and modelId: ${modelId}`);
             }
         });
     }
 
-    public getAllEventsObservable<TModel>(...eventTypes: string[]): Observable<EventEnvelope<any, TModel>> {
-        let set = new Set(eventTypes);
-        let eventFilter = eventTypes.length > 0
-            ? eventType => set.has(eventType)
-            : () => true;
+    // all events, optionally provide a stage to filter on
+    public getAllEventsObservable<TModel>(stage?: ObservationStage): Observable<EventEnvelope<any, TModel>>;
+    // given events, optionally provide a stage to filter on
+    public getAllEventsObservable<TModel>(eventTypes: string[], stage?: ObservationStage): Observable<EventEnvelope<any, TModel>>;
+    public getAllEventsObservable<TModel>(...args: any[]): Observable<EventEnvelope<any, TModel>> {
+        let eventFilter: (eventType?: string) => boolean;
+        let stage: ObservationStage;
+        const buildFilter = (eventTypes: string[]) => {
+            Guard.lengthIsAtLeast(eventTypes, 1, 'eventTypes.length must be > 0');
+            let set = new Set(eventTypes);
+            return eventType => set.has(eventType);
+        };
+        // try figure out which overload was used
+        if (!args || args.length === 0) {
+            stage = ObservationStage.normal;
+            eventFilter = () => true;
+        } else if (args.length === 1) {
+            // first param could be an array or an observation stage
+            if (ObservationStage.isObservationStage(args[0])) {
+                stage = this._tryDefaultObservationStage(args[0]);
+                eventFilter = () => true;
+            } else  {
+                // else assume it's an array
+                stage = ObservationStage.normal;
+                eventFilter = buildFilter(args[0]);
+            }
+        } else if (args.length === 2) {
+            // with this overload, the first param should be an event array
+            eventFilter = buildFilter(args[0]);
+            stage = this._tryDefaultObservationStage(args[1]);
+
+        } else {
+            throw new Error(`unsupported overload called for getAllEventsObservable. Received ${args}.`);
+        }
+        stage = this._tryDefaultObservationStage(stage);
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
             return this._dispatchSubject
                 .filter(envelope => envelope.dispatchType === DispatchType.Event)
+                .cast<EventEnvelope<any, any>>()
+                .filter(envelope => {
+                    if (ObservationStage.isAll(stage)) {
+                        return true;
+                    } else {
+                        return envelope.observationStage === stage;
+                    }
+                })
                 .cast<EventEnvelope<any, any>>()
                 .filter(envelope => eventFilter(envelope.eventType))
                 .subscribe(o);
@@ -522,6 +554,16 @@ export class Router extends DisposableBase {
             }
         }
         return compositeDisposable;
+    }
+
+    private _tryDefaultObservationStage(stage?: ObservationStage) {
+        if (stage) {
+            Guard.isString(stage, 'The stage argument should be a string');
+            Guard.isTrue(ObservationStage.isObservationStage(stage), 'The stage argument value of [' + stage + '] is incorrect. It should be ObservationStage.preview, ObservationStage.normal, ObservationStage.committed or ObservationStage.all.');
+            return stage;
+        } else {
+            return ObservationStage.normal;
+        }
     }
 
     private _throwIfHaltedOrDisposed() {

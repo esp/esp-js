@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "2.0.0",
-    "esp-js-react": "2.0.0",
+    "esp-js": "^2.0.0",
+    "esp-js-react": "^2.0.0",
     "microdi-js": "1.1.0",
     "query-string": "6.1.0",
     "react": "16.4.1",

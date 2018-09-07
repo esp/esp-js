@@ -32,7 +32,7 @@
     "webpack-dev-server": "3.1.5"
   },
   "dependencies": {
-    "esp-js": "2.0.0",
+    "esp-js": "^2.0.0",
     "prop-types": "^15.6.2",
     "react": "16.4.1"
   }

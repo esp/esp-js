@@ -20,7 +20,7 @@
 // I could have a single file, then source the tests and using eval to run them thus not having to copy and past this file, however debugging tests for each transpiler gets really hard.
 // For now it's easiest to just copy paste from the .ts version, then remove the class level private vars from the babel implementation
 
-import {DisposableBase, Router, observeEventEnvelope} from '../../src';
+import {DisposableBase, ObservationStage, observeEventEnvelope, Router} from '../../src';
 
 describe('Decorators', () => {
 
@@ -34,12 +34,14 @@ describe('Decorators', () => {
         private _id: string;
         private _router: Router;
         public receivedEvent: Array<any>;
+        public receivedAllEvent: Array<any>;
 
         constructor(id, router) {
             super();
             this._id = id;
             this._router = router;
             this.receivedEvent = [];
+            this.receivedAllEvent = [];
         }
 
         observeEvents() {
@@ -49,8 +51,17 @@ describe('Decorators', () => {
 
         //start-non-standard
         @observeEventEnvelope('fooEvent')
-        _fooEventAtPreview(envelope) {
+        _onFooEventAtPreviewAtNormal(envelope) {
             this.receivedEvent.push(envelope);
+        }
+
+        //start-non-standard
+        @observeEventEnvelope('barEvent', ObservationStage.all)
+        _onBarEventAtAll(envelope) {
+            this.receivedAllEvent.push(envelope);
+            if (ObservationStage.isNormal(envelope.observationStage)) {
+                envelope.context.commit();
+            }
         }
     }
 
@@ -64,5 +75,22 @@ describe('Decorators', () => {
         expect(_model.receivedEvent.length).toBe(1);
         expect(_model.receivedEvent[0].event).toBe(1);
         expect(_model.receivedEvent[0].model).toBe(_model);
+    });
+
+    it('should observe all events events by event name', () => {
+        _router.publishEvent('modelId', 'barEvent', 1);
+        expect(_model.receivedAllEvent.length).toBe(3);
+
+        expect(_model.receivedAllEvent[0].event).toBe(1);
+        expect(_model.receivedAllEvent[0].model).toBe(_model);
+        expect(_model.receivedAllEvent[0].observationStage).toBe(ObservationStage.preview);
+
+        expect(_model.receivedAllEvent[1].event).toBe(1);
+        expect(_model.receivedAllEvent[1].model).toBe(_model);
+        expect(_model.receivedAllEvent[1].observationStage).toBe(ObservationStage.normal);
+
+        expect(_model.receivedAllEvent[2].event).toBe(1);
+        expect(_model.receivedAllEvent[2].model).toBe(_model);
+        expect(_model.receivedAllEvent[2].observationStage).toBe(ObservationStage.committed);
     });
 });

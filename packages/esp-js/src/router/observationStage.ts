@@ -17,7 +17,41 @@
  // notice_end
 
 export enum ObservationStage {
+    /**
+     * Observe at the preview event stage only
+     */
     preview = 'preview',
+    /**
+     * Observe at the normal event stage only
+     */
     normal = 'normal',
-    committed = 'committed'
+    /**
+     * Observe at the committed event stage only
+     */
+    committed = 'committed',
+    /**
+     * Observe at all event stages
+     */
+    all = 'all'
+}
+
+export namespace ObservationStage {
+    export function isPreview(stage: ObservationStage) {
+        return stage === ObservationStage.preview;
+    }
+    export function isNormal(stage: ObservationStage) {
+        return stage === ObservationStage.normal;
+    }
+    export function isCommitted(stage: ObservationStage) {
+        return stage === ObservationStage.committed;
+    }
+    export function isAll(stage: ObservationStage) {
+        return stage === ObservationStage.all;
+    }
+    export function isAny(stage: ObservationStage) {
+        return isPreview(stage) || isNormal(stage) || isCommitted(stage) || isAll(stage);
+    }
+    export function isObservationStage(stage: any): stage is ObservationStage {
+        return isAny(<ObservationStage>stage);
+    }
 }

@@ -25,6 +25,7 @@ import {Guard} from '../system';
 import {ObservationStage} from './index';
 
 export interface EventStreamsRegistration {
+    all: AutoConnectedObservable<EventEnvelope<any, any>>;
     preview: AutoConnectedObservable<EventEnvelope<any, any>>;
     normal: AutoConnectedObservable<EventEnvelope<any, any>>;
     committed: AutoConnectedObservable<EventEnvelope<any, any>>;
@@ -98,13 +99,15 @@ export class ModelRecord {
             eventStreamsRegistration = {
                 streams: {
                     preview: eventStream
-                        .filter(envelope => envelope.observationStage === ObservationStage.preview)
+                        .filter(envelope => ObservationStage.isPreview(envelope.observationStage))
                         .share(false),
                     normal: eventStream
-                        .filter(envelope => envelope.observationStage === ObservationStage.normal)
+                        .filter(envelope => ObservationStage.isNormal(envelope.observationStage))
                         .share(false),
                     committed: eventStream
-                        .filter(envelope => envelope.observationStage === ObservationStage.committed)
+                        .filter(envelope => ObservationStage.isCommitted(envelope.observationStage))
+                        .share(false),
+                    all: eventStream
                         .share(false)
                 }
             };
@@ -135,6 +138,7 @@ export class ModelRecord {
             streamsRegistration.streams.preview.disconnect();
             streamsRegistration.streams.normal.disconnect();
             streamsRegistration.streams.committed.disconnect();
+            streamsRegistration.streams.all.disconnect();
         });
     }
     _createEventProcessor(name, modelProcessMethod, externalProcessor):  (model: any, eventsProcessed?: string[]) => void {

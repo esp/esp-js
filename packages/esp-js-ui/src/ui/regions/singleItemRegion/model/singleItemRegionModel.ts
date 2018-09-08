@@ -1,5 +1,6 @@
 import {RegionItem} from '../../regionItem';
 import {RegionModelBase} from '../../regionModelBase';
+import {DisplayOptions} from '../../regionManager';
 
 export class SingleItemRegionModel extends RegionModelBase {
     public item:RegionItem;
@@ -9,11 +10,11 @@ export class SingleItemRegionModel extends RegionModelBase {
         this.item = null;
     }
 
-    protected _addToRegion(title: string, modelId:string, displayContext?:string) {
-        this.item = new RegionItem(title, modelId, displayContext);
+    protected _addToRegion(regionItem:RegionItem, displayOptions?: DisplayOptions) {
+        this.item = regionItem;
     }
 
-    protected _removeFromRegion(modelId:string, displayContext?:string) {
+    protected _removeFromRegion(regionItem:RegionItem, displayOptions?: DisplayOptions) {
         this.item = null;
     }
 

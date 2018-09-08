@@ -2,12 +2,13 @@
 
 CMD=$1
 shift
+ARGS="$@"
 
 TEST_CI_COMMAND="test -f $(pwd)/jest.config.js && ./node_modules/.bin/jest --verbose --no-cache -c $(pwd)/jest.config.js --rootDir . || echo \"Skipping tests no test config found\""
 
 build() {
     export NODE_ENV=$1
-    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details
+    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details ${ARGS}
 }
 
 runTests() {

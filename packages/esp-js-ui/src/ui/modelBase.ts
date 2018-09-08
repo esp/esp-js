@@ -13,7 +13,7 @@ export abstract class ModelBase extends DisposableBase {
         this._log = Logger.create(`ModelBase-${_modelId}`);
     }
 
-    public abstract getTitle(): string;
+    public getTitle(): string { return ''; }
 
     public observeEvents() {
         if (this._observeEventsCalled) {

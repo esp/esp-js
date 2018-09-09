@@ -1,9 +1,8 @@
 import { Logger, Guard } from '../../core';
-import {ModelBase} from '../modelBase';
-
+import {RegionItem} from './regionItem';
 const _log = Logger.create('RegionManager');
 
-export type ViewCallBack = (model: ModelBase, viewKey?: string) => void;
+export type ViewCallBack = (regionItem: RegionItem) => void;
 
 interface CallbackItem {
     onAdding: ViewCallBack;
@@ -14,13 +13,21 @@ interface RegionKeyToCallbackMap {
     [key: string]: CallbackItem;
 }
 
+export interface DisplayOptions {
+    title?:string;
+    /**
+     * If provided, will be used to select the @viewBinding on the model with the matching displayContext
+     */
+    displayContext?:string;
+}
+
 // exists to decouple all the region and their models from the rest of the app
 export class RegionManager {
     private _regions: RegionKeyToCallbackMap = {};
     
     // adds a region to the region manager
     public registerRegion(regionName: string, onAddingViewToRegionCallback: ViewCallBack, onRemovingFromRegionCallback: ViewCallBack) {
-        Guard.isString(regionName, 'region name required');
+        Guard.stringIsNotEmpty(regionName, 'region name required');
         Guard.isFunction(onAddingViewToRegionCallback, 'onAddingViewToRegionCallback must be a function');
         Guard.isFunction(onRemovingFromRegionCallback, 'onRemovingFromRegionCallback must be a function');
 
@@ -42,27 +49,29 @@ export class RegionManager {
     }
 
     // adds a model to be displayed in a region, uses annotations to find view
-    public addToRegion(regionName: string, model:ModelBase, displayContext?:string) {
-        Guard.isString(regionName, 'region name required');
-        Guard.isDefined(model, 'model must be defined');
-        _log.debug(`Adding model with id ${model.modelId} (display context:'${displayContext || 'n/a'}') to region ${regionName}`);
+    public addToRegion(regionName: string, modelId:string, displayOptions?: DisplayOptions): RegionItem {
+        Guard.stringIsNotEmpty(regionName, 'region name required');
+        Guard.stringIsNotEmpty(modelId, 'modelId must be defined');
         if (!(regionName in this._regions)) {
-            let message = `Cannot add model with id ${model.modelId} to region ${regionName} as the region is not registered`;
+            let message = `Cannot add model with id ${modelId} to region ${regionName} as the region is not registered`;
             _log.error(message);
             throw new Error(message);
         }
-        this._regions[regionName].onAdding(model, displayContext);
+        let regionItem = new RegionItem(modelId, displayOptions);
+        _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}.`);
+        this._regions[regionName].onAdding(regionItem);
+        return regionItem;
     }
 
-    public removeFromRegion(regionName: string, model: ModelBase, displayContext?: string): void {
-        Guard.isString(regionName, 'region name required');
-        Guard.isDefined(model, 'model must be defined');
-        _log.debug(`Removing model with id ${model.modelId} (display context:'${displayContext || 'n/a'}') from region ${regionName}`);
+    public removeFromRegion(regionName: string, regionItem: RegionItem): void {
+        Guard.stringIsNotEmpty(regionName, 'region name required');
+        Guard.isDefined(regionItem, 'regionItem must be defined');
+        _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}.`);
         if (!(regionName in this._regions)) {
-            let message = `Cannot remove model with id ${model.modelId} from region ${regionName} as the region is not registered`;
+            let message = `Cannot remove from region ${regionName} as the region is not registered. ${regionItem}`;
             _log.error(message);
             throw new Error(message);
         }
-        this._regions[regionName].onRemoving(model, displayContext);
+        this._regions[regionName].onRemoving(regionItem);
     }
 }

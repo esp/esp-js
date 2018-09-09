@@ -25,7 +25,10 @@ export class SingleItemRegionView extends ViewBase<SingleItemRegionView, SingleI
             let className = classnames(this.props.className, 'single-item-container');
             return (
                 <div className={className}>
-                    <ConnectableComponent modelId={model.item.modelId} viewContext={model.item.displayContext} />
+                    <ConnectableComponent
+                        modelId={model.item.modelId}
+                        viewContext={model.item.displayContext}
+                    />
                 </div>
             );
         } else {

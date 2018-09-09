@@ -21,27 +21,26 @@ export class MultiItemRegionModel extends RegionModelBase {
         this.selectedItem = ev.selectedItem;
     }
 
-    protected _addToRegion(title: string, modelId:string, displayContext?:string) : void {
-        this.items.push(new RegionItem(title, modelId, displayContext));
+    protected _addToRegion(regionItem: RegionItem) : void {
+        this.items.push(regionItem);
     }
 
     public reset() {
         this.items.length = 0;
     }
 
-    protected _removeFromRegion(modelId:string, displayContext?:string) : void {
-        for(let i = this.items.length; i--;) {
+    protected _removeFromRegion(regionItem: RegionItem) : void {
+        for (let i = this.items.length; i--;) {
             let item = this.items[i];
-            if(item === this.selectedItem) {
-                this.selectedItem = null;   
-            }
-            
-            if(item.equals(modelId, displayContext)) {
+            if(item.equals(regionItem)) {
                 this.items.splice(i, 1);
+                if (item === this.selectedItem) {
+                    this.selectedItem = null;
+                }
                 break;
             }
         }
-        if(!this.selectedItem && this.items.length > 0) {
+        if (!this.selectedItem && this.items.length > 0) {
             this.selectedItem = this.items[0];
         }
     }

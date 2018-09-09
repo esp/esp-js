@@ -49,8 +49,8 @@ export class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, M
 
                 return (<div
                     onClick={() => this._onItemClicked(item)}
-                    key={item.itemKey}
-                    className={className}>{item.title}
+                    key={item.id}
+                    className={className}>{item.displayOptions && item.displayOptions.title || 'Item'}
                 </div>);
             });
             header = (<div className='item-header-container'>{headerButtons}</div>);
@@ -58,7 +58,7 @@ export class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, M
 
         let grids = model.items.map((item: RegionItem) => {
             if(item === selectedItem) {
-                return (<ItemView key={item.itemKey} className='single-item-view-container'>
+                return (<ItemView key={item.id} className='single-item-view-container'>
                     <ConnectableComponent modelId={item.modelId} viewContext={item.displayContext} />
                 </ItemView>);
             } else {

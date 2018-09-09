@@ -27,8 +27,8 @@ export class MultiItemRegionView extends ViewBase<MultiItemRegionView, MultiItem
         }
 
         let items = model.items.map((regionItem: RegionItem) => {
-            _log.verbose(`Adding view for model [${regionItem.modelId}] with key [${regionItem.itemKey}]`);
-            return (<ItemView key={regionItem.itemKey}>
+            _log.verbose(`Adding view for region item: [${regionItem.toString()}]`);
+            return (<ItemView key={regionItem.id}>
                 <ConnectableComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext}/>
             </ItemView>);
         });

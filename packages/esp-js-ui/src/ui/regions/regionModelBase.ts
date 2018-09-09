@@ -2,6 +2,8 @@ import { Logger } from '../../core';
 import {Router} from 'esp-js';
 import {ModelBase} from '../modelBase';
 import {IdFactory} from '../idFactory';
+import {RegionManager} from './regionManager';
+import {RegionItem} from './regionItem';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
@@ -12,7 +14,11 @@ export interface RegionModel extends ModelBase {
 }
 
 export abstract class RegionModelBase extends ModelBase implements RegionModel {
-    constructor(private _regionName : string, router: Router, private _regionManager) {
+    constructor(
+        protected _regionName : string,
+        router: Router,
+        protected _regionManager: RegionManager
+    ) {
         super(IdFactory.createId(`region#${++_modelIdSeed}`), router);
     }
 
@@ -26,9 +32,9 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         return '';
     }
 
-    protected abstract _addToRegion(title:string, modelId:string, view:any, displayContext?:string);
+    protected abstract _addToRegion(regionItem: RegionItem);
 
-    protected abstract _removeFromRegion(modelId:string, view:any, displayContext?:string);
+    protected abstract _removeFromRegion(regionItem: RegionItem);
 
     public reset() { }
 
@@ -36,22 +42,22 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         this._regionManager.registerRegion(
             regionName,
             // on add
-            (model:ModelBase, displayContext?:string) => {
+            (regionItem: RegionItem) => {
                 this._router.runAction(
                     this.modelId,
                     () => {
-                        _log.debug(`Adding model with id ${model.modelId} (display context:'${displayContext || 'n/a'}') to region ${regionName}`);
-                        this._addToRegion(model.getTitle(), model.modelId, displayContext);
+                        _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}`);
+                        this._addToRegion(regionItem);
                     }
                 );
             },
             // on remove
-            (model:ModelBase, displayContext?:string) => {
+            (regionItem: RegionItem) => {
                 this._router.runAction(
                     this.modelId,
                     () => {
-                        _log.debug(`Removing model with id ${model.modelId} (display context:'${displayContext || 'n/a'}') from region ${regionName}`);
-                        this._removeFromRegion(model.modelId, displayContext);
+                        _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}`);
+                        this._removeFromRegion(regionItem);
                     }
                 );
             }

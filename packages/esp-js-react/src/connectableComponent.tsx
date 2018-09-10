@@ -97,13 +97,8 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
         if(this.state.model == null) {
             return null;
         }
-
         let props = this._getChildProps();
-        if(this.props.view) {
-            return React.createElement(this.props.view, props);
-        }
-
-        return createViewForModel(this.state.model, props, this.props.viewContext);
+        return createViewForModel(this.state.model, props, this.props.viewContext, this.props.view);
     }
 
     private _getChildProps() {

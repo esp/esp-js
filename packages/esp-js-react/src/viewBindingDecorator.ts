@@ -28,18 +28,37 @@ function getMetadata(target) {
     return target._viewMetadata;
 }
 
-export function createViewForModel(model, props, displayContext?: string) {
-    displayContext = displayContext || DEFAULT_VIEW_KEY;
+export function createViewForModel(model: any, props, displayContext: string, view: React.ComponentClass | React.SFC) {
+    // 1) If a display context was provided try get a view for that first
+    // 2) Else if a view was provided use that
+    // 3) Else try get a view using the default display context
+
+    let finalView: React.ComponentClass | React.SFC = view; // default to that passed in, if any.
+
+    // displayContext = displayContext || DEFAULT_VIEW_KEY;
     // the view decorator isn't on the instance, it's on the constructor function that created that instance
-    let constructorFunction = model.constructor;
-    if (constructorFunction._viewMetadata) {
-        let viewMetadata = constructorFunction._viewMetadata;
-        if (viewMetadata.hasRegisteredViewContext(displayContext)) {
-            let viewMetadataRegistration = viewMetadata.viewRegistrations[displayContext];
-            return React.createElement(viewMetadataRegistration.view, props);
+    if (model) {
+        let constructorFunction = model.constructor;
+        if (constructorFunction._viewMetadata) {
+            let viewMetadata = constructorFunction._viewMetadata;
+            if (displayContext && viewMetadata.hasRegisteredViewContext(displayContext)) {
+                let viewMetadataRegistration = viewMetadata.viewRegistrations[displayContext];
+                // we've found a view for the display context, use that
+                finalView = viewMetadataRegistration.view;
+            }
+
+            // if we've not found a view yet, is there a default one?
+
+            if (!finalView && viewMetadata.hasRegisteredViewContext(DEFAULT_VIEW_KEY)) {
+                let viewMetadataRegistration = viewMetadata.viewRegistrations[DEFAULT_VIEW_KEY];
+                finalView = viewMetadataRegistration.view;
+            }
         }
     }
-    throw new Error(`No suitable view found for model id '${model.modelId}' using context '${displayContext}'`);
+    if (!finalView) {
+        throw new Error(`No suitable view found for model id '${model.modelId}' using context '${displayContext}'`);
+    }
+    return React.createElement(finalView, props);
 }
 
 /**

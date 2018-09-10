@@ -77,11 +77,7 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
     }
     render() {
         if(this.state.model) {
-            if(this.props.view) {
-                return React.createElement(this.props.view, this._getChildProps());
-            } else if (this.state.model) {
-                return createViewForModel(this.state.model, this._getChildProps(), this.props.viewContext);
-            }
+            return createViewForModel(this.state.model, this._getChildProps(), this.props.viewContext, this.props.view);
         }
         return null; // this (in react 15) will render a 'comment node' rather than any actual html
     }

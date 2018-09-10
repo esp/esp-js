@@ -39,7 +39,8 @@ export class ViewBinder extends React.Component<ViewBinderProps> {
             return createViewForModel(
                 this.props.model,
                 newProps,
-                this.props.viewContext
+                this.props.viewContext,
+                null
             );
         }
         return null;

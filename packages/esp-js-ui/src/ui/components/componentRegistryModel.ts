@@ -24,11 +24,15 @@ interface KeyToFactoryEntryMap {
 }
 
 export class ComponentRegistryModel extends ModelBase {
+
+    public static ModelId = 'component-registry';
+
     private _componentFactoriesEntries: KeyToFactoryEntryMap = {};
     public componentsMetadata: Array<ComponentMetadata>;
 
     constructor(router: Router) {
-        super(IdFactory.createId('component-registry'), router);
+        // this model is designed as a singelton so we effectively hard code the ID here
+        super(ComponentRegistryModel.ModelId, router);
         this.observeEvents();
     }
 

@@ -16,13 +16,22 @@ export class SystemContainerConfiguration {
         _log.verbose('Configuring container with system components');
 
         rootContainer.addResolver(LiteralResolver.resolverName, new LiteralResolver());
-        rootContainer.registerInstance(SystemContainerConst.router, new Router());
+
+        rootContainer
+            .register(SystemContainerConst.router, Router)
+            .singleton();
 
         // state service
-        rootContainer.register(SystemContainerConst.state_service, StateService);
+        rootContainer
+            .register(SystemContainerConst.state_service, StateService)
+            .singleton();
 
-        rootContainer.register(SystemContainerConst.region_manager, RegionManager);
-        rootContainer.register(SystemContainerConst.scheduler_service, SchedulerService);
+        rootContainer
+            .register(SystemContainerConst.region_manager, RegionManager)
+            .singleton();
+        rootContainer
+            .register(SystemContainerConst.scheduler_service, SchedulerService)
+            .singleton();
 
         // module loader
         rootContainer.register(SystemContainerConst.module_loader, ModuleLoader)
@@ -36,6 +45,7 @@ export class SystemContainerConfiguration {
         // component registry
         rootContainer
             .register(SystemContainerConst.components_registry_model, ComponentRegistryModel)
-            .inject(SystemContainerConst.router);
+            .inject(SystemContainerConst.router)
+            .singleton();
     }
 }

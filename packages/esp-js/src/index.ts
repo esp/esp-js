@@ -25,7 +25,7 @@
 // import { Router } from 'esp-js';
 // let router = new Router()
 
-export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent, DispatchType, EventEnvelope, ModelEnvelope } from './router';
+export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent, DispatchType, EventEnvelope, ModelEnvelope, ModelOptions } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
 export { logging } from './system';

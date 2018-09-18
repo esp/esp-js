@@ -41,10 +41,13 @@ export abstract class ModelBase extends DisposableBase {
      * @param action
      */
     public ensureOnDispatchLoop(action:() => void) {
-        // TODO update when https://github.com/esp/esp-js/issues/86 is implemented
-        this.router.runAction(this.modelId, ()=> {
+        if (this.router.isOnDispatchLoopFor(this.modelId)) {
             action();
-        });
+        } else {
+            this.router.runAction(this.modelId, () => {
+                action();
+            });
+        }
     }
 
     public get modelId():string {

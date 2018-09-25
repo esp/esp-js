@@ -28,12 +28,11 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
         const initialStore = state || defaultStoreFactory('EURUSD');
 
         let model = this._router
-            .storeBuilder<CashTileStore>('CashTileModel')
+            .storeBuilder<CashTileStore>('CashTileStore')
 
             // set the initial state for the store.
             .withInitialStore(initialStore)
-
-            // this also works :
+               // this also works :
             .withStateHandler('rootState', rootStateHandlerMap)
             .withStateHandler('referenceData', referenceDataStateHandlerMap)
             .withStateHandler('inputs', inputStateHandlerMap)

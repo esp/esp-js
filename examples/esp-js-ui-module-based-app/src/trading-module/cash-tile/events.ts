@@ -1,5 +1,4 @@
-import {RfqStatus} from './store/rfq/requestForQuoteState';
-import {Quote} from './services/rfqService';
+import {Quote, RfqStatus} from './services/rfqService';
 
 export namespace RootEvents {
     export interface BootstrapEvent { }
@@ -8,12 +7,11 @@ export namespace RootEvents {
 
 export namespace RfqEvents {
     export interface RequestQuoteEvent {
-        currencyPair: string;
-        notional: number;
     }
     export const requestQuote = 'requestQuote';
 
     export interface RfqUpdateEvent {
+        rfqId: string;
         status: RfqStatus;
         quote: Quote;
     }

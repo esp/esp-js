@@ -1,27 +1,19 @@
-import {observeStateEvent, PolimerHandlerMap, CompositePolimerHandler, FunctionPolimerHandler} from 'esp-js-polimer';
+import {stateHandlerFor} from 'esp-js-polimer';
 import {
     Logger
 } from 'esp-js-ui';
 import {RfqEvents} from '../../events';
 import * as uuid from 'uuid';
 import {CashTileStore} from '../cashTileStore';
+import {Quote, RfqStatus} from '../../services/rfqService';
 
 const _log = Logger.create('CashTile-RequestForQuoteState');
-
-export enum RfqStatus {
-    Idle = 'Idle',
-    Requesting = 'Requesting',
-    Quoting = 'Quoting',
-    Canceling = 'Canceling',
-    Executing = 'Executing',
-    Executed = 'Executed',
-    Canceled = 'Canceled'
-}
 
 export interface RequestForQuoteState {
     rfqId: string;
     currentQuoteId?: string;
     status: RfqStatus;
+    quote?: Quote;
 }
 
 export const defaultRequestForQuoteStateFactory = (): RequestForQuoteState => {
@@ -33,21 +25,33 @@ export const defaultRequestForQuoteStateFactory = (): RequestForQuoteState => {
 };
 
 export class RequestForQuoteStateHandlers {
-    // a new decorator that will wire up the handler correctly
-    @observeStateEvent(RfqEvents.requestQuote)
+
+    constructor(/* can use DI if required for readonly access to other services */) {
+
+    }
+
+    @stateHandlerFor(RfqEvents.requestQuote)
     onRequestQuote(draft: RequestForQuoteState, event: RfqEvents.RequestQuoteEvent, store: CashTileStore /* , context: EventContext */) {
-        _log.info(`Adding to region ${event.currencyPair} ${event.notional}`, event);
+        _log.info(`Requesting Quote for ${store.inputs.ccyPair} ${store.inputs.notional}`);
         draft.rfqId = uuid.v4();
         draft.status = RfqStatus.Requesting;
     }
 
-    @observeStateEvent(RfqEvents.cancelRfq)
+    @stateHandlerFor(RfqEvents.rfqUpdate)
+    onRfqUpdated(draft: RequestForQuoteState, event: RfqEvents.RfqUpdateEvent, store: CashTileStore /* , context: EventContext */) {
+        _log.info(`Quote received. RfqId ${event.rfqId} price: ${event.quote.price}`, event);
+        draft.status = event.status;
+        draft.quote = event.quote;
+    }
+
+    @stateHandlerFor(RfqEvents.cancelRfq)
     onCancelQuote(draft: RequestForQuoteState, event: RfqEvents.CancelRfqEvent, store: CashTileStore) {
         _log.info(`Passing on quote ${draft.rfqId}`, event);
         draft.status = RfqStatus.Canceling;
+        draft.quote = null;
     }
 
-    @observeStateEvent(RfqEvents.executeOnQuote)
+    @stateHandlerFor(RfqEvents.executeOnQuote)
     onExecuting(draft: RequestForQuoteState, event: RfqEvents.ExecuteOnQuoteEvent, store: CashTileStore) {
         _log.info(`Passing on quote ${draft.rfqId}`, event);
         if (draft.status === RfqStatus.Quoting) {

@@ -1,4 +1,15 @@
 import * as Rx from 'rx';
+import {Logger} from 'esp-js-ui';
+
+export enum RfqStatus {
+    Idle = 'Idle',
+    Requesting = 'Requesting',
+    Quoting = 'Quoting',
+    Canceling = 'Canceling',
+    Executing = 'Executing',
+    Executed = 'Executed',
+    Canceled = 'Canceled'
+}
 
 export interface Quote {
     quoteId: string;
@@ -7,6 +18,8 @@ export interface Quote {
 
 export interface RfqRequest {
     rfqId: string;
+    ccyPair: string;
+    notional: number;
 }
 
 export interface CancelRfqRequest {
@@ -19,17 +32,32 @@ export interface ExecuteOnQuoteRequest {
 }
 
 export interface RfqUpdate {
+    rfqId: string;
     quote: Quote;
-    status: string;
+    status: RfqStatus;
 }
 
 export interface RfqOperationAck {
     success: boolean;
 }
 
+const _log = Logger.create('RfqService');
+
 export class RfqService {
     public requestQuote(request: RfqRequest): Rx.Observable<RfqUpdate> {
-        return Rx.Observable.never();
+        _log.debug(`Quote Request received`, request);
+        return Rx.Observable.timer(2000, 2000).map<RfqUpdate>(i => {
+            const update = {
+                rfqId: request.rfqId,
+                status: RfqStatus.Quoting,
+                quote: {
+                    quoteId: i.toString(),
+                    price: (1.2345 + i / 10000).toFixed(5)
+                }
+            };
+            _log.debug(`Mapping quote update`, update);
+            return update;
+        });
     }
 
     public cancelRfq(request: CancelRfqRequest): Rx.Observable<RfqOperationAck> {

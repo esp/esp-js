@@ -11,5 +11,5 @@ export {
     InputEvent,
     OutputEvent
 } from './eventStreamObservable';
-export {observeStateEvent, observeEventStream} from './decorators';
+export {stateHandlerFor, eventTransformFor} from './decorators';
 export {sendUpdateToDevTools, connect} from './reduxDevToolsConnector';

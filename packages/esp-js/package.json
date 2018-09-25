@@ -12,7 +12,6 @@
     "event router"
   ],
   "scripts": {
-    "foo": "task foo",
     "clean": "task clean",
     "build-dev": "task build-dev",
     "build-prod": "task build-prod",

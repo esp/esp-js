@@ -1,8 +1,7 @@
 import {PolimerHandlerMap} from 'esp-js-polimer';
 import {RegionItem} from 'esp-js-ui';
 import {
-    Logger,
-    IdFactory
+    Logger
 } from 'esp-js-ui';
 import {RegionNames} from '../../../../shell/regionNames';
 import { RootEvents } from '../../events';

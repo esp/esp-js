@@ -1,8 +1,7 @@
-import {Router, Guard, EspDecoratorUtil, EventObservationMetadata, isEspDecoratedObject} from 'esp-js';
+import {Router, Guard, isEspDecoratedObject} from 'esp-js';
 import {PolimerHandlerMap} from './eventHandlers';
 import {PolimerModel} from './polimerModel';
-import {OutputEvent, OutputEventStreamFactory, InputEventStreamFactory} from './eventStreamObservable';
-import * as Rx from 'rx';
+import {OutputEventStreamFactory} from './eventStreamObservable';
 import {Store} from './store';
 
 declare module 'esp-js/.dist/typings/router/router' {
@@ -18,7 +17,9 @@ declare module 'esp-js/.dist/typings/router/router' {
 
 export class PolimerStoreBuilder<TStore extends Store> {
     private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>> = new Map();
+    private _stateHandlerObjects: Map<string, any> = new Map();
     private _outputEventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
+    private _eventStreamHandlerObjects: any[] = [];
     private _initialStore: TStore;
 
     constructor(private _router: Router, private _name: string) {
@@ -36,15 +37,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
 
     withStateHandlersOn<TKey extends keyof TStore>(state: TKey, objectToScanForHandlers: any): PolimerStoreBuilder<TStore> {
         if (isEspDecoratedObject(objectToScanForHandlers)) {
-            // create a new handler map which has the eventType as the key
-            // we should just omit the decorator and just use function names, but there can be more than one decorators on a function
-            let handlerMap: PolimerHandlerMap<any, TStore> = {};
-            let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
-            events.forEach(metadata => {
-                // copy the decorated function to our new map
-                handlerMap[metadata.eventType] = objectToScanForHandlers[metadata.functionName];
-            });
-            this.withStateHandler(<keyof TStore>state, handlerMap);
+            this._stateHandlerObjects.set(<string>state, objectToScanForHandlers);
         } else {
             throw new Error(`Unknown observable object. Now esp decorator metadata on object passed to 'withObservablesOn(o)'`);
         }
@@ -58,17 +51,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
 
     withEventStreamsOn(objectToScanForObservables: any): PolimerStoreBuilder<TStore> {
         if (isEspDecoratedObject(objectToScanForObservables)) {
-            let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForObservables);
-            events.forEach(metadata => {
-                // Create a late bound function that takes a factory, invokes it, and passes the resultant event stream to the decorated function on objectToScanForObservables.
-                // The decorated function will receive hte input event, and transform it ot an output event
-                const outputEventStreamFactory: OutputEventStreamFactory<TStore, any, any> = (getInputEventStreamFor: InputEventStreamFactory<any, TStore>) => {
-                    let decoratedFunction = objectToScanForObservables[metadata.functionName];
-                    let eventStream = getInputEventStreamFor(metadata.eventType);
-                    return <Rx.Observable<OutputEvent<any>>>decoratedFunction(eventStream);
-                };
-                this.withEventStreams(outputEventStreamFactory);
-            });
+            this._eventStreamHandlerObjects.push(objectToScanForObservables);
         } else {
             throw new Error(`Unknown observable object. Now esp decorator metadata on object passed to 'withObservablesOn(o)'`);
         }
@@ -91,7 +74,9 @@ export class PolimerStoreBuilder<TStore extends Store> {
             this._initialStore,
             this._name,
             this._stateHandlerMaps,
-            this._outputEventStreamFactories
+            this._stateHandlerObjects,
+            this._outputEventStreamFactories,
+            this._eventStreamHandlerObjects
         );
 
         this._router.addModel(

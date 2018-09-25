@@ -1,4 +1,4 @@
-import {Guard} from '../../core';
+import {Guard} from 'esp-js';
 
 export function getComponentFactoryMetadata(target): ComponentFactoryMetadata {
     let constructorFunction = target.constructor;

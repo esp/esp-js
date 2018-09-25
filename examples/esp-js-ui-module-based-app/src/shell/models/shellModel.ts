@@ -9,10 +9,10 @@ import {
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
-    ModuleDescriptor
+    ModuleDescriptor,
+    ModuleChangeType
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
-import {ModuleChangeType} from '../../../../../packages/esp-js-ui/src/ui/modules';
 
 const _log = Logger.create('ShellModel');
 

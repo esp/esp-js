@@ -1,16 +1,22 @@
 import {Container} from 'microdi-js';
 import {getComponentFactoryMetadata} from './componentDecorator';
 import {DisposableBase} from 'esp-js';
-import {ModelBase} from '../modelBase';
 import {ComponentFactoryMetadata} from './componentDecorator';
+import {Disposable} from '../../../../esp-js/.dist/typings';
 
 export interface ComponentStateSet {
     componentFactoryKey: string;
     componentsState: Array<any>;
 }
 
-export abstract class ComponentFactoryBase<T extends ModelBase> extends DisposableBase {
-    private _currentComponents: Array<ModelBase>;
+export interface ComponentInstance extends Disposable {
+    getState?(): any;
+    addDisposable(disposable: () => void);
+    addDisposable(disposable: Disposable);
+}
+
+export abstract class ComponentFactoryBase<T extends ComponentInstance> extends DisposableBase {
+    private _currentComponents: Array<ComponentInstance>;
     private _metadata: ComponentFactoryMetadata;
 
     protected constructor(protected _container: Container) {
@@ -54,7 +60,7 @@ export abstract class ComponentFactoryBase<T extends ModelBase> extends Disposab
             return null;
         }
         let componentsState = this._currentComponents
-            .map(c => c.getState())
+            .map(c => c.getState && c.getState() || null)
             .filter(c => c != null);
         return {
             componentFactoryKey: this.componentKey,

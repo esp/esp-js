@@ -1,4 +1,15 @@
-export {multipleEvents, createPolimerState, PolimerEventHandler, PolimerHandlerMap} from './polimerState';
-export {createPolimerStore, PolimerStoreContext} from './storeContext';
-export {EventStreamObservable, EventStreamFactory, EventOutput, collectEventStreamObservables, eventStreamFactory} from './eventStream/eventStreamObservable';
-export {sendUpdateToDevTools, connect} from './tools/reduxDevToolsConnector';
+// import for side effects
+import './storeBuilder';
+
+export {multipleEvents, PolimerEventHandler, PolimerHandlerMap, CompositePolimerHandler, FunctionPolimerHandler} from './eventHandlers';
+export {PolimerModel} from './polimerModel';
+export {Store} from './store';
+export {PolimerStoreBuilder} from './storeBuilder';
+export {
+    OutputEventStreamFactory,
+    InputEventStreamFactory,
+    InputEvent,
+    OutputEvent
+} from './eventStreamObservable';
+export {observeStateEvent, observeEventStream} from './decorators';
+export {sendUpdateToDevTools, connect} from './reduxDevToolsConnector';

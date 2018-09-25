@@ -28,6 +28,7 @@
 export { ObservationStage, Router, SingleModelRouter, EventContext, DefaultEventContext, ModelChangedEvent, DispatchType, EventEnvelope, ModelEnvelope, ModelOptions } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
-export { logging } from './system';
+export { EspDecoratorUtil, DecoratorTypes, EspMetadata, EspDecoratedObject, EventObservationMetadata, isEspDecoratedObject} from './decorators/espDecoratorMetadata';
+export { logging, Guard, utils } from './system';
 export { Observable } from './reactive/observable';
 export { RouterObservable, Subject, RouterSubject } from './reactive';

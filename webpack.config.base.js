@@ -27,7 +27,7 @@ let isProduction = env.trim().toUpperCase() === 'prod';
 console.log('Running in ' + env + ' environment.');
 
 let plugins = [
-    new CleanWebpackPlugin('dist', {
+    new CleanWebpackPlugin(['.dist', '.tsBuild'], {
       root: process.cwd(),
       verbose: true,
       dry: false

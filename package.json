@@ -7,6 +7,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "clean": "lerna run clean --sort --stream",
+    "dev": "lerna run build-dev --sort --stream -- --watch",
     "build-dev": "lerna run build-dev --sort --stream",
     "build-prod": "lerna run build-prod --sort --stream",
     "build-pack": "lerna run build-pack",

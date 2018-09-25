@@ -1,5 +1,5 @@
-import {Router, observeEvent} from 'esp-js';
-import {Logger, Guard} from '../../core';
+import {Router, observeEvent, Guard} from 'esp-js';
+import {Logger} from '../../core';
 import {ModelBase} from '../modelBase';
 import {getComponentFactoryMetadata, ComponentFactoryMetadata} from './index';
 import {ComponentFactoryBase} from './componentFactoryBase';
@@ -56,7 +56,7 @@ export class ComponentRegistryModel extends ModelBase {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(componentFactory, 'componentFactory must be defined');
             let metadata: ComponentFactoryMetadata = getComponentFactoryMetadata(componentFactory);
-            Guard.isFalse(this._componentFactoriesEntries.hasOwnProperty(metadata.componentKey), `component with id [${metadata.componentKey}] already added`);
+            Guard.isFalsey(this._componentFactoriesEntries.hasOwnProperty(metadata.componentKey), `component with id [${metadata.componentKey}] already added`);
             _log.debug(`registering component factory with key [${metadata.componentKey}], shortname [${metadata.shortName}]`);
             this._componentFactoriesEntries[metadata.componentKey] = Object.freeze({
                 componentFactoryKey: metadata.componentKey,
@@ -83,7 +83,7 @@ export class ComponentRegistryModel extends ModelBase {
     }
 
     public getComponentFactory<T extends ModelBase>(componentFactoryKey: string): ComponentFactoryBase<T> {
-        Guard.isFalse((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] already added`);
+        Guard.isFalsey((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] already added`);
         let entry: FactoryEntry = this._componentFactoriesEntries[componentFactoryKey];
         Guard.isDefined(entry, `componentFactory with key ${componentFactoryKey} not registered`);
         return <ComponentFactoryBase<T>>entry.factory;
@@ -108,6 +108,6 @@ export class ComponentRegistryModel extends ModelBase {
     }
 
     private _ensureComponentRegistered(componentFactoryKey: string): void {
-        Guard.isTrue((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] not registered`);
+        Guard.isTruthy((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] not registered`);
     }
 }

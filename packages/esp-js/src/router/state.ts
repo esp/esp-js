@@ -83,7 +83,7 @@ export class State {
 
     public executeEvent(executeAction: () => void) {
         let canMove = this._currentStatus === Status.PreEventProcessing || this._currentStatus === Status.EventProcessorDispatch || this._currentStatus === Status.PostProcessing;
-        Guard.isTrue(canMove, 'Can\'t move to executing as the current state ' + this._currentStatus + ' doesn\'t allow it');
+        Guard.isTruthy(canMove, 'Can\'t move to executing as the current state ' + this._currentStatus + ' doesn\'t allow it');
         let previousStatus = this._currentStatus;
         this._currentStatus = Status.EventExecution;
         executeAction();

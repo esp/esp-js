@@ -111,7 +111,7 @@ export class SingleModelRouter<TModel> {
     }
 
     _ensureModelIsSet() {
-        Guard.isTrue(
+        Guard.isTruthy(
             this._underlying.isModelRegistered(this._targetModelId),
             `Model with id ${this._targetModelId} not registered with the router`
         );

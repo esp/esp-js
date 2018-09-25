@@ -1,4 +1,5 @@
-import { Logger, Guard } from '../../core';
+import {Guard} from 'esp-js';
+import { Logger } from '../../core';
 const _log = Logger.create('StateService');
 
 export class StateService {

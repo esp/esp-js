@@ -1,8 +1,8 @@
 import {Container} from 'microdi-js';
-import {DisposableBase} from 'esp-js';
+import {DisposableBase, Guard} from 'esp-js';
 import {StateService} from '../state';
 import {ComponentRegistryModel, ComponentFactoryBase} from '../components';
-import {Logger, Guard} from '../../core';
+import {Logger} from '../../core';
 import {PrerequisiteRegistrar} from './prerequisites';
 import {Module} from './module';
 import {DefaultStateProvider} from './defaultStateProvider';

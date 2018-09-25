@@ -21,7 +21,7 @@ import {ModelChangedEvent} from './modelChangedEvent';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, logging, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
-import {EspDecoratorMetadata} from '../decorators';
+import {EspDecoratorUtil} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {CompositeDiagnosticMonitor} from './devtools';
 import {ModelOptions} from './modelOptions';
@@ -135,7 +135,7 @@ export class Router extends DisposableBase {
     public runAction<TModel>(modelId: string, action: (model: TModel) => void) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'modelId must be a string');
-        Guard.isTrue(modelId !== '', 'modelId must not be empty');
+        Guard.isTruthy(modelId !== '', 'modelId must not be empty');
         Guard.isFunction(action, 'the argument passed to runAction must be a function and can not be null|undefined');
         this._diagnosticMonitor.runAction(modelId);
         let modelRecord = this._models.get(modelId);
@@ -253,7 +253,9 @@ export class Router extends DisposableBase {
             this._throwIfHaltedOrDisposed();
             Guard.isString(modelId, 'The modelId should be a string');
             let modelRecord = this._getOrCreateModelRecord(modelId);
-            return modelRecord.modelObservationStream.map(envelope => envelope.model).subscribe(o);
+            return modelRecord.modelObservationStream
+                .map(envelope => modelRecord.modelObservableMapper(envelope.model))
+                .subscribe(o);
         });
     }
 
@@ -274,7 +276,7 @@ export class Router extends DisposableBase {
     }
 
     public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_'): Disposable {
-        if (EspDecoratorMetadata.hasMetadata(object)) {
+        if (EspDecoratorUtil.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object);
         } else {
             return this._observeEventsUsingConventions(modelId, object, methodPrefix);
@@ -312,7 +314,7 @@ export class Router extends DisposableBase {
         return this._state.currentModelId === modelId;
     }
 
-    private _getOrCreateModelRecord(modelId: string, model?: any, options?: ModelOptions) {
+    private _getOrCreateModelRecord(modelId: string, model?: any, options?: ModelOptions): ModelRecord {
         let modelRecord: ModelRecord = this._models.get(modelId);
         if (modelRecord) {
             if (!modelRecord.hasModel) {
@@ -499,10 +501,10 @@ export class Router extends DisposableBase {
         }
         this._decoratorObservationRegister.register(modelId, object);
         let compositeDisposable = new CompositeDisposable();
-        let eventsDetails = EspDecoratorMetadata.getAllEvents(object);
+        let eventsDetails = EspDecoratorUtil.getAllEvents(object);
         for (let i = 0; i < eventsDetails.length; i++) {
             let details = eventsDetails[i];
-            compositeDisposable.add(this.getEventObservable(modelId, details.eventName, details.observationStage).subscribe((eventEnvelope) => {
+            compositeDisposable.add(this.getEventObservable(modelId, details.eventType, details.observationStage).subscribe((eventEnvelope) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
                 if (!details.predicate || details.predicate(object, eventEnvelope.event)) {
@@ -528,10 +530,10 @@ export class Router extends DisposableBase {
             let prop = props[i];
             if (utils.startsWith(prop, methodPrefix)) {
                 let stage = ObservationStage.normal;
-                let eventName = prop.replace(methodPrefix, '');
-                let observationStageSplitIndex = eventName.lastIndexOf('_');
+                let eventType = prop.replace(methodPrefix, '');
+                let observationStageSplitIndex = eventType.lastIndexOf('_');
                 if (observationStageSplitIndex > 0) {
-                    let stageSubstring = eventName.substring(observationStageSplitIndex + 1);
+                    let stageSubstring = eventType.substring(observationStageSplitIndex + 1);
                     let stageSpecified = false;
                     if (stageSubstring === ObservationStage.preview) {
                         stage = ObservationStage.preview;
@@ -544,10 +546,10 @@ export class Router extends DisposableBase {
                         stageSpecified = true;
                     }
                     if (stageSpecified) {
-                        eventName = eventName.substring(0, observationStageSplitIndex);
+                        eventType = eventType.substring(0, observationStageSplitIndex);
                     }
                 }
-                compositeDisposable.add(this.getEventObservable(modelId, eventName, stage).subscribe((eventEnvelope) => {
+                compositeDisposable.add(this.getEventObservable(modelId, eventType, stage).subscribe((eventEnvelope) => {
                     this._diagnosticMonitor.dispatchingViaConvention(prop);
                     object[prop](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);
                 }));
@@ -559,7 +561,7 @@ export class Router extends DisposableBase {
     private _tryDefaultObservationStage(stage?: ObservationStage) {
         if (stage) {
             Guard.isString(stage, 'The stage argument should be a string');
-            Guard.isTrue(ObservationStage.isObservationStage(stage), 'The stage argument value of [' + stage + '] is incorrect. It should be ObservationStage.preview, ObservationStage.normal, ObservationStage.committed or ObservationStage.all.');
+            Guard.isTruthy(ObservationStage.isObservationStage(stage), 'The stage argument value of [' + stage + '] is incorrect. It should be ObservationStage.preview, ObservationStage.normal, ObservationStage.committed or ObservationStage.all.');
             return stage;
         } else {
             return ObservationStage.normal;

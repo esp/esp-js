@@ -1,7 +1,8 @@
-import {Router, DisposableBase } from 'esp-js';
-import { Logger, Guard } from '../core';
+import {Router, DisposableBase, Guard } from 'esp-js';
+import { Logger } from '../core';
+import {ComponentInstance} from './components/componentFactoryBase';
 
-export abstract class ModelBase extends DisposableBase {
+export abstract class ModelBase extends DisposableBase implements ComponentInstance {
     protected _log: Logger;
     private  _observeEventsCalled = false;
 

@@ -17,9 +17,9 @@
 // notice_end
 
 import * as React from 'react';
-import {Guard} from './guard';
+import {Guard} from 'esp-js';
 
-let DEFAULT_VIEW_KEY = 'default-view-key';
+export const DEFAULT_VIEW_KEY = 'default-view-key';
 
 function getMetadata(target) {
     if (!target._viewMetadata) {

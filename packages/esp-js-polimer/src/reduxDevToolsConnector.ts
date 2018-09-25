@@ -1,6 +1,7 @@
-import {PolimerStoreContext} from '../storeContext';
+import {PolimerModel} from './polimerModel';
 import {logger} from './logger';
 import { Router, EventEnvelope } from 'esp-js';
+import {Store} from './store';
 
 const devToolsExtension = window['devToolsExtension']; //tslint:disable-line
 const withDevTools = typeof window !== 'undefined' && devToolsExtension != null;
@@ -10,13 +11,13 @@ type Update = {
     payload: any
 };
 
-const onDevToolsMessage = <T>(router: Router, modelId: string, storeContext: PolimerStoreContext<T>, instance: any) =>
+const onDevToolsMessage = <T extends Store>(router: Router, modelId: string, storeContext: PolimerModel<T>, instance: any) =>
     (message: any) => {
         if (message.type === 'ACTION') {
             const event: EventEnvelope<any, any> = JSON.parse(message.payload);
 
             if (event.eventType == null) {
-                logger.warn('Expected signature is {eventName: string, event: any}');
+                logger.warn('Expected signature is {eventType: string, event: any}');
                 return;
             }
 
@@ -41,7 +42,7 @@ const onDevToolsMessage = <T>(router: Router, modelId: string, storeContext: Pol
         }
     };
 
-export const connect = <T>(router: Router, modelId: string, storeContext: PolimerStoreContext<T>, instanceId: string) => {
+export const connect = <T extends Store>(router: Router, modelId: string, storeContext: PolimerModel<T>, instanceId: string) => {
     if (withDevTools) {
         const options: any = {name: instanceId, instanceId};
         const instance = devToolsExtension.connect(options);

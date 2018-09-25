@@ -20,7 +20,7 @@ import * as esp from '../../src';
 
 describe('Router', () => {
 
-    let _router;
+    let _router: esp.Router;
 
     beforeEach(() => {
         _router = new esp.Router();
@@ -34,8 +34,8 @@ describe('Router', () => {
         });
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_router.getModelObservable(undefined).subscribe(() =>{}); }).toThrow(new Error('The modelId should be a string'));
-            expect(() => {_router.getModelObservable({}).subscribe(() =>{}); }).toThrow(new Error('The modelId should be a string'));
+            expect(() => {_router.getModelObservable(undefined).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
+            expect(() => {_router.getModelObservable({}).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
         });
 
         it('dispatches model once registered', () => {
@@ -106,7 +106,7 @@ describe('Router', () => {
                 // by the time we process this event for model 2, model 1
                 // should have processed both it's events AND have dispatched it's model
                 model2EventCount++;
-                check2 = model1UpdateCount === 2 && model2UpdateCount === 1 && model1EventCount == 2;
+                check2 = model1UpdateCount === 2 && model2UpdateCount === 1 && model1EventCount === 2;
             });
             _router.publishEvent('modelId1', 'StartEvent', 'payload');
             expect(model1UpdateCount).toEqual(2);
@@ -188,6 +188,22 @@ describe('Router', () => {
                 model1UpdateCount++;
             });
             expect(model1UpdateCount).toBe(1);
+        });
+
+        it('should use options.modelObservableMapper if provided when dispatching the model', () => {
+            _router.addModel(
+                'modelId3',
+                {number:0, subPart: { foo: 'theFoo' }},
+                { modelObservableMapper: (model) => model.subPart }
+            );
+            _router.getEventObservable('modelId3', 'Event1').subscribe(() => { /*noop*/  });
+            let _receivedModels = [];
+            _router.getModelObservable('modelId3').subscribe((m) => {
+                _receivedModels.push(m);
+            });
+            _router.publishEvent('modelId1', 'Event1', 'payload');
+            expect(_receivedModels.length).toEqual(1);
+            expect(_receivedModels[0]).toEqual({ foo: 'theFoo'});
         });
     });
 });

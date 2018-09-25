@@ -11,7 +11,6 @@ import {
 } from 'esp-js-ui';
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
 import {CashTileComponentFactory} from './cash-tile/cashTileComponentFactory';
-import {CashTileModel} from './cash-tile/models/cashTileModel';
 import {BlotterComponentFactory} from './blotter/blotterComponentFactory';
 import {BlotterModel} from './blotter/models/blotterModel';
 import {TradingModuleDefaultStateProvider} from './tradingModuleDefaultStateProvider';
@@ -47,11 +46,6 @@ export class TradingModule extends ModuleBase {
             .inject(MicroDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
             .inGroup(this._componentFactoryGroupId);
-        _log.debug(`Registering ${TradingModuleContainerConst.cashTileModel}`);
-        this.container
-            .register(TradingModuleContainerConst.cashTileModel, CashTileModel)
-            .inject(SystemContainerConst.router, SystemContainerConst.region_manager)
-            .singletonPerContainer();
         _log.debug(`Registering ${TradingModuleContainerConst.blotterComponentFactory}`);
         this.container
             .register(TradingModuleContainerConst.blotterComponentFactory, BlotterComponentFactory)
@@ -66,7 +60,7 @@ export class TradingModule extends ModuleBase {
         _log.groupEnd();
     }
 
-    getComponentsFactories(): Array<ComponentFactoryBase> {
+    getComponentsFactories(): Array<ComponentFactoryBase<any>> {
         return this.container.resolveGroup(this._componentFactoryGroupId);
     }
 

@@ -5,13 +5,13 @@ import {createViewForModel } from './viewBindingDecorator';
 import { PublishEvent, publishEvent } from './publishEvent';
 
 export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => TPublishProps;
-export type MapModelToProps<TModel, TProps> = (model: TModel) => TProps;
+export type MapModelToProps<TModel, TProps, TOuterProps> = (model: TModel, outerProps: TOuterProps) => TProps;
 export type ConnectableComponentProps = {modelId?: string, viewContext?: string};
 
-export interface Props<TModel, TProps, TPublishProps> extends ConnectableComponentProps {
+export interface Props<TModel, TProps, TPublishProps, TOuterProps = {}> extends ConnectableComponentProps {
     view?: React.ComponentClass | React.SFC;
     mapPublish?: MapPublishToProps<TPublishProps>;
-    modelSelector?: MapModelToProps<TModel, TProps>;
+    modelSelector?: MapModelToProps<TModel, TProps, TOuterProps & TPublishProps>;
     [key: string]: any;
 }
 
@@ -25,7 +25,7 @@ interface ConnectableComponentContext {
     modelId: string;
 }
 
-export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.Component<Props<TModel, TProps, TPublishProps>, State> {
+export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {}> extends React.Component<Props<TModel, TProps, TPublishProps, TOuterProps>, State> {
     private _observationSubscription: Disposable = null;
     context: ConnectableComponentContext;
 
@@ -34,12 +34,12 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
         modelId: PropTypes.string
     };
 
-    constructor(props: Props<TModel,  TProps, TPublishProps>, context: ConnectableComponentContext) {
+    constructor(props: Props<TModel,  TProps, TPublishProps, TOuterProps>, context: ConnectableComponentContext) {
         super(props, context);
         this.state = {model: null};
     }
 
-    componentWillReceiveProps(nextProps: Props<TModel, TProps, TPublishProps>, nextContext: ConnectableComponentContext) {
+    componentWillReceiveProps(nextProps: Props<TModel, TProps, TPublishProps, TOuterProps>, nextContext: ConnectableComponentContext) {
         const modelId = nextProps.modelId || nextContext.modelId;
         const oldModelId = this._getModelId();
 
@@ -103,14 +103,18 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
 
     private _getChildProps() {
         const {children, mapPublish, modelId, modelSelector, view, viewContext, ...rest} = this.props;
-        const distilledModel = this.props.modelSelector ? this.props.modelSelector(this.state.model) : {};
+        const outerProps = {
+            ...rest,
+            ...this.state.publishProps
+        };
+
+        const distilledModel = this.props.modelSelector ? this.props.modelSelector(this.state.model, outerProps) : {};
         return {
             modelId: this._getModelId(),
             model: this.state.model,
             router: this.context.router,
             ...distilledModel,
-            ...this.state.publishProps,
-            ...rest
+            ...outerProps,
         };
     }
 }
@@ -118,7 +122,7 @@ export class ConnectableComponent<TModel, TProps, TPublishProps> extends React.C
 // Lifting 'ConnectableView' into it's own type so it can be exported, else tsc doesn't correctly generated declaration files
 export type ConnectableView = React.ComponentClass | React.SFC;
 
-export const connect = function<TModel, TProps, TPublishProps>(modelSelector?: MapModelToProps<TModel, TProps>, mapPublish?: MapPublishToProps<TPublishProps>):
+export const connect = function<TModel, TProps, TPublishProps, TOuterProps = {}>(modelSelector?: MapModelToProps<TModel, TProps, TPublishProps & TOuterProps>, mapPublish?: MapPublishToProps<TPublishProps>):
     (view: ConnectableView) => (props: ConnectableComponentProps) => JSX.Element {
     return (view: ConnectableView) => ({modelId, viewContext}: ConnectableComponentProps) => {
         return <ConnectableComponent modelId={modelId} view={view} viewContext={viewContext} mapPublish={mapPublish} modelSelector={modelSelector} />;

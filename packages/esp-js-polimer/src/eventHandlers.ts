@@ -28,7 +28,7 @@ export const eventHandlerFactory = <TStore extends Store, TState>(
     return (eventType: string, event: any, store: TStore): void => {
         const beforeState = store[stateName];
 
-        logger.debug(`Received "${eventType}" for "${stateName}" state, about to invoke a reducer. State before execution:`,
+        logger.verbose(`Received "${eventType}" for "${stateName}" state, about to invoke a reducer. State before execution:`,
             beforeState);
 
         try {
@@ -62,7 +62,7 @@ export const eventHandlerFactory = <TStore extends Store, TState>(
             }
 
             store[stateName] = afterState;
-            logger.debug(`"${stateName}" state updated successfully, new state:`, afterState);
+            logger.verbose(`"${stateName}" state updated successfully, new state:`, afterState);
         } catch (e) {
             // TODO: Add an exception handler, so that developers can react to errors in reducers
             errorLogger.error(`Reducer "${stateName}" threw an exception for event "${eventType}"`, e);

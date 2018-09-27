@@ -18,14 +18,12 @@
 
 import {ObservationStage} from '../router';
 import {ObserveEventPredicate} from './observeEvent';
-import {type} from 'os';
-
-const ESP_METADATA_PROPERTY_NAME = '';
 
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
     observeEventEnvelope = 'observeEventEnvelope',
-    observeModelChangedEvent = 'observeModelChangedEvent'
+    observeModelChangedEvent = 'observeModelChangedEvent',
+    custom = 'custom'
 }
 
 export interface EventObservationMetadata {
@@ -42,7 +40,7 @@ export interface EspMetadata {
     addEvent(
         functionName: string,
         eventType: string,
-        decoratorType,
+        decoratorType: DecoratorTypes,
         observationStage?: ObservationStage,
         predicate?: (object: any) => boolean,
         modelId?: string

@@ -9,7 +9,7 @@ export class TradingModuleDefaultStateProvider implements DefaultStateProvider {
     getComponentFactoriesState(layoutMode: string): Array<ComponentFactoryState> {
         let blotterStates = [BlotterState.create(RegionNames.blotterRegion)];
         let cashTileStores: Array<CashTileStore> = _.map(
-            ['EURUSD' /*, 'EURGBP', 'AUDUSD', 'CADJPY', 'CHFJPY', 'GBPJPY' */],
+            ['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'],
             symbol => defaultStoreFactory(symbol)
         );
         return [{

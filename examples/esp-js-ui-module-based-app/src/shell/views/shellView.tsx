@@ -37,8 +37,8 @@ export class ShellView extends React.Component<{ model: ShellModel, router: Rout
         }
 
         return (
-            <div>
-                <h1>Shell View</h1>
+            <div className='shell'>
+                <h4>Composite App Demo</h4>
                 {mainContent}
             </div>
         );

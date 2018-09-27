@@ -15,7 +15,7 @@ export interface InputsState {
 export const defaultInputsStateFactory = (ccyPair?: string): InputsState => {
     return {
         ccyPair: ccyPair || 'EURUSD',
-        notional: null
+        notional: 1000000
     };
 };
 

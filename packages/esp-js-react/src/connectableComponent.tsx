@@ -5,7 +5,7 @@ import {createViewForModel } from './viewBindingDecorator';
 import { PublishEvent, publishEvent } from './publishEvent';
 
 export type MapPublishToProps<TPublishProps> = (publishEvent: PublishEvent) => TPublishProps;
-export type MapModelToProps<TModel, TProps, TOuterProps> = (model: TModel, outerProps: TOuterProps) => TProps;
+export type MapModelToProps<TModel, TProps, TOuterProps = {}> = (model: TModel, outerProps: TOuterProps) => TProps;
 export type ConnectableComponentProps = {modelId?: string, viewContext?: string};
 
 export interface Props<TModel, TProps, TPublishProps, TOuterProps = {}> extends ConnectableComponentProps {
@@ -114,7 +114,7 @@ export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {
             model: this.state.model,
             router: this.context.router,
             ...distilledModel,
-            ...outerProps,
+            ...outerProps
         };
     }
 }

@@ -8,10 +8,8 @@ declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
         /**
          * Creates a store builder which can be configured and ultimately added to the router
-         * @param name: a friendly name for the store, ends up being used in dev tools
-         * @param modelId: the modelId for the store, used by the router so events can be dispatched to the store
          */
-        storeBuilder?<TStore extends Store>(name: string): PolimerStoreBuilder<TStore>;
+        storeBuilder?<TStore extends Store>(): PolimerStoreBuilder<TStore>;
     }
 }
 
@@ -22,7 +20,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     private _eventStreamHandlerObjects: any[] = [];
     private _initialStore: TStore;
 
-    constructor(private _router: Router, private _name: string) {
+    constructor(private _router: Router) {
     }
 
     withInitialStore(store: TStore): PolimerStoreBuilder<TStore> {
@@ -39,7 +37,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
         if (isEspDecoratedObject(objectToScanForHandlers)) {
             this._stateHandlerObjects.set(<string>state, objectToScanForHandlers);
         } else {
-            throw new Error(`Unknown observable object. Now esp decorator metadata on object passed to 'withObservablesOn(o)'`);
+            throw new Error(`Unknown observable object. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
         }
         return this;
     }
@@ -53,16 +51,15 @@ export class PolimerStoreBuilder<TStore extends Store> {
         if (isEspDecoratedObject(objectToScanForObservables)) {
             this._eventStreamHandlerObjects.push(objectToScanForObservables);
         } else {
-            throw new Error(`Unknown observable object. Now esp decorator metadata on object passed to 'withObservablesOn(o)'`);
+            throw new Error(`Unknown observable object. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
         }
         return this;
     }
 
     registerWithRouter(): PolimerModel<TStore> {
-        Guard.stringIsNotEmpty(this._name, 'No name specified for store');
         Guard.isDefined(this._initialStore, 'Initial store is not set');
-        Guard.isDefined(this._initialStore.modelId, `Initial store's modelId is not set`);
-        Guard.isTruthy(this._stateHandlerMaps.size > 0, `No states setup for store ${this._name}`);
+        Guard.stringIsNotEmpty(this._initialStore.modelId, `Initial store's modelId must not be null or empty`);
+        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0, `No states setup for store ${this._initialStore.modelId}`);
 
         // The polimer model is a special case,
         // Some attributes may get bound to it dynamically.
@@ -72,7 +69,6 @@ export class PolimerStoreBuilder<TStore extends Store> {
         let polimerModel = new customPolimerModel(
             this._router,
             this._initialStore,
-            this._name,
             this._stateHandlerMaps,
             this._stateHandlerObjects,
             this._outputEventStreamFactories,
@@ -81,9 +77,9 @@ export class PolimerStoreBuilder<TStore extends Store> {
 
         this._router.addModel(
             this._initialStore.modelId,
-            polimerModel
-            // TODO wire this up
-         //    {modelObservableMapper: (model: PolimerModel<TStore>) => model.getStore()}
+            polimerModel,
+            // TODO figure out how best to push just the store to the views yet still have the view bindings work
+            // {modelObservableMapper: (model: PolimerModel<TStore>) => model.getStore()}
         );
 
         polimerModel.initialize();
@@ -92,7 +88,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     }
 }
 
-Router.prototype.storeBuilder = function <TStore extends Store>(name: string): PolimerStoreBuilder<TStore> {
+Router.prototype.storeBuilder = function <TStore extends Store>(): PolimerStoreBuilder<TStore> {
     let router = this;
-    return new PolimerStoreBuilder(router, name);
+    return new PolimerStoreBuilder(router);
 };

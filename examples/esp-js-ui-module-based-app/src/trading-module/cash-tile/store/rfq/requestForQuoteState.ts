@@ -2,7 +2,7 @@ import {stateHandlerFor} from 'esp-js-polimer';
 import {
     Logger
 } from 'esp-js-ui';
-import {RfqEvents} from '../../events';
+import {InputEvents, RfqEvents} from '../../events';
 import * as uuid from 'uuid';
 import {CashTileStore} from '../cashTileStore';
 import {Quote, RfqStatus} from '../../services/rfqService';
@@ -57,5 +57,14 @@ export class RequestForQuoteStateHandlers {
         if (draft.status === RfqStatus.Quoting) {
             draft.status = RfqStatus.Executing;
         }
+    }
+
+    @stateHandlerFor(InputEvents.changeCurrencyPair)
+    @stateHandlerFor(InputEvents.notionalChanged)
+    onInputsChanged(draft: RequestForQuoteState, event: RfqEvents.RequestQuoteEvent, store: CashTileStore /* , context: EventContext */) {
+        _log.info(`Requesting Quote for ${store.inputs.ccyPair} ${store.inputs.notional}`);
+        draft.rfqId = null;
+        draft.status = RfqStatus.Idle;
+        draft.quote = null;
     }
 }

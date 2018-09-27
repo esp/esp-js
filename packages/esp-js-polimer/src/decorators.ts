@@ -1,4 +1,4 @@
-import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage} from 'esp-js';
+import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes} from 'esp-js';
 
 export function stateHandlerFor(eventType: string) {
     return function (target, name, descriptor) {
@@ -7,7 +7,7 @@ export function stateHandlerFor(eventType: string) {
         metadata.addEvent(
             name,
             eventType,
-            false,
+            DecoratorTypes.custom,
             null,
             null
         );
@@ -22,7 +22,7 @@ export function eventTransformFor(eventType: string, observationStage = Observat
         metadata.addEvent(
             name,
             eventType,
-            false,
+            DecoratorTypes.custom,
             observationStage,
             null
         );

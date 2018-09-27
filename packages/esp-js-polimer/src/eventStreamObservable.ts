@@ -1,14 +1,16 @@
 import * as Rx from 'rx';
 import {EventContext, ObservationStage} from 'esp-js';
 
-export interface InputEvent<TEvent, TStore> {
+export interface InputEvent<TStore, TEvent> {
     readonly event: TEvent;
     readonly store: TStore;
     readonly eventType: string;
     readonly context: EventContext;
 }
 
-export type InputEventStreamFactory<TStore, TEvent = any> = (eventType: string | string[], observationStage?: ObservationStage) => Rx.Observable<InputEvent<TStore, TEvent>>;
+export type InputEventStream<TStore, TEvent> = Rx.Observable<InputEvent<TStore, TEvent>>;
+
+export type InputEventStreamFactory<TStore, TEvent = any> = (eventType: string | string[], observationStage?: ObservationStage) => InputEventStream<TStore, TEvent>;
 
 export type OutputEvent<TEvent> = {
     readonly eventType: string;
@@ -27,4 +29,6 @@ export type OutputEvent<TEvent> = {
     readonly broadcast?: boolean
 };
 
-export type OutputEventStreamFactory<TStore, TInputEvent, TOutputEvent>  = (getEventStreamFor: InputEventStreamFactory<TStore, TInputEvent>) => Rx.Observable<OutputEvent<TOutputEvent>>;
+export type OutputEventStream<TEvent> = Rx.Observable<OutputEvent<TEvent>>;
+
+export type OutputEventStreamFactory<TStore, TInputEvent, TOutputEvent>  = (getEventStreamFor: InputEventStreamFactory<TStore, TInputEvent>) => OutputEventStream<TOutputEvent>;

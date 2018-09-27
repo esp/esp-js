@@ -82,8 +82,11 @@ export class ComponentRegistryModel extends ModelBase {
         this._createComponent(event.componentFactoryKey);
     }
 
+    public hasComponentFacotory(componentFactoryKey: string) {
+        return this._componentFactoriesEntries.hasOwnProperty(componentFactoryKey);
+    }
+
     public getComponentFactory<T extends ModelBase>(componentFactoryKey: string): ComponentFactoryBase<T> {
-        Guard.isFalsey((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] already added`);
         let entry: FactoryEntry = this._componentFactoriesEntries[componentFactoryKey];
         Guard.isDefined(entry, `componentFactory with key ${componentFactoryKey} not registered`);
         return <ComponentFactoryBase<T>>entry.factory;

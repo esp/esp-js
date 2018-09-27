@@ -6,10 +6,12 @@ export {PolimerModel} from './polimerModel';
 export {Store} from './store';
 export {PolimerStoreBuilder} from './storeBuilder';
 export {
-    OutputEventStreamFactory,
-    InputEventStreamFactory,
     InputEvent,
-    OutputEvent
+    InputEventStream,
+    OutputEventStreamFactory,
+    OutputEvent,
+    OutputEventStream,
+    InputEventStreamFactory,
 } from './eventStreamObservable';
 export {PolimerEvents} from './polimerEvents';
 export {stateHandlerFor, eventTransformFor} from './decorators';

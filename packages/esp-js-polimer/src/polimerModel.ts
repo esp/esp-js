@@ -161,7 +161,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _observeEvent = (eventType: string | string[], stage: ObservationStage = ObservationStage.committed): Rx.Observable<InputEvent<any, TStore>> => {
+    private _observeEvent = (eventType: string | string[], stage: ObservationStage = ObservationStage.committed): Rx.Observable<InputEvent<TStore, any>> => {
         return Rx.Observable.create((obs: Rx.Observer<any>) => {
                 const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
@@ -170,7 +170,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>) => {
                             logger.verbose(`Passing event [${eventEnvelope.eventType}] at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}] to eventStream.`);
-                            let inputEvent: InputEvent<any, TStore> = this._mapEventEnvelopToInputEvent(eventEnvelope);
+                            let inputEvent: InputEvent<TStore, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
                             // Pass the event off to our polimer observable stream.
                             // In theory, these streams must never error.
                             // They need to bake in their own exception handling.
@@ -188,7 +188,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _mapEventEnvelopToInputEvent(eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>): InputEvent<any, TStore> {
+    private _mapEventEnvelopToInputEvent(eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>): InputEvent<TStore, any> {
         return {
             event: eventEnvelope.event,
             eventType: eventEnvelope.eventType,

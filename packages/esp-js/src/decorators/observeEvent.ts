@@ -17,7 +17,7 @@
 // notice_end
 
 import {ObservationStage, Consts} from '../router';
-import {EspDecoratorMetadata, DecoratorTypes} from './espDecoratorMetadata';
+import {EspDecoratorUtil, DecoratorTypes} from './espDecoratorMetadata';
 import { Guard, utils } from '../system';
 
 export interface ObserveEventPredicate {
@@ -26,9 +26,9 @@ export interface ObserveEventPredicate {
 
 const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
     return function (target, name, descriptor) {
-        let eventName1, observationStage1, predicate1;
+        let eventType1, observationStage1, predicate1;
         if(args.length >= 0) {
-            eventName1 = args[0];
+            eventType1 = args[0];
         }
         if(args.length >= 1) {
             if(utils.isString(args[1])) {
@@ -40,22 +40,22 @@ const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
         if(!predicate1 && args.length >= 2) {
             predicate1 = args[2];
         }
-        if (eventName1 === Consts.modelChangedEvent) {
+        if (eventType1 === Consts.modelChangedEvent) {
             throw new Error(`Can not use observeEvent to observe the ${Consts.modelChangedEvent} on function target ${name}. Use the observeModelChangedEvent decorator instead`);
         }
-        Guard.isString(eventName1, 'eventName passed to an observeEvent decorator must be a string');
-        Guard.isTrue(eventName1 !== '', 'eventName passed to an observeEvent decorator must not be \'\'');
+        Guard.isString(eventType1, 'eventType passed to an observeEvent decorator must be a string');
+        Guard.isTruthy(eventType1 !== '', 'eventType passed to an observeEvent decorator must not be \'\'');
         if(observationStage1) {
             Guard.isString(observationStage1, 'observationStage passed to an observeEvent decorator must be a string');
-            Guard.isTrue(observationStage1 !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
+            Guard.isTruthy(observationStage1 !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
         }
         if(predicate1) {
             Guard.isFunction(predicate1, 'predicate passed to an observeEvent decorator must be a function');
         }
-        let metadata = EspDecoratorMetadata.getOrCreateMetaData(target.constructor);
+        let metadata = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
         metadata.addEvent(
             name,
-            eventName1,
+            eventType1,
             observeEnvelope ? DecoratorTypes.observeEventEnvelope : DecoratorTypes.observeEvent,
             observationStage1,
             predicate1
@@ -64,25 +64,25 @@ const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
     };
 };
 
-export function observeEvent(eventName: string);
-export function observeEvent(eventName: string, observationStage: ObservationStage);
-export function observeEvent(eventName: string, predicate: ObserveEventPredicate);
-export function observeEvent(eventName: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEvent(eventType: string);
+export function observeEvent(eventType: string, observationStage: ObservationStage);
+export function observeEvent(eventType: string, predicate: ObserveEventPredicate);
+export function observeEvent(eventType: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
 export function observeEvent(...args: any[]) {
     return _observeEvent(false, ...args);
 }
 
-export function observeEventEnvelope(eventName: string);
-export function observeEventEnvelope(eventName: string, observationStage: ObservationStage);
-export function observeEventEnvelope(eventName: string, predicate: ObserveEventPredicate);
-export function observeEventEnvelope(eventName: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEventEnvelope(eventType: string);
+export function observeEventEnvelope(eventType: string, observationStage: ObservationStage);
+export function observeEventEnvelope(eventType: string, predicate: ObserveEventPredicate);
+export function observeEventEnvelope(eventType: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
 export function observeEventEnvelope(...args: any[]) {
     return _observeEvent(true, ...args);
 }
 
 export function observeModelChangedEvent(modelId) {
     return function (target, name, descriptor) {
-        let metadata = EspDecoratorMetadata.getOrCreateMetaData(target.constructor);
+        let metadata = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
         metadata.addEvent(
             name,
             Consts.modelChangedEvent,

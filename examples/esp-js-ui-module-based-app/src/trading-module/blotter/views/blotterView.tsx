@@ -7,7 +7,7 @@ export class BlotterView extends React.Component<{model:BlotterModel, router:Rou
         let model : BlotterModel = this.props.model;
         return (
             <div>
-                <h1>Blotter</h1>
+                <h4>Blotter</h4>
             </div>
         );
     }

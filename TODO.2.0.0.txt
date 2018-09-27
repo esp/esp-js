@@ -48,3 +48,4 @@ breaking changes:
             });
         };
      ```
+ - fixed inconsistent usage of eventName/eventType, now eventType:string everywhere

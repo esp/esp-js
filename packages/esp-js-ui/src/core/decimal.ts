@@ -1,5 +1,5 @@
 import *  as Utils from './utils';
-import {Guard} from './guard';
+import {Guard} from 'esp-js';
 import {DecimalFormat} from './decimalFormat';
 
 export class Decimal {
@@ -24,8 +24,8 @@ export class Decimal {
     }
 
     constructor(unscaledValue: number, scale = 0) {
-        Guard.isTrue(Utils.isInt(unscaledValue), 'unscaledValue must be an int');
-        Guard.isTrue(Utils.isInt(scale), 'scale must be an int');
+        Guard.isTruthy(Utils.isInt(unscaledValue), 'unscaledValue must be an int');
+        Guard.isTruthy(Utils.isInt(scale), 'scale must be an int');
         this._unscaledValue = unscaledValue;
         this._scale = scale;
     }

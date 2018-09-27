@@ -22,7 +22,7 @@ import {Subscribe} from '../subscribeDelegate';
 
 RouterObservable.prototype.subscribeOn = function<T>(modelId) {
     Guard.isString(modelId, 'modelId must be a string');
-    Guard.isTrue(modelId !== '', 'modelId must not be empty');
+    Guard.isTruthy(modelId !== '', 'modelId must not be empty');
     let source = this;
     let subscribe: Subscribe<T>  = observer => {
         let disposable = {

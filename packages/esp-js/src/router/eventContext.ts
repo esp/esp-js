@@ -33,7 +33,7 @@ export class DefaultEventContext implements EventContext {
     private _eventType: string;
     private _isCanceled: boolean;
     private _isCommitted: boolean;
-    private _currentStage: string;
+    private _currentStage: ObservationStage;
 
     public constructor(modelId, eventType) {
         this._modelId = modelId;
@@ -43,7 +43,7 @@ export class DefaultEventContext implements EventContext {
         this._currentStage = ObservationStage.preview; // initial state
     }
 
-    get currentStage() {
+    get currentStage(): ObservationStage {
         return this._currentStage;
     }
 
@@ -51,7 +51,7 @@ export class DefaultEventContext implements EventContext {
         return this._eventType;
     }
 
-    public updateCurrentState(newState: string) {
+    public updateCurrentState(newState: ObservationStage) {
         this._currentStage = newState;
     }
 

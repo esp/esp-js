@@ -24,6 +24,7 @@ class ShellBootstrapper {
         this._container = new Container();
         SystemContainerConfiguration.configureContainer(this._container);
         this._configureContainer();
+        this._container.resolve<Router>(SystemContainerConst.router).enableDiagnosticLogging = true;
         this._displayShell();
     }
 

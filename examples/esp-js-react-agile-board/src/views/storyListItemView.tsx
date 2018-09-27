@@ -23,8 +23,8 @@ export interface StoryListItemViewProps {
     };
 })
 export class StoryListItemView extends React.Component<StoryListItemViewProps, {}> {
-    _publishEvent(eventName, event) {
-        this.props.router.publishEvent(this.props.story.modelId, eventName, event);
+    _publishEvent(eventType, event) {
+        this.props.router.publishEvent(this.props.story.modelId, eventType, event);
     }
 
     render() {

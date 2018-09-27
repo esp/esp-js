@@ -16,13 +16,14 @@
  */
  // notice_end
 
-import {PreEventProcessor, PostEventProcessor} from './eventProcessorDelegate';
+import {PreEventProcessor, PostEventProcessor} from './eventProcessors';
 import {ModelOptions} from './modelOptions';
 import {Observable} from '../reactive';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {AutoConnectedObservable} from '../reactive/autoConnectedObservable';
 import {Guard} from '../system';
 import {ObservationStage} from './index';
+import {ModelObserverMapper} from './modelObserverMapper';
 
 export interface EventStreamsRegistration {
     all: AutoConnectedObservable<EventEnvelope<any, any>>;
@@ -44,6 +45,7 @@ export class ModelRecord {
     private _wasRemoved: boolean;
     private _preEventProcessor: PreEventProcessor;
     private _postEventProcessor: PostEventProcessor;
+    private _modelObservableMapper: ModelObserverMapper;
     private _eventStreams: Map<string, InternalEventStreamsRegistration>;
 
     constructor(modelId: string, model: any, modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>, options?: ModelOptions) {
@@ -53,6 +55,9 @@ export class ModelRecord {
         this._wasRemoved = false;
         this._eventStreams = new Map();
         this._modelObservationStream = modelObservationStream;
+        this._modelObservableMapper = options && options.modelObservableMapper
+            ? options.modelObservableMapper
+            : (m) => m;
         if (model) {
             this.setModel(model, options);
         }
@@ -86,6 +91,9 @@ export class ModelRecord {
     }
     public get postEventProcessor(): PostEventProcessor {
         return this._postEventProcessor;
+    }
+    public get modelObservableMapper(): ModelObserverMapper {
+        return this._modelObservableMapper;
     }
     public getOrCreateEventStreamsRegistration(eventType: string, dispatchObservable: Observable<EventEnvelope<any, any>>): EventStreamsRegistration {
         let eventStreamsRegistration = this._eventStreams.get(eventType);

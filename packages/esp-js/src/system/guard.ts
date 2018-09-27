@@ -24,6 +24,11 @@ export class Guard {
             doThrow(message);
         }
     }
+    public static isTruthy(check: boolean, message: string): void {
+        if (!check) {
+            doThrow(message);
+        }
+    }
     public static isFalsey(value: any, message: string): void {
         if (value) {
             doThrow(message);
@@ -44,13 +49,13 @@ export class Guard {
             doThrow(message);
         }
     }
-    public static isString(value: any, message: string): void {
-        if (!utils.isString(value)) {
+    public static stringIsNotEmpty(value: any, message: string): void {
+        if (!utils.isString(value) || value === '') {
             doThrow(message);
         }
     }
-    public static isTrue(check: boolean, message: string): void {
-        if (!check) {
+    public static isString(value: any, message: string): void {
+        if (!utils.isString(value)) {
             doThrow(message);
         }
     }
@@ -66,6 +71,12 @@ export class Guard {
     }
     public static isObject(value: any, message: string): void {
         if(typeof value !== 'object') {
+            doThrow(message);
+        }
+    }
+
+    public static isBoolean(value: any, message: string): void {
+        if (typeof(value) !== 'boolean') {
             doThrow(message);
         }
     }

@@ -48,10 +48,7 @@
     "radix": true,
     "semicolon": [true, "always", "ignore-bound-class-methods"],
     "switch-default": true,
-    "trailing-comma": [true, {
-      "singleline": "never",
-      "multiline": "never"
-    }],
+    "trailing-comma": true,
     "triple-equals": [true, "allow-null-check"],
     "typedef-whitespace": false,
     "variable-name": false,

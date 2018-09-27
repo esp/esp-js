@@ -1,5 +1,5 @@
 import {viewBinding} from 'esp-js-react';
-import {RegionManager} from 'esp-js-ui';
+import {RegionManager, RegionItem} from 'esp-js-ui';
 import {BlotterView} from '../views/blotterView';
 import {
     Logger,
@@ -12,6 +12,7 @@ import {BlotterState} from './blotterState';
 export class BlotterModel extends ModelBase {
     private _regionManager: RegionManager;
     private _initialState: BlotterState;
+    private _regionItem: RegionItem;
 
     constructor(
         router,
@@ -29,9 +30,9 @@ export class BlotterModel extends ModelBase {
 
     observeEvents(): void {
         super.observeEvents();
-        this._regionManager.addToRegion(
+        this._regionItem = this._regionManager.addToRegion(
             this._initialState.regionName,
-            this
+            this.modelId
         );
         this.addDisposable(() => {
             this._close();
@@ -39,6 +40,6 @@ export class BlotterModel extends ModelBase {
     }
 
     _close() {
-        this._regionManager.removeFromRegion(this._initialState.regionName, this);
+        this._regionManager.removeFromRegion(this._initialState.regionName, this._regionItem);
     }
 }

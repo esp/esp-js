@@ -1,6 +1,6 @@
 import * as Rx from 'rx';
 import {Router} from 'esp-js';
-import {Guard} from '../guard';
+import {Guard} from 'esp-js';
 
 /**
  * Helper method to ease integration between Rx and Esp.

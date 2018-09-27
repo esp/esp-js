@@ -1,4 +1,4 @@
-import {Guard} from './guard';
+import {Guard} from 'esp-js';
 import *  as Utils from './utils';
 
 export enum Level {

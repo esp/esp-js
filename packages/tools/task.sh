@@ -1,14 +1,16 @@
 #!/bin/bash
 
+set -e
+
 CMD=$1
 shift
-ARGS="$@"
 
 TEST_CI_COMMAND="test -f $(pwd)/jest.config.js && ./node_modules/.bin/jest --verbose --no-cache -c $(pwd)/jest.config.js --rootDir . || echo \"Skipping tests no test config found\""
 
 build() {
     export NODE_ENV=$1
-    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details ${ARGS}
+    echo "Building for env '${NODE_ENV}'. Running: $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details"
+    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details
 }
 
 runTests() {
@@ -21,6 +23,7 @@ runTests() {
 }
 
 clean() {
+    echo "Clening. Running:  rm -rf $(pwd)/.dist && rm -rf $(pwd)/.tsbuild"
     rm -rf $(pwd)/.dist
     rm -rf $(pwd)/.tsbuild
     find $(pwd) -name esp*.tgz -delete
@@ -54,7 +57,7 @@ case $CMD in
     ;;
 
   start)
-    $(pwd)/node_modules/.bin/webpack-dev-server --inline --watch --progress --colors
+    $(pwd)/node_modules/.bin/webpack-dev-server -d --inline --watch --progress --colors
     ;;
 
   *)

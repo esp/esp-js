@@ -28,6 +28,7 @@ export class SystemContainerConfiguration {
 
         rootContainer
             .register(SystemContainerConst.region_manager, RegionManager)
+            .inject(SystemContainerConst.router)
             .singleton();
         rootContainer
             .register(SystemContainerConst.scheduler_service, SchedulerService)

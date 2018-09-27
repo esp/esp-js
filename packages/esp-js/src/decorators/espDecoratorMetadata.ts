@@ -22,19 +22,42 @@ import {ObserveEventPredicate} from './observeEvent';
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
     observeEventEnvelope = 'observeEventEnvelope',
-    observeModelChangedEvent = 'observeModelChangedEvent'
+    observeModelChangedEvent = 'observeModelChangedEvent',
+    custom = 'custom'
 }
 
 export interface EventObservationMetadata {
     functionName: string;
-    eventName: string;
+    eventType: string;
     decoratorType: DecoratorTypes;
     observationStage: ObservationStage;
     predicate?: ObserveEventPredicate;
     modelId: string;
 }
 
-export const EspDecoratorMetadata = {
+export interface EspMetadata {
+    init();
+    addEvent(
+        functionName: string,
+        eventType: string,
+        decoratorType: DecoratorTypes,
+        observationStage?: ObservationStage,
+        predicate?: (object: any) => boolean,
+        modelId?: string
+    );
+}
+
+// _espDecoratorMetadata is added via a @Decorator, however there is no way to
+// in typescript to have a type be exposed as that which the decorator creates.
+// The below give some API hints as to what you need to provide, and a runtime check ensures it's
+// a type with _espDecoratorMetadata;
+export type EspDecoratedObject = Partial<{_espDecoratorMetadata: EspMetadata}>;
+
+export function isEspDecoratedObject(object: any): object is EspDecoratedObject {
+    return (<EspDecoratedObject>object)._espDecoratorMetadata !== undefined;
+}
+
+export const EspDecoratorUtil = {
     /**
      * Gets all events for an object instance
      */
@@ -62,7 +85,7 @@ export const EspDecoratorMetadata = {
     /**
      * Gets or creates esp related metadata which is stores as an own prop on the given constructor-function's .prototype property
      */
-    getOrCreateMetaData(ctorFunction) {
+    getOrCreateMetaData(ctorFunction): EspMetadata {
         if (ctorFunction.prototype.hasOwnProperty('_espDecoratorMetadata')) {
             return ctorFunction.prototype._espDecoratorMetadata;
         } else {
@@ -71,15 +94,17 @@ export const EspDecoratorMetadata = {
     }
 };
 
-let Metadata= {
+let Metadata: EspMetadata = {
     init() {
-        this._events = [];
+        if (!this._events) {
+            this._events = [];
+        }
         return this;
     },
-    addEvent(functionName: string, eventName: string, decoratorType, observationStage: ObservationStage, predicate: (object: any) => boolean, modelId: string) {
-        this._events.push({
+    addEvent(functionName: string, eventType: string, decoratorType, observationStage?: ObservationStage, predicate?: (object: any) => boolean, modelId?: string) {
+        this._events.push(<EventObservationMetadata>{
             functionName,
-            eventName,
+            eventType,
             decoratorType,
             observationStage: observationStage || ObservationStage.normal,
             predicate,
@@ -90,7 +115,7 @@ let Metadata= {
 
 // tslint:disable
 /**
- * _createMetadata(): Create and stores an instance of EspDecoratorMetadata on the given prototype as an own property.
+ * _createMetadata(): Create and stores an instance of EspDecoratorUtil on the given prototype as an own property.
  *
  * Notes:
  * With both Babel and Typescript the object passed to a decorator declared on a class is something that prototypical derives from the base (if any) and has it's constructor property set to the ctor-function/class where the decorator is declared upon.
@@ -124,7 +149,7 @@ function _createMetadata(prototype) {
         }
     }
     // define an enumerable property on the constructors to hold the metadata.
-    // It needs to be enumerable so TS extends can copy it accross.
+    // It needs to be enumerable so TS extends can copy it across.
     Object.defineProperty(prototype, '_espDecoratorMetadata', {
         value: metadata,
         // by default enumerable is false, I'm just being explicit here.

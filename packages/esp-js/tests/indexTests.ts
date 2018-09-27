@@ -1,5 +1,4 @@
 import * as esp from '../src';
-
 import {
     Router,
     ObservationStage,
@@ -16,7 +15,16 @@ import {
     observeEvent,
     observeModelChangedEvent,
     logging,
-    DisposableWrapper
+    DisposableWrapper,
+    Guard,
+
+    EspDecoratorUtil,
+    DecoratorTypes,
+    EspMetadata,
+    EspDecoratedObject,
+    EventObservationMetadata,
+    isEspDecoratedObject
+
 } from '../src';
 
 describe('index exports', () => {
@@ -101,5 +109,19 @@ describe('index exports', () => {
         expect(esp.logging.consoleSink).toBeDefined();
         expect(esp.logging.Logger).toBeDefined();
         expect(logging).toBeDefined();
+    });
+
+    it('should export Guard', () => {
+        expect(Guard).toBeDefined();
+    });
+
+    it('should export decorator metadata', () => {
+        expect(esp.EspDecoratorUtil).toBeDefined();
+        expect(esp.DecoratorTypes).toBeDefined();
+        expect(esp.isEspDecoratedObject).toBeDefined();
+
+        expect(EspDecoratorUtil).toBeDefined();
+        expect(DecoratorTypes).toBeDefined();
+        expect(isEspDecoratedObject).toBeDefined();
     });
 });

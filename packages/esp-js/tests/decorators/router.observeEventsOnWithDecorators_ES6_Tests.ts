@@ -302,21 +302,21 @@ describe('Decorators', () => {
                 _anObserveFunction() {
                 }
             }
-        }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+        }).toThrow(new Error('eventType passed to an observeEvent decorator must be a string'));
         expect(() => {
             class Foo {
                 @observeEvent(null)
                 _anObserveFunction() {
                 }
             }
-        }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+        }).toThrow(new Error('eventType passed to an observeEvent decorator must be a string'));
         expect(() => {
             class Foo {
                 @observeEvent(undefined)
                 _anObserveFunction() {
                 }
             }
-        }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+        }).toThrow(new Error('eventType passed to an observeEvent decorator must be a string'));
     });
 
     it('should throw if event name is empty', () => {
@@ -326,7 +326,7 @@ describe('Decorators', () => {
                 _anObserveFunction() {
                 }
             }
-        }).toThrow(new Error('eventName passed to an observeEvent decorator must not be \'\''));
+        }).toThrow(new Error('eventType passed to an observeEvent decorator must not be \'\''));
     });
 
     it('should throw if event name is an invalid type', () => {
@@ -336,7 +336,7 @@ describe('Decorators', () => {
                 _anObserveFunction() {
                 }
             }
-        }).toThrow(new Error('eventName passed to an observeEvent decorator must be a string'));
+        }).toThrow(new Error('eventType passed to an observeEvent decorator must be a string'));
     });
 
     it('should observe events by event name and stage', () => {

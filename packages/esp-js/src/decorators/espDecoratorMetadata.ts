@@ -17,7 +17,6 @@
 // notice_end
 
 import {ObservationStage} from '../router';
-import {ObserveEventPredicate} from './observeEvent';
 
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
@@ -26,12 +25,18 @@ export enum DecoratorTypes {
     custom = 'custom'
 }
 
+export interface DecoratorPredicate {
+    (arg1?: any, arg2?: any, arg3?: any): boolean;
+}
+
 export interface EventObservationMetadata {
     functionName: string;
     eventType: string;
     decoratorType: DecoratorTypes;
     observationStage: ObservationStage;
-    predicate?: ObserveEventPredicate;
+    // The predicated here is a more general interface here than on the actual decorators.
+    // End consumers will be typed ot the decorator predicated, esp internals use this more general API
+    predicate?: DecoratorPredicate;
     modelId: string;
 }
 
@@ -42,7 +47,7 @@ export interface EspMetadata {
         eventType: string,
         decoratorType: DecoratorTypes,
         observationStage?: ObservationStage,
-        predicate?: (object: any) => boolean,
+        predicate?: DecoratorPredicate,
         modelId?: string
     );
 }

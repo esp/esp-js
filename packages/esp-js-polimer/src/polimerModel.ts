@@ -91,7 +91,12 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
             let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
             events.forEach(metadata => {
                 // copy the decorated function to our new map
-                handlerMap[metadata.eventType] = objectToScanForHandlers[metadata.functionName].bind(objectToScanForHandlers);
+                const handler = objectToScanForHandlers[metadata.functionName].bind(objectToScanForHandlers);
+                handlerMap[metadata.eventType] = (state: any, event: any, store: any) => {
+                    if (!metadata.predicate || metadata.predicate(state, event, store)) {
+                        return handler(state, event, store);
+                    }
+                };
             });
             this._stateHandlerMaps.set(stateName, handlerMap);
         });

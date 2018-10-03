@@ -3,6 +3,7 @@ import {ComponentRegistryModel} from '../components';
 import {PrerequisiteRegistrar} from './prerequisites';
 
 export interface Module extends DisposableBase {
+    moduleName: string;
     initialise(): void;
     configureContainer(): void;
     registerComponents(componentRegistryModel:ComponentRegistryModel);

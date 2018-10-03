@@ -34,6 +34,10 @@ export class TradingModule extends ModuleBase {
         return 'fx-trading';
     }
 
+    get moduleName() {
+        return 'Trading Module';
+    }
+
     initialise() {
 
     }

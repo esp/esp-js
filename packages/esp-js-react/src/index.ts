@@ -27,5 +27,5 @@ export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export {ModelSelector} from './modelSelector';
 export {shouldUpdateMixin} from './shouldUpdateMixin';
 export {createViewForModel} from './viewBindingDecorator';
-export {ConnectableComponent, connect, ConnectableComponentProps, MapModelToProps, MapPublishToProps, ConnectableView} from './connectableComponent';
+export {ConnectableComponent, connect, ConnectableComponentProps, MapModelToProps, MapPublishToProps, ConnectableView, ConnectableComponentChildProps} from './connectableComponent';
 export {publishEvent} from './publishEvent';

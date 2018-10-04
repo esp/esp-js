@@ -15,6 +15,14 @@ export interface Props<TModel, TProps, TPublishProps, TOuterProps = {}> extends 
     [key: string]: any;
 }
 
+// the props that get passed to the child object.
+export interface ConnectableComponentChildProps<TModel> {
+    modelId: string;
+    model: TModel;
+    router: Router;
+    [key: string]: any; // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
+}
+
 export interface State {
     model?: any;
     publishProps?: any;
@@ -97,11 +105,11 @@ export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {
         if(this.state.model == null) {
             return null;
         }
-        let props = this._getChildProps();
-        return createViewForModel(this.state.model, props, this.props.viewContext, this.props.view);
+        let childProps = this._getChildProps();
+        return createViewForModel(this.state.model, childProps, this.props.viewContext, this.props.view);
     }
 
-    private _getChildProps() {
+    private _getChildProps(): ConnectableComponentChildProps<TModel> {
         const {children, mapPublish, modelId, modelSelector, view, viewContext, ...rest} = this.props;
         const outerProps = {
             ...rest,

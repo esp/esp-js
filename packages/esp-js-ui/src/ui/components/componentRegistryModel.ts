@@ -3,7 +3,6 @@ import {Logger} from '../../core';
 import {ModelBase} from '../modelBase';
 import {getComponentFactoryMetadata, ComponentFactoryMetadata} from './index';
 import {ComponentFactoryBase} from './componentFactoryBase';
-import {IdFactory} from '../idFactory';
 
 const _log = Logger.create('ComponentRegistryModel');
 
@@ -17,6 +16,7 @@ export interface FactoryEntry {
     factory: ComponentFactoryBase<ModelBase>;
     shortName: string;
     customMetadata?: any;
+    moduleName: string;
 }
 
 interface KeyToFactoryEntryMap {
@@ -52,7 +52,7 @@ export class ComponentRegistryModel extends ModelBase {
         this.componentsMetadata = [...this._getComponentsMetaData()];
     }
 
-    public registerComponentFactory(componentFactory: ComponentFactoryBase<ModelBase>): void {
+    public registerComponentFactory(moduleName: string, componentFactory: ComponentFactoryBase<ModelBase>): void {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(componentFactory, 'componentFactory must be defined');
             let metadata: ComponentFactoryMetadata = getComponentFactoryMetadata(componentFactory);
@@ -62,7 +62,8 @@ export class ComponentRegistryModel extends ModelBase {
                 componentFactoryKey: metadata.componentKey,
                 factory: componentFactory,
                 shortName: metadata.shortName,
-                customMetadata: metadata.customMetadata
+                customMetadata: metadata.customMetadata,
+                moduleName: moduleName
             });
         });
     }
@@ -82,8 +83,11 @@ export class ComponentRegistryModel extends ModelBase {
         this._createComponent(event.componentFactoryKey);
     }
 
+    public hasComponentFacotory(componentFactoryKey: string) {
+        return this._componentFactoriesEntries.hasOwnProperty(componentFactoryKey);
+    }
+
     public getComponentFactory<T extends ModelBase>(componentFactoryKey: string): ComponentFactoryBase<T> {
-        Guard.isFalsey((componentFactoryKey in this._componentFactoriesEntries), `component with id [${componentFactoryKey}] already added`);
         let entry: FactoryEntry = this._componentFactoriesEntries[componentFactoryKey];
         Guard.isDefined(entry, `componentFactory with key ${componentFactoryKey} not registered`);
         return <ComponentFactoryBase<T>>entry.factory;

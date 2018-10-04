@@ -29,6 +29,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         this.addDisposable(container);
     }
 
+    public get moduleName(): string { return ''; }
+
     abstract configureContainer();
 
     abstract registerPrerequisites(registrar: PrerequisiteRegistrar): void;
@@ -37,7 +39,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         _log.debug('Registering components');
         let componentFactories: Array<ComponentFactoryBase<any>> = this.getComponentsFactories();
         componentFactories.forEach(componentFactory => {
-            componentRegistryModel.registerComponentFactory(componentFactory);
+            componentRegistryModel.registerComponentFactory(this.moduleName, componentFactory);
             this.addDisposable(() => {
                 componentRegistryModel.unregisterComponentFactory(componentFactory);
             });

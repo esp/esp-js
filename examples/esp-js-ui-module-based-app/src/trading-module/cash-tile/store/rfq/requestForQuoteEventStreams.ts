@@ -1,9 +1,9 @@
 import * as Rx from 'rx';
-import {InputEvent, OutputEvent, eventTransformFor} from 'esp-js-polimer';
+import {InputEvent, OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
 import {CashTileStore} from '../cashTileStore';
 import {InputEvents, RfqEvents} from '../../events';
 import {RfqRequest, RfqService} from '../../services/rfqService';
-import {Logger} from '../../../../../../../packages/esp-js-ui';
+import {Logger} from 'esp-js-ui';
 
 const _log = Logger.create('CashTile-RequestForQuoteObservables');
 
@@ -14,7 +14,7 @@ export class RequestForQuoteEventStreams {
     @eventTransformFor(InputEvents.changeCurrencyPair)
     @eventTransformFor(InputEvents.notionalChanged)
     @eventTransformFor(RfqEvents.requestQuote)
-    onRfqTypeEvent(inputEventStream: Rx.Observable<InputEvent<RfqEvents.RequestQuoteEvent | InputEvents.NotionalChanged | InputEvents.CurrencyPairChangedEvent, CashTileStore>>): Rx.Observable<OutputEvent<RfqEvents.RfqUpdateEvent>> {
+    onRfqTypeEvent(inputEventStream: InputEventStream<CashTileStore, RfqEvents.RequestQuoteEvent | InputEvents.NotionalChanged | InputEvents.CurrencyPairChangedEvent>): OutputEventStream<RfqEvents.RfqUpdateEvent> {
         _log.debug('Wiring up rfq transform streams');
         return inputEventStream
             .map(inputEvent => {

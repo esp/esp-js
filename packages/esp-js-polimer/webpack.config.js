@@ -26,5 +26,6 @@ module.exports = {
     externals: {
         'rx': 'rx',
         'esp-js': 'esp-js',
+        'immer': 'immer'
     },
 };

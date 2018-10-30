@@ -9,12 +9,15 @@
 [x] - expose single event subject for all events for a model
 [ ] - merge all readmes and restructure docs
 [ ] - single travis build with lerna
-[ ] - single publish step via lerna
+[x] - single publish step via lerna
 [ ] - shared test setups
 [ ] - document monorepo setup
 [ ] - document observeEventEnvelope
 [ ] - Add Breaking Changes to release notes
 [ ] - Ensure dependencies are exact versions
+[ ] - add support for pre and post processing to polimer states
+[ ] - polimer tests
+[ ] - clean up event dispatching in polimer so it can call the event filter predicate earlier on
 
 breaking changes:
  - model changed event support

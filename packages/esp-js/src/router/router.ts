@@ -58,6 +58,10 @@ export class Router extends DisposableBase {
         this._decoratorObservationRegister = new DecoratorObservationRegister();
     }
 
+    public get currentStatus(): Status {
+        return this._state.currentStatus;
+    }
+
     public addModel(modelId: string, model: any, options?: ModelOptions) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');

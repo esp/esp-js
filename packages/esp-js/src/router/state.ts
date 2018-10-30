@@ -27,7 +27,7 @@ export class State {
     private _eventsDispatched: any[];
     private _currentModelId: string;
     private _currentModelRecord: ModelRecord;
-    private _circularEventDispatchLimit = 20;
+    private _circularEventDispatchLimit = 200;
     private _currentDispatchCount = 0;
 
     public constructor(private _compositeDiagnosticMonitor: CompositeDiagnosticMonitor) {
@@ -35,11 +35,11 @@ export class State {
         this._eventsDispatched = [];
     }
 
-    public get currentStatus() {
+    public get currentStatus(): Status {
         return this._currentStatus;
     }
 
-    public get currentModelId() {
+    public get currentModelId(): string {
         return this._currentModelId;
     }
 
@@ -71,7 +71,9 @@ export class State {
             if (this._compositeDiagnosticMonitor.enableDiagnosticLogging) {
                 throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount} events processed :\r\n${this._compositeDiagnosticMonitor.getLoggingDiagnosticSummary()}`);
             } else {
-                throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount}. Enable diagnostic logging for a more detailed error message (routerInstance.enableDiagnostics = true)`);
+                throw new Error(
+                    `Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount}. To enable diagnostic logging for a more detailed dump of what events were in flight set 'yourRouterInstance.enableDiagnosticLogging = true'`
+                );
             }
         }
         this._currentStatus = Status.EventProcessorDispatch;

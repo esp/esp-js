@@ -15,7 +15,7 @@ declare module 'esp-js/.dist/typings/router/router' {
 
 export class PolimerStoreBuilder<TStore extends Store> {
     private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>> = new Map();
-    private _stateHandlerObjects: Map<string, any> = new Map();
+    private _stateHandlerObjects: Map<string, any[]> = new Map();
     private _outputEventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
     private _initialStore: TStore;
@@ -33,12 +33,19 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
-    withStateHandlersOn<TKey extends keyof TStore>(state: TKey, objectToScanForHandlers: any): PolimerStoreBuilder<TStore> {
-        if (isEspDecoratedObject(objectToScanForHandlers)) {
-            this._stateHandlerObjects.set(<string>state, objectToScanForHandlers);
-        } else {
-            throw new Error(`Unknown observable object. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
-        }
+    withStateHandlersOn<TKey extends keyof TStore>(state: TKey, ...objectToScanForHandlers: any[]): PolimerStoreBuilder<TStore> {
+        objectToScanForHandlers.forEach(handler => {
+            if (isEspDecoratedObject(handler)) {
+                let handlers = this._stateHandlerObjects.get(<string>state);
+                if (!handlers) {
+                    handlers = [];
+                    this._stateHandlerObjects.set(<string>state, handlers);
+                }
+                handlers.push(handler);
+            } else {
+                throw new Error(`Unknown observable object for state ${state}. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
+            }
+        });
         return this;
     }
 
@@ -47,12 +54,14 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
-    withEventStreamsOn(objectToScanForObservables: any): PolimerStoreBuilder<TStore> {
-        if (isEspDecoratedObject(objectToScanForObservables)) {
-            this._eventStreamHandlerObjects.push(objectToScanForObservables);
-        } else {
-            throw new Error(`Unknown observable object. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
-        }
+    withEventStreamsOn(...objectsToScanForObservables: any[]): PolimerStoreBuilder<TStore> {
+        objectsToScanForObservables.forEach(o => {
+            if (isEspDecoratedObject(o)) {
+                this._eventStreamHandlerObjects.push(o);
+            } else {
+                throw new Error(`Unknown observable object. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
+            }
+        });
         return this;
     }
 

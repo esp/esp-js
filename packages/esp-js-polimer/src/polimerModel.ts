@@ -16,7 +16,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         private readonly _router: Router,
         private _store: TStore,
         private readonly _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>>,
-        private readonly _stateHandlerObjects: Map<string, any>,
+        private readonly _stateHandlerObjects: Map<string, any[]>,
         private readonly _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[],
         private readonly _eventStreamHandlerObjects: any[]
     ) {
@@ -84,19 +84,21 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         if (!this._stateHandlerObjects) {
             return;
         }
-        this._stateHandlerObjects.forEach((objectToScanForHandlers, stateName) => {
-            // create a new handler map which has the eventType as the key
-            // we should just omit the decorator and just use function names, but there can be more than one decorators on a function
+        this._stateHandlerObjects.forEach((objectsToScanForHandlers: any[], stateName) => {
             let handlerMap: PolimerHandlerMap<any, TStore> = {};
-            let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
-            events.forEach(metadata => {
-                // copy the decorated function to our new map
-                const handler = objectToScanForHandlers[metadata.functionName].bind(objectToScanForHandlers);
-                handlerMap[metadata.eventType] = (state: any, event: any, store: any) => {
-                    if (!metadata.predicate || metadata.predicate(state, event, store)) {
-                        return handler(state, event, store);
-                    }
-                };
+            objectsToScanForHandlers.forEach(objectToScanForHandlers => {
+                // create a new handler map which has the eventType as the key
+                // we could just omit the decorator and just use function names, but there can be more than one decorators on a function
+                let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
+                events.forEach(metadata => {
+                    // copy the decorated function to our new map
+                    const handler = objectToScanForHandlers[metadata.functionName].bind(objectToScanForHandlers);
+                    handlerMap[metadata.eventType] = (state: any, event: any, store: any) => {
+                        if (!metadata.predicate || metadata.predicate(state, event, store)) {
+                            return handler(state, event, store);
+                        }
+                    };
+                });
             });
             this._stateHandlerMaps.set(stateName, handlerMap);
         });

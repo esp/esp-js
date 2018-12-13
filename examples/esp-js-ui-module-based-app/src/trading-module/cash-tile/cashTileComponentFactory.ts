@@ -1,6 +1,6 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
-import {ComponentFactoryBase, Logger, componentFactory} from 'esp-js-ui';
+import {ComponentFactoryBase, Logger, componentFactory, IdFactory} from 'esp-js-ui';
 import {CashTileStore, defaultStoreFactory} from './store/cashTileStore';
 import {CashTileView} from './views/cashTileView';
 import {rootStateHandlerMap} from './store/root/rootState';
@@ -11,6 +11,7 @@ import {RequestForQuoteStateHandlers} from './store/rfq/requestForQuoteState';
 import {RequestForQuoteEventStreams} from './store/rfq/requestForQuoteEventStreams';
 import {RfqService} from './services/rfqService';
 import {RootEvents} from './events';
+import {DateSelectorModel} from './store/dateSelector/dateSelectorModel';
 
 const _log = Logger.create('CashTileComponentFactory');
 
@@ -25,7 +26,9 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
     _createComponent(childContainer, state: CashTileStore): PolimerModel<CashTileStore> {
         _log.verbose('Creating cash tile model');
 
-        const initialStore = state || defaultStoreFactory('EURUSD');
+        const modelId = IdFactory.createId('cashTileStore');
+
+        const initialStore = state || defaultStoreFactory(modelId, 'EURUSD');
 
         let model = this._router
             // ***************************
@@ -38,12 +41,21 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
             // 2 methods are supported.
 
             // 1) Simple handler objects
-            .withStateHandler('rootState', rootStateHandlerMap)
-            .withStateHandler('referenceData', referenceDataStateHandlerMap)
-            .withStateHandler('inputs', inputStateHandlerMap)
+            .withStateHandlerMap('rootState', rootStateHandlerMap)
+            .withStateHandlerMap('referenceData', referenceDataStateHandlerMap)
+            .withStateHandlerMap('inputs', inputStateHandlerMap)
             // 2) Handlers within a container
             //    Useful if you want to use dependency injection, or attribute based stream wire-up
-            .withStateHandlersOn('requestForQuote', new RequestForQuoteStateHandlers())
+            .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
+            // 3) Handlers which are objects that have a `getState` function or a function decorated with @polimerStateProvider
+            //    These are useful if you have existing plumbing, or OO objects which you want to interop with polimer like stores
+            //    There are some caveats here:
+            //    - The public api to the model should be accessed via events.
+            //      If you have methods which get called by some background process there is now way for esp to know the state has changed.
+            //      e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
+            //           if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
+            //           In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileStore> created by this builder
+            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router))
 
             // ***************************
             // Wire up our event streams

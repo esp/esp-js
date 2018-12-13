@@ -79,7 +79,7 @@ describe('Decorators', () => {
 
     it('should observe all events events by event name', () => {
         _router.publishEvent('modelId', 'barEvent', 1);
-        expect(_model.receivedAllEvent.length).toBe(3);
+        expect(_model.receivedAllEvent.length).toBe(4);
 
         expect(_model.receivedAllEvent[0].event).toBe(1);
         expect(_model.receivedAllEvent[0].model).toBe(_model);
@@ -92,5 +92,9 @@ describe('Decorators', () => {
         expect(_model.receivedAllEvent[2].event).toBe(1);
         expect(_model.receivedAllEvent[2].model).toBe(_model);
         expect(_model.receivedAllEvent[2].observationStage).toBe(ObservationStage.committed);
+
+        expect(_model.receivedAllEvent[3].event).toBe(1);
+        expect(_model.receivedAllEvent[3].model).toBe(_model);
+        expect(_model.receivedAllEvent[3].observationStage).toBe(ObservationStage.final);
     });
 });

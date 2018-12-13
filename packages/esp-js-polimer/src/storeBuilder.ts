@@ -6,9 +6,6 @@ import {Store} from './store';
 
 declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
-        /**
-         * Creates a store builder which can be configured and ultimately added to the router
-         */
         storeBuilder?<TStore extends Store>(): PolimerStoreBuilder<TStore>;
     }
 }
@@ -16,6 +13,7 @@ declare module 'esp-js/.dist/typings/router/router' {
 export class PolimerStoreBuilder<TStore extends Store> {
     private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>> = new Map();
     private _stateHandlerObjects: Map<string, any[]> = new Map();
+    private _stateHandlerModels: Map<string, any> = new Map();
     private _outputEventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
     private _initialStore: TStore;
@@ -28,12 +26,12 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
-    withStateHandler<TKey extends keyof TStore, TState extends TStore[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TStore>): PolimerStoreBuilder<TStore> {
+    withStateHandlerMap<TKey extends keyof TStore, TState extends TStore[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TStore>): PolimerStoreBuilder<TStore> {
         this._stateHandlerMaps.set(<string>state, handlerMap);
         return this;
     }
 
-    withStateHandlersOn<TKey extends keyof TStore>(state: TKey, ...objectToScanForHandlers: any[]): PolimerStoreBuilder<TStore> {
+    withStateHandlerObject<TKey extends keyof TStore>(state: TKey, ...objectToScanForHandlers: any[]): PolimerStoreBuilder<TStore> {
         objectToScanForHandlers.forEach(handler => {
             if (isEspDecoratedObject(handler)) {
                 let handlers = this._stateHandlerObjects.get(<string>state);
@@ -46,6 +44,11 @@ export class PolimerStoreBuilder<TStore extends Store> {
                 throw new Error(`Unknown observable object for state ${state}. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
             }
         });
+        return this;
+    }
+
+    withStateHandlerModel<TKey extends keyof TStore>(state: TKey, stateHandlerModel: any): PolimerStoreBuilder<TStore>  {
+        this._stateHandlerModels.set(<string>state, stateHandlerModel); // last in wins
         return this;
     }
 
@@ -80,6 +83,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
             this._initialStore,
             this._stateHandlerMaps,
             this._stateHandlerObjects,
+            this._stateHandlerModels,
             this._outputEventStreamFactories,
             this._eventStreamHandlerObjects
         );

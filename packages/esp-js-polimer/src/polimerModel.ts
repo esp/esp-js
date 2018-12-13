@@ -17,6 +17,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         private _store: TStore,
         private readonly _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>>,
         private readonly _stateHandlerObjects: Map<string, any[]>,
+        private readonly _stateHandlerModels: Map<string, any>,
         private readonly _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[],
         private readonly _eventStreamHandlerObjects: any[]
     ) {
@@ -46,6 +47,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     }
 
     private _wireUpStateHandlers = () => {
+        this._wireUpStateHandlerObjects();
         this._scanDecoratedObjectsForStateHandlers();
 
         this._stateHandlerMaps.forEach((handlerMap, stateName) => {
@@ -71,14 +73,13 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                         const handlers = this._stateEventHandlers.get(eventEnvelope.eventType);
                         handlers.forEach(handler => handler(eventEnvelope.eventType, eventEnvelope.event, this._store));
                         sendUpdateToDevTools(eventEnvelope, this.getStore(), this._modelId);
-                        // Data mutation should happen exclusively in the above handlers (i.e. the store's state handlers).
-                        // For side-effects, either pre- or post- store mutation, you can use subscribe to events at ObservationStage.Preview, or ObservationStage.committed
-                        // ObservationStage.committed is the default stage for polimer observables
-                        eventEnvelope.context.commit();
                     }
                 )
         );
     };
+
+    private _wireUpStateHandlerObjects() {
+    }
 
     private _scanDecoratedObjectsForStateHandlers() {
         if (!this._stateHandlerObjects) {
@@ -168,7 +169,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _observeEvent = (eventType: string | string[], stage: ObservationStage = ObservationStage.committed): Rx.Observable<InputEvent<TStore, any>> => {
+    private _observeEvent = (eventType: string | string[], stage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TStore, any>> => {
         return Rx.Observable.create((obs: Rx.Observer<any>) => {
                 const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router

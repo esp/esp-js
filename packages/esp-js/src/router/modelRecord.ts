@@ -30,6 +30,7 @@ export interface EventStreamsRegistration {
     preview: AutoConnectedObservable<EventEnvelope<any, any>>;
     normal: AutoConnectedObservable<EventEnvelope<any, any>>;
     committed: AutoConnectedObservable<EventEnvelope<any, any>>;
+    final: AutoConnectedObservable<EventEnvelope<any, any>>;
 }
 
 interface InternalEventStreamsRegistration {
@@ -114,6 +115,9 @@ export class ModelRecord {
                         .share(false),
                     committed: eventStream
                         .filter(envelope => ObservationStage.isCommitted(envelope.observationStage))
+                        .share(false),
+                    final: eventStream
+                        .filter(envelope => ObservationStage.isFinal(envelope.observationStage))
                         .share(false),
                     all: eventStream
                         .share(false)

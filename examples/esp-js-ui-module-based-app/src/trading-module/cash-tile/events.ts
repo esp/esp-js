@@ -42,3 +42,10 @@ export namespace ReferenceDataEvents {
     }
     export const currencyPairsUpdated = 'currencyPairsUpdated';
 }
+
+export namespace DateSelectorEvents {
+    export interface UserEnteredDateEvent {
+        dateInput: string;
+    }
+    export const userEnteredDate = 'userEnteredDate';
+}

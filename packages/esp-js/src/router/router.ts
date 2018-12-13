@@ -175,6 +175,8 @@ export class Router extends DisposableBase {
                     return eventStreamDetails.normal.subscribe(o);
                 case ObservationStage.committed:
                     return eventStreamDetails.committed.subscribe(o);
+                case ObservationStage.final:
+                    return eventStreamDetails.final.subscribe(o);
                 case ObservationStage.all:
                     return eventStreamDetails.all.subscribe(o);
                 default:
@@ -429,17 +431,27 @@ export class Router extends DisposableBase {
             throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
         }
         if (!eventContext.isCanceled) {
+            let wasCommittedAtNormalStage;
             eventContext.updateCurrentState(ObservationStage.normal);
             this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
-            if (eventContext.isCommitted) {
+            wasCommittedAtNormalStage = eventContext.isCommitted;
+            if (wasCommittedAtNormalStage) {
                 eventContext.updateCurrentState(ObservationStage.committed);
                 this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.committed);
                 if (eventContext.isCanceled) {
                     throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
                 }
+            }
+            eventContext.updateCurrentState(ObservationStage.final);
+            this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.final);
+            if (eventContext.isCanceled) {
+                throw new Error('You can\'t cancel an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
+            }
+            if (!wasCommittedAtNormalStage && eventContext.isCommitted) {
+                throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
         }
     }

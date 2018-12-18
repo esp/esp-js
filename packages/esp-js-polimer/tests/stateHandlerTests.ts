@@ -165,4 +165,10 @@ describe('State Handlers', () => {
         });
     });
 
+
+    describe('Model disposal tests', () => {
+        it('disposing the PolmierModel cancels event subscriptions', () => {
+
+        });
+    });
 });

@@ -72,13 +72,16 @@ export class PolimerTestApiFactory {
         let router = new Router();
         let modelId = 'modelId';
         let initialStore = defaultStoreFactory(modelId);
+        let testStateObject = new TestStateObject(modelId, router);
         let model = router
             .storeBuilder<TestStore>()
             .withInitialStore(initialStore)
             .withStateHandlerMap('handlerMapState', TestStateHandlerMap)
             .withStateHandlerObject('handlerObjectState', new TestStateObjectHandler())
-            .withStateHandlerModel('handlerModelState', new TestStateObject())
+            .withStateHandlerModel('handlerModelState', testStateObject)
             .registerWithRouter();
+        // TestStateObject is a classic esp model, it is modeled here to have a typical external lifecycle and manages it's state internally
+        testStateObject.initialise();
         let currentStore: TestStore;
         router.getModelObservable<PolimerModel<TestStore>>(modelId).map(m => m.getStore()).subscribe(store => {
             currentStore = store;

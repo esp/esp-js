@@ -14,7 +14,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>> = new Map();
     private _stateHandlerObjects: Map<string, any[]> = new Map();
     private _stateHandlerModels: Map<string, any> = new Map();
-    private _outputEventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
+    private _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
     private _initialStore: TStore;
 
@@ -53,7 +53,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     }
 
     withEventStreams(...outputEventStreamFactory: OutputEventStreamFactory<TStore, any, any>[]): PolimerStoreBuilder<TStore> {
-        this._outputEventStreamFactories.push(...outputEventStreamFactory);
+        this._eventStreamFactories.push(...outputEventStreamFactory);
         return this;
     }
 
@@ -80,12 +80,14 @@ export class PolimerStoreBuilder<TStore extends Store> {
         let customPolimerModel = class CustomPolimerModel extends PolimerModel<TStore> {};
         let polimerModel = new customPolimerModel(
             this._router,
-            this._initialStore,
-            this._stateHandlerMaps,
-            this._stateHandlerObjects,
-            this._stateHandlerModels,
-            this._outputEventStreamFactories,
-            this._eventStreamHandlerObjects
+            {
+                initialStore: this._initialStore,
+                stateHandlerMaps: this._stateHandlerMaps,
+                stateHandlerObjects: this._stateHandlerObjects,
+                stateHandlerModels: this._stateHandlerModels,
+                eventStreamFactories: this._eventStreamFactories,
+                eventStreamHandlerObjects: this._eventStreamHandlerObjects
+            }
         );
 
         this._router.addModel(

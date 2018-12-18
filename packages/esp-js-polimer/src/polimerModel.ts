@@ -1,31 +1,46 @@
-import {eventHandlerFactory, MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './eventHandlers';
+import { MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './eventHandlers';
 import {connect, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {EventEnvelope, Router, DisposableBase, Guard, ObservationStage, EspDecoratorUtil, EventObservationMetadata, observeEvent, PolimerEventPredicate, EventContext} from 'esp-js';
 import {OutputEventStreamFactory, InputEvent, OutputEvent} from './eventStreamObservable';
-import {applyImmerToHandlers} from './immerUtils';
 import {logger} from './logger';
 import * as Rx from 'rx';
 import {Store} from './store';
 import {PolimerEvents} from './polimerEvents';
+import produce from 'immer';
+
+export interface PolimerModelSetup<TStore extends Store> {
+    initialStore: TStore;
+    stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>>;
+    stateHandlerObjects: Map<string, any[]>;
+    stateHandlerModels: Map<string, any>;
+    eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[];
+    eventStreamHandlerObjects: any[];
+}
+
+interface EventHandlerMetadata {
+    stateName: string;
+    observationStage: ObservationStage;
+    predicate: PolimerEventPredicate;
+    handler: PolimerEventHandler<any, any, any>;
+}
 
 export class PolimerModel<TStore extends Store> extends DisposableBase {
-    private readonly _stateEventHandlers: Map<string, PolimerEventHandler<any, any>[]> = new Map();
+    private readonly _eventHandlers: Map<string, EventHandlerMetadata[]> = new Map();
+    private _store: TStore;
+
     private readonly _modelId: string;
 
     constructor(
         private readonly _router: Router,
-        private _store: TStore,
-        private readonly _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>>,
-        private readonly _stateHandlerObjects: Map<string, any[]>,
-        private readonly _stateHandlerModels: Map<string, any>,
-        private readonly _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[],
-        private readonly _eventStreamHandlerObjects: any[]
+        private readonly _initialSetup: PolimerModelSetup<TStore>
     ) {
         super();
         Guard.isDefined(_router, 'router must be defined');
-        Guard.isObject(_store, 'store must be defined and be an object');
-        Guard.stringIsNotEmpty(_store.modelId, `Initial store's modelId must not be null or empty`);
-        this._modelId = _store.modelId;
+        Guard.isDefined(_initialSetup, 'router must be defined');
+        Guard.isObject(_initialSetup.initialStore, 'store must be defined and be an object');
+        Guard.stringIsNotEmpty(_initialSetup.initialStore.modelId, `Initial store's modelId must not be null or empty`);
+        this._modelId = this._initialSetup.initialStore.modelId;
+        this._store = this._initialSetup.initialStore;
     }
 
     public get modelId() {
@@ -35,8 +50,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     public initialize = () => {
         connect(this._router, this._modelId, this, this._modelId);
         sendUpdateToDevTools('@@INIT', this.getStore(), this._modelId);
-        this._wireUpStateHandlers();
+        this._wireUpStateHandlerModels();
+        this._wireUpStateHandlerObjects();
+        this._wireUpStateHandlersMaps();
         this._wireUpEventStreams();
+        this._listenToAllEvents();
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     };
 
@@ -46,68 +64,80 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         this.dispose();
     }
 
-    private _wireUpStateHandlers = () => {
-        this._wireUpStateHandlerModels();
-        this._scanDecoratedObjectsForStateHandlers();
-
-        this._stateHandlerMaps.forEach((handlerMap: PolimerHandlerMap<any, TStore>, stateName) => {
-            handlerMap = this._expandMultipleEventsIntoSeparateHandlers(handlerMap);
-            handlerMap = applyImmerToHandlers(handlerMap);
-            // create a handler, which takes the larger map,
-            // it deals with dispatching to a given handler in the map
-            const polimerEventHandler = eventHandlerFactory(handlerMap, stateName);
-            const events = Object.keys(handlerMap);
-            events.forEach(event => {
-                let stateHandler = this._stateEventHandlers.get(event);
-                if (!stateHandler) {
-                    // why is this an array? won't there just be one handler per event type,
-                    // or in any case polimerEventHandler does a lookup for the event anyway
-                    stateHandler = [];
-                    this._stateEventHandlers.set(event, stateHandler);
-                }
-                stateHandler.push(polimerEventHandler);
-            });
-            logger.verbose(`Creating polimer state "${stateName}" listening on the following events:`, events);
-        });
-        let eventsToObserve = Array.from(this._stateEventHandlers.keys());
+    private _listenToAllEvents() {
+        let eventsToObserve = Array.from(this._eventHandlers.keys());
         this.addDisposable(
             this._router.getAllEventsObservable(eventsToObserve, ObservationStage.all)
                 .filter(eventEnvelope => (eventEnvelope.modelId === this._modelId))
                 .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
-                        const handlers = this._stateEventHandlers.get(eventEnvelope.eventType);
-                        // i don't think there is ever more than 1 handler, as eventHandlerFactory actually applies to many
-                        handlers.forEach(handler => handler(eventEnvelope.model, eventEnvelope.eventType, eventEnvelope.event, this._store, eventEnvelope.context));
-                        sendUpdateToDevTools(eventEnvelope, this.getStore(), this._modelId);
-                    }
-                )
+                    const eventReceivers = this._eventHandlers.get(eventEnvelope.eventType);
+                    const store = this.getStore();
+                    eventReceivers.forEach((handlerMetadata: EventHandlerMetadata) => {
+                        if (handlerMetadata.observationStage === eventEnvelope.observationStage) {
+                            const beforeState = store[handlerMetadata.stateName];
+                            if (!handlerMetadata.predicate || handlerMetadata.predicate(beforeState, eventEnvelope.event, store, eventEnvelope.context)) {
+                                logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState);
+                                const afterState = handlerMetadata.handler(beforeState, eventEnvelope.event, store, eventEnvelope.context);
+                                logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);
+                                store[handlerMetadata.stateName] = afterState;
+                            } else {
+                                logger.verbose(`Received "${eventEnvelope.eventType}" for "${handlerMetadata.stateName}" state, skipping as the handlers predicate returned false`, beforeState);
+                            }
+                        }
+                    });
+                    sendUpdateToDevTools(eventEnvelope, this.getStore(), this._modelId);
+                })
         );
-    };
+    }
 
     private _wireUpStateHandlerModels() {
     }
 
-    private _scanDecoratedObjectsForStateHandlers() {
-        if (!this._stateHandlerObjects) {
+    private _wireUpStateHandlerObjects() {
+        if (!this._initialSetup.stateHandlerObjects) {
             return;
         }
-        this._stateHandlerObjects.forEach((objectsToScanForHandlers: any[], stateName) => {
-            let handlerMap: PolimerHandlerMap<any, TStore> = {};
+        this._initialSetup.stateHandlerObjects.forEach((objectsToScanForHandlers: any[], stateName) => {
             objectsToScanForHandlers.forEach(objectToScanForHandlers => {
                 // create a new handler map which has the eventType as the key
                 // we could just omit the decorator and just use function names, but there can be more than one decorators on a function
                 let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
-                events.forEach(metadata => {
-                    // copy the decorated function to our new map
-                    const handler = objectToScanForHandlers[metadata.functionName].bind(objectToScanForHandlers);
-                    handlerMap[metadata.eventType] = (state: any, event: any, store: any, eventContext: EventContext) => {
-                        let predicate = <PolimerEventPredicate>metadata.predicate;
-                        if (!predicate || predicate(state, event, store, eventContext)) {
-                            return handler(state, event, store, eventContext);
-                        }
-                    };
+                events.forEach((decoratorMetadata: EventObservationMetadata) => {
+                    const handler = objectToScanForHandlers[decoratorMetadata.functionName].bind(objectToScanForHandlers);
+                    this._addEventHandlerMetadata(decoratorMetadata.eventType, stateName, <PolimerEventPredicate>decoratorMetadata.predicate, decoratorMetadata.observationStage, handler);
                 });
             });
-            this._stateHandlerMaps.set(stateName, handlerMap);
+        });
+    }
+
+    private _wireUpStateHandlersMaps = () => {
+        this._initialSetup.stateHandlerMaps.forEach((handlerMap: PolimerHandlerMap<any, TStore>, stateName) => {
+            handlerMap = this._expandMultipleEventsIntoSeparateHandlers(handlerMap);
+            Object.keys(handlerMap).forEach((eventType: string) => {
+                this._addEventHandlerMetadata(eventType, stateName, null, ObservationStage.normal, handlerMap[eventType]);
+            });
+        });
+    };
+
+    private _addEventHandlerMetadata(eventType: string, stateName: string, predicate: PolimerEventPredicate, observationStage: ObservationStage, handler: PolimerEventHandler<any, any, any>) {
+        let eventHandlerMetadataArray = this._eventHandlers.get(eventType);
+        if (!eventHandlerMetadataArray) {
+            // why is this an array? won't there just be one handler per event type,
+            // or in any case polimerEventHandler does a lookup for the event anyway
+            eventHandlerMetadataArray = [];
+            this._eventHandlers.set(eventType, eventHandlerMetadataArray);
+        }
+        eventHandlerMetadataArray.push(
+            <EventHandlerMetadata>{
+                stateName: stateName,
+                predicate:  predicate,
+                observationStage: observationStage,
+                // A note on the produce() overload we use, from https://github.com/mweststrate/immer:
+                //
+                // Passing a function as the first argument to produce is intended to be used for currying.
+                // This means that you get a pre-bound producer that only needs a state to produce the value from.
+                // The producer function gets passed in the draft, and any further arguments that were passed to the curried function.
+                handler: produce(handler)
         });
     }
 
@@ -127,11 +157,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
 
         // First deal with the first type
         observables.push(
-            ...this._eventStreamFactories.map(outputEventStreamFactory => outputEventStreamFactory(this._observeEvent))
+            ...this._initialSetup.eventStreamFactories.map(outputEventStreamFactory => outputEventStreamFactory(this._observeEvent))
         );
 
         // next with second type
-        this._eventStreamHandlerObjects.forEach(objectToScanForObservables => {
+        this._initialSetup.eventStreamHandlerObjects.forEach(objectToScanForObservables => {
             const metadata: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForObservables);
 
             // group by the function name as there may be multiple events being observed by 1 function

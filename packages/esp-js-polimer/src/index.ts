@@ -1,7 +1,7 @@
 // import for side effects
 import './storeBuilder';
 
-export {multipleEvents, PolimerEventHandler, PolimerHandlerMap, CompositePolimerHandler, FunctionPolimerHandler} from './eventHandlers';
+export {multipleEvents, PolimerEventHandler, PolimerHandlerMap} from './eventHandlers';
 export {PolimerModel} from './polimerModel';
 export {Store} from './store';
 export {PolimerStoreBuilder} from './storeBuilder';

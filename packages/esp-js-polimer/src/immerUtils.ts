@@ -1,10 +1,9 @@
 import produce from 'immer';
 import {PolimerHandlerMap} from './eventHandlers';
+import {EventContext} from 'esp-js';
 
-/**
- * This types represent enhanced handlers by produce from immer
- */
-type FunctionProducerHandler<TState, TEvent, TStore> = (currentState: TState, event: TEvent, store: TStore) => TState;
+type FunctionProducerHandler<TState, TEvent, TStore> = (currentState: TState, event: TEvent, store: TStore, eventContext: EventContext) => TState;
+// TODO: delete this in favour of an 'if' statement
 type ComposedProducerHandler<TState, TEvent, TStore> = {
     success?: FunctionProducerHandler<TState, TEvent, TStore>;
     error?: FunctionProducerHandler<TState, TEvent, TStore>;

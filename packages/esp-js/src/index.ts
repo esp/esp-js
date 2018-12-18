@@ -31,7 +31,7 @@ export {
 } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';
-export { EspDecoratorUtil, DecoratorTypes, EspMetadata, EspDecoratedObject, EventObservationMetadata, isEspDecoratedObject} from './decorators/espDecoratorMetadata';
+export { EspDecoratorUtil, DecoratorTypes, EspMetadata, EspDecoratedObject, EventObservationMetadata, isEspDecoratedObject, EventPredicate, PolimerEventPredicate, ObserveEventPredicate} from './decorators/espDecoratorMetadata';
 export { logging, Guard, utils } from './system';
 export { Observable } from './reactive/observable';
 export { RouterObservable, Subject, RouterSubject } from './reactive';

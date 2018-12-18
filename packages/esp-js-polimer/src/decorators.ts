@@ -1,8 +1,11 @@
-import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes} from 'esp-js';
+import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, ObserveEventPredicate} from 'esp-js';
 
-export interface StateHandlerEventPredicate {
-    (state: any, event: any, store: any): boolean;
-}
+// export interface StateHandlerEventPredicate {
+//     (state: any, event: any, store: any): boolean;
+
+// this will change to (store, event, state), so we can line it up with the existing ObserveEventPredicate
+
+// }
 
 // export function stateHandlerFor(eventType: string, predicate?: StateHandlerEventPredicate) {
 //     return function (target, name, descriptor) {

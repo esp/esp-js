@@ -20,7 +20,7 @@ import {ObservationStage} from './observationStage';
 import {Consts} from './const';
 
 export interface EventContext {
-    readonly currentStage: string;
+    readonly currentStage: ObservationStage;
     readonly eventType: string;
     readonly isCanceled: boolean;
     readonly isCommitted: boolean;
@@ -81,7 +81,7 @@ export class DefaultEventContext implements EventContext {
 }
 
 export class ModelChangedEventContext implements EventContext {
-    public get currentStage(): string {
+    public get currentStage(): ObservationStage {
         return ObservationStage.normal;
     }
     public get eventType(): string {

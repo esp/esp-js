@@ -17,16 +17,12 @@
 // notice_end
 
 import {ObservationStage, Consts} from '../router';
-import {EspDecoratorUtil, DecoratorTypes} from './espDecoratorMetadata';
+import {EspDecoratorUtil, DecoratorTypes, EventPredicate} from './espDecoratorMetadata';
 import { Guard, utils } from '../system';
-
-export interface ObserveEventPredicate {
-    (model: any, event: any): boolean;
-}
 
 const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
     return function (target, name, descriptor) {
-        let eventType1, observationStage1, predicate1;
+        let eventType1: string, observationStage1: ObservationStage, predicate1: EventPredicate;
         if(args.length >= 0) {
             eventType1 = args[0];
         }
@@ -47,7 +43,7 @@ const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
         Guard.isTruthy(eventType1 !== '', 'eventType passed to an observeEvent decorator must not be \'\'');
         if(observationStage1) {
             Guard.isString(observationStage1, 'observationStage passed to an observeEvent decorator must be a string');
-            Guard.isTruthy(observationStage1 !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
+            Guard.isTruthy(<string>observationStage1 !== '', 'observationStage passed to an observeEvent decorator must not be \'\'');
         }
         if(predicate1) {
             Guard.isFunction(predicate1, 'predicate passed to an observeEvent decorator must be a function');
@@ -66,16 +62,16 @@ const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
 
 export function observeEvent(eventType: string);
 export function observeEvent(eventType: string, observationStage: ObservationStage);
-export function observeEvent(eventType: string, predicate: ObserveEventPredicate);
-export function observeEvent(eventType: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEvent(eventType: string, predicate: EventPredicate);
+export function observeEvent(eventType: string, observationStage: ObservationStage, predicate: EventPredicate);
 export function observeEvent(...args: any[]) {
     return _observeEvent(false, ...args);
 }
 
 export function observeEventEnvelope(eventType: string);
 export function observeEventEnvelope(eventType: string, observationStage: ObservationStage);
-export function observeEventEnvelope(eventType: string, predicate: ObserveEventPredicate);
-export function observeEventEnvelope(eventType: string, observationStage: ObservationStage, predicate: ObserveEventPredicate);
+export function observeEventEnvelope(eventType: string, predicate: EventPredicate);
+export function observeEventEnvelope(eventType: string, observationStage: ObservationStage, predicate: EventPredicate);
 export function observeEventEnvelope(...args: any[]) {
     return _observeEvent(true, ...args);
 }

@@ -21,7 +21,7 @@ import {ModelChangedEvent} from './modelChangedEvent';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, logging, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
-import {EspDecoratorUtil} from '../decorators';
+import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {CompositeDiagnosticMonitor} from './devtools';
 import {ModelOptions} from './modelOptions';
@@ -523,7 +523,8 @@ export class Router extends DisposableBase {
             compositeDisposable.add(this.getEventObservable(modelId, details.eventType, details.observationStage).subscribe((eventEnvelope) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
-                if (!details.predicate || details.predicate(object, eventEnvelope.event)) {
+                let predicate = <ObserveEventPredicate>details.predicate;
+                if (!predicate || predicate(object, eventEnvelope.event, eventEnvelope.context)) {
                     this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
                     if (details.decoratorType === DecoratorTypes.observeEvent) {
                         object[details.functionName](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);

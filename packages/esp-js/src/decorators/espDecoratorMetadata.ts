@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {ObservationStage} from '../router';
+import {EventContext, ObservationStage} from '../router';
 
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
@@ -25,18 +25,28 @@ export enum DecoratorTypes {
     custom = 'custom'
 }
 
-export interface DecoratorPredicate {
-    (arg1?: any, arg2?: any, arg3?: any): boolean;
+/**
+ * A delegate signature used when esp-js queries an objects function to see if it should receive the given event
+ */
+export interface ObserveEventPredicate {
+    (model?: any, event?: any, eventContext?: EventContext): boolean;
 }
+
+/**
+ * A delegate signature used when esp-js-polimer queries an state handler function to see if it should receive the given event
+ */
+export interface PolimerEventPredicate {
+    (stateDraft?: any, event?: any, store?: any, eventContext?: EventContext): boolean;
+}
+
+export type EventPredicate = ObserveEventPredicate | PolimerEventPredicate;
 
 export interface EventObservationMetadata {
     functionName: string;
     eventType: string;
     decoratorType: DecoratorTypes;
     observationStage: ObservationStage;
-    // The predicated here is a more general interface here than on the actual decorators.
-    // End consumers will be typed ot the decorator predicated, esp internals use this more general API
-    predicate?: DecoratorPredicate;
+    predicate?: EventPredicate;
     modelId: string;
 }
 
@@ -47,7 +57,7 @@ export interface EspMetadata {
         eventType: string,
         decoratorType: DecoratorTypes,
         observationStage?: ObservationStage,
-        predicate?: DecoratorPredicate,
+        predicate?: EventPredicate,
         modelId?: string
     );
 }

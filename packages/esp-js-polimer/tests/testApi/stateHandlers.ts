@@ -17,11 +17,13 @@ function processEvent(draft: TestState, ev: TestEvent, eventContext: EventContex
     eventList.push(
         { eventType: eventContext.eventType, event: ev, observationStage: eventContext.currentStage}
     );
-    if (ev.shouldCancel && eventContext.currentStage === ev.cancelAtStage) {
-        eventContext.cancel();
-    }
-    if (ev.shouldCommit && eventContext.currentStage === ev.commitAtStage) {
-        eventContext.commit();
+    if (ev.stateTakingAction === draft.stateName) {
+        if (ev.shouldCancel && eventContext.currentStage === ev.cancelAtStage) {
+            eventContext.cancel();
+        }
+        if (ev.shouldCommit && eventContext.currentStage === ev.commitAtStage) {
+            eventContext.commit();
+        }
     }
 }
 
@@ -81,7 +83,7 @@ export class TestStateObject extends DisposableBase {
 
     constructor(private _modelId, private _router: Router) {
         super();
-        this._currentState = defaultTestStateFactory();
+        this._currentState = defaultTestStateFactory('handlerModelState');
     }
     public initialise(): void {
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));

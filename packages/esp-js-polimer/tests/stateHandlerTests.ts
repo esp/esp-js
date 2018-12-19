@@ -32,14 +32,14 @@ describe('State Handlers', () => {
                 .typeIs(EventConst.event1)
                 .eventIs(testEvent)
                 .observationStageIs(ObservationStage.preview);
-            //
-            // api.asserts.handlerModelState
-            //     .previewEvents()
-            //     .eventCountIs(1)
-            //     .event(0)
-            //     .typeIs(EventConst.event1)
-            //     .eventIs(testEvent)
-            //     .observationStageIs(ObservationStage.preview);
+
+            api.asserts.handlerModelState
+                .previewEvents()
+                .eventCountIs(1)
+                .event(0)
+                .typeIs(EventConst.event1)
+                .eventIs(testEvent)
+                .observationStageIs(ObservationStage.preview);
         });
 
         it('can receives events at normal stage', () => {
@@ -62,10 +62,18 @@ describe('State Handlers', () => {
                 .typeIs(EventConst.event1)
                 .eventIs(testEvent)
                 .observationStageIs(ObservationStage.normal);
+
+            api.asserts.handlerModelState
+                .normalEvents()
+                .eventCountIs(1)
+                .event(0)
+                .typeIs(EventConst.event1)
+                .eventIs(testEvent)
+                .observationStageIs(ObservationStage.normal);
         });
 
-        it.only('can receives events at committed stage', () => {
-            let testEvent = <TestEvent>{ shouldCommit: true, commitAtStage: ObservationStage.normal, cancelAtState: 'handlerObjectState' };
+        it('can receives events at committed stage', () => {
+            let testEvent = <TestEvent>{ shouldCommit: true, commitAtStage: ObservationStage.normal, cancelAtState: 'handlerObjectState', stateTakingAction: 'handlerObjectState' };
             api.actor.publishEvent(EventConst.event1, testEvent);
 
             // maps don't support ObservationStage observation
@@ -74,6 +82,14 @@ describe('State Handlers', () => {
                 .eventCountIs(0);
 
             api.asserts.handlerObjectState
+                .committedEvents()
+                .eventCountIs(1)
+                .event(0)
+                .typeIs(EventConst.event1)
+                .eventIs(testEvent)
+                .observationStageIs(ObservationStage.committed);
+
+            api.asserts.handlerModelState
                 .committedEvents()
                 .eventCountIs(1)
                 .event(0)
@@ -202,7 +218,7 @@ describe('State Handlers', () => {
 
         });
 
-        it('updates the store at the final observation stage', () => {
+        it('updates the store after final observation stage dispatched', () => {
 
         });
 

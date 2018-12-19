@@ -10,6 +10,7 @@ export interface TestEvent {
     commitAtState?: string;
     shouldFilter?: boolean;
     filterAtStage?: ObservationStage;
+    stateTakingAction?: string;
 }
 
 export const EventConst  = {
@@ -52,8 +53,8 @@ export const defaultTestStateFactory = (stateName: string) => {
 export const defaultStoreFactory: (modelId: string) => TestStore = (modelId: string) => {
     return {
         modelId: modelId,
-        handlerMapState: defaultTestStateFactory(''),
-        handlerObjectState: defaultTestStateFactory(''),
-        handlerModelState: defaultTestStateFactory(''),
+        handlerMapState: defaultTestStateFactory('handlerMapState'),
+        handlerObjectState: defaultTestStateFactory('handlerObjectState'),
+        handlerModelState: defaultTestStateFactory('handlerModelState'),
     };
 };

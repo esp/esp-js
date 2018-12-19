@@ -2,6 +2,7 @@ import {Router, ObservationStage} from 'esp-js';
 import {defaultStoreFactory, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
 import {TestStateHandlerMap, TestStateObjectHandler, TestStateObject} from './stateHandlers';
 import {PolimerModel} from '../../src';
+import {StorePostEventProcessor, StorePreEventProcessor} from '../../src/eventProcessors';
 
 export interface PolimerTestApi {
     actor: {
@@ -68,7 +69,7 @@ export class StateAsserts {
 }
 
 export class PolimerTestApiFactory {
-    public static create(): PolimerTestApi {
+    public static create(preEventProcessor?: StorePreEventProcessor<TestStore>, postEventProcessor?: StorePostEventProcessor<TestStore>): PolimerTestApi {
         let router = new Router();
         let modelId = 'modelId';
         let initialStore = defaultStoreFactory(modelId);
@@ -79,8 +80,8 @@ export class PolimerTestApiFactory {
             .withStateHandlerMap('handlerMapState', TestStateHandlerMap)
             .withStateHandlerObject('handlerObjectState', new TestStateObjectHandler())
             .withStateHandlerModel('handlerModelState', testStateObject)
-            .withPreStoreProcessor((store: TestStore) => store)
-            .withPostStoreProcessor((store: TestStore) => store)
+            .withPreEventProcessor(preEventProcessor)
+            .withPostEventProcessor(postEventProcessor)
             .registerWithRouter();
         // TestStateObject is a classic esp model, it is modeled here to have a typical external lifecycle and manages it's state internally
         testStateObject.initialise();

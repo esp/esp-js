@@ -4,6 +4,7 @@ import {PolimerModel, PolimerModelSetup, StateHandlerModelMetadata} from './poli
 import {OutputEventStreamFactory} from './eventStreamObservable';
 import {Store} from './store';
 import {StateHandlerModel} from './stateHandlerModel';
+import {StorePostEventProcessor, StorePreEventProcessor} from './eventProcessors';
 
 declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
@@ -17,22 +18,24 @@ export class PolimerStoreBuilder<TStore extends Store> {
     private _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
     private _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
+    private _storePreEventProcessor: StorePreEventProcessor<TStore>;
+    private _storePostEventProcessor: StorePostEventProcessor<TStore>;
     private _initialStore: TStore;
 
     constructor(private _router: Router) {
     }
 
-    withInitialStore(store: TStore): PolimerStoreBuilder<TStore> {
+    withInitialStore(store: TStore): this {
         this._initialStore = store;
         return this;
     }
 
-    withStateHandlerMap<TKey extends keyof TStore, TState extends TStore[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TStore>): PolimerStoreBuilder<TStore> {
+    withStateHandlerMap<TKey extends keyof TStore, TState extends TStore[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TStore>): this {
         this._stateHandlerMaps.set(<string>state, handlerMap);
         return this;
     }
 
-    withStateHandlerObject<TKey extends keyof TStore>(state: TKey, ...objectToScanForHandlers: any[]): PolimerStoreBuilder<TStore> {
+    withStateHandlerObject<TKey extends keyof TStore>(state: TKey, ...objectToScanForHandlers: any[]): this {
         objectToScanForHandlers.forEach(handler => {
             if (isEspDecoratedObject(handler)) {
                 let handlers = this._stateHandlerObjects.get(<string>state);
@@ -54,17 +57,17 @@ export class PolimerStoreBuilder<TStore extends Store> {
      * @param stateHandlerModel
      * @param autoWireUpObservers
      */
-    withStateHandlerModel<TKey extends keyof TStore, TStateHandlerModel extends StateHandlerModel<TStore[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): PolimerStoreBuilder<TStore>  {
+    withStateHandlerModel<TKey extends keyof TStore, TStateHandlerModel extends StateHandlerModel<TStore[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): this  {
         this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers});
         return this;
     }
 
-    withEventStreams(...outputEventStreamFactory: OutputEventStreamFactory<TStore, any, any>[]): PolimerStoreBuilder<TStore> {
+    withEventStreams(...outputEventStreamFactory: OutputEventStreamFactory<TStore, any, any>[]): this {
         this._eventStreamFactories.push(...outputEventStreamFactory);
         return this;
     }
 
-    withEventStreamsOn(...objectsToScanForObservables: any[]): PolimerStoreBuilder<TStore> {
+    withEventStreamsOn(...objectsToScanForObservables: any[]): this {
         objectsToScanForObservables.forEach(o => {
             if (isEspDecoratedObject(o)) {
                 this._eventStreamHandlerObjects.push(o);
@@ -75,10 +78,21 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
+    withPreEventProcessor(storePreEventProcessor: StorePreEventProcessor<TStore>): this {
+        this._storePreEventProcessor = storePreEventProcessor;
+        return this;
+
+    }
+
+    withPostEventProcessor(storePostEventProcessor: StorePostEventProcessor<TStore>): this {
+        this._storePostEventProcessor = storePostEventProcessor;
+        return this;
+    }
+
     registerWithRouter(): PolimerModel<TStore> {
         Guard.isDefined(this._initialStore, 'Initial store is not set');
         Guard.stringIsNotEmpty(this._initialStore.modelId, `Initial store's modelId must not be null or empty`);
-        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0, `No states setup for store ${this._initialStore.modelId}`);
+        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `No state handlers setup for store with id ${this._initialStore.modelId}`);
 
         // The polimer model is a special case,
         // Some attributes may get bound to it dynamically.
@@ -93,7 +107,9 @@ export class PolimerStoreBuilder<TStore extends Store> {
                 stateHandlerObjects: this._stateHandlerObjects,
                 stateHandlerModels: this._stateHandlerModels,
                 eventStreamFactories: this._eventStreamFactories,
-                eventStreamHandlerObjects: this._eventStreamHandlerObjects
+                eventStreamHandlerObjects: this._eventStreamHandlerObjects,
+                storePreEventProcessor: this._storePreEventProcessor,
+                storePostEventProcessor: this._storePostEventProcessor
             }
         );
 

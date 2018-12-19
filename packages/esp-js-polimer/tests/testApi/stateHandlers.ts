@@ -1,5 +1,5 @@
 import {multipleEvents, PolimerHandlerMap, PolimerModel} from '../../src/';
-import {EventConst, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
+import {defaultTestStateFactory, EventConst, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
 import {EventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
 
 function processEvent(draft: TestState, ev: TestEvent, eventContext: EventContext) {
@@ -81,6 +81,7 @@ export class TestStateObject extends DisposableBase {
 
     constructor(private _modelId, private _router: Router) {
         super();
+        this._currentState = defaultTestStateFactory();
     }
     public initialise(): void {
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));

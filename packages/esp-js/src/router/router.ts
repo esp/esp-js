@@ -34,6 +34,8 @@ let _log = logging.Logger.create('Router');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
+const RUN_ACTION_EVENT_NAME = '__runAction';
+
 export class Router extends DisposableBase {
     private _models: Map<string, ModelRecord>;
     private _dispatchSubject: Subject<Envelope>;
@@ -146,7 +148,7 @@ export class Router extends DisposableBase {
         if (!modelRecord) {
             throw new Error('Can not run action as model with id [' + modelId + '] not registered');
         } else {
-            modelRecord.eventQueue.push({eventType: '__runAction', action: action});
+            modelRecord.eventQueue.push({eventType: RUN_ACTION_EVENT_NAME, action: action});
             try {
                 this._purgeEventQueues();
             } catch (err) {
@@ -378,15 +380,18 @@ export class Router extends DisposableBase {
                     this._state.moveToEventDispatch();
                     this._diagnosticMonitor.dispatchingEvents();
                     while (hasEvents) {
-                        if (eventRecord.eventType === '__runAction') {
+                        if (eventRecord.eventType === RUN_ACTION_EVENT_NAME) {
                             this._diagnosticMonitor.dispatchingAction();
+                            modelRecord.eventDispatchProcessor(modelRecord.model, RUN_ACTION_EVENT_NAME);
                             eventRecord.action(modelRecord.model);
+                            modelRecord.eventDispatchedProcessor(modelRecord.model, RUN_ACTION_EVENT_NAME);
                         } else {
                             this._state.eventsProcessed.push(eventRecord.eventType);
                             this._dispatchEventToEventProcessors(
                                 modelRecord,
                                 eventRecord.event,
-                                eventRecord.eventType);
+                                eventRecord.eventType
+                            );
                         }
                         if (modelRecord.wasRemoved) {
                             break;
@@ -471,6 +476,7 @@ export class Router extends DisposableBase {
 
     private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
         this._diagnosticMonitor.dispatchingEvent(eventType, stage);
+        modelRecord.eventDispatchProcessor(modelRecord.model, eventType, stage);
         this._dispatchSubject.onNext({
             event: event,
             eventType: eventType,
@@ -480,6 +486,7 @@ export class Router extends DisposableBase {
             observationStage: stage,
             dispatchType: DispatchType.Event
         });
+        modelRecord.eventDispatchedProcessor(modelRecord.model, eventType, stage);
     }
 
     private _dispatchModelUpdates() {

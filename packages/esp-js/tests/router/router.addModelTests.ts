@@ -33,10 +33,14 @@ describe('Router', () => {
             expect(() => {_router.addModel('foo', {}, 'not a function'); }).toThrow();
             expect(() => {_router.addModel({ },{ }); }).toThrow(new Error('The modelId argument should be a string'));
             expect(() => {_router.addModel('modelId', { },'notSomeOptions'); }).toThrow(new Error('The options argument should be an object'));
-            expect(() => {_router.addModel('modelId', { }, { preEventProcessor: {} }); }).toThrow(new Error('preEventProcessor on the options parameter is neither a function nor an object with a process() method'));
-            expect(() => {_router.addModel('modelId', { }, { preEventProcessor: 'boo' }); }).toThrow('preEventProcessor on the options parameter is neither a function nor an object with a process() method');
-            expect(() => {_router.addModel('modelId', { }, { postEventProcessor:{}}); }).toThrow(new Error('postEventProcessor on the options parameter is neither a function nor an object with a process() method'));
-            expect(() => {_router.addModel('modelId', { }, { postEventProcessor:'boo'}); }).toThrow(new Error('postEventProcessor on the options parameter is neither a function nor an object with a process() method'));
+            expect(() => {_router.addModel('modelId', { }, { preEventProcessor: {} }); }).toThrow(new Error('preEventProcessor on the model options exists but is not a function'));
+            expect(() => {_router.addModel('modelId', { }, { preEventProcessor: 'boo' }); }).toThrow('preEventProcessor on the model options exists but is not a function');
+            expect(() => {_router.addModel('modelId', { }, { eventDispatchProcessor: {} }); }).toThrow(new Error('eventDispatchProcessor on the model options exists but is not a function'));
+            expect(() => {_router.addModel('modelId', { }, { eventDispatchProcessor: 'boo' }); }).toThrow('eventDispatchProcessor on the model options exists but is not a function');
+            expect(() => {_router.addModel('modelId', { }, { eventDispatchedProcessor:{}}); }).toThrow(new Error('eventDispatchedProcessor on the model options exists but is not a function'));
+            expect(() => {_router.addModel('modelId', { }, { eventDispatchedProcessor:'boo'}); }).toThrow(new Error('eventDispatchedProcessor on the model options exists but is not a function'));
+            expect(() => {_router.addModel('modelId', { }, { postEventProcessor:{}}); }).toThrow(new Error('postEventProcessor on the model options exists but is not a function'));
+            expect(() => {_router.addModel('modelId', { }, { postEventProcessor:'boo'}); }).toThrow(new Error('postEventProcessor on the model options exists but is not a function'));
         });
 
         it('should throw if model already registered', () => {

@@ -4,8 +4,10 @@ import {Store} from '../../src';
 export interface TestEvent {
     shouldCancel?: boolean;
     cancelAtStage?: ObservationStage;
+    cancelAtState?: string;
     shouldCommit?: boolean;
     commitAtStage?: ObservationStage;
+    commitAtState?: string;
     shouldFilter?: boolean;
     filterAtStage?: ObservationStage;
 }
@@ -24,6 +26,7 @@ export interface ReceivedEvent {
 }
 
 export interface TestState {
+    stateName: string;
     receivedEventsAtPreview: ReceivedEvent[];
     receivedEventsAtNormal: ReceivedEvent[];
     receivedEventsAtCommitted: ReceivedEvent[];
@@ -36,8 +39,9 @@ export interface TestStore extends Store {
     handlerModelState: TestState;
 }
 
-export const defaultTestStateFactory = () => {
+export const defaultTestStateFactory = (stateName: string) => {
     return <TestState>{
+        stateName: stateName,
         receivedEventsAtPreview: [],
         receivedEventsAtNormal: [],
         receivedEventsAtCommitted: [],
@@ -48,8 +52,8 @@ export const defaultTestStateFactory = () => {
 export const defaultStoreFactory: (modelId: string) => TestStore = (modelId: string) => {
     return {
         modelId: modelId,
-        handlerMapState: defaultTestStateFactory(),
-        handlerObjectState: defaultTestStateFactory(),
-        handlerModelState: defaultTestStateFactory(),
+        handlerMapState: defaultTestStateFactory(''),
+        handlerObjectState: defaultTestStateFactory(''),
+        handlerModelState: defaultTestStateFactory(''),
     };
 };

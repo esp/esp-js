@@ -79,6 +79,8 @@ export class PolimerTestApiFactory {
             .withStateHandlerMap('handlerMapState', TestStateHandlerMap)
             .withStateHandlerObject('handlerObjectState', new TestStateObjectHandler())
             .withStateHandlerModel('handlerModelState', testStateObject)
+            .withPreStoreProcessor((store: TestStore) => store)
+            .withPostStoreProcessor((store: TestStore) => store)
             .registerWithRouter();
         // TestStateObject is a classic esp model, it is modeled here to have a typical external lifecycle and manages it's state internally
         testStateObject.initialise();

@@ -12,9 +12,14 @@ export interface PolimerModelSetup<TStore extends Store> {
     initialStore: TStore;
     stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>>;
     stateHandlerObjects: Map<string, any[]>;
-    stateHandlerModels: Map<string, any>;
+    stateHandlerModels: Map<string, StateHandlerModelMetadata>;
     eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[];
     eventStreamHandlerObjects: any[];
+}
+
+export interface StateHandlerModelMetadata {
+    model: any;
+    autoWireUpObservers: boolean;
 }
 
 interface EventHandlerMetadata {
@@ -91,6 +96,15 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     }
 
     private _wireUpStateHandlerModels() {
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata) => {
+
+            // let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(metadata.model);
+
+            // TODO add:
+            // model.preEventDispatch(eventType:string, observationStage:ObservationStage)
+            // model.postEventDispatch(eventType:string, observationStage:ObservationStage)
+            // and use the postEventDispatch as the hook to replace the store below
+        });
     }
 
     private _wireUpStateHandlerObjects() {

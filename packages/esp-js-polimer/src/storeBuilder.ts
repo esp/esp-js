@@ -1,8 +1,9 @@
 import {Router, Guard, isEspDecoratedObject} from 'esp-js';
 import {PolimerHandlerMap} from './eventHandlers';
-import {PolimerModel} from './polimerModel';
+import {PolimerModel, PolimerModelSetup, StateHandlerModelMetadata} from './polimerModel';
 import {OutputEventStreamFactory} from './eventStreamObservable';
 import {Store} from './store';
+import {StateHandlerModel} from './stateHandlerModel';
 
 declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
@@ -13,7 +14,7 @@ declare module 'esp-js/.dist/typings/router/router' {
 export class PolimerStoreBuilder<TStore extends Store> {
     private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>> = new Map();
     private _stateHandlerObjects: Map<string, any[]> = new Map();
-    private _stateHandlerModels: Map<string, any> = new Map();
+    private _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
     private _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
     private _initialStore: TStore;
@@ -47,8 +48,14 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
-    withStateHandlerModel<TKey extends keyof TStore>(state: TKey, stateHandlerModel: any): PolimerStoreBuilder<TStore>  {
-        this._stateHandlerModels.set(<string>state, stateHandlerModel); // last in wins
+    /**
+     *
+     * @param state
+     * @param stateHandlerModel
+     * @param autoWireUpObservers
+     */
+    withStateHandlerModel<TKey extends keyof TStore, TStateHandlerModel extends StateHandlerModel<TStore[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): PolimerStoreBuilder<TStore>  {
+        this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers});
         return this;
     }
 
@@ -80,7 +87,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
         let customPolimerModel = class CustomPolimerModel extends PolimerModel<TStore> {};
         let polimerModel = new customPolimerModel(
             this._router,
-            {
+            <PolimerModelSetup<TStore>>{
                 initialStore: this._initialStore,
                 stateHandlerMaps: this._stateHandlerMaps,
                 stateHandlerObjects: this._stateHandlerObjects,

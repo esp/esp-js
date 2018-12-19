@@ -1,5 +1,23 @@
 import * as Rx from 'rx';
-import {EventContext, ObservationStage} from 'esp-js';
+import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, EventContext} from 'esp-js';
+
+/**
+ * A decorator which can be used to declare an event transformation handler
+ */
+export function eventTransformFor(eventType: string, observationStage = ObservationStage.committed) {
+    return function (target, name, descriptor) {
+        Guard.stringIsNotEmpty(eventType, 'eventType passed to an observeStoreEvent decorator must not be \'\'');
+        let metadata: EspMetadata  = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
+        metadata.addEvent(
+            name,
+            eventType,
+            DecoratorTypes.custom,
+            observationStage,
+            null
+        );
+        return descriptor;
+    };
+}
 
 export interface InputEvent<TStore, TEvent> {
     readonly event: TEvent;

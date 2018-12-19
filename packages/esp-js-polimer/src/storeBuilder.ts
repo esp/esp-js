@@ -1,7 +1,7 @@
 import {Router, Guard, isEspDecoratedObject} from 'esp-js';
-import {PolimerHandlerMap} from './eventHandlers';
+import {PolimerHandlerMap} from './stateEventHandlers';
 import {PolimerModel, PolimerModelSetup, StateHandlerModelMetadata} from './polimerModel';
-import {OutputEventStreamFactory} from './eventStreamObservable';
+import {OutputEventStreamFactory} from './eventTransformations';
 import {Store} from './store';
 import {StateHandlerModel} from './stateHandlerModel';
 import {StorePostEventProcessor, StorePreEventProcessor} from './eventProcessors';

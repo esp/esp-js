@@ -1,7 +1,7 @@
 // import for side effects
 import './storeBuilder';
 
-export {multipleEvents, PolimerEventHandler, PolimerHandlerMap} from './eventHandlers';
+export {multipleEvents, PolimerEventHandler, PolimerHandlerMap} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {Store} from './store';
 export {PolimerStoreBuilder} from './storeBuilder';
@@ -12,7 +12,7 @@ export {
     OutputEvent,
     OutputEventStream,
     InputEventStreamFactory,
-} from './eventStreamObservable';
+    eventTransformFor
+} from './eventTransformations';
 export {PolimerEvents} from './polimerEvents';
-export {eventTransformFor} from './decorators';
 export {sendUpdateToDevTools, connect} from './reduxDevToolsConnector';

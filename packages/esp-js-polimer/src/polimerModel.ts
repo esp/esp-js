@@ -1,7 +1,7 @@
-import {MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './eventHandlers';
+import {MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './stateEventHandlers';
 import {connect, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
-import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventStreamObservable';
+import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
 import {logger} from './logger';
 import * as Rx from 'rx';
 import {Store} from './store';
@@ -310,7 +310,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
             event: eventEnvelope.event,
             eventType: eventEnvelope.eventType,
             context: eventEnvelope.context,
-            store: eventEnvelope.model.getState()
+            store: eventEnvelope.model.getStore()
         };
     }
 

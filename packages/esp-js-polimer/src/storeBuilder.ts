@@ -92,7 +92,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     registerWithRouter(): PolimerModel<TStore> {
         Guard.isDefined(this._initialStore, 'Initial store is not set');
         Guard.stringIsNotEmpty(this._initialStore.modelId, `Initial store's modelId must not be null or empty`);
-        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `No state handlers setup for store with id ${this._initialStore.modelId}`);
+        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `ERROR: No state handlers (maps, objects or models) setup for store with id ${this._initialStore.modelId}`);
 
         // The polimer model is a special case,
         // Some attributes may get bound to it dynamically.

@@ -1,113 +1,192 @@
-import {Router, ObservationStage} from 'esp-js';
-import {PolimerTestApi, PolimerTestApiFactory} from './testApi/testApi';
-import {EventConst, TestEvent} from './testApi/testStore';
+import {ObservationStage} from 'esp-js';
+import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
+import {EventConst} from './testApi/testStore';
 
 describe('State Handlers', () => {
     let api: PolimerTestApi;
 
-    beforeEach(() => {
-        api = PolimerTestApiFactory.create();
-    });
-
-    describe('Event Workflow', () => {
-
+    describe('Event Processors', () => {
         it('calls a registered preProcess hook when model change about to start', () => {});
 
         it('calls a registered postProcess hook when model change finished', () => {});
+    });
 
-        it('can receives events at preview stage', () => {
-            let testEvent = {};
+    describe('Event Observation', () => {
 
-            api.actor.publishEvent(EventConst.event1, testEvent);
+        describe('handler maps', () => {
+            beforeEach(() => {
+                api = PolimerTestApiBuilder.create()
+                    .withStateHandlerMap()
+                    .build();
+                api.asserts.handlerMapState.captureCurrentState();
+            });
 
-            // maps don't support ObservationStage observation
-            api.asserts.handlerMapState
-                .previewEvents()
-                .eventCountIs(0);
+            afterEach(() => {
+                api.asserts.handlerMapState.stateInstanceHasChanged();
+            });
 
-            api.asserts.handlerObjectState
-                .previewEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.preview);
+            it('can receives events at normal stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerMapState
+                    .normalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.normal).end();
+            });
 
-            api.asserts.handlerModelState
-                .previewEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.preview);
+            it('can receives multiple events via same handler', () => {
+                let event3 = api.actor.publishEvent(EventConst.event3);
+                let event4 = api.actor.publishEvent(EventConst.event4);
+                api.asserts.handlerMapState
+                    .normalEvents()
+                    .eventCountIs(2)
+                    .event(0).is(EventConst.event3, event3, ObservationStage.normal).end()
+                    .event(1).is(EventConst.event4, event4, ObservationStage.normal).end();
+            });
         });
 
-        it('can receives events at normal stage', () => {
-            let testEvent = {};
+        describe('handler objects', () => {
+            beforeEach(() => {
+                api = PolimerTestApiBuilder.create()
+                    .withStateHandlerObject()
+                    .build();
+                api.asserts.handlerObjectState.captureCurrentState();
+            });
 
-            api.actor.publishEvent(EventConst.event1, testEvent);
+            afterEach(() => {
+                api.asserts.handlerObjectState.stateInstanceHasChanged();
+            });
 
-            api.asserts.handlerMapState
-                .normalEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.normal);
+            it('can receives events at preview stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerObjectState
+                    .previewEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.preview).end();
+            });
 
-            api.asserts.handlerObjectState
-                .normalEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.normal);
+            it('can receives events at normal stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerObjectState
+                    .normalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.normal).end();
+            });
 
-            api.asserts.handlerModelState
-                .normalEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.normal);
+            it('can receives events at committed stage', () => {
+                let testEvent = api.actor.publishEventWhichCommitsAtNormalStage(EventConst.event1, 'handlerObjectState');
+                api.asserts.handlerObjectState
+                    .committedEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.committed).end();
+            });
+
+            it('can receives events at final stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerObjectState
+                    .finalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.final).end();
+            });
+
+            it('can receives multiple events via same handler', () => {
+                let event3 = api.actor.publishEvent(EventConst.event3);
+                let event4 = api.actor.publishEvent(EventConst.event4);
+                api.asserts.handlerObjectState
+                    .normalEvents()
+                    .eventCountIs(2)
+                    .event(0).is(EventConst.event3, event3, ObservationStage.normal).end()
+                    .event(1).is(EventConst.event4, event4, ObservationStage.normal).end();
+            });
         });
 
-        it('can receives events at committed stage', () => {
-            let testEvent = <TestEvent>{ shouldCommit: true, commitAtStage: ObservationStage.normal, cancelAtState: 'handlerObjectState', stateTakingAction: 'handlerObjectState' };
-            api.actor.publishEvent(EventConst.event1, testEvent);
+        describe('handler models', () => {
+            beforeEach(() => {
+                api = PolimerTestApiBuilder.create()
+                    .withStateHandlerModel()
+                    .build();
+                api.asserts.handlerModelState.captureCurrentState();
+            });
 
-            // maps don't support ObservationStage observation
-            api.asserts.handlerMapState
-                .committedEvents()
-                .eventCountIs(0);
+            afterEach(() => {
+                api.asserts.handlerModelState.stateInstanceHasChanged();
+            });
 
-            api.asserts.handlerObjectState
-                .committedEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.committed);
+            it('can receives events at preview stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerModelState
+                    .previewEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.preview).end();
+            });
 
-            api.asserts.handlerModelState
-                .committedEvents()
-                .eventCountIs(1)
-                .event(0)
-                .typeIs(EventConst.event1)
-                .eventIs(testEvent)
-                .observationStageIs(ObservationStage.committed);
+            it('can receives events at normal stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerModelState
+                    .normalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.normal).end();
+            });
+
+            it('can receives events at committed stage', () => {
+                let testEvent = api.actor.publishEventWhichCommitsAtNormalStage(EventConst.event1, 'handlerModelState');
+                api.asserts.handlerModelState
+                    .committedEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.committed).end();
+            });
+
+            it('can receives events at final stage', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerModelState
+                    .finalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.final).end();
+            });
+
+            it('can receives multiple events via same handler', () => {
+                let event3 = api.actor.publishEvent(EventConst.event3);
+                let event4 = api.actor.publishEvent(EventConst.event4);
+                api.asserts.handlerModelState
+                    .normalEvents()
+                    .eventCountIs(2)
+                    .event(0).is(EventConst.event3, event3, ObservationStage.normal).end()
+                    .event(1).is(EventConst.event4, event4, ObservationStage.normal).end()
+            });
         });
 
-        it('can receives events at final stage', () => {
+        describe('handler compositions', () => {
+            beforeEach(() => {
+                api = PolimerTestApiBuilder.create()
+                    .withStateHandlerMap()
+                    .withStateHandlerObject()
+                    .withStateHandlerModel()
+                    .build();
+                api.asserts.handlerMapState.captureCurrentState();
+                api.asserts.handlerObjectState.captureCurrentState();
+                api.asserts.handlerModelState.captureCurrentState();
+            });
 
-        });
+            afterEach(() => {
+                api.asserts.handlerMapState.stateInstanceHasChanged();
+                api.asserts.handlerObjectState.stateInstanceHasChanged();
+                api.asserts.handlerModelState.stateInstanceHasChanged();
+            });
 
-        it('can receives multiple events via same handler', () => {
-
-        });
-
-        it('updates all states that observed the event', () => {
-
+            it('updates all states that observed the event', () => {
+                let testEvent = api.actor.publishEvent(EventConst.event1);
+                api.asserts.handlerMapState
+                    .normalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.normal);
+                api.asserts.handlerObjectState
+                    .normalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.normal);
+                api.asserts.handlerModelState
+                    .normalEvents()
+                    .eventCountIs(1)
+                    .event(0).is(EventConst.event1, testEvent, ObservationStage.normal);
+            });
         });
 
         describe('EventContext interactions', () => {

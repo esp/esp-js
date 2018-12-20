@@ -1,19 +1,15 @@
 import {ObservationStage, Router, logging} from 'esp-js';
-import {defaultStoreFactory, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
+import {defaultStoreFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
 import {TestStateHandlerMap, TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
 import {PolimerModel, PolimerStoreBuilder} from '../../src';
 import {StorePostEventProcessor, StorePreEventProcessor} from '../../src/eventProcessors';
 
 export interface PolimerTestApi {
+    removeModel();
+    disposeModel();
     actor: Actor;
-    model: PolimerModel<TestStore>;
     store: TestStore;
-    asserts: {
-        handlerMapState: StateAsserts,
-        handlerObjectState: StateAsserts,
-        handlerModelState: StateAsserts,
-        throwsOnInvalidEventContextAction: (action: () => void, errorRegex?: RegExp),
-    };
+    asserts: Asserts;
 }
 
 export class ReceivedEventsAsserts {
@@ -71,10 +67,10 @@ export class ReceivedEventsAsserts {
 
 export class StateAsserts {
     private _lastState: TestState;
-    constructor(private _stateGetter: () => TestState) {
+    constructor(protected _stateGetter: () => TestState) {
 
     }
-    private get _state() {
+    protected get _state() {
         return this._stateGetter();
     }
     public captureCurrentState(): this {
@@ -106,6 +102,24 @@ export class StateAsserts {
     }
     public receivedEventsAll(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAll);
+    }
+}
+
+export class OOModelTestStateAsserts extends StateAsserts {
+    constructor(private _ooModelTestStateGetter: () => OOModelTestState, private _testStateHandlerModel: TestStateHandlerModel) {
+        super(_ooModelTestStateGetter);
+    }
+    public preProcessInvokeCountIs(expected: number): this {
+        expect(this._ooModelTestStateGetter().preProcessInvokeCount).toEqual(expected);
+        return this;
+    }
+    public postProcessInvokeCountIs(expected: number): this {
+        expect(this._ooModelTestStateGetter().postProcessInvokeCount).toEqual(expected);
+        return this;
+    }
+    public isDisposed(isDisposed: boolean = false): this {
+        expect(this._testStateHandlerModel.isDisposed).toEqual(isDisposed);
+        return this;
     }
 }
 
@@ -194,25 +208,74 @@ export class Actor {
     }
 }
 
+export class Asserts {
+    private _handlerMapState: StateAsserts;
+    private _handlerObjectState: StateAsserts;
+    private _handlerModelState: OOModelTestStateAsserts;
+
+    constructor(private _router: Router, private _model: PolimerModel<TestStore>, private _testEventProcessors: TestEventProcessors, testStateHandlerModel: TestStateHandlerModel) {
+        this._handlerMapState = new StateAsserts(() => this._model.getStore().handlerMapState);
+        this._handlerObjectState = new StateAsserts(() => this._model.getStore().handlerObjectState);
+        this._handlerModelState = new OOModelTestStateAsserts(() => this._model.getStore().handlerModelState, testStateHandlerModel);
+    }
+    public get handlerMapState() { return this._handlerMapState; }
+    public get handlerObjectState() { return this._handlerObjectState; }
+    public get handlerModelState() { return this._handlerModelState; }
+    public throwsOnInvalidEventContextAction(action: () => void, errorRegex?: RegExp): this {
+        expect(action).toThrow(errorRegex || /You can't .* an event at the .* stage.*/);
+        return this;
+    }
+    public preEventProcessorCountIs(expectedInvokeCount: number): this {
+        expect(this._testEventProcessors.preEventProcessorInvokeCount).toEqual(expectedInvokeCount);
+        return this;
+    }
+    public postEventProcessorCountIs(expectedInvokeCount: number): this {
+        expect(this._testEventProcessors.postEventProcessorInvokeCount).toEqual(expectedInvokeCount);
+        return this;
+    }
+    public polimerModelIsRegistered(isRegistered: boolean = true): this {
+        expect(this._router.isModelRegistered(this._model.modelId)).toEqual(isRegistered);
+        return this;
+    }
+}
+
+class TestEventProcessors {
+    private _preEventProcessorInvokeCount: number = 0;
+    private _preEventProcessor?: StorePreEventProcessor<TestStore>;
+
+    private _postEventProcessorInvokeCount: number = 0;
+    private _postEventProcessor?: StorePostEventProcessor<TestStore>;
+
+    constructor() {
+        this._preEventProcessor = () => {
+            this._preEventProcessorInvokeCount++;
+        };
+        this._postEventProcessor = () => {
+            this._postEventProcessorInvokeCount++;
+        };
+    }
+    public get preEventProcessorInvokeCount() {
+        return this._preEventProcessorInvokeCount;
+    }
+    public get preEventProcessor() {
+        return this._preEventProcessor;
+    }
+    public get postEventProcessorInvokeCount() {
+        return this._postEventProcessorInvokeCount;
+    }
+    public get postEventProcessor() {
+        return this._postEventProcessor;
+    }
+}
+
 export class PolimerTestApiBuilder {
     private _useHandlerMap: boolean;
     private _useHandlerObject: boolean;
     private _useHandlerModel: boolean;
-    private _preEventProcessor?: StorePreEventProcessor<TestStore>;
-    private _postEventProcessor?: StorePostEventProcessor<TestStore>;
+    private _handlerModelAutoWireUp: boolean;
 
     public static create(): PolimerTestApiBuilder {
         return new PolimerTestApiBuilder();
-    }
-
-    public withPreEventProcessor(preEventProcessor?: StorePreEventProcessor<TestStore>): this {
-        this._preEventProcessor = preEventProcessor;
-        return this;
-    }
-
-    public withPostEventProcessor(postEventProcessor?: StorePostEventProcessor<TestStore>): this {
-        this._postEventProcessor = postEventProcessor;
-        return this;
     }
 
     public withStateHandlerMap() {
@@ -225,14 +288,17 @@ export class PolimerTestApiBuilder {
         return this;
     }
 
-    public withStateHandlerModel() {
+    public withStateHandlerModel(autoWireUp = false) {
         this._useHandlerModel = true;
+        this._handlerModelAutoWireUp = autoWireUp;
         return this;
     }
 
     public build(): PolimerTestApi {
         // stop esp logging to the console by default (so unhappy path tests to fill up the console with errors).
         logging.Logger.setSink(() => {});
+        let testEventProcessors = new TestEventProcessors();
+        let testStateHandlerModel: TestStateHandlerModel;
         let router = new Router();
         let modelId = 'modelId';
         let initialStore = defaultStoreFactory(modelId);
@@ -243,19 +309,18 @@ export class PolimerTestApiBuilder {
             builder.withStateHandlerMap('handlerMapState', TestStateHandlerMap);
         }
         if (this._useHandlerObject) {
-            builder.withStateHandlerObject('handlerObjectState', new TestStateObjectHandler());
+            builder.withStateHandlerObject('handlerObjectState', new TestStateObjectHandler(router));
         }
         if (this._useHandlerModel) {
-            let testStateObject = new TestStateHandlerModel(modelId, router);
-            builder.withStateHandlerModel('handlerModelState', testStateObject);
-            testStateObject.initialise();
+            testStateHandlerModel = new TestStateHandlerModel(modelId, router);
+            builder.withStateHandlerModel('handlerModelState', testStateHandlerModel, this._handlerModelAutoWireUp);
+            if (!this._handlerModelAutoWireUp) {
+                testStateHandlerModel.initialise();
+            }
         }
-        if (this._preEventProcessor) {
-            builder.withPreEventProcessor(this._preEventProcessor);
-        }
-        if (this._postEventProcessor) {
-            builder.withPostEventProcessor(this._postEventProcessor);
-        }
+        builder
+            .withPreEventProcessor(testEventProcessors.preEventProcessor)
+            .withPostEventProcessor(testEventProcessors.postEventProcessor);
         let model = builder.registerWithRouter();
         // TestStateObject is a classic esp model, it is modeled here to have a typical external lifecycle and manages it's state internally
         let currentStore: TestStore;
@@ -263,19 +328,17 @@ export class PolimerTestApiBuilder {
             currentStore = store;
         });
         return {
+            removeModel() {
+                router.removeModel(modelId);
+            },
+            disposeModel() {
+                model.dispose();
+            },
             actor: new Actor(modelId, router),
-            model,
             get store() {
                 return this.model.getStore();
             },
-            asserts: {
-                handlerMapState: new StateAsserts(() => currentStore.handlerMapState),
-                handlerObjectState: new StateAsserts(() => currentStore.handlerObjectState),
-                handlerModelState: new StateAsserts(() => currentStore.handlerModelState),
-                throwsOnInvalidEventContextAction(action: () => void, errorRegex?: RegExp) {
-                    expect(action).toThrow(errorRegex || /You can't .* an event at the .* stage.*/);
-                }
-            }
+            asserts: new Asserts(router, model, testEventProcessors, testStateHandlerModel)
         };
     }
 }

@@ -1,5 +1,5 @@
 import {multipleEvents, PolimerHandlerMap, PolimerModel} from '../../src/';
-import {defaultTestStateFactory, EventConst, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
+import {defaultOOModelTestStateFactory, defaultTestStateFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
 import {EventContext, DefaultEventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
 
 function processEvent(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
@@ -85,6 +85,8 @@ export const TestStateHandlerMap: PolimerHandlerMap<TestState, TestStore> = {
 };
 
 export class TestStateObjectHandler {
+    constructor(private _router: Router) {
+    }
     @observeEvent(EventConst.event1, ObservationStage.preview)
     @observeEvent(EventConst.event1) // defaults to ObservationStage.normal
     @observeEvent(EventConst.event1, ObservationStage.committed)
@@ -105,6 +107,7 @@ export class TestStateObjectHandler {
     _event3And4Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
         processEvent(draft, ev, store, eventContext);
     }
+
     @observeEvent(EventConst.event5, polimerEventPredicate)
     _event5Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
         if (ev.replacementState) {
@@ -112,21 +115,39 @@ export class TestStateObjectHandler {
         }
         processEvent(draft, ev, store, eventContext);
     }
+
+    @observeEvent(EventConst.event6)
+    _event6Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
+        processEvent(draft, ev, store, eventContext);
+        this._router.publishEvent(store.modelId, EventConst.event5, <TestEvent>{ stateTakingAction: 'handlerObjectState' });
+    }
 }
 
 // this model is a more classic esp based model which can interop with polimer state handlers,
 // it won't receive an immer based model to mutate state, rather state is maintained internally
 export class TestStateHandlerModel extends DisposableBase {
-    private _currentState: TestState;
+    private _currentState: OOModelTestState;
 
     constructor(private _modelId, private _router: Router) {
         super();
-        this._currentState = defaultTestStateFactory('handlerModelState');
+        this._currentState = defaultOOModelTestStateFactory('handlerModelState');
     }
+
+    public preProcess() {
+        this._currentState.preProcessInvokeCount++;
+    }
+
+    public postProcess() {
+        this._currentState.postProcessInvokeCount++;
+    }
+
     public initialise(): void {
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     }
 
+    public dispose() {
+        super.dispose();
+    }
     @observeEvent(EventConst.event1, ObservationStage.preview)
     @observeEvent(EventConst.event1) // defaults to ObservationStage.normal
     @observeEvent(EventConst.event1, ObservationStage.committed)
@@ -144,6 +165,7 @@ export class TestStateHandlerModel extends DisposableBase {
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }
+
     @observeEvent(EventConst.event3)
     @observeEvent(EventConst.event4)
     _event3And4Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
@@ -162,7 +184,7 @@ export class TestStateHandlerModel extends DisposableBase {
         this._currentState = { ... this._currentState };
     }
 
-    public getState(): TestState {
+    public getState(): OOModelTestState {
         return this._currentState;
     }
 }

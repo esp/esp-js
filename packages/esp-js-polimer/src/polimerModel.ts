@@ -90,6 +90,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 this._store = newStore;
             }
         }
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata) => {
+            if(metadata.model.preProcess) {
+                metadata.model.preProcess();
+            }
+        });
     }
 
     postProcess(eventsProcessed: string[]) {
@@ -100,6 +105,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 this._store = newStore;
             }
         }
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata) => {
+            if(metadata.model.postProcess) {
+                metadata.model.postProcess(eventsProcessed);
+            }
+        });
     }
 
     // called by the router when it's finished dispatching an event
@@ -120,9 +130,10 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     }
 
     @observeEvent(PolimerEvents.disposeModel)
-    private _onDispose() {
+    public dispose() {
         logger.debug(`Disposing PolimerModel<> ${this._modelId}`);
-        this.dispose();
+        this._router.removeModel(this.modelId);
+        super.dispose();
     }
 
     private _listenToAllEvents() {
@@ -168,6 +179,9 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
 
     private _wireUpStateHandlerModels() {
         this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
+            if (metadata.autoWireUpObservers) {
+                this.addDisposable(this._router.observeEventsOn(this._modelId, metadata.model));
+            }
             let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(metadata.model);
             events.forEach((eventObservationMetadata: EventObservationMetadata) => {
                 let modelEventHandlers = this._modelEventHandlersByEventName.get(eventObservationMetadata.eventType);

@@ -1,53 +1,58 @@
+import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
+import {EventConst} from './testApi/testStore';
+
 describe('OO models interop', () => {
-    it.skip('preProcess is called', () => {
+    let api: PolimerTestApi;
 
-    });
+    function runCommonTests() {
+        it('preProcess is called', () => {
+            api.asserts.handlerModelState.preProcessInvokeCountIs(0);
+            api.actor.publishEvent(EventConst.event1);
+            api.asserts.handlerModelState.preProcessInvokeCountIs(1);
+        });
 
-    it.skip('postProcess is called', () => {
+        it('postProcess is called', () => {
+            api.asserts.handlerModelState.postProcessInvokeCountIs(0);
+            api.actor.publishEvent(EventConst.event1);
+            api.asserts.handlerModelState.postProcessInvokeCountIs(1);
+        });
 
-    });
+        it('disposes the event subscriptions when the parent model is disposed', () => {
+            api.asserts.handlerModelState.isDisposed(false);
+            api.disposeModel();
+            api.asserts.handlerModelState.isDisposed();
+        });
 
-    it.skip('disposes the event subscriptions when the parent model is disposed', () => {
+        it('store is updated after final observation stage dispatched', () => {
+            api.asserts.handlerModelState.captureCurrentState();
+            api.actor.publishEvent(EventConst.event1);
+            api.asserts.handlerModelState
+                .stateInstanceHasChanged()
+                .normalEvents().eventCountIs(1);
+        });
 
-    });
+        it('wires the model up the router', () => {
+            api.asserts.polimerModelIsRegistered(true);
+            api.actor.publishEvent(EventConst.event1);
+            api.asserts.handlerModelState.normalEvents().eventCountIs(1);
+        });
+    }
 
-    it.skip('updates the store after final observation stage dispatched', () => {
-
+    describe('Manual wire up events', () => {
+        beforeEach(() => {
+            api = PolimerTestApiBuilder.create()
+                .withStateHandlerModel()
+                .build();
+        });
+        runCommonTests();
     });
 
     describe('Autowire up events', () => {
-        it.skip('preProcess is called', () => {
-
+        beforeEach(() => {
+            api = PolimerTestApiBuilder.create()
+                .withStateHandlerModel(true)
+                .build();
         });
-
-        it.skip('postProcess is called', () => {
-
-        });
-
-        it.skip('wires the model up the router', () => {
-
-        });
-
-        it.skip('disposes the event subscriptions when the parent model is disposed', () => {
-
-        });
-    });
-
-    describe('Manual wire up events', () => {
-        it.skip('preProcess is called', () => {
-
-        });
-
-        it.skip('postProcess is called', () => {
-
-        });
-
-        it.skip('wires the model up the router', () => {
-
-        });
-
-        it.skip('disposes the event subscriptions when the parent model is disposed', () => {
-
-        });
+        runCommonTests();
     });
 });

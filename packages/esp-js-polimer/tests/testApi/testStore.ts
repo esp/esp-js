@@ -43,10 +43,15 @@ export interface TestState {
     receivedEventsAll: ReceivedEvent[];
 }
 
+export interface OOModelTestState extends TestState {
+    preProcessInvokeCount: number;
+    postProcessInvokeCount: number;
+}
+
 export interface TestStore extends Store {
     handlerMapState: TestState;
     handlerObjectState: TestState;
-    handlerModelState: TestState;
+    handlerModelState: OOModelTestState;
 }
 
 export const defaultTestStateFactory = (stateName: string) => {
@@ -60,11 +65,19 @@ export const defaultTestStateFactory = (stateName: string) => {
     };
 };
 
+export const defaultOOModelTestStateFactory = (stateName: string) => {
+    return <OOModelTestState>{
+        ...defaultTestStateFactory(stateName),
+        postProcessInvokeCount: 0,
+        preProcessInvokeCount: 0
+    };
+};
+
 export const defaultStoreFactory: (modelId: string) => TestStore = (modelId: string) => {
     return {
         modelId: modelId,
         handlerMapState: defaultTestStateFactory('handlerMapState'),
         handlerObjectState: defaultTestStateFactory('handlerObjectState'),
-        handlerModelState: defaultTestStateFactory('handlerModelState'),
+        handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
     };
 };

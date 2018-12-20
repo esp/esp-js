@@ -26,7 +26,7 @@ export {
     DispatchType,
     EventEnvelope,
     ModelEnvelope,
-    ModelOptions,
+    EventProcessors,
     Status
 } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';

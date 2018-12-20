@@ -1,56 +1,87 @@
 import {multipleEvents, PolimerHandlerMap, PolimerModel} from '../../src/';
 import {defaultTestStateFactory, EventConst, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
-import {EventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
+import {EventContext, DefaultEventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
 
-function processEvent(draft: TestState, ev: TestEvent, eventContext: EventContext) {
-    let eventList: ReceivedEvent[];
-  //  throw new Error(`BOOM - ${eventContext.currentStage}`);
+function processEvent(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
+    let receivedEvent = <ReceivedEvent>{
+        eventType: eventContext.eventType,
+        receivedEvent: ev,
+        observationStage: eventContext.currentStage,
+        stateName: draft.stateName,
+        stateReceived: isTestState(draft),
+        storeReceived: isTestStore(store),
+        eventContextReceived: eventContext instanceof DefaultEventContext,
+    };
     if (eventContext.currentStage === ObservationStage.preview) {
-        eventList = draft.receivedEventsAtPreview;
+        draft.receivedEventsAtPreview.push(receivedEvent);
     } else if (eventContext.currentStage === ObservationStage.normal) {
-        eventList = draft.receivedEventsAtNormal;
+        draft.receivedEventsAtNormal.push(receivedEvent);
     } else if (eventContext.currentStage === ObservationStage.committed) {
-        eventList = draft.receivedEventsAtCommitted;
+        draft.receivedEventsAtCommitted.push(receivedEvent);
     } else if (eventContext.currentStage === ObservationStage.final) {
-        eventList = draft.receivedEventsAtFinal;
+        draft.receivedEventsAtFinal.push(receivedEvent);
     }
-    eventList.push(
-        { eventType: eventContext.eventType, event: ev, observationStage: eventContext.currentStage}
-    );
+    draft.receivedEventsAll.push(receivedEvent);
     if (ev.stateTakingAction === draft.stateName) {
         if (ev.shouldCancel && eventContext.currentStage === ev.cancelAtStage) {
             eventContext.cancel();
         }
-        if (ev.shouldCommit && eventContext.currentStage === ev.commitAtStage) {
+        if (ev.shouldCommit && ev.commitAtStages && ev.commitAtStages.includes(eventContext.currentStage)) {
             eventContext.commit();
         }
     }
 }
 
+function isTestState(state: any): state is TestState {
+    let testState = <TestState>state;
+    return testState && testState.stateName !== undefined;
+}
+
+function isTestStore(store: any): store is TestStore {
+    let testStore = <TestStore>store;
+    return testStore && (
+        testStore.handlerMapState !== undefined &&
+        testStore.handlerModelState !== undefined &&
+        testStore.handlerObjectState !== undefined
+    );
+}
+
 const polimerEventPredicate: PolimerEventPredicate = (draft: TestState, event: TestEvent, store: TestStore, eventContext: EventContext) => {
-    if (event.shouldFilter && eventContext.currentStage === event.filterAtStage) {
-        return false;
+    if (event.shouldCancel && event.cancelInEventFilter) {
+        eventContext.cancel();
     }
-    return true;
+    if (event.shouldCommit && event.commitInEventFilter) {
+        eventContext.commit();
+    }
+    return !event.shouldFilter;
 };
 
-const observeEventPredicate: ObserveEventPredicate = (model?: any, event?: any, eventContext?: EventContext) => {
-    if (event.shouldFilter && eventContext.currentStage === event.filterAtStage) {
-        return false;
+const observeEventPredicate: ObserveEventPredicate = (model?: any, event?: TestEvent, eventContext?: EventContext) => {
+    if (event.shouldCancel && event.cancelInEventFilter) {
+        eventContext.cancel();
     }
-    return true;
+    if (event.shouldCommit && event.commitInEventFilter) {
+        eventContext.commit();
+    }
+    return !event.shouldFilter;
 };
 
 export const TestStateHandlerMap: PolimerHandlerMap<TestState, TestStore> = {
     [EventConst.event1]: (draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) => {
-        processEvent(draft, ev, eventContext);
+        processEvent(draft, ev, store, eventContext);
     },
     [EventConst.event2]: (draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) => {
-        processEvent(draft, ev, eventContext);
+        processEvent(draft, ev, store, eventContext);
     },
     [multipleEvents(EventConst.event3, EventConst.event4)]: (draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) => {
-        processEvent(draft, ev, eventContext);
-    }
+        processEvent(draft, ev, store, eventContext);
+    },
+    [EventConst.event5]: (draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) => {
+        if (ev.replacementState) {
+            return ev.replacementState;
+        }
+        processEvent(draft, ev, store, eventContext);
+    },
 };
 
 export class TestStateObjectHandler {
@@ -59,26 +90,33 @@ export class TestStateObjectHandler {
     @observeEvent(EventConst.event1, ObservationStage.committed)
     @observeEvent(EventConst.event1, ObservationStage.final)
     _event1Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
-        processEvent(draft, ev, eventContext);
+        processEvent(draft, ev, store, eventContext);
     }
 
-    @observeEvent(EventConst.event2, ObservationStage.preview, polimerEventPredicate)
-    @observeEvent(EventConst.event2, ObservationStage.normal, polimerEventPredicate)
-    @observeEvent(EventConst.event2, ObservationStage.committed, polimerEventPredicate)
-    @observeEvent(EventConst.event2, ObservationStage.final, polimerEventPredicate)
+    @observeEvent(EventConst.event2, ObservationStage.preview)
+    @observeEvent(EventConst.event2, ObservationStage.normal)
+    @observeEvent(EventConst.event2, ObservationStage.committed)
+    @observeEvent(EventConst.event2, ObservationStage.final)
     _event2Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
-        processEvent(draft, ev, eventContext);
+        processEvent(draft, ev, store, eventContext);
     }
     @observeEvent(EventConst.event3)
     @observeEvent(EventConst.event4)
     _event3And4Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
-        processEvent(draft, ev, eventContext);
+        processEvent(draft, ev, store, eventContext);
+    }
+    @observeEvent(EventConst.event5, polimerEventPredicate)
+    _event5Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
+        if (ev.replacementState) {
+            return ev.replacementState;
+        }
+        processEvent(draft, ev, store, eventContext);
     }
 }
 
 // this model is a more classic esp based model which can interop with polimer state handlers,
 // it won't receive an immer based model to mutate state, rather state is maintained internally
-export class TestStateObject extends DisposableBase {
+export class TestStateHandlerModel extends DisposableBase {
     private _currentState: TestState;
 
     constructor(private _modelId, private _router: Router) {
@@ -94,22 +132,33 @@ export class TestStateObject extends DisposableBase {
     @observeEvent(EventConst.event1, ObservationStage.committed)
     @observeEvent(EventConst.event1, ObservationStage.final)
     _event1Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
-        processEvent(this._currentState, ev, eventContext);
-        this._currentState = { ... this._currentState };
+        processEvent(this._currentState, ev, model.getStore(), eventContext);
+        this._replaceState();
     }
 
-    @observeEvent(EventConst.event2, ObservationStage.preview, observeEventPredicate)
-    @observeEvent(EventConst.event2, ObservationStage.normal, observeEventPredicate)
-    @observeEvent(EventConst.event2, ObservationStage.committed, observeEventPredicate)
-    @observeEvent(EventConst.event2, ObservationStage.final, observeEventPredicate)
+    @observeEvent(EventConst.event2, ObservationStage.preview)
+    @observeEvent(EventConst.event2, ObservationStage.normal)
+    @observeEvent(EventConst.event2, ObservationStage.committed)
+    @observeEvent(EventConst.event2, ObservationStage.final)
     _event2Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
-        processEvent(this._currentState, ev, eventContext);
-        this._currentState = { ... this._currentState };
+        processEvent(this._currentState, ev, model.getStore(), eventContext);
+        this._replaceState();
     }
     @observeEvent(EventConst.event3)
     @observeEvent(EventConst.event4)
     _event3And4Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
-        processEvent(this._currentState, ev, eventContext);
+        processEvent(this._currentState, ev, model.getStore(), eventContext);
+        this._replaceState();
+    }
+
+    @observeEvent(EventConst.event5, observeEventPredicate)
+    _event5Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        processEvent(this._currentState, ev, model.getStore(), eventContext);
+        this._replaceState();
+    }
+
+    private _replaceState() {
+        // emulate internal update of immutable state
         this._currentState = { ... this._currentState };
     }
 

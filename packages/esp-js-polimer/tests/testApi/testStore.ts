@@ -5,12 +5,14 @@ export interface TestEvent {
     shouldCancel?: boolean;
     cancelAtStage?: ObservationStage;
     cancelAtState?: string;
+    cancelInEventFilter?: boolean;
     shouldCommit?: boolean;
-    commitAtStage?: ObservationStage;
+    commitAtStages?: ObservationStage[];
     commitAtState?: string;
+    commitInEventFilter?: boolean;
     shouldFilter?: boolean;
-    filterAtStage?: ObservationStage;
     stateTakingAction?: string;
+    replacementState?: TestState;
 }
 
 export const EventConst  = {
@@ -18,12 +20,18 @@ export const EventConst  = {
     event2: 'event2',
     event3: 'event3',
     event4: 'event4',
+    event5: 'event5',
+    event6: 'event6',
 };
 
 export interface ReceivedEvent {
     eventType: string;
-    event: any;
+    receivedEvent: TestEvent;
     observationStage: ObservationStage;
+    stateReceived: boolean;
+    stateName: string;
+    storeReceived: boolean;
+    eventContextReceived: boolean;
 }
 
 export interface TestState {
@@ -32,6 +40,7 @@ export interface TestState {
     receivedEventsAtNormal: ReceivedEvent[];
     receivedEventsAtCommitted: ReceivedEvent[];
     receivedEventsAtFinal: ReceivedEvent[];
+    receivedEventsAll: ReceivedEvent[];
 }
 
 export interface TestStore extends Store {
@@ -47,6 +56,7 @@ export const defaultTestStateFactory = (stateName: string) => {
         receivedEventsAtNormal: [],
         receivedEventsAtCommitted: [],
         receivedEventsAtFinal: [],
+        receivedEventsAll: []
     };
 };
 

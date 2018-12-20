@@ -24,11 +24,11 @@ import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposa
 import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {CompositeDiagnosticMonitor} from './devtools';
-import {ModelOptions} from './modelOptions';
+import {EventProcessors} from './eventProcessors';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
-import {DecoratorTypes} from '../decorators/espDecoratorMetadata';
+import {DecoratorTypes} from '../decorators';
 
 let _log = logging.Logger.create('Router');
 
@@ -64,12 +64,12 @@ export class Router extends DisposableBase {
         return this._state.currentStatus;
     }
 
-    public addModel(modelId: string, model: any, options?: ModelOptions) {
+    public addModel(modelId: string, model: any, eventProcessors?: EventProcessors) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isDefined(model, 'The model argument must be defined');
-        if (options) {
-            Guard.isObject(options, 'The options argument should be an object');
+        if (eventProcessors) {
+            Guard.isObject(eventProcessors, 'The eventProcessors argument should be an object');
         }
         let modelRecord = this._models.get(modelId);
         if (modelRecord) {
@@ -77,7 +77,7 @@ export class Router extends DisposableBase {
             // If there is a record, we just ensure it's model isn't there yet.
             Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
         }
-        this._getOrCreateModelRecord(modelId, model, options);
+        this._getOrCreateModelRecord(modelId, model, eventProcessors);
         this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.Model});
         this._diagnosticMonitor.addModel(modelId);
     }
@@ -262,7 +262,7 @@ export class Router extends DisposableBase {
             Guard.isString(modelId, 'The modelId should be a string');
             let modelRecord = this._getOrCreateModelRecord(modelId);
             return modelRecord.modelObservationStream
-                .map(envelope => modelRecord.modelObservableMapper(envelope.model))
+                .map(envelope => envelope.model)
                 .subscribe(o);
         });
     }
@@ -322,18 +322,18 @@ export class Router extends DisposableBase {
         return this._state.currentModelId === modelId;
     }
 
-    private _getOrCreateModelRecord(modelId: string, model?: any, options?: ModelOptions): ModelRecord {
+    private _getOrCreateModelRecord(modelId: string, model?: any, eventProcessors?: EventProcessors): ModelRecord {
         let modelRecord: ModelRecord = this._models.get(modelId);
         if (modelRecord) {
             if (!modelRecord.hasModel) {
-                modelRecord.setModel(model, options);
+                modelRecord.setModel(model, eventProcessors);
             }
         } else {
             let modelObservationStream =  this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
                 .filter(envelope => envelope.dispatchType === DispatchType.Model && envelope.modelId === modelId)
                 .share(true);
-            modelRecord = new ModelRecord(modelId, model, modelObservationStream, options);
+            modelRecord = new ModelRecord(modelId, model, modelObservationStream, eventProcessors);
             this._models.set(modelId, modelRecord);
         }
         return modelRecord;

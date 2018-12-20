@@ -1,47 +1,19 @@
-import {Router, ObservationStage} from 'esp-js';
-import {defaultStoreFactory, EventConst, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
-import {TestStateHandlerMap, TestStateObjectHandler, TestStateObject} from './stateHandlers';
-import {PolimerModel, PolimerStoreBuilder, Store} from '../../src';
+import {ObservationStage, Router, logging} from 'esp-js';
+import {defaultStoreFactory, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
+import {TestStateHandlerMap, TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
+import {PolimerModel, PolimerStoreBuilder} from '../../src';
 import {StorePostEventProcessor, StorePreEventProcessor} from '../../src/eventProcessors';
 
 export interface PolimerTestApi {
-    actor: {
-        publishEvent(eventType: string),
-        publishEventWhichCommitsAtNormalStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey),
-    };
+    actor: Actor;
     model: PolimerModel<TestStore>;
+    store: TestStore;
     asserts: {
         handlerMapState: StateAsserts,
         handlerObjectState: StateAsserts,
         handlerModelState: StateAsserts,
+        throwsOnInvalidEventContextAction: (action: () => void, errorRegex?: RegExp),
     };
-}
-
-export class ReceivedEventAsserts {
-    constructor(private _parent: ReceivedEventsAsserts,  private _receivedEvent: ReceivedEvent) {
-
-    }
-    public is(eventType: string, event: TestEvent, stage: ObservationStage): this {
-        this.typeIs(eventType);
-        this.eventIs(event);
-        this.observationStageIs(stage);
-        return this;
-    }
-    public typeIs(eventType: string): this {
-        expect(this._receivedEvent.eventType).toEqual(eventType);
-        return this;
-    }
-    public eventIs(event: TestEvent): this {
-        expect(this._receivedEvent.event).toBe(event);
-        return this;
-    }
-    public observationStageIs(stage: ObservationStage): this {
-        expect(this._receivedEvent.observationStage).toEqual(stage);
-        return this;
-    }
-    public end(): ReceivedEventsAsserts {
-        return this._parent;
-    }
 }
 
 export class ReceivedEventsAsserts {
@@ -52,9 +24,46 @@ export class ReceivedEventsAsserts {
         expect(this._receivedEvents.length).toEqual(expectedLength);
         return this;
     }
-    public event(receivedAtIndex: number): ReceivedEventAsserts {
-        return new ReceivedEventAsserts(this, this._receivedEvents[receivedAtIndex]);
+
+    public callIs(callNumber: number, eventType: string, event: TestEvent, stage: ObservationStage): this {
+        this.eventTypeIs(callNumber, eventType);
+        this.eventIs(callNumber, event);
+        this.observationStageIs(callNumber, stage);
+        return this;
     }
+
+    public eventTypeIs(callNumber: number, eventType: string): this {
+        expect(this._receivedEvents[callNumber].eventType).toEqual(eventType);
+        return this;
+    }
+
+    public eventIs(callNumber: number, event: TestEvent): this {
+        expect(this._receivedEvents[callNumber].receivedEvent).toBe(event);
+        return this;
+    }
+
+    public observationStageIs(callNumber: number, stage: ObservationStage): this {
+        expect(this._receivedEvents[callNumber].observationStage).toEqual(stage);
+        return this;
+    }
+
+    public stateIs(callNumber: number, expectedStateName: string): this {
+        let receivedArgument = this._receivedEvents[callNumber];
+        expect(receivedArgument.stateReceived).toEqual(true);
+        expect(receivedArgument.stateName).toEqual(expectedStateName);
+        return this;
+    }
+
+    public ensureEventContextReceived(callNumber: number): this {
+        expect(this._receivedEvents[callNumber].eventContextReceived).toEqual(true);
+        return this;
+    }
+
+    public ensureStoreReceived(callNumber: number): this {
+        expect(this._receivedEvents[callNumber].storeReceived).toEqual(true);
+        return this;
+    }
+
     public end(): StateAsserts {
         return this._parent;
     }
@@ -72,12 +81,15 @@ export class StateAsserts {
         this._lastState = this._stateGetter();
         return this;
     }
-    public stateInstanceHasChanged(): this {
+    public stateInstanceHasChanged(expectedNextState?: TestState): this {
         // preconditions
         expect(this._lastState).toBeDefined();
         const currentState = this._stateGetter();
         expect(this._lastState).toBeDefined();
         expect(this._lastState).not.toBe(currentState);
+        if (expectedNextState) {
+            expect(currentState).toBe(expectedNextState);
+        }
         return this;
     }
     public previewEvents(): ReceivedEventsAsserts {
@@ -91,6 +103,94 @@ export class StateAsserts {
     }
     public finalEvents(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAtFinal);
+    }
+    public receivedEventsAll(): ReceivedEventsAsserts {
+        return new ReceivedEventsAsserts(this, this._state.receivedEventsAll);
+    }
+}
+
+export class Actor {
+    constructor(private _modelId: string, private _router: Router) {
+    }
+    public publishEvent(eventType: string, event?: TestEvent) {
+        event = event || {};
+        this._router.publishEvent(this._modelId, eventType, event);
+        return event;
+    }
+    public publishEventWhichFiltersAtPreviewStage<TKey extends keyof TestStore>(eventType: string) {
+        let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.preview};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichFiltersAtNormalStage<TKey extends keyof TestStore>(eventType: string) {
+        let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.normal};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichFiltersAtCommitStage<TKey extends keyof TestStore>(eventType: string) {
+        let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.committed};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCancelsAtPreviewStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCancel: true, cancelAtStage: ObservationStage.preview, stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCancelsAtNormalStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCancel: true, cancelAtStage: ObservationStage.normal, stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCancelsAtFinalStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCancel: true, cancelAtStage: ObservationStage.final, stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCancelsAtCommittedStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{
+            shouldCommit: true,
+            commitAtStages: [ObservationStage.normal],
+            shouldCancel: true,
+            cancelAtStage: ObservationStage.committed,
+            stateTakingAction: stateNameWhichDoesTheCommit
+        };
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCancelsInEventFilter<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCancel: true, cancelInEventFilter: true, stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCommitsAtPreviewStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCommit: true, commitAtStages: [ObservationStage.preview], stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCommitsAtNormalStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCommit: true, commitAtStages: [ObservationStage.normal], stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCommitsAtCommittedStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{
+            shouldCommit: true,
+            commitAtStages: [ObservationStage.normal, ObservationStage.committed],
+            stateTakingAction: stateNameWhichDoesTheCommit
+        };
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCommitsAtFinalStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCommit: true, commitAtStages: [ObservationStage.final], stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
+    }
+    public publishEventWhichCommitsInEventFilter<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
+        let testEvent = <TestEvent>{ shouldCommit: true, commitInEventFilter: true, stateTakingAction: stateNameWhichDoesTheCommit};
+        this._router.publishEvent(this._modelId, eventType, testEvent);
+        return testEvent;
     }
 }
 
@@ -131,6 +231,8 @@ export class PolimerTestApiBuilder {
     }
 
     public build(): PolimerTestApi {
+        // stop esp logging to the console by default (so unhappy path tests to fill up the console with errors).
+        logging.Logger.setSink(() => {});
         let router = new Router();
         let modelId = 'modelId';
         let initialStore = defaultStoreFactory(modelId);
@@ -144,7 +246,7 @@ export class PolimerTestApiBuilder {
             builder.withStateHandlerObject('handlerObjectState', new TestStateObjectHandler());
         }
         if (this._useHandlerModel) {
-            let testStateObject = new TestStateObject(modelId, router);
+            let testStateObject = new TestStateHandlerModel(modelId, router);
             builder.withStateHandlerModel('handlerModelState', testStateObject);
             testStateObject.initialise();
         }
@@ -161,23 +263,18 @@ export class PolimerTestApiBuilder {
             currentStore = store;
         });
         return {
-            actor: {
-                publishEvent(eventType: string) {
-                    let event = {};
-                    router.publishEvent(modelId, eventType, event);
-                    return event;
-                },
-                publishEventWhichCommitsAtNormalStage<TKey extends keyof TestStore>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-                    let testEvent = <TestEvent>{ shouldCommit: true, commitAtStage: ObservationStage.normal, stateTakingAction: stateNameWhichDoesTheCommit};
-                    router.publishEvent(modelId, eventType, testEvent);
-                    return testEvent;
-                }
-            },
+            actor: new Actor(modelId, router),
             model,
+            get store() {
+                return this.model.getStore();
+            },
             asserts: {
                 handlerMapState: new StateAsserts(() => currentStore.handlerMapState),
                 handlerObjectState: new StateAsserts(() => currentStore.handlerObjectState),
                 handlerModelState: new StateAsserts(() => currentStore.handlerModelState),
+                throwsOnInvalidEventContextAction(action: () => void, errorRegex?: RegExp) {
+                    expect(action).toThrow(errorRegex || /You can't .* an event at the .* stage.*/);
+                }
             }
         };
     }

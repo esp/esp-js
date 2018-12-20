@@ -139,7 +139,19 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                     eventReceivers.forEach((handlerMetadata: EventHandlerMetadata) => {
                         if (handlerMetadata.observationStage === eventEnvelope.observationStage) {
                             const beforeState = store[handlerMetadata.stateName];
-                            if (!handlerMetadata.predicate || handlerMetadata.predicate(beforeState, eventEnvelope.event, store, eventEnvelope.context)) {
+                            let processEvent = true;
+                            if (handlerMetadata.predicate) {
+                                let notYetCanceled = eventEnvelope.context.isCanceled === false;
+                                let notYetCommitted = eventEnvelope.context.isCommitted === false;
+                                processEvent = handlerMetadata.predicate(beforeState, eventEnvelope.event, store, eventEnvelope.context);
+                                if (notYetCanceled && eventEnvelope.context.isCanceled) {
+                                    throw new Error('You can\'t cancel an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                }
+                                if (notYetCommitted && eventEnvelope.context.isCommitted) {
+                                    throw new Error('You can\'t commit an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                }
+                            }
+                            if (processEvent) {
                                 logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState);
                                 const afterState = handlerMetadata.handler(beforeState, eventEnvelope.event, store, eventEnvelope.context);
                                 logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);

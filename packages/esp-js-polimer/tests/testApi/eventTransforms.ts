@@ -3,6 +3,7 @@ import {EventConst, TestEvent, TestStore} from './testStore';
 import {eventTransformFor, InputEvent, InputEventStream, OutputEvent, OutputEventStream} from '../../src';
 
 export class ObjectEventTransforms {
+
     @eventTransformFor(EventConst.event7)
     _onEvent7(inputEventStream: InputEventStream<TestStore, TestEvent>): OutputEventStream<TestEvent> {
         return inputEventStream
@@ -13,7 +14,8 @@ export class ObjectEventTransforms {
                 };
                 return Rx.Observable.return(event);
             })
-            .switch();
+            .switch()
+            ;
     }
     @eventTransformFor(EventConst.eventNotObservedByModel)
     _onEventNotObservedByModel(inputEventStream: InputEventStream<TestStore, TestEvent>): OutputEventStream<TestEvent> {
@@ -21,6 +23,7 @@ export class ObjectEventTransforms {
             .map((inputEvent: InputEvent<TestStore, TestEvent>) => {
                 let event = <OutputEvent<TestEvent>>{
                     eventType: EventConst.event8,
+                    modelId: inputEvent.event.publishToModelId,
                     event: { transformedEventKey: 'transformedEvent_eventNotObservedByModel', eventKey: inputEvent.event.eventKey }
                 };
                 return Rx.Observable.return(event);

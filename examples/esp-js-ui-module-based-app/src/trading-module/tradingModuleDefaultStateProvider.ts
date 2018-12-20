@@ -1,3 +1,4 @@
+import * as uuid from 'uuid';
 import * as _ from 'lodash';
 import {DefaultStateProvider, ComponentFactoryState} from 'esp-js-ui';
 import {RegionNames} from '../shell/regionNames';
@@ -10,7 +11,7 @@ export class TradingModuleDefaultStateProvider implements DefaultStateProvider {
         let blotterStates = [BlotterState.create(RegionNames.blotterRegion)];
         let cashTileStores: Array<CashTileStore> = _.map(
             ['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'],
-            symbol => defaultStoreFactory(symbol)
+            symbol => defaultStoreFactory(uuid.v4(), symbol)
         );
         return [{
             componentFactoryKey: TradingModuleContainerConst.blotterComponentFactory,

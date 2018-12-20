@@ -69,7 +69,7 @@ export class Router extends DisposableBase {
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isDefined(model, 'The model argument must be defined');
         if (eventProcessors) {
-            Guard.isObject(eventProcessors, 'The eventProcessors argument should be an object');
+            Guard.isObject(eventProcessors, `The eventProcessors argument provided with the model (of id ${modelId}) should be an object`);
         }
         let modelRecord = this._models.get(modelId);
         if (modelRecord) {
@@ -382,9 +382,9 @@ export class Router extends DisposableBase {
                     while (hasEvents) {
                         if (eventRecord.eventType === RUN_ACTION_EVENT_NAME) {
                             this._diagnosticMonitor.dispatchingAction();
-                            modelRecord.eventDispatchProcessor(modelRecord.model, RUN_ACTION_EVENT_NAME);
+                            modelRecord.eventDispatchProcessor(modelRecord.model, null, RUN_ACTION_EVENT_NAME);
                             eventRecord.action(modelRecord.model);
-                            modelRecord.eventDispatchedProcessor(modelRecord.model, RUN_ACTION_EVENT_NAME);
+                            modelRecord.eventDispatchedProcessor(modelRecord.model, null, RUN_ACTION_EVENT_NAME);
                         } else {
                             this._state.eventsProcessed.push(eventRecord.eventType);
                             this._dispatchEventToEventProcessors(
@@ -476,7 +476,7 @@ export class Router extends DisposableBase {
 
     private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
         this._diagnosticMonitor.dispatchingEvent(eventType, stage);
-        modelRecord.eventDispatchProcessor(modelRecord.model, eventType, stage);
+        modelRecord.eventDispatchProcessor(modelRecord.model, eventType, event, stage);
         this._dispatchSubject.onNext({
             event: event,
             eventType: eventType,
@@ -486,7 +486,7 @@ export class Router extends DisposableBase {
             observationStage: stage,
             dispatchType: DispatchType.Event
         });
-        modelRecord.eventDispatchedProcessor(modelRecord.model, eventType, stage);
+        modelRecord.eventDispatchedProcessor(modelRecord.model, eventType, event, stage);
     }
 
     private _dispatchModelUpdates() {

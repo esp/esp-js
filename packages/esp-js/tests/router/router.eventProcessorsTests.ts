@@ -32,13 +32,13 @@ describe('Router', () => {
             _model3: { },
             _model5: {
                 preProcessCount: number,
-                eventDispatchItems: {eventType:string, stage: esp.ObservationStage}[],
-                eventDispatchedItems: {eventType:string, stage: esp.ObservationStage}[],
+                eventDispatchItems: {eventType:string, event: any, stage: esp.ObservationStage}[],
+                eventDispatchedItems: {eventType:string, event: any, stage: esp.ObservationStage}[],
                 postProcessCount: number,
                 eventsProcessed: string[],
                 preProcess: ()=> void;
-                eventDispatch: (eventType: string, observationStage: esp.ObservationStage) => void,
-                eventDispatched: (eventType: string, observationStage: esp.ObservationStage) => void,
+                eventDispatch: (eventType: string, event: any, observationStage: esp.ObservationStage) => void,
+                eventDispatched: (eventType: string, event: any, observationStage: esp.ObservationStage) => void,
                 postProcess: (eventsProcessed: string[])=> void;
             },
             _model6: {},
@@ -51,11 +51,11 @@ describe('Router', () => {
                 preEventProcessor: (model) => {
                     _modelsSentForPreProcessing.push(model);
                 },
-                eventDispatchProcessor: (model: any, eventType: string, stage?: esp.ObservationStage) => {
-                    _eventsSentToDispatch.push({model, eventType, stage});
+                eventDispatchProcessor: (model: any, eventType: string, event: any, stage: esp.ObservationStage) => {
+                    _eventsSentToDispatch.push({model, eventType, event, stage});
                 },
-                eventDispatchedProcessor: (model: any, eventType: string, stage?: esp.ObservationStage) => {
-                    _eventsSentToDispatched.push({model, eventType, stage});
+                eventDispatchedProcessor: (model: any, eventType: string, event: any, stage: esp.ObservationStage) => {
+                    _eventsSentToDispatched.push({model, eventType, event, stage});
                 },
                 postEventProcessor: (model, eventsProcessed) => {
                     _modelsSentForPostProcessing.push({model, eventsProcessed});
@@ -75,11 +75,11 @@ describe('Router', () => {
                 preProcess() {
                     this.preProcessCount++;
                 },
-                eventDispatch(eventType: string, stage: esp.ObservationStage) {
-                    this.eventDispatchItems.push({eventType, stage});
+                eventDispatch(eventType: string, event: any, stage: esp.ObservationStage) {
+                    this.eventDispatchItems.push({eventType, event, stage});
                 },
-                eventDispatched(eventType: string, stage: esp.ObservationStage) {
-                    this.eventDispatchedItems.push({eventType, stage});
+                eventDispatched(eventType: string, event: any, stage: esp.ObservationStage) {
+                    this.eventDispatchedItems.push({eventType, event, stage});
                 },
                 postProcess(eventsProcessed) {
                     this.postProcessCount++;
@@ -104,21 +104,26 @@ describe('Router', () => {
                 _router.publishEvent('modelId2', 'Event1', 'theEvent');
                 _router.publishEvent('modelId1', 'Event1', 'theEvent');
             });
+
             _router.getEventObservable('modelId5', 'startEvent').subscribe(() => {
                 /* noop */
             });
+
             _router.getEventObservable('modelId6', 'startEvent').subscribe(() => {
                 /* noop */
             });
         });
 
-        function assertDispatchedItems(array: {eventType: string, stage:esp.ObservationStage}[]) {
+        function assertDispatchedItems(array: {eventType: string, event:any, stage:esp.ObservationStage}[]) {
             expect(array.length).toBe(3);
             expect(array[0].eventType).toEqual('startEvent');
+            expect(array[0].event).toEqual('theEvent');
             expect(array[0].stage).toEqual(esp.ObservationStage.preview);
             expect(array[1].eventType).toEqual('startEvent');
+            expect(array[1].event).toEqual('theEvent');
             expect(array[1].stage).toEqual(esp.ObservationStage.normal);
             expect(array[2].eventType).toEqual('startEvent');
+            expect(array[2].event).toEqual('theEvent');
             expect(array[2].stage).toEqual(esp.ObservationStage.final);
         }
 

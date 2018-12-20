@@ -55,7 +55,7 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
             //      e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
             //           if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
             //           In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileStore> created by this builder
-            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router))
+            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router), true)
 
             // ***************************
             // Wire up our event streams

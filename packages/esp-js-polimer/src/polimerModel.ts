@@ -113,7 +113,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     }
 
     // called by the router when it's finished dispatching an event
-    public eventDispatched(eventType: string, stage: ObservationStage) {
+    public eventDispatched(eventType: string, event: any, stage: ObservationStage) {
         if (stage !== ObservationStage.final) {
             return;
         }
@@ -126,6 +126,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 logger.verbose(`State [${modelHandlerMetadata.stateName}], eventType [${eventType}]: was processed by a model. State will be replaced. Before and after state logged to console .`, beforeState, afterState);
                 this._store[modelHandlerMetadata.stateName] = afterState;
             });
+            sendUpdateToDevTools({eventType: eventType, event: event}, this._store, this._modelId);
         }
     }
 
@@ -172,7 +173,9 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                             }
                         }
                     });
-                    sendUpdateToDevTools(eventEnvelope, this._store, this._modelId);
+                    if (ObservationStage.isFinal(eventEnvelope.observationStage)) {
+                        sendUpdateToDevTools(eventEnvelope, this._store, this._modelId);
+                    }
                 })
         );
     }
@@ -276,7 +279,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
+                const inputEventStream = Rx.Observable.merge(metadataForFunction.map(m => this._observeEvent(m.eventType)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });

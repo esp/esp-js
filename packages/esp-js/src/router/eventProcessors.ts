@@ -5,7 +5,7 @@ export interface PreEventProcessor {
 }
 
 export interface EventDispatchProcessor {
-    (model: any, eventType: string, observationStage?: ObservationStage): void;
+    (model: any, eventType: string, event: any, observationStage?: ObservationStage): void;
 }
 
 export interface PostEventProcessor {

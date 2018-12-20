@@ -15,6 +15,7 @@ export interface TestEvent {
     replacementState?: TestState;
     eventKey?: string;
     transformedEventKey?: string;
+    publishToModelId?: string;
 }
 
 export const EventConst  = {

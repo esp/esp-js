@@ -1,3 +1,4 @@
+import * as uuid from 'uuid';
 import {defaultRootStateFactory, RootState} from './root/rootState';
 import {defaultRequestForQuoteStateFactory, RequestForQuoteState} from './rfq/requestForQuoteState';
 import {defaultInputsStateFactory, InputsState} from './inputs/inputsState';
@@ -15,7 +16,7 @@ export interface CashTileStore  {
 
 export const defaultStoreFactory = (modelId: string, ccyPair: string): CashTileStore => {
     return {
-        modelId: modelId,
+        modelId: `cash-tile${modelId}`,
         rootState: defaultRootStateFactory(),
         inputs: defaultInputsStateFactory(ccyPair),
         requestForQuote: defaultRequestForQuoteStateFactory(),

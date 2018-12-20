@@ -189,21 +189,5 @@ describe('Router', () => {
             });
             expect(model1UpdateCount).toBe(1);
         });
-
-        it('should use options.modelObservableMapper if provided when dispatching the model', () => {
-            _router.addModel(
-                'modelId3',
-                {number:0, subPart: { foo: 'theFoo' }},
-                { modelObservableMapper: (model) => model.subPart }
-            );
-            _router.getEventObservable('modelId3', 'Event1').subscribe(() => { /*noop*/  });
-            let _receivedModels = [];
-            _router.getModelObservable('modelId3').subscribe((m) => {
-                _receivedModels.push(m);
-            });
-            _router.publishEvent('modelId1', 'Event1', 'payload');
-            expect(_receivedModels.length).toEqual(1);
-            expect(_receivedModels[0]).toEqual({ foo: 'theFoo'});
-        });
     });
 });

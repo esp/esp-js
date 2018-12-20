@@ -164,6 +164,7 @@ export class TestStateHandlerModel extends DisposableBase {
     public dispose() {
         super.dispose();
     }
+
     @observeEvent(EventConst.event1, ObservationStage.preview)
     @observeEvent(EventConst.event1) // defaults to ObservationStage.normal
     @observeEvent(EventConst.event1, ObservationStage.committed)

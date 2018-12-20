@@ -3,19 +3,15 @@ import {Logger} from 'esp-js-ui';
 import {DateSelectorState} from './dateSelectorState';
 import {DisposableBase, observeEvent, Router} from 'esp-js';
 import {DateSelectorEvents} from '../../events';
+import {StateHandlerModel} from 'esp-js-polimer/src/stateHandlerModel';
 
 const _log = Logger.create('CashTile-DateSelectorModel');
 
-export class DateSelectorModel extends DisposableBase {
+export class DateSelectorModel extends DisposableBase implements StateHandlerModel<DateSelectorState> {
     private _currentState: DateSelectorState;
 
     constructor(private _modelId: string, private _router: Router) {
         super();
-    }
-
-    @modelInitialiser
-    public initialise(): void {
-        this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     }
 
     @observeEvent(DateSelectorEvents.userEnteredDate)
@@ -27,8 +23,7 @@ export class DateSelectorModel extends DisposableBase {
         };
     }
 
-    @stateProvider
-    public getState(lastState: DateSelectorState): DateSelectorState {
+    public getState(): DateSelectorState {
         return this._currentState;
     }
 }

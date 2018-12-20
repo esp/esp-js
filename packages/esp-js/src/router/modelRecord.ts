@@ -188,17 +188,17 @@ export class ModelRecord {
             Guard.isFunction(options[optionsEventDispatchFunctionName], `${optionsEventDispatchFunctionName} on the model options exists but is not a function`);
             processorFunctionOnOptions = options[optionsEventDispatchFunctionName];
         } else {
-            processorFunctionOnOptions = (model: any, eventType: string, observationStage: ObservationStage) => { /*noop */ };
+            processorFunctionOnOptions = (model: any, eventType: string, event: any, observationStage: ObservationStage) => { /*noop */ };
         }
-        let modelProcessor = (model, eventType: string, observationStage: ObservationStage) => {
+        let modelProcessor = (model, eventType: string, event: any, observationStage: ObservationStage) => {
             // dispatch to the model in a late bound manor
             if(model[modelEventDispatchFunctionName] && (typeof model[modelEventDispatchFunctionName] === 'function')) {
-                model[modelEventDispatchFunctionName](eventType, observationStage);
+                model[modelEventDispatchFunctionName](eventType, event, observationStage);
             }
         };
-        return (model: any, eventType: string, observationStage: ObservationStage) => {
-            processorFunctionOnOptions(model, eventType, observationStage);
-            modelProcessor(model, eventType, observationStage);
+        return (model: any, eventType: string, event: any, observationStage: ObservationStage) => {
+            processorFunctionOnOptions(model, eventType, event, observationStage);
+            modelProcessor(model, eventType, event, observationStage);
         };
     }
 }

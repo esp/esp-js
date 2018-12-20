@@ -1,5 +1,5 @@
 import {ObservationStage, Router, logging} from 'esp-js';
-import {defaultStoreFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
+import {defaultStoreFactory, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestStore} from './testStore';
 import {TestStateHandlerMap, TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
 import {PolimerModel, PolimerStoreBuilder} from '../../src';
 import {StorePostEventProcessor, StorePreEventProcessor} from '../../src/eventProcessors';
@@ -11,6 +11,7 @@ export interface PolimerTestApi {
     actor: Actor;
     store: TestStore;
     asserts: Asserts;
+    router: Router;
 }
 
 export class ReceivedEventsAsserts {
@@ -280,11 +281,11 @@ class TestEventProcessors {
 }
 
 export class PolimerTestApiBuilder {
-    private _useHandlerMap: boolean;
-    private _useHandlerObject: boolean;
-    private _useHandlerModel: boolean;
-    private _handlerModelAutoWireUp: boolean;
-    private _useEventTransformModel: boolean;
+    private _useHandlerMap: boolean = false;
+    private _useHandlerObject: boolean = false;
+    private _useHandlerModel: boolean = false;
+    private _handlerModelAutoWireUp: boolean = false;
+    private _useEventTransformModel: boolean = false;
 
     public static create(): PolimerTestApiBuilder {
         return new PolimerTestApiBuilder();
@@ -358,7 +359,8 @@ export class PolimerTestApiBuilder {
             get store() {
                 return this.model.getStore();
             },
-            asserts: new Asserts(router, model, testEventProcessors, testStateHandlerModel)
+            asserts: new Asserts(router, model, testEventProcessors, testStateHandlerModel),
+            router
         };
     }
 }

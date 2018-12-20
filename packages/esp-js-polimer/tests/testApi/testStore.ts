@@ -13,6 +13,8 @@ export interface TestEvent {
     shouldFilter?: boolean;
     stateTakingAction?: string;
     replacementState?: TestState;
+    eventKey?: string;
+    transformedEventKey?: string;
 }
 
 export const EventConst  = {
@@ -22,6 +24,9 @@ export const EventConst  = {
     event4: 'event4',
     event5: 'event5',
     event6: 'event6',
+    event7: 'event7',
+    event8: 'event8',
+    eventNotObservedByModel: 'eventNotObservedByModel',
 };
 
 export interface ReceivedEvent {

@@ -77,7 +77,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         this._wireUpStateHandlerModels();
         this._wireUpStateHandlerObjects();
         this._wireUpStateHandlersMaps();
-        this._wireUpEventStreams();
+        this._wireUpEventTransforms();
         this._listenToAllEvents();
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     };
@@ -240,7 +240,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         });
     }
 
-    private _wireUpEventStreams = () => {
+    private _wireUpEventTransforms = () => {
         // There are 2 APIs for event transformations:
         // 1) Via functions that take a event stream factory, these factories take an eventType and return an `Rx.Observable<InputEvent<>>`
         //    The handlers effectively transform the `InputEvent<>`s to `OutputEvent<>` which get dispatched back into the router
@@ -304,15 +304,15 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _observeEvent = (eventType: string | string[], stage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TStore, any>> => {
+    private _observeEvent = (eventType: string | string[]): Rx.Observable<InputEvent<TStore, any>> => {
         return Rx.Observable.create((obs: Rx.Observer<any>) => {
                 const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
-                    .getAllEventsObservable(events, stage)
+                    .getAllEventsObservable(events, ObservationStage.final)
                     .filter(eventEnvelope => eventEnvelope.modelId === this._modelId)
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>) => {
-                            logger.verbose(`Passing event [${eventEnvelope.eventType}] at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}] to eventStream.`);
+                            logger.verbose(`Passing event [${eventEnvelope.eventType}] at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}] to event transform stream.`);
                             let inputEvent: InputEvent<TStore, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
                             // Pass the event off to our polimer observable stream.
                             // In theory, these streams must never error.
@@ -322,6 +322,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                                 obs.onNext(inputEvent);
                             } catch (err) {
                                 logger.error(`Error caught on event observable stream for event ${eventType}.`, err);
+                                throw err;
                             }
                         },
                         () => obs.onCompleted()

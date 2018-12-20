@@ -3,6 +3,7 @@ import {defaultStoreFactory, EventConst, OOModelTestState, ReceivedEvent, TestEv
 import {TestStateHandlerMap, TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
 import {PolimerModel, PolimerStoreBuilder} from '../../src';
 import {StorePostEventProcessor, StorePreEventProcessor} from '../../src/eventProcessors';
+import {ObjectEventTransforms} from './eventTransforms';
 
 export interface PolimerTestApi {
     removeModel();
@@ -35,6 +36,16 @@ export class ReceivedEventsAsserts {
 
     public eventIs(callNumber: number, event: TestEvent): this {
         expect(this._receivedEvents[callNumber].receivedEvent).toBe(event);
+        return this;
+    }
+
+    public eventKeyIs(callNumber: number, key: string): this {
+        expect(this._receivedEvents[callNumber].receivedEvent.eventKey).toBe(key);
+        return this;
+    }
+
+    public eventTransformedKeyIs(callNumber: number, key: string): this {
+        expect(this._receivedEvents[callNumber].receivedEvent.transformedEventKey).toBe(key);
         return this;
     }
 
@@ -273,6 +284,7 @@ export class PolimerTestApiBuilder {
     private _useHandlerObject: boolean;
     private _useHandlerModel: boolean;
     private _handlerModelAutoWireUp: boolean;
+    private _useEventTransformModel: boolean;
 
     public static create(): PolimerTestApiBuilder {
         return new PolimerTestApiBuilder();
@@ -291,6 +303,11 @@ export class PolimerTestApiBuilder {
     public withStateHandlerModel(autoWireUp = false) {
         this._useHandlerModel = true;
         this._handlerModelAutoWireUp = autoWireUp;
+        return this;
+    }
+
+    public withEventTransformModel() {
+        this._useEventTransformModel = true;
         return this;
     }
 
@@ -317,6 +334,9 @@ export class PolimerTestApiBuilder {
             if (!this._handlerModelAutoWireUp) {
                 testStateHandlerModel.initialise();
             }
+        }
+        if (this._useEventTransformModel) {
+            builder.withEventStreamsOn(new ObjectEventTransforms());
         }
         builder
             .withPreEventProcessor(testEventProcessors.preEventProcessor)

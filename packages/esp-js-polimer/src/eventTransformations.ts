@@ -4,7 +4,7 @@ import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, 
 /**
  * A decorator which can be used to declare an event transformation handler
  */
-export function eventTransformFor(eventType: string, observationStage = ObservationStage.committed) {
+export function eventTransformFor(eventType: string) {
     return function (target, name, descriptor) {
         Guard.stringIsNotEmpty(eventType, 'eventType passed to an observeStoreEvent decorator must not be \'\'');
         let metadata: EspMetadata  = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
@@ -12,7 +12,7 @@ export function eventTransformFor(eventType: string, observationStage = Observat
             name,
             eventType,
             DecoratorTypes.custom,
-            observationStage,
+            null,
             null
         );
         return descriptor;

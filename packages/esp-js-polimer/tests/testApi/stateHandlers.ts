@@ -82,6 +82,12 @@ export const TestStateHandlerMap: PolimerHandlerMap<TestState, TestStore> = {
         }
         processEvent(draft, ev, store, eventContext);
     },
+    [EventConst.event7]: (draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) => {
+        processEvent(draft, ev, store, eventContext);
+    },
+    [EventConst.event8]: (draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) => {
+        processEvent(draft, ev, store, eventContext);
+    },
 };
 
 export class TestStateObjectHandler {
@@ -120,6 +126,16 @@ export class TestStateObjectHandler {
     _event6Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
         processEvent(draft, ev, store, eventContext);
         this._router.publishEvent(store.modelId, EventConst.event5, <TestEvent>{ stateTakingAction: 'handlerObjectState' });
+    }
+
+    @observeEvent(EventConst.event7)
+    _event7Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
+        processEvent(draft, ev, store, eventContext);
+    }
+
+    @observeEvent(EventConst.event8)
+    _event8Handler(draft: TestState, ev: TestEvent, store: TestStore, eventContext: EventContext) {
+        processEvent(draft, ev, store, eventContext);
     }
 }
 
@@ -175,6 +191,18 @@ export class TestStateHandlerModel extends DisposableBase {
 
     @observeEvent(EventConst.event5, observeEventPredicate)
     _event5Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        processEvent(this._currentState, ev, model.getStore(), eventContext);
+        this._replaceState();
+    }
+
+    @observeEvent(EventConst.event7)
+    _event7Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        processEvent(this._currentState, ev, model.getStore(), eventContext);
+        this._replaceState();
+    }
+
+    @observeEvent(EventConst.event8)
+    _event8Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }

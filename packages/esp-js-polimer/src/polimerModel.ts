@@ -278,7 +278,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(metadataForFunction.map(m => this._observeEvent(m.eventType)));
+                const inputEventStream = Rx.Observable.merge(metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
@@ -306,11 +306,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _observeEvent = (eventType: string | string[]): Rx.Observable<InputEvent<TStore, any>> => {
+    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TStore, any>> => {
         return Rx.Observable.create((obs: Rx.Observer<any>) => {
                 const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
-                    .getAllEventsObservable(events, ObservationStage.final)
+                    .getAllEventsObservable(events, observationStage)
                     .filter(eventEnvelope => eventEnvelope.modelId === this._modelId)
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>) => {

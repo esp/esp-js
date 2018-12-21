@@ -30,6 +30,7 @@ export interface State {
 
 interface ConnectableComponentContext {
     router: Router;
+    modelId: string;
 }
 
 export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {}> extends React.Component<Props<TModel, TProps, TPublishProps, TOuterProps>, State> {
@@ -38,6 +39,7 @@ export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {
 
     static contextTypes = {
         router: PropTypes.instanceOf(Router).isRequired,
+        modelId: PropTypes.string
     };
 
     constructor(props: Props<TModel,  TProps, TPublishProps, TOuterProps>, context: ConnectableComponentContext) {
@@ -46,8 +48,8 @@ export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {
     }
 
     componentWillReceiveProps(nextProps: Props<TModel, TProps, TPublishProps, TOuterProps>, nextContext: ConnectableComponentContext) {
-        const modelId = nextProps.modelId;
-        const oldModelId = this.props.modelId;
+        const modelId = nextProps.modelId || nextContext.modelId;
+        const oldModelId = this._getModelId();
 
         if (modelId === oldModelId) {
             return;
@@ -61,11 +63,16 @@ export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {
     }
 
     componentDidMount() {
-        this._tryObserveModel(this.props.modelId);
+        this._tryObserveModel(this._getModelId());
     }
 
     componentWillUnmount() {
         this._tryDisposeModelSubscription();
+    }
+
+    private _getModelId(): string {
+        // props override context
+        return this.props.modelId || this.context.modelId;
     }
 
     private _tryObserveModel(modelId: string): void {
@@ -111,7 +118,7 @@ export class ConnectableComponent<TModel, TProps, TPublishProps, TOuterProps = {
 
         const distilledModel = this.props.modelSelector ? this.props.modelSelector(this.state.model, outerProps) : {};
         return {
-            modelId: this.props.modelId,
+            modelId: this._getModelId(),
             model: this.state.model,
             router: this.context.router,
             ...distilledModel,

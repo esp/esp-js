@@ -33,6 +33,7 @@ describe('Decorators', () => {
     let normalInvokeCount = 0;
     let normal2InvokeCount = 0;
     let committedInvokeCount = 0;
+    let finalInvokeCount = 0;
     let _model, _derivedModel1, _derivedModel2, _derivedModel3, _derivedModel4, _derivedModel5;
 
     class Model extends DisposableBase {
@@ -80,6 +81,11 @@ describe('Decorators', () => {
             committedInvokeCount++;
         }
 
+        @observeEvent('fooEvent', ObservationStage.final)
+        _fooEventAtFinal(event, context, model) {
+            finalInvokeCount++;
+        }
+
         @observeEvent('barEvent_1')
         _barEvent_1(event, context, model) {
             context.commit();
@@ -88,6 +94,7 @@ describe('Decorators', () => {
         @observeEvent('barEvent_1', ObservationStage.committed)
         @observeEvent('barEvent_2')
         @observeEvent('barEvent_3', ObservationStage.preview)
+        @observeEvent('barEvent_4', ObservationStage.final)
         _allBarEvents(event, context, model) {
             this.receivedBarEvents.push({event: event, stage: context.currentStage});
         }
@@ -265,7 +272,6 @@ describe('Decorators', () => {
         }
     }
 
-
     function getExpectedObserveEventsOnTwiceError(modelId) {
         return new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
     }
@@ -275,6 +281,7 @@ describe('Decorators', () => {
         normalInvokeCount = 0;
         normal2InvokeCount = 0;
         committedInvokeCount = 0;
+        finalInvokeCount = 0;
 
         _model = new Model('modelId', _router);
         _router.addModel('modelId', _model);
@@ -346,12 +353,13 @@ describe('Decorators', () => {
         expect(normalInvokeCount).toBe(1);
         expect(normal2InvokeCount).toBe(1);
         expect(committedInvokeCount).toBe(1);
+        expect(finalInvokeCount).toBe(1);
     });
 
     it('should observe events by event name and stage when using ObservationStage.all', () => {
         _model.observeEvents();
         _router.publishEvent('modelId', 'bazzEvent', 1);
-        expect(_model.receivedBazzEventsAtAll.length).toBe(3);
+        expect(_model.receivedBazzEventsAtAll.length).toBe(4);
 
         expect(_model.receivedBazzEventsAtAll[0].stage).toEqual(ObservationStage.preview);
         expect(_model.receivedBazzEventsAtAll[0].eventType).toEqual('bazzEvent');
@@ -364,6 +372,10 @@ describe('Decorators', () => {
         expect(_model.receivedBazzEventsAtAll[2].stage).toEqual(ObservationStage.committed);
         expect(_model.receivedBazzEventsAtAll[2].eventType).toEqual('bazzEvent');
         expect(_model.receivedBazzEventsAtAll[2].event).toEqual(1);
+
+        expect(_model.receivedBazzEventsAtAll[3].stage).toEqual(ObservationStage.final);
+        expect(_model.receivedBazzEventsAtAll[3].eventType).toEqual('bazzEvent');
+        expect(_model.receivedBazzEventsAtAll[3].event).toEqual(1);
     });
 
     it('should stop observing events when disposable disposed', () => {
@@ -396,12 +408,18 @@ describe('Decorators', () => {
         expect(_model.receivedBarEvents[2].event).toBe(3);
         expect(_model.receivedBarEvents[2].stage).toBe(ObservationStage.preview);
 
+        _router.publishEvent('modelId', 'barEvent_4', 4);
+        expect(_model.receivedBarEvents.length).toBe(4);
+        expect(_model.receivedBarEvents[3].event).toBe(4);
+        expect(_model.receivedBarEvents[3].stage).toBe(ObservationStage.final);
+
         _model.dispose();
         _router.publishEvent('modelId', 'barEvent_1', 1);
         _router.publishEvent('modelId', 'barEvent_2', 1);
         _router.publishEvent('modelId', 'barEvent_3', 1);
+        _router.publishEvent('modelId', 'barEvent_4', 1);
 
-        expect(_model.receivedBarEvents.length).toBe(3);
+        expect(_model.receivedBarEvents.length).toBe(4);
     });
 
     it('should observe base events', () => {

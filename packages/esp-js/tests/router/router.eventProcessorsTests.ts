@@ -32,17 +32,30 @@ describe('Router', () => {
             _model3: { },
             _model5: {
                 preProcessCount: number,
+                eventDispatchItems: {eventType:string, event: any, stage: esp.ObservationStage}[],
+                eventDispatchedItems: {eventType:string, event: any, stage: esp.ObservationStage}[],
                 postProcessCount: number,
                 eventsProcessed: string[],
                 preProcess: ()=> void;
+                eventDispatch: (eventType: string, event: any, observationStage: esp.ObservationStage) => void,
+                eventDispatched: (eventType: string, event: any, observationStage: esp.ObservationStage) => void,
                 postProcess: (eventsProcessed: string[])=> void;
             },
+            _model6: {},
             _testPassed = false,
             _modelsSentForPreProcessing = [],
+            _eventsSentToDispatch = [],
+            _eventsSentToDispatched = [],
             _modelsSentForPostProcessing = [],
             _options = {
                 preEventProcessor: (model) => {
                     _modelsSentForPreProcessing.push(model);
+                },
+                eventDispatchProcessor: (model: any, eventType: string, event: any, stage: esp.ObservationStage) => {
+                    _eventsSentToDispatch.push({model, eventType, event, stage});
+                },
+                eventDispatchedProcessor: (model: any, eventType: string, event: any, stage: esp.ObservationStage) => {
+                    _eventsSentToDispatched.push({model, eventType, event, stage});
                 },
                 postEventProcessor: (model, eventsProcessed) => {
                     _modelsSentForPostProcessing.push({model, eventsProcessed});
@@ -55,41 +68,91 @@ describe('Router', () => {
             _model3 = { };
             _model5 = {
                 preProcessCount : 0,
+                eventDispatchItems: [],
+                eventDispatchedItems: [],
                 postProcessCount : 0,
                 eventsProcessed: [],
                 preProcess() {
                     this.preProcessCount++;
+                },
+                eventDispatch(eventType: string, event: any, stage: esp.ObservationStage) {
+                    this.eventDispatchItems.push({eventType, event, stage});
+                },
+                eventDispatched(eventType: string, event: any, stage: esp.ObservationStage) {
+                    this.eventDispatchedItems.push({eventType, event, stage});
                 },
                 postProcess(eventsProcessed) {
                     this.postProcessCount++;
                     this.eventsProcessed = eventsProcessed;
                 }
             };
-            _testPassed = false;
+             _model6 = { };
+             _testPassed = false;
             _modelsSentForPreProcessing = [];
+            _eventsSentToDispatch = [];
+            _eventsSentToDispatched = [];
             _modelsSentForPostProcessing = [];
 
             _router.addModel('modelId1', _model1, _options);
             _router.addModel('modelId2', _model2, _options);
             _router.addModel('modelId3', _model3, _options);
             _router.addModel('modelId5', _model5);
+            _router.addModel('modelId6', _model6, _options);
 
             _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
                 _router.publishEvent('modelId3', 'Event1', 'theEvent');
                 _router.publishEvent('modelId2', 'Event1', 'theEvent');
                 _router.publishEvent('modelId1', 'Event1', 'theEvent');
             });
+
             _router.getEventObservable('modelId5', 'startEvent').subscribe(() => {
                 /* noop */
             });
+
+            _router.getEventObservable('modelId6', 'startEvent').subscribe(() => {
+                /* noop */
+            });
         });
+
+        function assertDispatchedItems(array: {eventType: string, event:any, stage:esp.ObservationStage}[]) {
+            expect(array.length).toBe(3);
+            expect(array[0].eventType).toEqual('startEvent');
+            expect(array[0].event).toEqual('theEvent');
+            expect(array[0].stage).toEqual(esp.ObservationStage.preview);
+            expect(array[1].eventType).toEqual('startEvent');
+            expect(array[1].event).toEqual('theEvent');
+            expect(array[1].stage).toEqual(esp.ObservationStage.normal);
+            expect(array[2].eventType).toEqual('startEvent');
+            expect(array[2].event).toEqual('theEvent');
+            expect(array[2].stage).toEqual(esp.ObservationStage.final);
+        }
 
         it('calls preProcess() if the model has this method before processing the first event', () => {
             _router.publishEvent('modelId5', 'startEvent', 'theEvent');
             expect(_model5.preProcessCount).toBe(1);
         });
 
-        it('calls postProcess() if the model has this method before processing the first event', () => {
+        it('calls eventDispatch() if the model has this method before each event is dispatched', () => {
+            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            assertDispatchedItems(_model5.eventDispatchItems);
+        });
+
+        it('calls eventDispatched() if the model has this method after each event is dispatched', () => {
+            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            assertDispatchedItems(_model5.eventDispatchedItems);
+        });
+
+        it('calls eventDispatchProcessor() if the the function exists on the options given at registration time', () => {
+            _router.publishEvent('modelId6', 'startEvent', 'theEvent');
+            assertDispatchedItems(_eventsSentToDispatch);
+        });
+
+        it('calls eventDispatchedProcessor() if the the function exists on the options given at registration time', () => {
+            _router.publishEvent('modelId6', 'startEvent', 'theEvent');
+            assertDispatchedItems(_eventsSentToDispatched);
+        });
+
+        it('calls postProcess() if the model has this method after processing the first event', () => {
             _router.publishEvent('modelId5', 'startEvent', 'theEvent');
             expect(_model5.postProcessCount).toBe(1);
         });

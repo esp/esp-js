@@ -58,7 +58,7 @@ describe('Router', () => {
 
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
             _router.publishEvent('modelId2', 'Event1', 'theEvent');
-            expect(_receivedEvents.length).toBe(4);
+            expect(_receivedEvents.length).toBe(6);
 
             expect(_receivedEvents[0].modelId).toEqual('modelId1');
             expect(_receivedEvents[0].observationStage).toEqual(esp.ObservationStage.preview);
@@ -68,13 +68,21 @@ describe('Router', () => {
             expect(_receivedEvents[1].observationStage).toEqual(esp.ObservationStage.normal);
             expect(_receivedEvents[1].model).toBe(_model1);
 
-            expect(_receivedEvents[2].modelId).toEqual('modelId2');
-            expect(_receivedEvents[2].observationStage).toEqual(esp.ObservationStage.preview);
-            expect(_receivedEvents[2].model).toBe(_model2);
+            expect(_receivedEvents[2].modelId).toEqual('modelId1');
+            expect(_receivedEvents[2].observationStage).toEqual(esp.ObservationStage.final);
+            expect(_receivedEvents[2].model).toBe(_model1);
 
             expect(_receivedEvents[3].modelId).toEqual('modelId2');
-            expect(_receivedEvents[3].observationStage).toEqual(esp.ObservationStage.normal);
+            expect(_receivedEvents[3].observationStage).toEqual(esp.ObservationStage.preview);
             expect(_receivedEvents[3].model).toBe(_model2);
+
+            expect(_receivedEvents[4].modelId).toEqual('modelId2');
+            expect(_receivedEvents[4].observationStage).toEqual(esp.ObservationStage.normal);
+            expect(_receivedEvents[4].model).toBe(_model2);
+
+            expect(_receivedEvents[5].modelId).toEqual('modelId2');
+            expect(_receivedEvents[5].observationStage).toEqual(esp.ObservationStage.final);
+            expect(_receivedEvents[5].model).toBe(_model2);
         });
 
         it('it filters by events', () => {

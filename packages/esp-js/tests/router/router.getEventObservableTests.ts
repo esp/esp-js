@@ -31,14 +31,14 @@ describe('Router', () => {
     describe('.getEventObservable()', () => {
 
         it('throws on subscribe if arguments incorrect', () => {
-            expect(() => {_router.getEventObservable({}, 'foo').subscribe(()=>{}); }).toThrow(new Error('The modelId argument should be a string'));
-            expect(() => {_router.getEventObservable(undefined, 'foo').subscribe(()=>{}); }).toThrow();
-            expect(() => {_router.getEventObservable('foo', undefined).subscribe(()=>{}); }).toThrow();
+            expect(() => {_router.getEventObservable({}, 'foo').subscribe(() => {}); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_router.getEventObservable(undefined, 'foo').subscribe(() => {}); }).toThrow();
+            expect(() => {_router.getEventObservable('foo', undefined).subscribe(() => {}); }).toThrow();
         });
 
         it('throws on subscribe if unknown event stage passed', () => {
-            expect(() => {_router.getEventObservable('foo', 'eventType', 'unknownStage').subscribe(()=>{}); }).toThrow(new Error('The stage argument value of [unknownStage] is incorrect. It should be ObservationStage.preview, ObservationStage.normal, ObservationStage.committed or ObservationStage.all.'));
-            expect(() => {_router.getEventObservable('foo', 'eventType', {}).subscribe(()=>{}); }).toThrow(new Error('The stage argument should be a string'));
+            expect(() => {_router.getEventObservable('foo', 'eventType', 'unknownStage').subscribe(() => {}); }).toThrow(new Error('The stage argument value of [unknownStage] is incorrect. It should be ObservationStage.preview, ObservationStage.normal, ObservationStage.committed or ObservationStage.all.'));
+            expect(() => {_router.getEventObservable('foo', 'eventType', {}).subscribe(() => {}); }).toThrow(new Error('The stage argument should be a string'));
         });
 
         it('dispatches events to processors by modelid', () => {
@@ -74,6 +74,7 @@ describe('Router', () => {
             let receivedAtPreview,
                 receivedAtNormal,
                 receivedAtCommitted,
+                receivedAtFinal,
                 eventContextActions;
 
             function publishEvent() {
@@ -108,16 +109,36 @@ describe('Router', () => {
                     expect(receivedAtNormal).toBe(true);
                 });
 
-                it('doesn\'t propagate uncommitted events to the committed stage ', () => {
+                it('doesn\'t propagate uncommitted events to the committed stage', () => {
                     publishEvent();
                     expect(receivedAtCommitted).toBe(false);
                 });
 
-                it('propagates committed events to the committed stage ', () => {
+                it('propagates committed events to the committed stage', () => {
                     eventContextActions.shouldCommit = true;
                     eventContextActions.commitStage = esp.ObservationStage.normal;
                     publishEvent();
                     expect(receivedAtCommitted).toBe(true);
+                });
+
+                it('delivers events to final observers when committed', () => {
+                    eventContextActions.shouldCommit = true;
+                    eventContextActions.commitStage = esp.ObservationStage.normal;
+                    publishEvent();
+                    expect(receivedAtFinal).toBe(true);
+                });
+
+                it('delivers events to final observers even when not committed', () => {
+                    eventContextActions.shouldCommit = false;
+                    publishEvent();
+                    expect(receivedAtFinal).toBe(true);
+                });
+
+                it('doesn\'t propagate canceled events to the final stage', () => {
+                    eventContextActions.shouldCancel = true;
+                    eventContextActions.cancelStage = esp.ObservationStage.preview;
+                    publishEvent();
+                    expect(receivedAtFinal).toBe(false);
                 });
 
                 it('throws if event committed at the preview stage', () => {
@@ -146,6 +167,14 @@ describe('Router', () => {
                     }).toThrow();
                 });
 
+                it('throws if event canceled at the final stage', () => {
+                    eventContextActions.shouldCancel = true;
+                    eventContextActions.cancelStage = esp.ObservationStage.final;
+                    expect(() => {
+                        publishEvent();
+                    }).toThrow();
+                });
+
                 it('throws if event committed at the committed stage', () => {
                     eventContextActions.shouldCommit = true;
                     eventContextActions.commitStage = esp.ObservationStage.committed;
@@ -157,12 +186,21 @@ describe('Router', () => {
                         publishEvent();
                     }).toThrow();
                 });
+
+                it('throws if event committed at the final stage', () => {
+                    eventContextActions.shouldCommit = true;
+                    eventContextActions.commitStage = esp.ObservationStage.final;
+                    expect(() => {
+                        publishEvent();
+                    }).toThrow();
+                });
             }
 
             beforeEach(() => {
                 receivedAtPreview = false;
                 receivedAtNormal = false;
                 receivedAtCommitted = false;
+                receivedAtFinal = false;
                 eventContextActions = {
                     shouldCommit: false,
                     cancelStage: '',
@@ -189,6 +227,11 @@ describe('Router', () => {
                             receivedAtCommitted = true;
                             actOnEventContext(context, esp.ObservationStage.committed);
                         });
+                    _router.getEventObservable('modelId1', 'Event1', esp.ObservationStage.final)
+                        .subscribe(({event, context}) => {
+                            receivedAtFinal = true;
+                            actOnEventContext(context, esp.ObservationStage.final);
+                        });
                 });
 
                 runTestSet();
@@ -206,6 +249,9 @@ describe('Router', () => {
                             }
                             if (ObservationStage.isCommitted(eventEnvelope.observationStage)) {
                                 receivedAtCommitted = true;
+                            }
+                            if (ObservationStage.isFinal(eventEnvelope.observationStage)) {
+                                receivedAtFinal = true;
                             }
                             actOnEventContext(eventEnvelope.context, eventEnvelope.observationStage);
                         });

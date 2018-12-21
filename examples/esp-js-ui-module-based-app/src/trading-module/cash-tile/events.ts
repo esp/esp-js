@@ -42,3 +42,10 @@ export namespace ReferenceDataEvents {
     }
     export const currencyPairsUpdated = 'currencyPairsUpdated';
 }
+
+export namespace DateSelectorEvents {
+    export interface TenorDateChanged {
+        tenor: string;
+    }
+    export const tenorDateChanged = 'tenorDateChanged';
+}

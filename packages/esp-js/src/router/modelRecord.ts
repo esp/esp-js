@@ -16,20 +16,20 @@
  */
  // notice_end
 
-import {PreEventProcessor, PostEventProcessor} from './eventProcessors';
-import {ModelOptions} from './modelOptions';
+import {PreEventProcessor} from './eventProcessors';
+import {EventDispatchProcessor, EventProcessors, PostEventProcessor} from './eventProcessors';
 import {Observable} from '../reactive';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {AutoConnectedObservable} from '../reactive/autoConnectedObservable';
 import {Guard} from '../system';
 import {ObservationStage} from './index';
-import {ModelObserverMapper} from './modelObserverMapper';
 
 export interface EventStreamsRegistration {
     all: AutoConnectedObservable<EventEnvelope<any, any>>;
     preview: AutoConnectedObservable<EventEnvelope<any, any>>;
     normal: AutoConnectedObservable<EventEnvelope<any, any>>;
     committed: AutoConnectedObservable<EventEnvelope<any, any>>;
+    final: AutoConnectedObservable<EventEnvelope<any, any>>;
 }
 
 interface InternalEventStreamsRegistration {
@@ -44,20 +44,18 @@ export class ModelRecord {
     private _hasChanges: boolean;
     private _wasRemoved: boolean;
     private _preEventProcessor: PreEventProcessor;
+    private _eventDispatchProcessor: EventDispatchProcessor;
+    private _eventDispatchedProcessor: EventDispatchProcessor;
     private _postEventProcessor: PostEventProcessor;
-    private _modelObservableMapper: ModelObserverMapper;
     private _eventStreams: Map<string, InternalEventStreamsRegistration>;
 
-    constructor(modelId: string, model: any, modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>, options?: ModelOptions) {
+    constructor(modelId: string, model: any, modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>, options?: EventProcessors) {
         this._modelId = modelId;
         this._eventQueue = [];
         this._hasChanges = false;
         this._wasRemoved = false;
         this._eventStreams = new Map();
         this._modelObservationStream = modelObservationStream;
-        this._modelObservableMapper = options && options.modelObservableMapper
-            ? options.modelObservableMapper
-            : (m) => m;
         if (model) {
             this.setModel(model, options);
         }
@@ -89,11 +87,14 @@ export class ModelRecord {
     public get preEventProcessor(): PreEventProcessor {
         return this._preEventProcessor;
     }
+    public get eventDispatchProcessor(): EventDispatchProcessor {
+        return this._eventDispatchProcessor;
+    }
+    public get eventDispatchedProcessor(): EventDispatchProcessor {
+        return this._eventDispatchedProcessor;
+    }
     public get postEventProcessor(): PostEventProcessor {
         return this._postEventProcessor;
-    }
-    public get modelObservableMapper(): ModelObserverMapper {
-        return this._modelObservableMapper;
     }
     public getOrCreateEventStreamsRegistration(eventType: string, dispatchObservable: Observable<EventEnvelope<any, any>>): EventStreamsRegistration {
         let eventStreamsRegistration = this._eventStreams.get(eventType);
@@ -115,6 +116,9 @@ export class ModelRecord {
                     committed: eventStream
                         .filter(envelope => ObservationStage.isCommitted(envelope.observationStage))
                         .share(false),
+                    final: eventStream
+                        .filter(envelope => ObservationStage.isFinal(envelope.observationStage))
+                        .share(false),
                     all: eventStream
                         .share(false)
                 }
@@ -131,12 +135,14 @@ export class ModelRecord {
     public get modelObservationStream(): Observable<any>  {
         return this._modelObservationStream;
     }
-    public setModel(model: any, options?: ModelOptions) {
+    public setModel(model: any, eventProcessors?: EventProcessors) {
         Guard.isFalsey(this._model, 'Model already set');
         this._model = model;
         if (this._model) {
-            this._preEventProcessor = this._createEventProcessor('preEventProcessor', 'preProcess', options ? options.preEventProcessor : undefined);
-            this._postEventProcessor = this._createEventProcessor('postEventProcessor', 'postProcess', options ? options.postEventProcessor : undefined);
+            this._preEventProcessor = this._createEventProcessor('preProcess', 'preEventProcessor', eventProcessors);
+            this._eventDispatchProcessor = this._createEventDispatchProcessor('eventDispatch', 'eventDispatchProcessor', eventProcessors);
+            this._eventDispatchedProcessor = this._createEventDispatchProcessor('eventDispatched', 'eventDispatchedProcessor', eventProcessors);
+            this._postEventProcessor = this._createEventProcessor('postProcess', 'postEventProcessor', eventProcessors);
         }
     }
     public dispose() {
@@ -149,29 +155,50 @@ export class ModelRecord {
             streamsRegistration.streams.all.disconnect();
         });
     }
-    _createEventProcessor(name, modelProcessMethod, externalProcessor):  (model: any, eventsProcessed?: string[]) => void {
-        let externalProcessor1 = (model, eventsProcessed) => { /*noop */ };
-        if(typeof externalProcessor !== 'undefined') {
-            if(typeof externalProcessor === 'function') {
-                externalProcessor1 = (model, eventsProcessed) => {
-                    externalProcessor(model, eventsProcessed);
-                };
-            } else if (typeof externalProcessor.process === 'function') {
-                externalProcessor1 = (model, eventsProcessed) => {
-                    externalProcessor.process(model, eventsProcessed);
-                };
-            } else {
-                throw new Error(name + ' on the options parameter is neither a function nor an object with a process() method');
-            }
+    /**
+     * Creates an event processor which can be given as externalProcessor, or exist on the model as modelProcessFunctionName (or both).
+     * If no such process exists a no-op function is returned
+     */
+    _createEventProcessor(modelProcessFunctionName: string, optionsProcessFunctionName: string, eventProcessors: EventProcessors):  (model: any, eventsProcessed?: string[]) => void {
+        let processorFunctionOnOptions: (model: any, eventsProcessed?: string[]) => void;
+        if (eventProcessors && eventProcessors[optionsProcessFunctionName]) {
+            Guard.isFunction(eventProcessors[optionsProcessFunctionName], `${optionsProcessFunctionName} on the model options exists but is not a function`);
+            processorFunctionOnOptions = eventProcessors[optionsProcessFunctionName];
+        } else {
+            processorFunctionOnOptions = (model, eventsProcessed) => { /*noop */ };
         }
         let modelProcessor = (model, eventsProcessed) => {
-            if(model[modelProcessMethod] && (typeof model[modelProcessMethod] === 'function')) {
-                model[modelProcessMethod](eventsProcessed);
+            // dispatch to the model in a late bound manor
+            if(model[modelProcessFunctionName] && (typeof model[modelProcessFunctionName] === 'function')) {
+                model[modelProcessFunctionName](eventsProcessed);
             }
         };
         return (model, eventsProcessed) => {
-            externalProcessor1(model, eventsProcessed);
+            processorFunctionOnOptions(model, eventsProcessed);
             modelProcessor(model, eventsProcessed);
+        };
+    }
+    /**
+     * Creates an event dispatch processor which can exist on the given options as `optionsEventDispatchFunctionName` and/or on the model as `modelEventDispatchFunctionName`.
+     * If no such process exists a no-op function is returned
+     */
+    _createEventDispatchProcessor<TDelegate>(modelEventDispatchFunctionName: string, optionsEventDispatchFunctionName: string, options: EventProcessors):  EventDispatchProcessor {
+        let processorFunctionOnOptions: EventDispatchProcessor;
+        if (options && options[optionsEventDispatchFunctionName]) {
+            Guard.isFunction(options[optionsEventDispatchFunctionName], `${optionsEventDispatchFunctionName} on the model options exists but is not a function`);
+            processorFunctionOnOptions = options[optionsEventDispatchFunctionName];
+        } else {
+            processorFunctionOnOptions = (model: any, eventType: string, event: any, observationStage: ObservationStage) => { /*noop */ };
+        }
+        let modelProcessor = (model, eventType: string, event: any, observationStage: ObservationStage) => {
+            // dispatch to the model in a late bound manor
+            if(model[modelEventDispatchFunctionName] && (typeof model[modelEventDispatchFunctionName] === 'function')) {
+                model[modelEventDispatchFunctionName](eventType, event, observationStage);
+            }
+        };
+        return (model: any, eventType: string, event: any, observationStage: ObservationStage) => {
+            processorFunctionOnOptions(model, eventType, event, observationStage);
+            modelProcessor(model, eventType, event, observationStage);
         };
     }
 }

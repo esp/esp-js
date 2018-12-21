@@ -4,7 +4,7 @@ import { Router, EventEnvelope } from 'esp-js';
 import {Store} from './store';
 
 const devToolsExtension = window['devToolsExtension']; //tslint:disable-line
-const withDevTools = typeof window !== 'undefined' && devToolsExtension != null;
+const _withDevTools = typeof window !== 'undefined' && devToolsExtension != null;
 
 type Update = {
     type: string;
@@ -43,7 +43,7 @@ const onDevToolsMessage = <T extends Store>(router: Router, modelId: string, sto
     };
 
 export const connect = <T extends Store>(router: Router, modelId: string, storeContext: PolimerModel<T>, instanceId: string) => {
-    if (withDevTools) {
+    if (_withDevTools) {
         const options: any = {name: instanceId, instanceId};
         const instance = devToolsExtension.connect(options);
 
@@ -51,8 +51,8 @@ export const connect = <T extends Store>(router: Router, modelId: string, storeC
     }
 };
 
-export const sendUpdateToDevTools = (event: EventEnvelope<any, any> | string, state: any, instanceId: string) => {
-    if (withDevTools) {
+export const sendUpdateToDevTools = (event: {eventType:string, event:any} | string, state: any, instanceId: string) => {
+    if (_withDevTools) {
         const options = {name: instanceId};
 
         if (typeof event === 'string') {

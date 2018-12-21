@@ -21,18 +21,20 @@ import {ModelChangedEvent} from './modelChangedEvent';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, logging, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
-import {EspDecoratorUtil} from '../decorators';
+import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
 import {CompositeDiagnosticMonitor} from './devtools';
-import {ModelOptions} from './modelOptions';
+import {EventProcessors} from './eventProcessors';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
-import {DecoratorTypes} from '../decorators/espDecoratorMetadata';
+import {DecoratorTypes} from '../decorators';
 
 let _log = logging.Logger.create('Router');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
+
+const RUN_ACTION_EVENT_NAME = '__runAction';
 
 export class Router extends DisposableBase {
     private _models: Map<string, ModelRecord>;
@@ -62,12 +64,12 @@ export class Router extends DisposableBase {
         return this._state.currentStatus;
     }
 
-    public addModel(modelId: string, model: any, options?: ModelOptions) {
+    public addModel(modelId: string, model: any, eventProcessors?: EventProcessors) {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isDefined(model, 'The model argument must be defined');
-        if (options) {
-            Guard.isObject(options, 'The options argument should be an object');
+        if (eventProcessors) {
+            Guard.isObject(eventProcessors, `The eventProcessors argument provided with the model (of id ${modelId}) should be an object`);
         }
         let modelRecord = this._models.get(modelId);
         if (modelRecord) {
@@ -75,7 +77,7 @@ export class Router extends DisposableBase {
             // If there is a record, we just ensure it's model isn't there yet.
             Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
         }
-        this._getOrCreateModelRecord(modelId, model, options);
+        this._getOrCreateModelRecord(modelId, model, eventProcessors);
         this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.Model});
         this._diagnosticMonitor.addModel(modelId);
     }
@@ -146,7 +148,7 @@ export class Router extends DisposableBase {
         if (!modelRecord) {
             throw new Error('Can not run action as model with id [' + modelId + '] not registered');
         } else {
-            modelRecord.eventQueue.push({eventType: '__runAction', action: action});
+            modelRecord.eventQueue.push({eventType: RUN_ACTION_EVENT_NAME, action: action});
             try {
                 this._purgeEventQueues();
             } catch (err) {
@@ -175,6 +177,8 @@ export class Router extends DisposableBase {
                     return eventStreamDetails.normal.subscribe(o);
                 case ObservationStage.committed:
                     return eventStreamDetails.committed.subscribe(o);
+                case ObservationStage.final:
+                    return eventStreamDetails.final.subscribe(o);
                 case ObservationStage.all:
                     return eventStreamDetails.all.subscribe(o);
                 default:
@@ -258,7 +262,7 @@ export class Router extends DisposableBase {
             Guard.isString(modelId, 'The modelId should be a string');
             let modelRecord = this._getOrCreateModelRecord(modelId);
             return modelRecord.modelObservationStream
-                .map(envelope => modelRecord.modelObservableMapper(envelope.model))
+                .map(envelope => envelope.model)
                 .subscribe(o);
         });
     }
@@ -318,18 +322,18 @@ export class Router extends DisposableBase {
         return this._state.currentModelId === modelId;
     }
 
-    private _getOrCreateModelRecord(modelId: string, model?: any, options?: ModelOptions): ModelRecord {
+    private _getOrCreateModelRecord(modelId: string, model?: any, eventProcessors?: EventProcessors): ModelRecord {
         let modelRecord: ModelRecord = this._models.get(modelId);
         if (modelRecord) {
             if (!modelRecord.hasModel) {
-                modelRecord.setModel(model, options);
+                modelRecord.setModel(model, eventProcessors);
             }
         } else {
             let modelObservationStream =  this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
                 .filter(envelope => envelope.dispatchType === DispatchType.Model && envelope.modelId === modelId)
                 .share(true);
-            modelRecord = new ModelRecord(modelId, model, modelObservationStream, options);
+            modelRecord = new ModelRecord(modelId, model, modelObservationStream, eventProcessors);
             this._models.set(modelId, modelRecord);
         }
         return modelRecord;
@@ -376,15 +380,18 @@ export class Router extends DisposableBase {
                     this._state.moveToEventDispatch();
                     this._diagnosticMonitor.dispatchingEvents();
                     while (hasEvents) {
-                        if (eventRecord.eventType === '__runAction') {
+                        if (eventRecord.eventType === RUN_ACTION_EVENT_NAME) {
                             this._diagnosticMonitor.dispatchingAction();
+                            modelRecord.eventDispatchProcessor(modelRecord.model, null, RUN_ACTION_EVENT_NAME);
                             eventRecord.action(modelRecord.model);
+                            modelRecord.eventDispatchedProcessor(modelRecord.model, null, RUN_ACTION_EVENT_NAME);
                         } else {
                             this._state.eventsProcessed.push(eventRecord.eventType);
                             this._dispatchEventToEventProcessors(
                                 modelRecord,
                                 eventRecord.event,
-                                eventRecord.eventType);
+                                eventRecord.eventType
+                            );
                         }
                         if (modelRecord.wasRemoved) {
                             break;
@@ -429,17 +436,27 @@ export class Router extends DisposableBase {
             throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
         }
         if (!eventContext.isCanceled) {
+            let wasCommittedAtNormalStage;
             eventContext.updateCurrentState(ObservationStage.normal);
             this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
-            if (eventContext.isCommitted) {
+            wasCommittedAtNormalStage = eventContext.isCommitted;
+            if (wasCommittedAtNormalStage) {
                 eventContext.updateCurrentState(ObservationStage.committed);
                 this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.committed);
                 if (eventContext.isCanceled) {
                     throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
                 }
+            }
+            eventContext.updateCurrentState(ObservationStage.final);
+            this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.final);
+            if (eventContext.isCanceled) {
+                throw new Error('You can\'t cancel an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
+            }
+            if (!wasCommittedAtNormalStage && eventContext.isCommitted) {
+                throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
         }
     }
@@ -459,6 +476,7 @@ export class Router extends DisposableBase {
 
     private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
         this._diagnosticMonitor.dispatchingEvent(eventType, stage);
+        modelRecord.eventDispatchProcessor(modelRecord.model, eventType, event, stage);
         this._dispatchSubject.onNext({
             event: event,
             eventType: eventType,
@@ -468,6 +486,7 @@ export class Router extends DisposableBase {
             observationStage: stage,
             dispatchType: DispatchType.Event
         });
+        modelRecord.eventDispatchedProcessor(modelRecord.model, eventType, event, stage);
     }
 
     private _dispatchModelUpdates() {
@@ -511,7 +530,8 @@ export class Router extends DisposableBase {
             compositeDisposable.add(this.getEventObservable(modelId, details.eventType, details.observationStage).subscribe((eventEnvelope) => {
                 // note if the code is uglifyied then details.functionName isn't going to mean much.
                 // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
-                if (!details.predicate || details.predicate(object, eventEnvelope.event)) {
+                let predicate = <ObserveEventPredicate>details.predicate;
+                if (!predicate || predicate(object, eventEnvelope.event, eventEnvelope.context)) {
                     this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
                     if (details.decoratorType === DecoratorTypes.observeEvent) {
                         object[details.functionName](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);

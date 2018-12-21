@@ -29,4 +29,4 @@ export {Status} from './status';
 export {Consts} from './const';
 export {ModelChangedEvent} from './modelChangedEvent';
 export {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
-export {EventProcessors} from './eventProcessors';
+export {EventProcessors, PostEventProcessor, PreEventProcessor} from './eventProcessors';

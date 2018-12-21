@@ -133,6 +133,14 @@ export class OOModelTestStateAsserts extends StateAsserts {
         expect(this._testStateHandlerModel.isDisposed).toEqual(isDisposed);
         return this;
     }
+    public eventHandlersReceivedStateOnStoreMatchesLocalState(): this {
+        expect(this._ooModelTestStateGetter().eventHandlersReceivedStateOnStoreMatchesLocalState).toEqual(true);
+        return this;
+    }
+    public modelsStateMatchesStoresState(): this {
+        expect(this._testStateHandlerModel.currentState).toBe(this._ooModelTestStateGetter());
+        return this;
+    }
 }
 
 export class Actor {
@@ -224,7 +232,6 @@ export class Asserts {
     private _handlerMapState: StateAsserts;
     private _handlerObjectState: StateAsserts;
     private _handlerModelState: OOModelTestStateAsserts;
-
     constructor(private _router: Router, private _model: PolimerModel<TestStore>, private _testEventProcessors: TestEventProcessors, testStateHandlerModel: TestStateHandlerModel) {
         this._handlerMapState = new StateAsserts(() => this._model.getStore().handlerMapState);
         this._handlerObjectState = new StateAsserts(() => this._model.getStore().handlerObjectState);

@@ -150,15 +150,27 @@ export class TestStateHandlerModel extends DisposableBase {
     }
 
     public preProcess() {
-        this._currentState.preProcessInvokeCount++;
-    }
+        let preProcessInvokeCount = this._currentState.preProcessInvokeCount + 1;
+        this._currentState = {
+            ...this._currentState,
+            preProcessInvokeCount
+        };
+    };
 
     public postProcess() {
-        this._currentState.postProcessInvokeCount++;
+        let postProcessInvokeCount = this._currentState.postProcessInvokeCount + 1;
+        this._currentState = {
+            ...this._currentState,
+            postProcessInvokeCount
+        };
     }
 
     public initialise(): void {
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
+    }
+
+    public get currentState(): OOModelTestState {
+        return this._currentState;
     }
 
     public dispose() {
@@ -170,6 +182,7 @@ export class TestStateHandlerModel extends DisposableBase {
     @observeEvent(EventConst.event1, ObservationStage.committed)
     @observeEvent(EventConst.event1, ObservationStage.final)
     _event1Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        this._ensureStoreStateMatchesLocal(model);
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }
@@ -179,6 +192,7 @@ export class TestStateHandlerModel extends DisposableBase {
     @observeEvent(EventConst.event2, ObservationStage.committed)
     @observeEvent(EventConst.event2, ObservationStage.final)
     _event2Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        this._ensureStoreStateMatchesLocal(model);
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }
@@ -186,26 +200,38 @@ export class TestStateHandlerModel extends DisposableBase {
     @observeEvent(EventConst.event3)
     @observeEvent(EventConst.event4)
     _event3And4Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        this._ensureStoreStateMatchesLocal(model);
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }
 
     @observeEvent(EventConst.event5, observeEventPredicate)
     _event5Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        this._ensureStoreStateMatchesLocal(model);
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }
 
     @observeEvent(EventConst.event7)
     _event7Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        this._ensureStoreStateMatchesLocal(model);
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
     }
 
     @observeEvent(EventConst.event8)
     _event8Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestStore>) {
+        this._ensureStoreStateMatchesLocal(model);
         processEvent(this._currentState, ev, model.getStore(), eventContext);
         this._replaceState();
+    }
+
+    private _ensureStoreStateMatchesLocal(model: PolimerModel<TestStore>) {
+        let localStateMatchesStoresCopy = this._currentState === model.getStore().handlerModelState;
+        this._currentState = {
+            ...this._currentState,
+            eventHandlersReceivedStateOnStoreMatchesLocalState: localStateMatchesStoresCopy
+        };
     }
 
     private _replaceState() {

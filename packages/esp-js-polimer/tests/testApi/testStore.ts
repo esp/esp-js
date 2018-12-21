@@ -52,6 +52,7 @@ export interface TestState {
 export interface OOModelTestState extends TestState {
     preProcessInvokeCount: number;
     postProcessInvokeCount: number;
+    eventHandlersReceivedStateOnStoreMatchesLocalState: boolean;
 }
 
 export interface TestStore extends Store {

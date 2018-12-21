@@ -26,8 +26,10 @@ export {
     DispatchType,
     EventEnvelope,
     ModelEnvelope,
+    Status,
     EventProcessors,
-    Status
+    PreEventProcessor,
+    PostEventProcessor,
 } from './router';
 export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
 export { observeEvent, observeModelChangedEvent, observeEventEnvelope } from './decorators/observeEvent';

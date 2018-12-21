@@ -44,8 +44,8 @@ export namespace ReferenceDataEvents {
 }
 
 export namespace DateSelectorEvents {
-    export interface UserEnteredDateEvent {
-        dateInput: string;
+    export interface TenorDateChanged {
+        tenor: string;
     }
-    export const userEnteredDate = 'userEnteredDate';
+    export const tenorDateChanged = 'tenorDateChanged';
 }

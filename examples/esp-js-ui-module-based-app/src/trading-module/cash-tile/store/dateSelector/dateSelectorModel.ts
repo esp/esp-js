@@ -2,8 +2,8 @@
 import {Logger} from 'esp-js-ui';
 import {DateSelectorState} from './dateSelectorState';
 import {DisposableBase, observeEvent, Router} from 'esp-js';
-import {DateSelectorEvents} from '../../events';
 import {StateHandlerModel} from 'esp-js-polimer/src/stateHandlerModel';
+import {DateSelectorEvents} from '../../events';
 
 const _log = Logger.create('CashTile-DateSelectorModel');
 
@@ -14,12 +14,18 @@ export class DateSelectorModel extends DisposableBase implements StateHandlerMod
         super();
     }
 
-    @observeEvent(DateSelectorEvents.userEnteredDate)
-    _onUserEnteredDate(event: DateSelectorEvents.UserEnteredDateEvent) {
+    @observeEvent(DateSelectorEvents.tenorDateChanged)
+    _onTenorDateChanged(event: DateSelectorEvents.TenorDateChanged) {
+        let resolvedDate: Date;
+        if (event.tenor === '1m') {
+            resolvedDate = new Date();
+            resolvedDate.setDate(resolvedDate.getDate()+7);
+        }
         this._currentState = {
             ...this._currentState,
-            dateInput: event.dateInput,
-            resolvedDate: new  Date(event.dateInput)
+            dateInput: event.tenor,
+            resolvedDate: resolvedDate,
+            resolvedDateString: resolvedDate ? resolvedDate.toDateString() : ''
         };
     }
 

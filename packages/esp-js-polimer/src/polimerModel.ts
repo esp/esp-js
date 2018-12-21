@@ -22,7 +22,7 @@ export interface PolimerModelSetup<TStore extends Store> {
 }
 
 export interface StateHandlerModelMetadata {
-    model: any;
+    model: StateHandlerModel<any>;
     autoWireUpObservers: boolean;
 }
 
@@ -90,9 +90,10 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 this._store = newStore;
             }
         }
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata) => {
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if(metadata.model.preProcess) {
-                metadata.model.preProcess();
+                metadata.model.preProcess(metadata.model);
+                this._store[stateName] = metadata.model.getState();
             }
         });
     }
@@ -105,9 +106,10 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 this._store = newStore;
             }
         }
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata) => {
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if(metadata.model.postProcess) {
-                metadata.model.postProcess(eventsProcessed);
+                metadata.model.postProcess(metadata.model, eventsProcessed);
+                this._store[stateName] = metadata.model.getState();
             }
         });
     }
@@ -121,10 +123,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         if (handlers) {
             handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TStore>) => {
                 // Given an event processed by the model in question has just finished, we replace the relevant state on the store for this model
-                let afterState = modelHandlerMetadata.model.getState();
-                let beforeState = this._store[modelHandlerMetadata.stateName];
-                logger.verbose(`State [${modelHandlerMetadata.stateName}], eventType [${eventType}]: was processed by a model. State will be replaced. Before and after state logged to console .`, beforeState, afterState);
-                this._store[modelHandlerMetadata.stateName] = afterState;
+                this._store[modelHandlerMetadata.stateName] = modelHandlerMetadata.model.getState();
             });
             sendUpdateToDevTools({eventType: eventType, event: event}, this._store, this._modelId);
         }

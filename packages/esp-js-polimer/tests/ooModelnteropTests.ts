@@ -11,10 +11,22 @@ describe('OO models interop', () => {
             api.asserts.handlerModelState.preProcessInvokeCountIs(1);
         });
 
+        it('preProcess updates the store for the state in question', () => {
+            // the preProcess hook will mutate the state (increments a count), that latest state should then be on
+            // the store by the time the event handler executes.
+            api.actor.publishEvent(EventConst.event7);
+            api.asserts.handlerModelState.eventHandlersReceivedStateOnStoreMatchesLocalState();
+        });
+
         it('postProcess is called', () => {
             api.asserts.handlerModelState.postProcessInvokeCountIs(0);
             api.actor.publishEvent(EventConst.event1);
             api.asserts.handlerModelState.postProcessInvokeCountIs(1);
+        });
+
+        it('postProcess updates the store for the state in question', () => {
+            api.actor.publishEvent(EventConst.event1);
+            api.asserts.handlerModelState.modelsStateMatchesStoresState();
         });
 
         it('disposes the event subscriptions when the parent model is disposed', () => {

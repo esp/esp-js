@@ -14,7 +14,7 @@ interface ViewMappings {
 PolimerStoreBuilder.prototype.withViewBindings = function (view: any, displayContext: string = DEFAULT_VIEW_KEY): PolimerStoreBuilder<any> {
     let builder = this;
     // store some metadata on the builder which we'll use later to tack onto the model
-    let viewMappings: ViewMappings = builder._viewMapppings || { };
+    let viewMappings: ViewMappings = builder._viewMappings || { };
     viewMappings[displayContext] = view;
     builder._viewMappings = viewMappings;
     return this;

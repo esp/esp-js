@@ -8,7 +8,7 @@ export interface Module extends DisposableBase {
     configureContainer(): void;
     registerComponents(componentRegistryModel:ComponentRegistryModel);
     getComponentsFactories();
-    loadLayout(layoutMode:string);
+    loadLayout(layoutMode:string, componentRegistryModel:ComponentRegistryModel);
     unloadLayout(): void;
     registerPrerequisites(registrar: PrerequisiteRegistrar): void;
 }

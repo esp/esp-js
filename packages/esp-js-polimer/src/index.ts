@@ -16,3 +16,4 @@ export {
 } from './eventTransformations';
 export {PolimerEvents} from './polimerEvents';
 export {sendUpdateToDevTools, connect} from './reduxDevToolsConnector';
+export {StateHandlerModel} from './stateHandlerModel';

@@ -55,7 +55,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     initialise(): void {
     }
 
-    loadLayout(layoutMode: string) {
+    loadLayout(layoutMode: string, componentRegistryModel: ComponentRegistryModel) {
         if (this._currentLayout) {
             this.unloadLayout();
         }
@@ -68,10 +68,15 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
         if (componentFactoriesState) {
             componentFactoriesState.forEach((componentFactoryState: ComponentFactoryState) => {
-                let componentFactory: ComponentFactoryBase<ModelBase> = this.container.resolve<ComponentFactoryBase<ModelBase>>(componentFactoryState.componentFactoryKey);
-                componentFactoryState.componentsState.forEach((state: any) => {
-                    componentFactory.createComponent(state);
-                });
+                if (componentRegistryModel.hasComponentFacotory(componentFactoryState.componentFactoryKey)) {
+                    let componentFactory: ComponentFactoryBase<ModelBase> = componentRegistryModel.getComponentFactory(componentFactoryState.componentFactoryKey);
+                    componentFactoryState.componentsState.forEach((state: any) => {
+                        componentFactory.createComponent(state);
+                    });
+                } else {
+                    // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
+                    _log.warn(`Skipping load for component as it's factory of type [${componentFactoryState.componentFactoryKey}] is not registered`);
+                }
             });
         }
     }

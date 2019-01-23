@@ -77,7 +77,7 @@ export class SingleModuleLoader {
         if (!this.functionalModule) {
             return;
         }
-        this.functionalModule.loadLayout(layoutMode);
+        this.functionalModule.loadLayout(layoutMode, this._componentRegistryModel);
     }
 
     public unloadModuleLayout(): void {

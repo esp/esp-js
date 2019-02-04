@@ -42,7 +42,7 @@ export class Router {
     getDispatchLoopDiagnostics() : string
     enableDiagnostics() : void;
     disableDiagnostics() : void;
-    isOnDispatchLoopFor(modelId) : boolean;
+    isOnDispatchLoopFor(modelId: string) : boolean;
 }
 
 export class SingleModelRouter<T> {
@@ -82,7 +82,7 @@ export interface Disposable {
 
 export abstract class DisposableBase {
     isDisposed : boolean;
-    addDisposable (disposable : Disposable);
+    addDisposable (disposable : Disposable): void;
     addDisposable (disposable : () => void) : void;
     dispose () : void;
 }

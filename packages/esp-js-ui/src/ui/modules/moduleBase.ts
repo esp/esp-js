@@ -8,11 +8,13 @@ import {Module} from './module';
 import {DefaultStateProvider} from './defaultStateProvider';
 import {ComponentFactoryState} from './componentFactoryState';
 import {ModelBase} from '../modelBase';
+import {StateSaveMonitor} from '../state/stateSaveMonitor';
 
 const _log: Logger = Logger.create('ModuleBase');
 
 export abstract class ModuleBase extends DisposableBase implements Module {
-    private _currentLayout: string;
+    private _currentLayout: string = null;
+    private _stateSaveMonitor: StateSaveMonitor;
 
     constructor(
         public readonly moduleKey,
@@ -27,9 +29,24 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         // seems to make sense for the module to own it's container,
         // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
+
+        if (this.stateSavingEnabled && this.stateSaveIntervalMs > 0) {
+            this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
+            this.addDisposable(this._stateSaveMonitor);
+        }
     }
 
     public get moduleName(): string { return ''; }
+
+    // override if you want to have automatic state saving for your module
+    protected get stateSavingEnabled(): boolean {
+        return false;
+    }
+
+    // override if required
+    protected get stateSaveIntervalMs(): number {
+        return 60_000;
+    }
 
     abstract configureContainer();
 
@@ -53,6 +70,9 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
     // override if required
     initialise(): void {
+        if (this.stateSavingEnabled) {
+            this._stateSaveMonitor.start();
+        }
     }
 
     loadLayout(layoutMode: string, componentRegistryModel: ComponentRegistryModel) {
@@ -60,7 +80,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
             this.unloadLayout();
         }
         this._currentLayout = layoutMode;
-        let componentFactoriesState = this._stateService.getApplicationState<ComponentFactoryState[]>(this.moduleKey, this._currentLayout);
+        let componentFactoriesState = this._stateService.getModuleState<ComponentFactoryState[]>(this.moduleKey, this._currentLayout);
         if (componentFactoriesState === null && this._defaultStateProvider) {
             Guard.isDefined(this._defaultStateProvider, `_defaultStateProvider was not provided for module ${this.moduleKey}`);
             componentFactoriesState = this._defaultStateProvider.getComponentFactoriesState(layoutMode);
@@ -85,16 +105,26 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         if (!this._currentLayout) {
             return;
         }
-        let componentFactories: Array<ComponentFactoryBase<ModelBase>> = this.getComponentsFactories();
-        let state = componentFactories
-            .map(f => f.getAllComponentsState())
-            .filter(f => f != null);
-        if (state.length > 0) {
-            this._stateService.saveApplicationState(this.moduleKey, this._currentLayout, state);
+        if (this.stateSavingEnabled) {
+            this._saveAllComponentState();
         }
-        componentFactories.forEach((factory: ComponentFactoryBase<ModelBase>) => {
+        this.getComponentsFactories().forEach((factory: ComponentFactoryBase<ModelBase>) => {
             factory.shutdownAllComponents();
         });
         this._currentLayout = null;
+    }
+
+    _saveAllComponentState = () => {
+        if (this._currentLayout == null) {
+            return;
+        }
+        let state = this.getComponentsFactories()
+            .map(f => f.getAllComponentsState())
+            .filter(f => f != null);
+        if (state.length > 0) {
+            this._stateService.saveModuleState(this.moduleKey, this._currentLayout, state);
+        } else {
+            this._stateService.clearModuleState(this.moduleKey, this._currentLayout);
+        }
     }
 }

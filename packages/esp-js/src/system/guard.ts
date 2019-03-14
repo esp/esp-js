@@ -50,7 +50,7 @@ export class Guard {
         }
     }
     public static stringIsNotEmpty(value: any, message: string): void {
-        if (!utils.isString(value) || value === '') {
+        if (!utils.isString(value) || value.trim() === '') {
             doThrow(message);
         }
     }

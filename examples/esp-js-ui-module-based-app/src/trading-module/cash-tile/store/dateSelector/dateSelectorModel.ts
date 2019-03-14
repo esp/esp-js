@@ -2,7 +2,7 @@
 import {Logger} from 'esp-js-ui';
 import {DateSelectorState} from './dateSelectorState';
 import {DisposableBase, observeEvent, Router} from 'esp-js';
-import {StateHandlerModel} from 'esp-js-polimer/src/stateHandlerModel';
+import {StateHandlerModel} from 'esp-js-polimer';
 import {DateSelectorEvents} from '../../events';
 
 const _log = Logger.create('CashTile-DateSelectorModel');
@@ -29,7 +29,7 @@ export class DateSelectorModel extends DisposableBase implements StateHandlerMod
         };
     }
 
-    public getState(): DateSelectorState {
+    public getEspPolimerState(): DateSelectorState {
         return this._currentState;
     }
 }

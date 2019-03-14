@@ -256,6 +256,10 @@ export class Asserts {
         expect(this._router.isModelRegistered(this._model.modelId)).toEqual(isRegistered);
         return this;
     }
+    public assertSavedState(assertingFunction: (savedStateState) => void) {
+        assertingFunction(this._model.getEspUiComponentState());
+        return this;
+    }
 }
 
 class TestEventProcessors {
@@ -293,6 +297,7 @@ export class PolimerTestApiBuilder {
     private _useHandlerModel: boolean = false;
     private _handlerModelAutoWireUp: boolean = false;
     private _useEventTransformModel: boolean = false;
+    private _stateSaveHandler: (store: TestStore) => any;
 
     public static create(): PolimerTestApiBuilder {
         return new PolimerTestApiBuilder();
@@ -319,6 +324,11 @@ export class PolimerTestApiBuilder {
         return this;
     }
 
+    public withStateSaveHandler(handler: (store: TestStore) => any) {
+        this._stateSaveHandler = handler;
+        return this;
+    }
+
     public build(): PolimerTestApi {
         // stop esp logging to the console by default (so unhappy path tests to fill up the console with errors).
         logging.Logger.setSink(() => {});
@@ -329,7 +339,8 @@ export class PolimerTestApiBuilder {
         let initialStore = defaultStoreFactory(modelId);
         let builder: PolimerStoreBuilder<TestStore>  = router
             .storeBuilder<TestStore>()
-            .withInitialStore(initialStore);
+            .withInitialStore(initialStore)
+            .withStateSaveHandler(this._stateSaveHandler);
         if (this._useHandlerMap) {
             builder.withStateHandlerMap('handlerMapState', TestStateHandlerMap);
         }
@@ -364,7 +375,7 @@ export class PolimerTestApiBuilder {
             },
             actor: new Actor(modelId, router),
             get store() {
-                return this.model.getStore();
+                return model.getStore();
             },
             asserts: new Asserts(router, model, testEventProcessors, testStateHandlerModel),
             router

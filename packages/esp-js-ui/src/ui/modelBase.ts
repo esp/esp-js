@@ -30,13 +30,6 @@ export abstract class ModelBase extends DisposableBase implements ComponentInsta
         this.addDisposable(this.router.observeEventsOn(this._modelId, this));
     }
 
-    // override if you're a component (i.e. created by a component factory)
-    // and want to take part in saving and loading state.
-    // It should be a normal object which will get stringified
-    public getState(): any {
-        return null;
-    }
-
     /**
      * Runs the given action on the dispatch loop for this model, ensures that any model observer will be notified of the change
      * @param action

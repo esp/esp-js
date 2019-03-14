@@ -47,7 +47,7 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
             // 2) Handlers within a container
             //    Useful if you want to use dependency injection, or attribute based stream wire-up
             .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
-            // 3) Handlers which are objects that have a `getState` function or a function decorated with @polimerStateProvider
+            // 3) Handlers which are objects that have a function named getEspPolimerState()
             //    These are useful if you have existing plumbing, or OO objects which you want to interop with polimer like stores
             //    There are some caveats here:
             //    - The public api to the model should be accessed via events.

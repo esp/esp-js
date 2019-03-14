@@ -1,8 +1,9 @@
 import {Container} from 'microdi-js';
 import {getComponentFactoryMetadata} from './componentDecorator';
-import {DisposableBase} from 'esp-js';
+import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
 import {ComponentFactoryMetadata} from './componentDecorator';
-import {Disposable} from '../../../../esp-js/.dist/typings';
+import {Disposable} from 'esp-js';
+import {StateSaveHandlerConsts, StateSaveHandlerMetadata} from './stateSaveHandler';
 
 export interface ComponentStateSet {
     componentFactoryKey: string;
@@ -10,7 +11,6 @@ export interface ComponentStateSet {
 }
 
 export interface ComponentInstance extends Disposable {
-    getState?(): any;
     addDisposable(disposable: () => void);
     addDisposable(disposable: Disposable);
 }
@@ -56,16 +56,32 @@ export abstract class ComponentFactoryBase<T extends ComponentInstance> extends 
     }
 
     public getAllComponentsState(): ComponentStateSet {
-        if (this._currentComponents.length === 0) {
-            return null;
-        }
         let componentsState = this._currentComponents
-            .map(c => c.getState && c.getState() || null)
+            .map(c => {
+                // try see if there was a @stateSaveHandler decorator on the component,
+                // if so invoke the function it was declared on to get the state.
+                if (EspDecoratorUtil.hasMetadata(c)) {
+                    let metadata: StateSaveHandlerMetadata = EspDecoratorUtil.getCustomData(c, StateSaveHandlerConsts.CustomDataKey);
+                    if (metadata) {
+                        return c[metadata.functionName]();
+                    }
+                }
+                // else see if there is a function with name StateSaveHandlerConsts.HandlerFunctionName
+                let stateSaveHandlerFunction = c[StateSaveHandlerConsts.HandlerFunctionName];
+                if (stateSaveHandlerFunction && utils.isFunction(stateSaveHandlerFunction)) {
+                    return stateSaveHandlerFunction.call(c);
+                }
+                return null;
+            })
             .filter(c => c != null);
-        return {
-            componentFactoryKey: this.componentKey,
-            componentsState: componentsState
-        };
+        if (componentsState.length === 0) {
+            return null;
+        } else {
+            return {
+                componentFactoryKey: this.componentKey,
+                componentsState: componentsState
+            };
+        }
     }
 
     public shutdownAllComponents(): void {

@@ -21,6 +21,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     private _storePreEventProcessor: StorePreEventProcessor<TStore>;
     private _storePostEventProcessor: StorePostEventProcessor<TStore>;
     private _initialStore: TStore;
+    private _stateSaveHandler: (store: TStore) => any;
 
     constructor(private _router: Router) {
     }
@@ -89,6 +90,11 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
+    withStateSaveHandler(handler: (store: TStore) => any) {
+        this._stateSaveHandler = handler;
+        return this;
+    }
+
     registerWithRouter(): PolimerModel<TStore> {
         Guard.isDefined(this._initialStore, 'Initial store is not set');
         Guard.stringIsNotEmpty(this._initialStore.modelId, `Initial store's modelId must not be null or empty`);
@@ -109,7 +115,8 @@ export class PolimerStoreBuilder<TStore extends Store> {
                 eventStreamFactories: this._eventStreamFactories,
                 eventStreamHandlerObjects: this._eventStreamHandlerObjects,
                 storePreEventProcessor: this._storePreEventProcessor,
-                storePostEventProcessor: this._storePostEventProcessor
+                storePostEventProcessor: this._storePostEventProcessor,
+                stateSaveHandler: this._stateSaveHandler,
             }
         );
 

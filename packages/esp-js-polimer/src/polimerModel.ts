@@ -19,6 +19,7 @@ export interface PolimerModelSetup<TStore extends Store> {
     eventStreamHandlerObjects: any[];
     storePreEventProcessor: StorePreEventProcessor<TStore>;
     storePostEventProcessor: StorePostEventProcessor<TStore>;
+    stateSaveHandler: (store: TStore) => any;
 }
 
 export interface StateHandlerModelMetadata {
@@ -93,7 +94,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if(metadata.model.preProcess) {
                 metadata.model.preProcess(metadata.model);
-                this._store[stateName] = metadata.model.getState();
+                this._store[stateName] = metadata.model.getEspPolimerState();
             }
         });
     }
@@ -109,9 +110,19 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if(metadata.model.postProcess) {
                 metadata.model.postProcess(metadata.model, eventsProcessed);
-                this._store[stateName] = metadata.model.getState();
+                this._store[stateName] = metadata.model.getEspPolimerState();
             }
         });
+    }
+
+    // this is a hook to provide interop with esp-js-ui.
+    // Polimer doesn't have a hard dependency on esp-js-ui, however if your models/stores are created using esp-js-ui then this hook will be used to save state.
+    // Really there should be a esp-js-common package whereby we can push a decorator into then both esp-js-polimer and esp-js-ui would point to that.
+    getEspUiComponentState(): any {
+        if (!this._initialSetup.stateSaveHandler) {
+            return null;
+        }
+        return this._initialSetup.stateSaveHandler(this._store);
     }
 
     // called by the router when it's finished dispatching an event
@@ -123,7 +134,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         if (handlers) {
             handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TStore>) => {
                 // Given an event processed by the model in question has just finished, we replace the relevant state on the store for this model
-                this._store[modelHandlerMetadata.stateName] = modelHandlerMetadata.model.getState();
+                this._store[modelHandlerMetadata.stateName] = modelHandlerMetadata.model.getEspPolimerState();
             });
             sendUpdateToDevTools({eventType: eventType, event: event}, this._store, this._modelId);
         }

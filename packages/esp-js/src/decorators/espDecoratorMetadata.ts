@@ -17,6 +17,7 @@
 // notice_end
 
 import {EventContext, ObservationStage} from '../router';
+import {Guard} from '../system';
 
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
@@ -33,7 +34,7 @@ export interface ObserveEventPredicate {
 }
 
 /**
- * A delegate signature used when esp-js-polimer queries an state handler function to see if it should receive the given event
+ * A delegate signature used when esp-js-polimer queries a state handler function to see if it should receive the given event
  */
 export interface PolimerEventPredicate {
     (stateDraft?: any, event?: any, store?: any, eventContext?: EventContext): boolean;
@@ -60,6 +61,22 @@ export interface EspMetadata {
         predicate?: EventPredicate,
         modelId?: string
     );
+
+    /**
+     * Adds some custom data to an object's metadata.
+     * @param dataKey: a unique key for the data, note if the key is already used an error will be thrown
+     * @param data: the data
+     */
+    addCustomData<TData>(
+        dataKey: string,
+        data: TData
+    ): TData;
+
+    getCustomData<TData>(
+        dataKey: string,
+    ): TData;
+
+    hasCustomData(dataKey: string): boolean;
 }
 
 // _espDecoratorMetadata is added via a @Decorator, however there is no way to
@@ -84,6 +101,20 @@ export const EspDecoratorUtil = {
         return prototype._espDecoratorMetadata
             ? prototype._espDecoratorMetadata._events
             : [];
+    },
+    getCustomData(objectInstance, dataKey: string): any  {
+        if (!objectInstance) {
+            return null;
+        }
+        let prototype = Object.getPrototypeOf(objectInstance);
+        if (!prototype._espDecoratorMetadata) {
+            return null;
+        }
+        let data = prototype._espDecoratorMetadata._customData[dataKey];
+        if (!data) {
+            return null;
+        }
+        return data;
     },
     /**
      * Checks if an object instance has esp related metdata on it's prototype
@@ -114,6 +145,9 @@ let Metadata: EspMetadata = {
         if (!this._events) {
             this._events = [];
         }
+        if (!this._customData) {
+            this._customData = {};
+        }
         return this;
     },
     addEvent(functionName: string, eventType: string, decoratorType, observationStage?: ObservationStage, predicate?: (object: any) => boolean, modelId?: string) {
@@ -125,6 +159,20 @@ let Metadata: EspMetadata = {
             predicate,
             modelId
         });
+    },
+    addCustomData<TData>(dataKey: string, data: TData): TData {
+        Guard.stringIsNotEmpty(dataKey, 'The given dataKey is not a string or is empty');
+        if (this._customData[dataKey]) {
+            throw new Error(`Custom data with key '${dataKey}' already registered`);
+        }
+        this._customData[dataKey] = data;
+        return data;
+    },
+    getCustomData<TData>(dataKey: string): TData {
+        return this._customData[dataKey];
+    },
+    hasCustomData(dataKey: string) {
+        return !!this._customData[dataKey];
     }
 };
 
@@ -164,7 +212,7 @@ function _createMetadata(prototype) {
         }
     }
     // define an enumerable property on the constructors to hold the metadata.
-    // It needs to be enumerable so TS extends can copy it across.
+    // It needs to be enumerable so TS extends can copy it across when dealing with inheritance chains.
     Object.defineProperty(prototype, '_espDecoratorMetadata', {
         value: metadata,
         // by default enumerable is false, I'm just being explicit here.

@@ -10,6 +10,9 @@ TEST_CI_COMMAND="test -f $(pwd)/jest.config.js && ./node_modules/.bin/jest --ver
 build() {
     export NODE_ENV=$1
     echo "Building for env '${NODE_ENV}'. Running: $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details"
+    echo "yarn version: $(yarn --version)"
+    echo "npm version: $(yarn --version)"
+    echo "jest version: $($(pwd)/node_modules/.bin/jest --version)"
     $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details
 }
 
@@ -23,7 +26,7 @@ runTests() {
 }
 
 clean() {
-    echo "Clening. Running:  rm -rf $(pwd)/.dist && rm -rf $(pwd)/.tsbuild"
+    echo "Cleaning. Running:  rm -rf $(pwd)/.dist && rm -rf $(pwd)/.tsbuild"
     rm -rf $(pwd)/.dist
     rm -rf $(pwd)/.tsbuild
     find $(pwd) -name esp*.tgz -delete

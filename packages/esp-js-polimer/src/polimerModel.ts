@@ -115,14 +115,24 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         });
     }
 
-    // this is a hook to provide interop with esp-js-ui.
-    // Polimer doesn't have a hard dependency on esp-js-ui, however if your models/stores are created using esp-js-ui then this hook will be used to save state.
-    // Really there should be a esp-js-common package whereby we can push a decorator into then both esp-js-polimer and esp-js-ui would point to that.
+    /**
+     * This is a hook to provide interop with esp-js-ui.
+     * Polimer doesn't have a hard dependency on esp-js-ui, however if your models/stores are created using esp-js-ui then this hook will be used to save state.
+     * Really there should be a esp-js-common package whereby we can push a decorator into then both esp-js-polimer and esp-js-ui would point to that.
+     */
     getEspUiComponentState(): any {
         if (!this._initialSetup.stateSaveHandler) {
             return null;
         }
         return this._initialSetup.stateSaveHandler(this._store);
+    }
+
+    /**
+     * A convention based function used by esp-js-react to select the store as the top level state bag / model to render rather than the PolimerModel<T>.
+     * PolimerModel<T> is really an internal pluming model and not much use outside the esp plumbing (other than for disposal)
+     */
+    getEspReactStateToRender() {
+        return this.getStore();
     }
 
     // called by the router when it's finished dispatching an event
@@ -259,7 +269,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         //    The handlers effectively transform the `InputEvent<>`s to `OutputEvent<>` which get dispatched back into the router
         // 2) Via decorators on class functions.
         //    These are functionally similar to the first method, the difference being then don't take an event stream factory,
-        //    Rather then decorate functions on an object instance which will do the event transformation.
+        //    Rather they decorate functions on an object instance which will do the event transformation.
         //    This second approach allows for dependency injection as the handling objects are effectively containers for event transformational streams
         //
         // We can normalise these down to a single observable as they are effectively the same:
@@ -300,14 +310,14 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
             Rx.Observable.merge(...observables)
                 .filter(output => output != null)
                 .subscribe(
-                    (output: OutputEvent<any>) => {
-                        if (output.broadcast) {
-                            logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', output);
-                            this._router.broadcastEvent(output.eventType, output.event || {});
+                    (outputEvent: OutputEvent<any>) => {
+                        if (outputEvent.broadcast) {
+                            logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent);
+                            this._router.broadcastEvent(outputEvent.eventType, outputEvent.event || {});
                         } else {
-                            const targetModelId = output.modelId || this._modelId;
-                            logger.verbose(`Received eventType ${output.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, output);
-                            this._router.publishEvent(targetModelId, output.eventType, output.event);
+                            const targetModelId = outputEvent.modelId || this._modelId;
+                            logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent);
+                            this._router.publishEvent(targetModelId, outputEvent.eventType, outputEvent.event);
                         }
                     },
                     (err) => {

@@ -22,7 +22,7 @@ import {
     SmartComponent,
     ViewBinder,
     viewBinding,
-    ModelSelector,
+    stateToRenderSelector,
     shouldUpdateMixin
 } from '../src';
 
@@ -47,9 +47,9 @@ describe('index exports', () => {
         expect(viewBinding).toBeDefined();
     });
 
-    it('should export ModelSelector', () => {
-        expect(espReact.ModelSelector).toBeDefined();
-        expect(ModelSelector).toBeDefined();
+    it('should export stateToRenderSelector', () => {
+        expect(espReact.stateToRenderSelector).toBeDefined();
+        expect(stateToRenderSelector).toBeDefined();
     });
 
     it('should export shouldUpdateMixin', () => {

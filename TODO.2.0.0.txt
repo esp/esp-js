@@ -1,4 +1,5 @@
-2.0.0 update notes, will form basis for release notes
+2.0.0 update todos
+
 [x] - Convert to tyepscript
 [x] - makes observices of T, not t123
 [x] - remove model changed event (fixed, or modified, not deleted)
@@ -7,19 +8,66 @@
 [x] - rename all file types to lower case in esp-js
 [x] - user generated .d.ts
 [x] - expose single event subject for all events for a model
-[ ] - merge all readmes and restructure docs
-[ ] - single travis build with lerna
 [x] - single publish step via lerna
+[x] - polimer tests
+
+// code changes
+[ ] - hide polimer model in the views
+    - this can be done with a decorator but that decorator needs to be low level in esp as it's the only shared based, esp-js-react already depends on polimer
+[ ] - connectable component tests
+[ ] - add support for pre and post processing to polimer states
+[ ] - remove model.lock() && model.unlock()
+[ ] - remove support for _observeEventsUsingConventions
+[ ] - remove support for model changed events
+[ ] - rename model.hasChange to model.receivedEvent as it doesn't really know if there wer changes, but rather that it received an event
+[ ] - add dynamic module loading to esp-js-ui
+[ ] - clarify and document connect(), do we care about map publish to props and map model to props?
+[x] - Issue with the router not known which events the model is subscribed to thus will always dispatch broadcast events
+    -- this problem exists for OO and polimer models and all event streams today as everything  build on the fat pipe.
+    --- the modelRescord.haschanges is just set to true by default now so all broadcasts of events will make all models tick
+    --- it would be possible to expose 'modelReord.isdirty' for leaf nodes to call, i.e. anything listening to an event observable
+    --- however the pre and post process hooks still get called (bug since 1.0)
+    ---- it would appear there needs to to be some more deterministic knowledge of which events are being observed and those
+    ---- known to the router before the pre process hook is invoked.
+    ---- this is no sensible way to know this as the fat pipe may or may not deliver to an ultimate observer based on filters in the obs stream
+    ---- I;ve been back and forth on this, in the end I don't think there is an issue. If you use broadcast event it's an expensive operation
+    ---- should shouldn't be used lightly. There is an edge case whereby the model changed event would fire, but that is to be removed leasing the impact
+[ ] - add support to halt just a single model
+[ ] - bring micro-di-js under esp as esp-js-di
+[ ] - more elaborate esp-js-ui application
 [ ] - shared test setups
+
+// build
+[ ] - single travis build with lerna
+[ ] - Ensure dependencies are exact versions
+
+// docs
+[ ] - merge all readmes and restructure docs
 [ ] - document monorepo setup
+[ ] - document methods so the .d.ts have the docs
 [ ] - document observeEventEnvelope
 [ ] - Add Breaking Changes to release notes
-[ ] - Ensure dependencies are exact versions
-[ ] - add support for pre and post processing to polimer states
-[ ] - polimer tests
-[ ] - clean up event dispatching in polimer so it can call the event filter predicate earlier on
+[ ] - you ube videos to help with documents
+[ ] - document all the new modules
+[ ] - document router.broadcast being expensive
 
-breaking changes:
+
+// notes on esp-js-react's connect
+
+    // connect allows you to adapt a model onto a view of a different shape, perhaps an existing view
+    connect(
+        (model, outerProps) => ({}), // takes the model and maps it to props to pass to the actual component you connect
+        publishEvent1 => ({}) // takes a publish function to map to delegates to pass to the component you're about to connect
+    )
+    (null); // the component you're about to connect
+
+    // you don't need to use conenct, you can just craft a top level view that will receive your model directly
+
+    // even if you have a @viewBinging, you it will be ignored and you can connect a random component to the router using connect()
+
+
+// breaking changes:
+-  esp-js-ui modelselector removed
  - model changed event support
  - reactive api now pushes envelopes, not T1, T2, T3
  - .where renamed to .filter

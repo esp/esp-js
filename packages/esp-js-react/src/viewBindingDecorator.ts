@@ -28,11 +28,19 @@ function getMetadata(target) {
     return target._viewMetadata;
 }
 
+/**
+ * Tries to get a view for the given model.
+ *
+ * It does this using the following order:
+ * 1) If a @viewBinding decorator was used and a display context was given, try get a view for that
+ * 2) Else if a view was explicitly provided use that
+ * 3) Else if a @viewBinding decorator was used and there is a view associated with the default display context, use that view
+ * @param model
+ * @param props
+ * @param displayContext
+ * @param view
+ */
 export function createViewForModel(model: any, props, displayContext: string, view: React.ComponentClass | React.SFC) {
-    // 1) If a display context was provided try get a view for that first
-    // 2) Else if a view was provided use that
-    // 3) Else try get a view using the default display context
-
     let finalView: React.ComponentClass | React.SFC = view; // default to that passed in, if any.
 
     // displayContext = displayContext || DEFAULT_VIEW_KEY;
@@ -47,8 +55,7 @@ export function createViewForModel(model: any, props, displayContext: string, vi
                 finalView = viewMetadataRegistration.view;
             }
 
-            // if we've not found a view yet, is there a default one?
-
+            // if we've not found a view yet, and one wasn't provided, is there a default one?
             if (!finalView && viewMetadata.hasRegisteredViewContext(DEFAULT_VIEW_KEY)) {
                 let viewMetadataRegistration = viewMetadata.viewRegistrations[DEFAULT_VIEW_KEY];
                 finalView = viewMetadataRegistration.view;

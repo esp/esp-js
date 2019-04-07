@@ -100,9 +100,9 @@ export class SingleModelRouter<TModel> {
         return this._underlying.createSubject<T>();
     }
 
-    observeEventsOn(object: any, methodPrefix = '_observe_'): Disposable {
+    observeEventsOn(object: any): Disposable {
         this._ensureModelIsSet();
-        return this._underlying.observeEventsOn(this._targetModelId, object, methodPrefix);
+        return this._underlying.observeEventsOn(this._targetModelId, object);
     }
 
     isOnDispatchLoop(): boolean {

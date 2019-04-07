@@ -99,9 +99,6 @@ export class DevToolsDiagnosticMonitor extends DisposableBase implements Diagnos
     dispatchingViaDirective(functionName) {
     }
 
-    dispatchingViaConvention(functionName) {
-    }
-
     finishDispatchingEvent() {
     }
 

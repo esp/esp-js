@@ -265,11 +265,9 @@ export class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter<TModel>(this, targetModelId);
     }
 
-    public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_'): Disposable {
+    public observeEventsOn(modelId: string, object: any): Disposable {
         if (EspDecoratorUtil.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object);
-        } else {
-            return this._observeEventsUsingConventions(modelId, object, methodPrefix);
         }
     }
 
@@ -502,41 +500,6 @@ export class Router extends DisposableBase {
         compositeDisposable.add(() => {
             this._decoratorObservationRegister.removeRegistration(modelId, object);
         });
-        return compositeDisposable;
-    }
-
-    private _observeEventsUsingConventions(modelId, object, methodPrefix): Disposable {
-        let compositeDisposable = new CompositeDisposable();
-        let props = utils.getPropertyNames(object);
-        for (let i = 0; i < props.length; i++) {
-            let prop = props[i];
-            if (utils.startsWith(prop, methodPrefix)) {
-                let stage = ObservationStage.normal;
-                let eventType = prop.replace(methodPrefix, '');
-                let observationStageSplitIndex = eventType.lastIndexOf('_');
-                if (observationStageSplitIndex > 0) {
-                    let stageSubstring = eventType.substring(observationStageSplitIndex + 1);
-                    let stageSpecified = false;
-                    if (stageSubstring === ObservationStage.preview) {
-                        stage = ObservationStage.preview;
-                        stageSpecified = true;
-                    } else if (stageSubstring === ObservationStage.normal) {
-                        stage = ObservationStage.normal;
-                        stageSpecified = true;
-                    } else if (stageSubstring === ObservationStage.committed) {
-                        stage = ObservationStage.committed;
-                        stageSpecified = true;
-                    }
-                    if (stageSpecified) {
-                        eventType = eventType.substring(0, observationStageSplitIndex);
-                    }
-                }
-                compositeDisposable.add(this.getEventObservable(modelId, eventType, stage).subscribe((eventEnvelope) => {
-                    this._diagnosticMonitor.dispatchingViaConvention(prop);
-                    object[prop](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);
-                }));
-            }
-        }
         return compositeDisposable;
     }
 

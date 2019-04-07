@@ -165,11 +165,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             this._router.getAllEventsObservable(eventsToObserve, ObservationStage.all)
                 .filter(eventEnvelope => (eventEnvelope.modelId === this._modelId))
                 .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
-                    // TODO To support pre and post processing on a state we need to:
-                    // 1) As we create event handlers via maps or containing object, we need to inspect those items for pre/post hooks.
-                    // 2) Each handler needs a unique key to associate it with the map/object it was initially on, that key can also be associated with the pre/post hook on the given map/object
-                    // 3) Then below we can get all the event handlers and group them by the key, if there is a pre/post hook then call first/last and call the handlers in between
-                    // 4) There isn't much point doing the immer dance inbetween each handler if we have the above done. We can do it for each set of handlers and pre/post processers in the unique group
                     const eventReceivers = this._eventHandlersByEventName.get(eventEnvelope.eventType);
                     const model = this._immutableModel;
                     eventReceivers.forEach((handlerMetadata: EventHandlerMetadata) => {

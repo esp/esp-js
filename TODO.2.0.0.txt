@@ -12,14 +12,23 @@
 [x] - polimer tests
 
 // code changes
-[ ] - add support for pre and post processing to polimer states
-      How-to notes added in polimerModel.ts
-[ ] - add dynamic module loading to esp-js-ui
-[ ] - add support to halt just a single model
+[x] - add support for pre and post processing to polimer states
+      -How-to notes added in polimerModel.ts-
+      - This isn't possible in a decent way.
+      - Firstly it's only possible for handler objects as maps have no place to put pre/post processing and I'm not going to make up a convention
+      - Secondly, you really want the pre/post hook to happe per state handler, however there could be multiple for a state so it's not deterministic which to call first
+      - Thirdly, even if you didn't care about point 2, the router owns the observation stages do the polimer model only gets an onnext per event stage, it's cant
+        own that process which is what's required. I.e. it needs to flip to imer before pre processing, call all handers for a related state, then post processing, then flip imer back.
+        It can't do this as the knowledge of this is in the router.
+        At the end of the day, the standard esp doesn't do this, so polimer doesn't need to.
+        It does support an overall model pre and post hook like standard esp, that's sufficient.
+        It could flip immer before calling that hook
+[x] - add dynamic module loading to esp-js-ui
 [ ] - more elaborate esp-js-ui application
 [ ] - shared test setups
 [ ] - bring micro-di-js under esp as esp-js-di
 [ ] - Rx Js upgrade
+[ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
 [ ] - Lift Polimer state tracking to separate package so it can be swapped out
 [x] - rename 'store' to 'model' through out
     - there is API confusion as to what's a store and what's a model.

@@ -12,18 +12,24 @@
 [x] - polimer tests
 
 // code changes
+[ ] - rename 'store' to 'model' through out
+    - there is API confusion as to what's a store and what's a model.
+      In effect they are the same thing but the store is an immutable version.
+      To simplify, and be consistent with existing naming, it should be 'model' through out.
+      Will be much eaiser to document and the API will be way more consistent.
+[ ] - add support for pre and post processing to polimer states
+[ ] - add dynamic module loading to esp-js-ui
 [x] - hide polimer model in the views
     - this can be done with a decorator but that decorator needs to be low level in esp as it's the only shared based, esp-js-react already depends on polimer
 [x] - connectable component tests
-[ ] - add support for pre and post processing to polimer states
 [x] - remove model.lock() && model.unlock()
 [x] - remove support for _observeEventsUsingConventions
 [x] - remove support for model changed events
     - this isn't the best way to observe a change to a model, just use it's change stream, else more explicitly recognise your inter model dependencies
     - furthermore, with the newer single dispatch subject, there is no way to know which model will process an event, thus when .broadcast() is used, it's possible it ends up in an infinite loop due to needless model changed events getting dispatched
 [x] - rename model.hasChange to model.receivedEvent as it doesn't really know if there wer changes, but rather that it received an event
-[ ] - add dynamic module loading to esp-js-ui
-[ ] - clarify and document connect(), do we care about map publish to props and map model to props?
+[x] - clarify connect(), do we care about map publish to props and map model to props?
+    - yes we need it, notes below. In effect it's a shorthand to allow you to connect a view of a different shape to a given model or store at any point in the vdom
 [x] - Issue with the router not known which events the model is subscribed to thus will always dispatch broadcast events
     -- this problem exists for OO and polimer models and all event streams today as everything  build on the fat pipe.
     --- the modelRescord.haschanges is just set to true by default now so all broadcasts of events will make all models tick
@@ -35,9 +41,11 @@
     ---- I;ve been back and forth on this, in the end I don't think there is an issue. If you use broadcast event it's an expensive operation
     ---- should shouldn't be used lightly. There is an edge case whereby the model changed event would fire, but that is to be removed leasing the impact
 [ ] - add support to halt just a single model
-[ ] - bring micro-di-js under esp as esp-js-di
 [ ] - more elaborate esp-js-ui application
 [ ] - shared test setups
+[ ] - bring micro-di-js under esp as esp-js-di
+[ ] - Rx Js upgrade
+[ ] - Lift Polimer state tracking to seperate package so it can be swapped out
 
 // build
 [ ] - single travis build with lerna
@@ -52,7 +60,7 @@
 [ ] - you ube videos to help with documents
 [ ] - document all the new modules
 [ ] - document router.broadcast being expensive
-
+[ ] - good docs on ConnectableComponent and connect
 
 // notes on esp-js-react's connect
 

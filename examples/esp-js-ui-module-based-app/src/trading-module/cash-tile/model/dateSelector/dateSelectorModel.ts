@@ -1,4 +1,4 @@
-// This class shows how an OO model can interop with a polimer store
+// This class shows how an OO model can interop with a polimer immurable model
 import {Logger} from 'esp-js-ui';
 import {DateSelectorState} from './dateSelectorState';
 import {DisposableBase, observeEvent, Router} from 'esp-js';

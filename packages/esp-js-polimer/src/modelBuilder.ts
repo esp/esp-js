@@ -2,41 +2,41 @@ import {Router, Guard, isEspDecoratedObject} from 'esp-js';
 import {PolimerHandlerMap} from './stateEventHandlers';
 import {PolimerModel, PolimerModelSetup, StateHandlerModelMetadata} from './polimerModel';
 import {OutputEventStreamFactory} from './eventTransformations';
-import {Store} from './store';
+import {ImmutableModel} from './immutableModel';
 import {StateHandlerModel} from './stateHandlerModel';
-import {StorePostEventProcessor, StorePreEventProcessor} from './eventProcessors';
+import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 
 declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
-        storeBuilder?<TStore extends Store>(): PolimerStoreBuilder<TStore>;
+        modelBuilder?<TModel extends ImmutableModel>(): PolimerModelBuilder<TModel>;
     }
 }
 
-export class PolimerStoreBuilder<TStore extends Store> {
-    private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>> = new Map();
+export class PolimerModelBuilder<TModel extends ImmutableModel> {
+    private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TModel>> = new Map();
     private _stateHandlerObjects: Map<string, any[]> = new Map();
     private _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
-    private _eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[] = [];
+    private _eventStreamFactories: OutputEventStreamFactory<TModel, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
-    private _storePreEventProcessor: StorePreEventProcessor<TStore>;
-    private _storePostEventProcessor: StorePostEventProcessor<TStore>;
-    private _initialStore: TStore;
-    private _stateSaveHandler: (store: TStore) => any;
+    private _modelPreEventProcessor: ModelPreEventProcessor<TModel>;
+    private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
+    private _initialModel: TModel;
+    private _stateSaveHandler: (model: TModel) => any;
 
     constructor(private _router: Router) {
     }
 
-    withInitialStore(store: TStore): this {
-        this._initialStore = store;
+    withInitialModel(model: TModel): this {
+        this._initialModel = model;
         return this;
     }
 
-    withStateHandlerMap<TKey extends keyof TStore, TState extends TStore[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TStore>): this {
+    withStateHandlerMap<TKey extends keyof TModel, TState extends TModel[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TModel>): this {
         this._stateHandlerMaps.set(<string>state, handlerMap);
         return this;
     }
 
-    withStateHandlerObject<TKey extends keyof TStore>(state: TKey, ...objectToScanForHandlers: any[]): this {
+    withStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...objectToScanForHandlers: any[]): this {
         objectToScanForHandlers.forEach(handler => {
             if (isEspDecoratedObject(handler)) {
                 let handlers = this._stateHandlerObjects.get(<string>state);
@@ -58,12 +58,12 @@ export class PolimerStoreBuilder<TStore extends Store> {
      * @param stateHandlerModel
      * @param autoWireUpObservers
      */
-    withStateHandlerModel<TKey extends keyof TStore, TStateHandlerModel extends StateHandlerModel<TStore[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): this  {
+    withStateHandlerModel<TKey extends keyof TModel, TStateHandlerModel extends StateHandlerModel<TModel[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): this  {
         this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers});
         return this;
     }
 
-    withEventStreams(...outputEventStreamFactory: OutputEventStreamFactory<TStore, any, any>[]): this {
+    withEventStreams(...outputEventStreamFactory: OutputEventStreamFactory<TModel, any, any>[]): this {
         this._eventStreamFactories.push(...outputEventStreamFactory);
         return this;
     }
@@ -79,53 +79,48 @@ export class PolimerStoreBuilder<TStore extends Store> {
         return this;
     }
 
-    withPreEventProcessor(storePreEventProcessor: StorePreEventProcessor<TStore>): this {
-        this._storePreEventProcessor = storePreEventProcessor;
+    withPreEventProcessor(modelPreEventProcessor: ModelPreEventProcessor<TModel>): this {
+        this._modelPreEventProcessor = modelPreEventProcessor;
         return this;
 
     }
 
-    withPostEventProcessor(storePostEventProcessor: StorePostEventProcessor<TStore>): this {
-        this._storePostEventProcessor = storePostEventProcessor;
+    withPostEventProcessor(modelPostEventProcessor: ModelPostEventProcessor<TModel>): this {
+        this._modelPostEventProcessor = modelPostEventProcessor;
         return this;
     }
 
-    withStateSaveHandler(handler: (store: TStore) => any) {
+    withStateSaveHandler(handler: (model: TModel) => any) {
         this._stateSaveHandler = handler;
         return this;
     }
 
-    registerWithRouter(): PolimerModel<TStore> {
-        Guard.isDefined(this._initialStore, 'Initial store is not set');
-        Guard.stringIsNotEmpty(this._initialStore.modelId, `Initial store's modelId must not be null or empty`);
-        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `ERROR: No state handlers (maps, objects or models) setup for store with id ${this._initialStore.modelId}`);
+    registerWithRouter(): PolimerModel<TModel> {
+        Guard.isDefined(this._initialModel, 'Initial model is not set');
+        Guard.stringIsNotEmpty(this._initialModel.modelId, `Initial model's modelId must not be null or empty`);
+        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `ERROR: No state handlers (maps, objects or models) setup for model with id ${this._initialModel.modelId}`);
 
         // The polimer model is a special case,
         // Some attributes may get bound to it dynamically.
         // Eor example the @viewBinding decorator.
         // Given that, we create a new ctro function to allow custom metadata to be added to this specific instance dynamically.
-        let customPolimerModel = class CustomPolimerModel extends PolimerModel<TStore> {};
+        let customPolimerModel = class CustomPolimerModel extends PolimerModel<TModel> {};
         let polimerModel = new customPolimerModel(
             this._router,
-            <PolimerModelSetup<TStore>>{
-                initialStore: this._initialStore,
+            <PolimerModelSetup<TModel>>{
+                initialModel: this._initialModel,
                 stateHandlerMaps: this._stateHandlerMaps,
                 stateHandlerObjects: this._stateHandlerObjects,
                 stateHandlerModels: this._stateHandlerModels,
                 eventStreamFactories: this._eventStreamFactories,
                 eventStreamHandlerObjects: this._eventStreamHandlerObjects,
-                storePreEventProcessor: this._storePreEventProcessor,
-                storePostEventProcessor: this._storePostEventProcessor,
+                modelPreEventProcessor: this._modelPreEventProcessor,
+                modelPostEventProcessor: this._modelPostEventProcessor,
                 stateSaveHandler: this._stateSaveHandler,
             }
         );
 
-        this._router.addModel(
-            this._initialStore.modelId,
-            polimerModel,
-            // TODO figure out how best to push just the store to the views yet still have the view bindings work
-            // {modelObservableMapper: (model: PolimerModel<TStore>) => model.getStore()}
-        );
+        this._router.addModel(this._initialModel.modelId, polimerModel);
 
         polimerModel.initialize();
 
@@ -133,7 +128,7 @@ export class PolimerStoreBuilder<TStore extends Store> {
     }
 }
 
-Router.prototype.storeBuilder = function <TStore extends Store>(): PolimerStoreBuilder<TStore> {
+Router.prototype.modelBuilder = function <TModel extends ImmutableModel>(): PolimerModelBuilder<TModel> {
     let router = this;
-    return new PolimerStoreBuilder(router);
+    return new PolimerModelBuilder(router);
 };

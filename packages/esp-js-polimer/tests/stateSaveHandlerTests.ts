@@ -1,12 +1,12 @@
 import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
-import {TestStore} from './testApi/testStore';
+import {TestImmutableModel} from './testApi/testModel';
 
 describe('State save handler tests', () => {
     let api: PolimerTestApi;
 
-    function stateSaveHandler(store: TestStore) {
+    function stateSaveHandler(model: TestImmutableModel) {
         return {
-            modelId: store.modelId,
+            modelId: model.modelId,
             foo: 'foo'
         };
     }
@@ -22,7 +22,7 @@ describe('State save handler tests', () => {
     it('Save state handler configured on PolimerModel', () => {
         api.asserts.assertSavedState(state => {
             expect(state.foo).toEqual('foo');
-            expect(state.modelId).toEqual(api.store.modelId);
+            expect(state.modelId).toEqual(api.model.modelId);
         });
     });
 });

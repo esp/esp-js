@@ -6,7 +6,7 @@ import {BlotterModel} from './models/blotterModel';
 
 const _log = Logger.create('BlotterComponentFactory');
 
-@componentFactory('tradingModule_blotterComponentFactory', 'Blotter')
+@componentFactory(TradingModuleContainerConst.blotterComponentFactory, 'Blotter')
 export class BlotterComponentFactory extends ComponentFactoryBase<BlotterModel> {
     private _router : Router;
     constructor(container, router:Router) {

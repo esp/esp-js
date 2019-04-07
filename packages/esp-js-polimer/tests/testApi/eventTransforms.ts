@@ -1,13 +1,13 @@
 import * as Rx from 'rx';
-import {EventConst, TestEvent, TestStore} from './testStore';
+import {EventConst, TestEvent, TestImmutableModel} from './testModel';
 import {eventTransformFor, InputEvent, InputEventStream, OutputEvent, OutputEventStream} from '../../src';
 
 export class ObjectEventTransforms {
 
     @eventTransformFor(EventConst.event7)
-    _onEvent7(inputEventStream: InputEventStream<TestStore, TestEvent>): OutputEventStream<TestEvent> {
+    _onEvent7(inputEventStream: InputEventStream<TestImmutableModel, TestEvent>): OutputEventStream<TestEvent> {
         return inputEventStream
-            .map((inputEvent: InputEvent<TestStore, TestEvent>) => {
+            .map((inputEvent: InputEvent<TestImmutableModel, TestEvent>) => {
                 let event = <OutputEvent<TestEvent>>{
                     eventType: EventConst.event8,
                     event: { transformedEventKey: 'transformedEvent_event7', eventKey: inputEvent.event.eventKey }
@@ -18,9 +18,9 @@ export class ObjectEventTransforms {
             ;
     }
     @eventTransformFor(EventConst.eventNotObservedByModel)
-    _onEventNotObservedByModel(inputEventStream: InputEventStream<TestStore, TestEvent>): OutputEventStream<TestEvent> {
+    _onEventNotObservedByModel(inputEventStream: InputEventStream<TestImmutableModel, TestEvent>): OutputEventStream<TestEvent> {
         return inputEventStream
-            .map((inputEvent: InputEvent<TestStore, TestEvent>) => {
+            .map((inputEvent: InputEvent<TestImmutableModel, TestEvent>) => {
                 let event = <OutputEvent<TestEvent>>{
                     eventType: EventConst.event8,
                     modelId: inputEvent.event.publishToModelId,

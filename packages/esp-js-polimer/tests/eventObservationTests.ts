@@ -1,6 +1,6 @@
 import {ObservationStage} from 'esp-js';
 import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
-import {defaultTestStateFactory, EventConst} from './testApi/testStore';
+import {defaultTestStateFactory, EventConst} from './testApi/testModel';
 
 describe('Event Observation', () => {
     let api: PolimerTestApi;
@@ -293,11 +293,11 @@ describe('Event Observation', () => {
                     .eventIs(0, event);
             });
 
-            it('receives the current store', () => {
+            it('receives the current model', () => {
                 api.actor.publishEvent(EventConst.event1);
                 api.asserts.handlerMapState
                     .receivedEventsAll()
-                    .ensureStoreReceived(0);
+                    .ensureModelReceived(0);
             });
 
             it('receives the event context', () => {
@@ -344,11 +344,11 @@ describe('Event Observation', () => {
                     .eventIs(0, event);
             });
 
-            it('receives the current store', () => {
+            it('receives the current model', () => {
                 api.actor.publishEvent(EventConst.event1);
                 api.asserts.handlerObjectState
                     .receivedEventsAll()
-                    .ensureStoreReceived(0);
+                    .ensureModelReceived(0);
             });
 
             it('receives the event context', () => {
@@ -395,11 +395,11 @@ describe('Event Observation', () => {
                     .eventIs(0, event);
             });
 
-            it('receives the current store', () => {
+            it('receives the current model', () => {
                 api.actor.publishEvent(EventConst.event1);
                 api.asserts.handlerModelState
                     .receivedEventsAll()
-                    .ensureStoreReceived(0);
+                    .ensureModelReceived(0);
             });
 
             it('receives the event context', () => {

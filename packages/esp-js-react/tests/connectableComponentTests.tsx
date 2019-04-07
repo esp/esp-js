@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import {configure, mount, ReactWrapper} from 'enzyme';
 import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
-import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, stateToRenderSelector} from '../src';
+import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel} from '../src';
 import {Router} from 'esp-js';
 import {observeEvent} from 'esp-js/src/decorators/observeEvent';
 import {ConnectableComponentChildProps, PublishEvent} from '../src/connectableComponent';
@@ -56,7 +56,7 @@ class TestModel {
 }
 
 class TestModel2 extends TestModel {
-    @stateToRenderSelector()
+    @getEspReactRenderModel()
     _getOtherState() {
         return {
             value: this.value,
@@ -67,7 +67,7 @@ class TestModel2 extends TestModel {
 }
 
 class TestModel3 extends TestModel {
-    getEspReactStateToRender() {
+    getEspReactRenderModel() {
         return {
             value: this.value,
             value2: this.value,
@@ -87,8 +87,8 @@ interface TestOptions {
     useCreatePublishEventProps?: boolean;
     useAlternativeViewContext?: boolean;
     passOtherProps?: boolean;
-    useStateToRenderDecorator?: boolean;
-    useStateToRenderFunction?: boolean;
+    useRenderModelSelectorDecorator?: boolean;
+    useRenderModelSelectorFunction?: boolean;
 }
 
 describe('ConnectableComponent', () => {
@@ -102,10 +102,10 @@ describe('ConnectableComponent', () => {
         otherProps = { other1: 'other-value' };
 
     function createModel(options: TestOptions) {
-        if (options.useStateToRenderDecorator) {
+        if (options.useRenderModelSelectorDecorator) {
             return new TestModel2();
         }
-        if (options.useStateToRenderFunction) {
+        if (options.useRenderModelSelectorFunction) {
             return new TestModel3();
         }
         return new TestModel();
@@ -288,24 +288,24 @@ describe('ConnectableComponent', () => {
 
             describe('using @stateToRenderSelector', () => {
                 it('Swaps the model for that returned by the function decorated with a @stateToRenderSelector decorator', () => {
-                    setup({useConnectFunction: false, useStateToRenderDecorator: true});
+                    setup({useConnectFunction: false, useRenderModelSelectorDecorator: true});
                     testModelHasBeenReplacedWithMappedModel('value-3');
                 });
 
                 it('passes the swapped model to mapModelToProps function', () => {
-                    setup({useConnectFunction: false, useStateToRenderDecorator: true, useMapModelToProps: true});
+                    setup({useConnectFunction: false, useRenderModelSelectorDecorator: true, useMapModelToProps: true});
                     testSwappedModelPassedToMapModelToPropsFunction('value-3');
                 });
             });
 
             describe('using state to render function', () => {
                 it('Swaps the model for that returned by the function decorated with a @stateToRenderSelector decorator', () => {
-                    setup({useConnectFunction: false, useStateToRenderFunction: true});
+                    setup({useConnectFunction: false, useRenderModelSelectorFunction: true});
                     testModelHasBeenReplacedWithMappedModel('value-3.1');
                 });
 
                 it('passes the swapped model to mapModelToProps function', () => {
-                    setup({useConnectFunction: false, useStateToRenderFunction: true, useMapModelToProps: true});
+                    setup({useConnectFunction: false, useRenderModelSelectorFunction: true, useMapModelToProps: true});
                     testSwappedModelPassedToMapModelToPropsFunction('value-3.1');
                 });
             });

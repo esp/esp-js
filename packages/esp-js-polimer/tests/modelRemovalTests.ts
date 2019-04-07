@@ -1,5 +1,5 @@
 import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
-import {EventConst} from './testApi/testStore';
+import {EventConst} from './testApi/testModel';
 import {PolimerEvents} from '../src';
 
 describe('Model disposal tests', () => {

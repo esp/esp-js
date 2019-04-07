@@ -4,22 +4,22 @@ import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadat
 import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
 import {logger} from './logger';
 import * as Rx from 'rx';
-import {Store} from './store';
+import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
 import produce from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
-import {StorePostEventProcessor, StorePreEventProcessor} from './eventProcessors';
+import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 
-export interface PolimerModelSetup<TStore extends Store> {
-    initialStore: TStore;
-    stateHandlerMaps: Map<string, PolimerHandlerMap<any, TStore>>;
+export interface PolimerModelSetup<TModel extends ImmutableModel> {
+    initialModel: TModel;
+    stateHandlerMaps: Map<string, PolimerHandlerMap<any, TModel>>;
     stateHandlerObjects: Map<string, any[]>;
     stateHandlerModels: Map<string, StateHandlerModelMetadata>;
-    eventStreamFactories: OutputEventStreamFactory<TStore, any, any>[];
+    eventStreamFactories: OutputEventStreamFactory<TModel, any, any>[];
     eventStreamHandlerObjects: any[];
-    storePreEventProcessor: StorePreEventProcessor<TStore>;
-    storePostEventProcessor: StorePostEventProcessor<TStore>;
-    stateSaveHandler: (store: TStore) => any;
+    modelPreEventProcessor: ModelPreEventProcessor<TModel>;
+    modelPostEventProcessor: ModelPostEventProcessor<TModel>;
+    stateSaveHandler: (model: TModel) => any;
 }
 
 export interface StateHandlerModelMetadata {
@@ -34,37 +34,37 @@ interface EventHandlerMetadata {
     handler: PolimerEventHandler<any, any, any>;
 }
 
-interface ModelHandlerMetadata<TStore> {
+interface ModelHandlerMetadata<TModel> {
     stateName: string;
-    model: StateHandlerModel<TStore>;
+    model: StateHandlerModel<TModel>;
 }
 
-export class PolimerModel<TStore extends Store> extends DisposableBase {
+export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase {
     private readonly _eventHandlersByEventName: Map<string, EventHandlerMetadata[]> = new Map();
-    private readonly _modelEventHandlersByEventName: Map<string, ModelHandlerMetadata<TStore>[]> = new Map();
-    private _store: TStore;
-    private _storePreEventProcessor: StorePreEventProcessor<TStore>;
-    private _storePostEventProcessor: StorePostEventProcessor<TStore>;
+    private readonly _modelEventHandlersByEventName: Map<string, ModelHandlerMetadata<TModel>[]> = new Map();
+    private _immutableModel: TModel;
+    private _modelPreEventProcessor: ModelPreEventProcessor<TModel>;
+    private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
     private readonly _modelId: string;
 
     constructor(
         private readonly _router: Router,
-        private readonly _initialSetup: PolimerModelSetup<TStore>
+        private readonly _initialSetup: PolimerModelSetup<TModel>
     ) {
         super();
         Guard.isDefined(_router, 'router must be defined');
-        Guard.isDefined(_initialSetup, 'router must be defined');
-        Guard.isObject(_initialSetup.initialStore, 'store must be defined and be an object');
-        Guard.stringIsNotEmpty(_initialSetup.initialStore.modelId, `Initial store's modelId must not be null or empty`);
-        this._modelId = this._initialSetup.initialStore.modelId;
-        this._store = this._initialSetup.initialStore;
-        if (this._initialSetup.storePreEventProcessor) {
-            Guard.isFunction(this._initialSetup.storePreEventProcessor, 'The storePreEventProcessor is not a function');
-            this._storePreEventProcessor = this._initialSetup.storePreEventProcessor;
+        Guard.isDefined(_initialSetup, 'initialSetup must be defined');
+        Guard.isObject(_initialSetup.initialModel, 'initialModel must be defined');
+        Guard.stringIsNotEmpty(_initialSetup.initialModel.modelId, `modelId must not be null or empty`);
+        this._modelId = this._initialSetup.initialModel.modelId;
+        this._immutableModel = this._initialSetup.initialModel;
+        if (this._initialSetup.modelPreEventProcessor) {
+            Guard.isFunction(this._initialSetup.modelPreEventProcessor, 'The modelPreEventProcessor is not a function');
+            this._modelPreEventProcessor = this._initialSetup.modelPreEventProcessor;
         }
-        if (this._initialSetup.storePostEventProcessor) {
-            Guard.isFunction(this._initialSetup.storePostEventProcessor, 'The storePostEventProcessor is not a function');
-            this._storePostEventProcessor = this._initialSetup.storePostEventProcessor;
+        if (this._initialSetup.modelPostEventProcessor) {
+            Guard.isFunction(this._initialSetup.modelPostEventProcessor, 'The modelPostEventProcessor is not a function');
+            this._modelPostEventProcessor = this._initialSetup.modelPostEventProcessor;
         }
     }
 
@@ -74,7 +74,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
 
     public initialize = () => {
         connect(this._router, this._modelId, this, this._modelId);
-        sendUpdateToDevTools('@@INIT', this._store, this._modelId);
+        sendUpdateToDevTools('@@INIT', this._immutableModel, this._modelId);
         this._wireUpStateHandlerModels();
         this._wireUpStateHandlerObjects();
         this._wireUpStateHandlersMaps();
@@ -84,55 +84,54 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     };
 
     preProcess() {
-        if (this._storePreEventProcessor) {
-            let newStore = this._storePreEventProcessor(this._store);
-            // has the store been replaced by the processor?
-            if (newStore) {
-                this._store = newStore;
+        if (this._modelPreEventProcessor) {
+            let newModel = this._modelPreEventProcessor(this._immutableModel);
+            // has the model been replaced by the processor?
+            if (newModel) {
+                this._immutableModel = newModel;
             }
         }
         this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if(metadata.model.preProcess) {
                 metadata.model.preProcess(metadata.model);
-                this._store[stateName] = metadata.model.getEspPolimerState();
+                this._immutableModel[stateName] = metadata.model.getEspPolimerState();
             }
         });
     }
 
     postProcess(eventsProcessed: string[]) {
-        if (this._storePostEventProcessor) {
-            let newStore = this._storePostEventProcessor(this._store, eventsProcessed);
-            // has the store been replaced by the processor?
-            if (newStore) {
-                this._store = newStore;
+        if (this._modelPostEventProcessor) {
+            let newModel = this._modelPostEventProcessor(this._immutableModel, eventsProcessed);
+            // has the model been replaced by the processor?
+            if (newModel) {
+                this._immutableModel = newModel;
             }
         }
         this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if(metadata.model.postProcess) {
                 metadata.model.postProcess(metadata.model, eventsProcessed);
-                this._store[stateName] = metadata.model.getEspPolimerState();
+                this._immutableModel[stateName] = metadata.model.getEspPolimerState();
             }
         });
     }
 
     /**
      * This is a hook to provide interop with esp-js-ui.
-     * Polimer doesn't have a hard dependency on esp-js-ui, however if your models/stores are created using esp-js-ui then this hook will be used to save state.
-     * Really there should be a esp-js-common package whereby we can push a decorator into then both esp-js-polimer and esp-js-ui would point to that.
-     */
+     * Polimer doesn't have a hard dependency on esp-js-ui, however if your models are created using esp-js-ui then this hook will be used to save state.
+     *
+     * */
     getEspUiComponentState(): any {
         if (!this._initialSetup.stateSaveHandler) {
             return null;
         }
-        return this._initialSetup.stateSaveHandler(this._store);
+        return this._initialSetup.stateSaveHandler(this._immutableModel);
     }
 
     /**
-     * A convention based function used by esp-js-react to select the store as the top level state bag / model to render rather than the PolimerModel<T>.
-     * PolimerModel<T> is really an internal pluming model and not much use outside the esp plumbing (other than for disposal)
+     * A convention based function used by esp-js-react to select another model passed to a view connected via ConnectableComponent.
      */
-    getEspReactStateToRender() {
-        return this.getStore();
+    getEspReactRenderModel() {
+        return this.getImmutableModel();
     }
 
     // called by the router when it's finished dispatching an event
@@ -142,11 +141,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         }
         let handlers = this._modelEventHandlersByEventName.get(eventType);
         if (handlers) {
-            handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TStore>) => {
-                // Given an event processed by the model in question has just finished, we replace the relevant state on the store for this model
-                this._store[modelHandlerMetadata.stateName] = modelHandlerMetadata.model.getEspPolimerState();
+            handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TModel>) => {
+                // Given an event processed by the model in question has just finished, we replace the relevant state on the immutable model
+                this._immutableModel[modelHandlerMetadata.stateName] = modelHandlerMetadata.model.getEspPolimerState();
             });
-            sendUpdateToDevTools({eventType: eventType, event: event}, this._store, this._modelId);
+            sendUpdateToDevTools({eventType: eventType, event: event}, this._immutableModel, this._modelId);
         }
     }
 
@@ -167,15 +166,15 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                 .filter(eventEnvelope => (eventEnvelope.modelId === this._modelId))
                 .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
                     const eventReceivers = this._eventHandlersByEventName.get(eventEnvelope.eventType);
-                    const store = this._store;
+                    const model = this._immutableModel;
                     eventReceivers.forEach((handlerMetadata: EventHandlerMetadata) => {
                         if (handlerMetadata.observationStage === eventEnvelope.observationStage) {
-                            const beforeState = store[handlerMetadata.stateName];
+                            const beforeState = model[handlerMetadata.stateName];
                             let processEvent = true;
                             if (handlerMetadata.predicate) {
                                 let notYetCanceled = eventEnvelope.context.isCanceled === false;
                                 let notYetCommitted = eventEnvelope.context.isCommitted === false;
-                                processEvent = handlerMetadata.predicate(beforeState, eventEnvelope.event, store, eventEnvelope.context);
+                                processEvent = handlerMetadata.predicate(beforeState, eventEnvelope.event, model, eventEnvelope.context);
                                 if (notYetCanceled && eventEnvelope.context.isCanceled) {
                                     throw new Error('You can\'t cancel an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
                                 }
@@ -185,16 +184,16 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
                             }
                             if (processEvent) {
                                 logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState);
-                                const afterState = handlerMetadata.handler(beforeState, eventEnvelope.event, store, eventEnvelope.context);
+                                const afterState = handlerMetadata.handler(beforeState, eventEnvelope.event, model, eventEnvelope.context);
                                 logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);
-                                store[handlerMetadata.stateName] = afterState;
+                                model[handlerMetadata.stateName] = afterState;
                             } else {
                                 logger.verbose(`Received "${eventEnvelope.eventType}" for "${handlerMetadata.stateName}" state, skipping as the handlers predicate returned false`, beforeState);
                             }
                         }
                     });
                     if (ObservationStage.isFinal(eventEnvelope.observationStage)) {
-                        sendUpdateToDevTools(eventEnvelope, this._store, this._modelId);
+                        sendUpdateToDevTools(eventEnvelope, this._immutableModel, this._modelId);
                     }
                 })
         );
@@ -235,7 +234,7 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
     }
 
     private _wireUpStateHandlersMaps = () => {
-        this._initialSetup.stateHandlerMaps.forEach((handlerMap: PolimerHandlerMap<any, TStore>, stateName) => {
+        this._initialSetup.stateHandlerMaps.forEach((handlerMap: PolimerHandlerMap<any, TModel>, stateName) => {
             handlerMap = this._expandMultipleEventsIntoSeparateHandlers(handlerMap);
             Object.keys(handlerMap).forEach((eventType: string) => {
                 this._addEventHandlerMetadata(eventType, stateName, null, ObservationStage.normal, handlerMap[eventType]);
@@ -327,16 +326,16 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TStore, any>> => {
+    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
         return Rx.Observable.create((obs: Rx.Observer<any>) => {
                 const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
                     .getAllEventsObservable(events, observationStage)
                     .filter(eventEnvelope => eventEnvelope.modelId === this._modelId)
                     .subscribe(
-                        (eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>) => {
+                        (eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>) => {
                             logger.verbose(`Passing event [${eventEnvelope.eventType}] at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}] to event transform stream.`);
-                            let inputEvent: InputEvent<TStore, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
+                            let inputEvent: InputEvent<TModel, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
                             // Pass the event off to our polimer observable stream.
                             // In theory, these streams must never error.
                             // They need to bake in their own exception handling.
@@ -355,12 +354,12 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         );
     };
 
-    private _mapEventEnvelopToInputEvent(eventEnvelope: EventEnvelope<any, PolimerModel<TStore>>): InputEvent<TStore, any> {
+    private _mapEventEnvelopToInputEvent(eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>): InputEvent<TModel, any> {
         return {
             event: eventEnvelope.event,
             eventType: eventEnvelope.eventType,
             context: eventEnvelope.context,
-            store: eventEnvelope.model.getStore()
+            model: eventEnvelope.model.getImmutableModel()
         };
     }
 
@@ -369,10 +368,10 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
      * Process of normalizing includes:
      *   - split handler that listens on handler of events to two different handlers
      *
-     * @param {PolimerHandlerMap<TState, TStore>} handlerMap
-     * @returns {PolimerHandlerMap<TState, TStore>}
+     * @param {PolimerHandlerMap<TState, TModel>} handlerMap
+     * @returns {PolimerHandlerMap<TState, TModel>}
      */
-    private _expandMultipleEventsIntoSeparateHandlers = <TState>(handlerMap: PolimerHandlerMap<TState, TStore>): PolimerHandlerMap<TState, TStore> => {
+    private _expandMultipleEventsIntoSeparateHandlers = <TState>(handlerMap: PolimerHandlerMap<TState, TModel>): PolimerHandlerMap<TState, TModel> => {
         return Object.keys(handlerMap).reduce((map, eventType) => {
             if (eventType.indexOf(MULTIPLE_EVENTS_DELIMITER) !== -1) {
                 const events = eventType.split(MULTIPLE_EVENTS_DELIMITER);
@@ -387,11 +386,11 @@ export class PolimerModel<TStore extends Store> extends DisposableBase {
         }, {});
     };
 
-    public getStore = (): TStore => {
-        return this._store;
+    public getImmutableModel = (): TModel => {
+        return this._immutableModel;
     };
 
-    public setStore = (value: TStore) => {
-        this._store = value;
+    public setImmutableModel = (value: TModel) => {
+        this._immutableModel = value;
     };
 }

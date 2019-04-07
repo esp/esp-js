@@ -1,9 +1,9 @@
 import {EventContext} from 'esp-js';
 
-export type PolimerEventHandler<TState, TEvent, TStore> = (draft: TState, event: TEvent, store: TStore, eventContext: EventContext) => void | TState;
+export type PolimerEventHandler<TState, TEvent, TModel> = (draft: TState, event: TEvent, model: TModel, eventContext: EventContext) => void | TState;
 
-export type PolimerHandlerMap<TState, TStore> = {
-    [index: string]: PolimerEventHandler<TState, any, TStore>
+export type PolimerHandlerMap<TState, TModel> = {
+    [index: string]: PolimerEventHandler<TState, any, TModel>
 };
 
 export const MULTIPLE_EVENTS_DELIMITER = '|$|';

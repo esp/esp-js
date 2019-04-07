@@ -5,7 +5,7 @@ import {
 } from 'esp-js-ui';
 import {RegionNames} from '../../../../shell/regionNames';
 import { RootEvents } from '../../events';
-import {CashTileStore} from '../cashTileStore';
+import {CashTileModel} from '../cashTileModel';
 
 const _log = Logger.create('CashTile-RootState');
 
@@ -22,10 +22,10 @@ export const defaultRootStateFactory = (): RootState => {
     };
 };
 
-export const rootStateHandlerMap: PolimerHandlerMap<RootState, CashTileStore> = {
-    [RootEvents.bootstrap]: (draft: RootState, ev: RootEvents.BootstrapEvent, store: CashTileStore) => {
+export const rootStateHandlerMap: PolimerHandlerMap<RootState, CashTileModel> = {
+    [RootEvents.bootstrap]: (draft: RootState, ev: RootEvents.BootstrapEvent, model: CashTileModel) => {
         _log.info(`Adding to region ${RegionNames.workspaceRegion}`);
         draft.regionName = RegionNames.workspaceRegion;
-        draft.regionItem = new RegionItem(store.modelId);
+        draft.regionItem = new RegionItem(model.modelId);
     }
 };

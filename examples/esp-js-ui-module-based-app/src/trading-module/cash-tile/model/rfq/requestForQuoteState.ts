@@ -3,7 +3,7 @@ import {
 } from 'esp-js-ui';
 import {InputEvents, RfqEvents} from '../../events';
 import * as uuid from 'uuid';
-import {CashTileStore} from '../cashTileStore';
+import {CashTileModel} from '../cashTileModel';
 import {Quote, RfqStatus} from '../../services/rfqService';
 import {observeEvent} from 'esp-js';
 
@@ -31,28 +31,28 @@ export class RequestForQuoteStateHandlers {
     }
 
     @observeEvent(RfqEvents.requestQuote)
-    onRequestQuote(draft: RequestForQuoteState, event: RfqEvents.RequestQuoteEvent, store: CashTileStore /* , context: EventContext */) {
-        _log.info(`Requesting Quote for ${store.inputs.ccyPair} ${store.inputs.notional}`);
+    onRequestQuote(draft: RequestForQuoteState, event: RfqEvents.RequestQuoteEvent, model: CashTileModel /* , context: EventContext */) {
+        _log.info(`Requesting Quote for ${model.inputs.ccyPair} ${model.inputs.notional}`);
         draft.rfqId = uuid.v4();
         draft.status = RfqStatus.Requesting;
     }
 
     @observeEvent(RfqEvents.rfqUpdate)
-    onRfqUpdated(draft: RequestForQuoteState, event: RfqEvents.RfqUpdateEvent, store: CashTileStore /* , context: EventContext */) {
+    onRfqUpdated(draft: RequestForQuoteState, event: RfqEvents.RfqUpdateEvent, model: CashTileModel /* , context: EventContext */) {
         _log.info(`Quote received. RfqId ${event.rfqId} price: ${event.quote.price}`, event);
         draft.status = event.status;
         draft.quote = event.quote;
     }
 
     @observeEvent(RfqEvents.cancelRfq)
-    onCancelQuote(draft: RequestForQuoteState, event: RfqEvents.CancelRfqEvent, store: CashTileStore) {
+    onCancelQuote(draft: RequestForQuoteState, event: RfqEvents.CancelRfqEvent, model: CashTileModel) {
         _log.info(`Passing on quote ${draft.rfqId}`, event);
         draft.status = RfqStatus.Canceling;
         draft.quote = null;
     }
 
     @observeEvent(RfqEvents.executeOnQuote)
-    onExecuting(draft: RequestForQuoteState, event: RfqEvents.ExecuteOnQuoteEvent, store: CashTileStore) {
+    onExecuting(draft: RequestForQuoteState, event: RfqEvents.ExecuteOnQuoteEvent, model: CashTileModel) {
         _log.info(`Passing on quote ${draft.rfqId}`, event);
         if (draft.status === RfqStatus.Quoting) {
             draft.status = RfqStatus.Executing;
@@ -61,8 +61,8 @@ export class RequestForQuoteStateHandlers {
 
     @observeEvent(InputEvents.changeCurrencyPair)
     @observeEvent(InputEvents.notionalChanged)
-    onInputsChanged(draft: RequestForQuoteState, event: RfqEvents.RequestQuoteEvent, store: CashTileStore /* , context: EventContext */) {
-        _log.info(`Requesting Quote for ${store.inputs.ccyPair} ${store.inputs.notional}`);
+    onInputsChanged(draft: RequestForQuoteState, event: RfqEvents.RequestQuoteEvent, model: CashTileModel /* , context: EventContext */) {
+        _log.info(`Requesting Quote for ${model.inputs.ccyPair} ${model.inputs.notional}`);
         draft.rfqId = null;
         draft.status = RfqStatus.Idle;
         draft.quote = null;

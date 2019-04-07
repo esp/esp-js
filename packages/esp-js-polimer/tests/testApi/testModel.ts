@@ -1,5 +1,5 @@
 import {ObservationStage} from 'esp-js';
-import {Store} from '../../src';
+import {ImmutableModel} from '../../src';
 
 export interface TestEvent {
     shouldCancel?: boolean;
@@ -36,7 +36,7 @@ export interface ReceivedEvent {
     observationStage: ObservationStage;
     stateReceived: boolean;
     stateName: string;
-    storeReceived: boolean;
+    modelReceived: boolean;
     eventContextReceived: boolean;
 }
 
@@ -52,10 +52,10 @@ export interface TestState {
 export interface OOModelTestState extends TestState {
     preProcessInvokeCount: number;
     postProcessInvokeCount: number;
-    eventHandlersReceivedStateOnStoreMatchesLocalState: boolean;
+    eventHandlersReceivedStateOnModelMatchesLocalState: boolean;
 }
 
-export interface TestStore extends Store {
+export interface TestImmutableModel extends ImmutableModel {
     handlerMapState: TestState;
     handlerObjectState: TestState;
     handlerModelState: OOModelTestState;
@@ -80,7 +80,7 @@ export const defaultOOModelTestStateFactory = (stateName: string) => {
     };
 };
 
-export const defaultStoreFactory: (modelId: string) => TestStore = (modelId: string) => {
+export const defaultModelFactory: (modelId: string) => TestImmutableModel = (modelId: string) => {
     return {
         modelId: modelId,
         handlerMapState: defaultTestStateFactory('handlerMapState'),

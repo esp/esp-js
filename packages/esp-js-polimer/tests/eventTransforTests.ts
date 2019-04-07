@@ -1,5 +1,5 @@
 import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
-import {EventConst, TestEvent} from './testApi/testStore';
+import {EventConst, TestEvent} from './testApi/testModel';
 import {ObservationStage} from 'esp-js';
 import {EventEnvelope} from 'esp-js/src';
 

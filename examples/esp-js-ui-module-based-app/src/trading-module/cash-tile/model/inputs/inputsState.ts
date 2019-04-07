@@ -3,7 +3,7 @@ import {
     Logger
 } from 'esp-js-ui';
 import {InputEvents} from '../../events';
-import {CashTileStore} from '../cashTileStore';
+import {CashTileModel} from '../cashTileModel';
 
 const _log = Logger.create('CashTile-InputsState');
 
@@ -19,7 +19,7 @@ export const defaultInputsStateFactory = (ccyPair?: string): InputsState => {
     };
 };
 
-export const inputStateHandlerMap: PolimerHandlerMap<InputsState, CashTileStore> = {
+export const inputStateHandlerMap: PolimerHandlerMap<InputsState, CashTileModel> = {
     [InputEvents.changeCurrencyPair]: (draft: InputsState, event: InputEvents.CurrencyPairChangedEvent) => {
         _log.info(`Changing currency pair to ${event.newPair}`, event);
         draft.ccyPair = event.newPair;

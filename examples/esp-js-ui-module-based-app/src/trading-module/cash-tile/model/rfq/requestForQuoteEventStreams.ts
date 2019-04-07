@@ -1,6 +1,6 @@
 import * as Rx from 'rx';
 import {InputEvent, OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
-import {CashTileStore} from '../cashTileStore';
+import {CashTileModel} from '../cashTileModel';
 import {InputEvents, RfqEvents} from '../../events';
 import {RfqRequest, RfqService} from '../../services/rfqService';
 import {Logger} from 'esp-js-ui';
@@ -14,15 +14,15 @@ export class RequestForQuoteEventStreams {
     @eventTransformFor(InputEvents.changeCurrencyPair)
     @eventTransformFor(InputEvents.notionalChanged)
     @eventTransformFor(RfqEvents.requestQuote)
-    onRfqTypeEvent(inputEventStream: InputEventStream<CashTileStore, RfqEvents.RequestQuoteEvent | InputEvents.NotionalChanged | InputEvents.CurrencyPairChangedEvent>): OutputEventStream<RfqEvents.RfqUpdateEvent> {
+    onRfqTypeEvent(inputEventStream: InputEventStream<CashTileModel, RfqEvents.RequestQuoteEvent | InputEvents.NotionalChanged | InputEvents.CurrencyPairChangedEvent>): OutputEventStream<RfqEvents.RfqUpdateEvent> {
         _log.debug('Wiring up rfq transform streams');
         return inputEventStream
             .map(inputEvent => {
                 if (inputEvent.eventType === RfqEvents.requestQuote) {
                     let request: RfqRequest = {
-                        rfqId: inputEvent.store.requestForQuote.rfqId,
-                        ccyPair: inputEvent.store.inputs.ccyPair,
-                        notional: inputEvent.store.inputs.notional
+                        rfqId: inputEvent.model.requestForQuote.rfqId,
+                        ccyPair: inputEvent.model.inputs.ccyPair,
+                        notional: inputEvent.model.inputs.notional
                     };
                     this._logQuoteDebug(request, 'Mapped input to RfqRequest');
                     return this._rfqService.requestQuote(request);

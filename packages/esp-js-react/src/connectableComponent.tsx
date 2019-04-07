@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import  { Disposable, Router, EspDecoratorUtil, utils } from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
-import {StateToRenderSelectorConsts, StateToRenderSelectorMetadata} from './stateToRenderSelector';
+import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
 
 export type PublishEvent = (eventType: string, event: any) => void;
 
@@ -114,43 +114,42 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
     }
 
     private _getChildProps(): ConnectableComponentChildProps<TModel> {
+        // consume what this component owns, and let the rest end up in `...rest`
         const {children, createPublishEventProps, modelId, mapModelToProps, view, viewContext, ...rest} = this.props;
-        const outerProps = {
-            ...rest,
-            ...this.state.publishProps
-        };
-        // first see if there is a selector associated with our model, if so we'll call that as a first pass
-        // this may replace the type of the model
-        const model = this._getStateToRender(this.state.model);
-        // next we try create secondary model which we'll spread down to our nested component in addition to the entire model
-        const modelMappedToProps = this.props.mapModelToProps
-            ? this.props.mapModelToProps(model)
-            : {};
-        return {
-            modelId: this._getModelId(),
-            model,
+        const model = this._getRenderModel(this.state.model);
+        let childProps = {
+            modelId,
             router: this.context.router,
-            ...modelMappedToProps,
-            ...outerProps
+            ...rest,
+            ...this.state.publishProps,
+            model
         };
+        if (this.props.mapModelToProps) {
+            childProps = {
+                ...childProps,
+                ...(this.props.mapModelToProps(model) as any)
+            };
+        }
+        return childProps;
     }
 
     /**
-     * Sees if there is a special selector function which can be invoked to return the state to render, else returns the given model
+     * Sees if there is a special selector function which can be invoked to return a render model rather than the top level model model itself
      */
-    private _getStateToRender(model: any) {
+    private _getRenderModel(model: any): TModel {
         // does the given model have a decorated function we can invoke to get a different model to render?
         if (EspDecoratorUtil.hasMetadata(model)) {
-            let metadata: StateToRenderSelectorMetadata = EspDecoratorUtil.getCustomData(model, StateToRenderSelectorConsts.CustomDataKey);
+            let metadata: GetEspReactRenderModelMetadata = EspDecoratorUtil.getCustomData(model, GetEspReactRenderModelConsts.CustomDataKey);
             if (metadata) {
                 return model[metadata.functionName]();
             }
         }
-        // else see if there is a function with name RenderStateSelectorConsts.HandlerFunctionName we can invoke to get a different model to render?
-        let stateSaveHandlerFunction = model[StateToRenderSelectorConsts.HandlerFunctionName];
-        if (stateSaveHandlerFunction && utils.isFunction(stateSaveHandlerFunction)) {
-            return stateSaveHandlerFunction.call(model);
+        // else see if there is a function with name GetEspReactRenderModelConsts.HandlerFunctionName we can invoke to get a different model to render?
+        let renderModelGetter = model[GetEspReactRenderModelConsts.HandlerFunctionName];
+        if (renderModelGetter && utils.isFunction(renderModelGetter)) {
+            return renderModelGetter.call(model);
         }
+        // else just return the default model
         return model;
     }
 }

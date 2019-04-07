@@ -269,6 +269,7 @@ export class Router extends DisposableBase {
         if (EspDecoratorUtil.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object);
         }
+        return new DisposableBase();
     }
 
     public addOnErrorHandler(handler: (error: Error) => void) {

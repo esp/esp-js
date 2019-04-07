@@ -371,9 +371,6 @@ export class Router extends DisposableBase {
                 let eventRecord = modelRecord.eventQueue.shift();
                 this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.eventType);
                 this._state.moveToPreProcessing(modelRecord.modelId, modelRecord);
-                if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
-                    modelRecord.model.unlock();
-                }
                 this._diagnosticMonitor.preProcessingModel();
                 modelRecord.preEventProcessor(modelRecord.model);
                 if (!modelRecord.wasRemoved) {
@@ -408,9 +405,6 @@ export class Router extends DisposableBase {
                         this._state.moveToPostProcessing();
                         modelRecord.postEventProcessor(modelRecord.model, this._state.eventsProcessed);
                         this._state.clearEventDispatchQueue();
-                        if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
-                            modelRecord.model.lock();
-                        }
                     }
                 }
                 this._dispatchModelChangedEvent(modelRecord);

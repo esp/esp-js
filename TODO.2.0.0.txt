@@ -12,11 +12,11 @@
 [x] - polimer tests
 
 // code changes
-[ ] - hide polimer model in the views
+[x] - hide polimer model in the views
     - this can be done with a decorator but that decorator needs to be low level in esp as it's the only shared based, esp-js-react already depends on polimer
-[ ] - connectable component tests
+[x] - connectable component tests
 [ ] - add support for pre and post processing to polimer states
-[ ] - remove model.lock() && model.unlock()
+[x] - remove model.lock() && model.unlock()
 [ ] - remove support for _observeEventsUsingConventions
 [ ] - remove support for model changed events
 [ ] - rename model.hasChange to model.receivedEvent as it doesn't really know if there wer changes, but rather that it received an event
@@ -71,6 +71,7 @@
  - model changed event support
  - reactive api now pushes envelopes, not T1, T2, T3
  - .where renamed to .filter
+ - lock and unlock removed
  - all default exports are now removed
  - Previously the typings exposed ModelObservable and EventObservable, however underthe covers there was only ever 1 javascript object 'Observable'.
    Now we're auto generating the types, all that exists is `Observable<T>`

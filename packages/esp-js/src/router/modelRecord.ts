@@ -41,7 +41,7 @@ export class ModelRecord {
     private readonly _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
     private readonly _eventQueue: any[];
     private _model: any;
-    private _hasChanges: boolean;
+    private _hasReceivedEvent: boolean;
     private _wasRemoved: boolean;
     private _preEventProcessor: PreEventProcessor;
     private _eventDispatchProcessor: EventDispatchProcessor;
@@ -52,7 +52,7 @@ export class ModelRecord {
     constructor(modelId: string, model: any, modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>, options?: EventProcessors) {
         this._modelId = modelId;
         this._eventQueue = [];
-        this._hasChanges = false;
+        this._hasReceivedEvent = false;
         this._wasRemoved = false;
         this._eventStreams = new Map();
         this._modelObservationStream = modelObservationStream;
@@ -72,11 +72,11 @@ export class ModelRecord {
     public get eventQueue() {
         return this._eventQueue;
     }
-    public get hasChanges() {
-        return this._hasChanges;
+    public get hasReceivedEvent() {
+        return this._hasReceivedEvent;
     }
-    public set hasChanges(value) {
-        this._hasChanges = value;
+    public set hasReceivedEvent(value) {
+        this._hasReceivedEvent = value;
     }
     public get wasRemoved() {
         return this._wasRemoved;

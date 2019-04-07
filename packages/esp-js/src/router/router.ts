@@ -369,7 +369,7 @@ export class Router extends DisposableBase {
                         if (modelRecord.wasRemoved) {
                             break;
                         }
-                        modelRecord.hasChanges = true;
+                        modelRecord.hasReceivedEvent = true;
                         hasEvents = modelRecord.eventQueue.length > 0;
                         if (hasEvents) {
                             eventRecord = modelRecord.eventQueue.shift();
@@ -448,8 +448,8 @@ export class Router extends DisposableBase {
     private _dispatchModelUpdates() {
         let updates: ModelRecord[] = [];
         for (let [key, value] of this._models) {
-            if (value.hasChanges) {
-                value.hasChanges = false;
+            if (value.hasReceivedEvent) {
+                value.hasReceivedEvent = false;
                 updates.push(value);
             }
         }

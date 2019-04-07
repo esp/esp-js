@@ -17,11 +17,11 @@
 [x] - connectable component tests
 [ ] - add support for pre and post processing to polimer states
 [x] - remove model.lock() && model.unlock()
-[ ] - remove support for _observeEventsUsingConventions
+[x] - remove support for _observeEventsUsingConventions
 [x] - remove support for model changed events
     - this isn't the best way to observe a change to a model, just use it's change stream, else more explicitly recognise your inter model dependencies
     - furthermore, with the newer single dispatch subject, there is no way to know which model will process an event, thus when .broadcast() is used, it's possible it ends up in an infinite loop due to needless model changed events getting dispatched
-[ ] - rename model.hasChange to model.receivedEvent as it doesn't really know if there wer changes, but rather that it received an event
+[x] - rename model.hasChange to model.receivedEvent as it doesn't really know if there wer changes, but rather that it received an event
 [ ] - add dynamic module loading to esp-js-ui
 [ ] - clarify and document connect(), do we care about map publish to props and map model to props?
 [x] - Issue with the router not known which events the model is subscribed to thus will always dispatch broadcast events

@@ -12,13 +12,20 @@
 [x] - polimer tests
 
 // code changes
+[ ] - add support for pre and post processing to polimer states
+      How-to notes added in polimerModel.ts
+[ ] - add dynamic module loading to esp-js-ui
+[ ] - add support to halt just a single model
+[ ] - more elaborate esp-js-ui application
+[ ] - shared test setups
+[ ] - bring micro-di-js under esp as esp-js-di
+[ ] - Rx Js upgrade
+[ ] - Lift Polimer state tracking to separate package so it can be swapped out
 [x] - rename 'store' to 'model' through out
     - there is API confusion as to what's a store and what's a model.
       In effect they are the same thing but the store is an immutable version.
       To simplify, and be consistent with existing naming, it should be 'model' through out.
       Will be much eaiser to document and the API will be way more consistent.
-[ ] - add support for pre and post processing to polimer states
-[ ] - add dynamic module loading to esp-js-ui
 [x] - hide polimer model in the views
     - this can be done with a decorator but that decorator needs to be low level in esp as it's the only shared based, esp-js-react already depends on polimer
 [x] - connectable component tests
@@ -40,12 +47,6 @@
     ---- this is no sensible way to know this as the fat pipe may or may not deliver to an ultimate observer based on filters in the obs stream
     ---- I;ve been back and forth on this, in the end I don't think there is an issue. If you use broadcast event it's an expensive operation
     ---- should shouldn't be used lightly. There is an edge case whereby the model changed event would fire, but that is to be removed leasing the impact
-[ ] - add support to halt just a single model
-[ ] - more elaborate esp-js-ui application
-[ ] - shared test setups
-[ ] - bring micro-di-js under esp as esp-js-di
-[ ] - Rx Js upgrade
-[ ] - Lift Polimer state tracking to seperate package so it can be swapped out
 
 // build
 [ ] - single travis build with lerna

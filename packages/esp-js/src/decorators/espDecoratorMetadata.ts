@@ -22,7 +22,6 @@ import {Guard} from '../system';
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
     observeEventEnvelope = 'observeEventEnvelope',
-    observeModelChangedEvent = 'observeModelChangedEvent',
     custom = 'custom'
 }
 

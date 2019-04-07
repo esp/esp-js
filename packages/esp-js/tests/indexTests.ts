@@ -7,17 +7,14 @@ import {
     CompositeDisposable,
     DictionaryDisposable,
     DisposableBase,
-    ModelChangedEvent,
     Observable,
     Subject,
     RouterObservable,
     RouterSubject,
     observeEvent,
-    observeModelChangedEvent,
     logging,
     DisposableWrapper,
     Guard,
-
     EspDecoratorUtil,
     DecoratorTypes,
     EspMetadata,
@@ -91,16 +88,6 @@ describe('index exports', () => {
     it('should export observeEvent', () => {
         expect(esp.observeEvent).toBeDefined();
         expect(observeEvent).toBeDefined();
-    });
-
-    it('should export observeModelChangedEvent', () => {
-        expect(esp.observeModelChangedEvent).toBeDefined();
-        expect(observeModelChangedEvent).toBeDefined();
-    });
-
-    it('should export ModelChangedEvent', () => {
-        expect(esp.ModelChangedEvent).toBeDefined();
-        expect(ModelChangedEvent).toBeDefined();
     });
 
     it('should export logging', () => {

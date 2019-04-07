@@ -17,7 +17,6 @@
 // notice_end
 
 import {ObservationStage} from './observationStage';
-import {Consts} from './const';
 
 export interface EventContext {
     readonly currentStage: ObservationStage;
@@ -77,27 +76,5 @@ export class DefaultEventContext implements EventContext {
         } else {
             throw 'event [' + this._eventType + '] for model [' + this._modelId + '] is already committed';
         }
-    }
-}
-
-export class ModelChangedEventContext implements EventContext {
-    public get currentStage(): ObservationStage {
-        return ObservationStage.normal;
-    }
-    public get eventType(): string {
-        return Consts.modelChangedEvent;
-    }
-    public get isCanceled(): boolean {
-        return false;
-    }
-    public get isCommitted(): boolean {
-        return false;
-    }
-    public cancel(): void {
-        throw new Error(`You can not cancel event of type ${this.eventType}`);
-    }
-
-    public commit(): void {
-        throw new Error(`You can not commit event of type ${this.eventType}`);
     }
 }

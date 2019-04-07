@@ -16,8 +16,7 @@
  */
 // notice_end
 
-import {Consts, EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
-import {ModelChangedEvent} from './modelChangedEvent';
+import {EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, logging, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
@@ -27,7 +26,7 @@ import {CompositeDiagnosticMonitor} from './devtools';
 import {EventProcessors} from './eventProcessors';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
-import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
+import {DefaultEventContext} from './eventContext';
 import {DecoratorTypes} from '../decorators';
 
 let _log = logging.Logger.create('Router');
@@ -160,7 +159,6 @@ export class Router extends DisposableBase {
     public getEventObservable<TEvent, TModel>(modelId: string, eventType: string, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
         return Observable.create<EventEnvelope<TEvent, TModel>>(o => {
             this._throwIfHaltedOrDisposed();
-            this._guardAgainstLegacyModelChangedEventSubscription(eventType);
             Guard.isString(modelId, 'The modelId argument should be a string');
             Guard.isString(eventType, 'The eventType must be a string');
             Guard.isDefined(modelId, 'The modelId argument should be defined');
@@ -236,22 +234,6 @@ export class Router extends DisposableBase {
                 })
                 .cast<EventEnvelope<any, any>>()
                 .filter(envelope => eventFilter(envelope.eventType))
-                .subscribe(o);
-        });
-    }
-
-    public getModelChangedEventObservable<TObservingModel, TChangedModel>(observingModelId: string, changedModelId: string): Observable<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>> {
-        return Observable.create<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>(o => {
-            this._throwIfHaltedOrDisposed();
-            Guard.isString(observingModelId, 'The modelId argument should be a string');
-            Guard.isString(changedModelId, 'The eventType must be a string');
-            const modelRecord = this._getOrCreateModelRecord(observingModelId);
-            return this._dispatchSubject
-                .cast<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>()
-                .filter(envelope => envelope.dispatchType === DispatchType.ModelChangedEvent && envelope.eventType === Consts.modelChangedEvent && envelope.event.modelId === changedModelId)
-                .map(envelope => ({...envelope, modelId: observingModelId, model: modelRecord.model}))
-                .asRouterObservable(this)
-                .streamFor(observingModelId)
                 .subscribe(o);
         });
     }
@@ -340,10 +322,6 @@ export class Router extends DisposableBase {
     }
 
     private _tryEnqueueEvent(modelId: string, eventType: string, event: any) {
-        // don't enqueue a model changed event for the same model that changed
-        if (eventType === Consts.modelChangedEvent && event.modelId === modelId) {
-            return;
-        }
         // we allow for lazy model registration, you can observe a model but then register it later,
         // this means at this point when publishing an event we need to ensure the actual model is there.
         if (!this._models.has(modelId) || !this._models.get(modelId).model) {
@@ -407,7 +385,6 @@ export class Router extends DisposableBase {
                         this._state.clearEventDispatchQueue();
                     }
                 }
-                this._dispatchModelChangedEvent(modelRecord);
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
@@ -453,19 +430,6 @@ export class Router extends DisposableBase {
                 throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
         }
-    }
-
-    private _dispatchModelChangedEvent(modelRecordThatChanged: ModelRecord) {
-        this._diagnosticMonitor.dispatchingEvent(Consts.modelChangedEvent, ObservationStage.normal);
-        this._dispatchSubject.onNext({
-            event: new ModelChangedEvent(modelRecordThatChanged.modelId, modelRecordThatChanged.model),
-            eventType: Consts.modelChangedEvent,
-            modelId: null,
-            model: null,
-            context: new ModelChangedEventContext(),
-            observationStage: ObservationStage.normal,
-            dispatchType: DispatchType.ModelChangedEvent
-        });
     }
 
     private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
@@ -592,15 +556,6 @@ export class Router extends DisposableBase {
         }
         if (this.isDisposed) {
             throw new Error(`ESP router has been disposed`);
-        }
-    }
-
-    private _guardAgainstLegacyModelChangedEventSubscription(eventType: string) {
-        let errorMessage = 'You can not observe a modelChangedEvent via router.getEventObservable(), use router.getModelChangedEvent() instead';
-        Guard.isFalsey(eventType === Consts.modelChangedEvent, errorMessage);
-        if ((<any>eventType).modelId) {
-            // guard against the old format modelChangedEvents
-            throw new Error(errorMessage);
         }
     }
 

@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {ObservationStage, Consts} from '../router';
+import {ObservationStage} from '../router';
 import {EspDecoratorUtil, DecoratorTypes, EventPredicate} from './espDecoratorMetadata';
 import { Guard, utils } from '../system';
 
@@ -35,9 +35,6 @@ const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
         }
         if(!predicate1 && args.length >= 2) {
             predicate1 = args[2];
-        }
-        if (eventType1 === Consts.modelChangedEvent) {
-            throw new Error(`Can not use observeEvent to observe the ${Consts.modelChangedEvent} on function target ${name}. Use the observeModelChangedEvent decorator instead`);
         }
         Guard.isString(eventType1, 'eventType passed to an observeEvent decorator must be a string');
         Guard.isTruthy(eventType1 !== '', 'eventType passed to an observeEvent decorator must not be \'\'');
@@ -74,19 +71,4 @@ export function observeEventEnvelope(eventType: string, predicate: EventPredicat
 export function observeEventEnvelope(eventType: string, observationStage: ObservationStage, predicate: EventPredicate);
 export function observeEventEnvelope(...args: any[]) {
     return _observeEvent(true, ...args);
-}
-
-export function observeModelChangedEvent(modelId) {
-    return function (target, name, descriptor) {
-        let metadata = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
-        metadata.addEvent(
-            name,
-            Consts.modelChangedEvent,
-            DecoratorTypes.observeModelChangedEvent,
-            ObservationStage.normal,
-            null,
-            modelId
-        );
-        return descriptor;
-    };
 }

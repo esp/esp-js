@@ -12,7 +12,7 @@
 [x] - polimer tests
 
 // code changes
-[ ] - rename 'store' to 'model' through out
+[x] - rename 'store' to 'model' through out
     - there is API confusion as to what's a store and what's a model.
       In effect they are the same thing but the store is an immutable version.
       To simplify, and be consistent with existing naming, it should be 'model' through out.

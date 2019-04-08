@@ -14,9 +14,9 @@
  * limitations under the License.
  notice_end */
  
-import microid from '../src';
-import * as microidStar from '../src';
-import { Container, RegistrationModifier, ResolverContext  } from '../src';
+import microid from '../src/index';
+import * as microidStar from '../src/index';
+import { Container, RegistrationModifier, ResolverContext  } from '../src/index';
 
 describe('index exports', () =>  {
 

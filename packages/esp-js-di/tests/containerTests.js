@@ -14,7 +14,7 @@
  * limitations under the License.
  notice_end */
  
-import microid from '../src';
+import microid from '../src/index';
 
 describe('Container', () =>  {
 

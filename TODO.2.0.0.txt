@@ -12,6 +12,11 @@
 [x] - polimer tests
 
 // code changes
+[ ] - more elaborate esp-js-ui application
+[ ] - shared test setups
+[ ] - Rx Js upgrade
+[ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
+[ ] - Lift Polimer state tracking to separate package so it can be swapped out
 [x] - add support for pre and post processing to polimer states
       -How-to notes added in polimerModel.ts-
       - This isn't possible in a decent way.
@@ -24,21 +29,16 @@
         It does support an overall model pre and post hook like standard esp, that's sufficient.
         It could flip immer before calling that hook
 [x] - add dynamic module loading to esp-js-ui
-[ ] - verify examples (add catch-all tests if possible):
+[x] - verify examples (add catch-all tests if possible):
     - [x] Delete old examples, best to have current rather than ES5 examples
-    - [ ] All should compile as part of build
+    - [x] All should compile as part of build
     - [x] esp-js-api
     - [x] esp-js-chat-react-es6
     - [x] esp-js-di
-    - [ ] esp-js-react-agile-board
+    - [x] esp-js-react-agile-board
     - [x] esp-js-todomvc-react
-    - [ ] esp-js-ui-module-based-app
-[ ] - more elaborate esp-js-ui application
-[ ] - shared test setups
+    - [x] esp-js-ui-module-based-app
 [x] - bring micro-di-js under esp as esp-js-di
-[ ] - Rx Js upgrade
-[ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
-[ ] - Lift Polimer state tracking to separate package so it can be swapped out
 [x] - fix router.observeEventsOnWithDecorators_ES6_Tests.ts, some issues whereby babel isn't picking up the transpiled typescript.
       this should prob be an integration tests after the final package is built
 [x] - rename 'store' to 'model' through out
@@ -69,21 +69,26 @@
     ---- should shouldn't be used lightly. There is an edge case whereby the model changed event would fire, but that is to be removed leasing the impact
 
 // build
-[ ] - single travis build with lerna
-[ ] - Ensure dependencies are exact versions
+[x] - single travis build with lerna
+[x] - Ensure dependencies are exact versions
 
 // misc
-[ ] - push 'moved' checkins to esp-js-ui, esp-js-react, microdi-js
+[ ] - push 'moved' checkins to old esp-js-ui, esp-js-react, microdi-js repos
 [ ] - write tests for examples to ensure they work after esp changes
 
 // docs
 [ ] - merge all readmes and restructure docs
 [ ] - document monorepo setup
       - only binary (in node_modules/.bin) dev dependencies at package level
+      - use of tools directory
+      - lerna notes:
+        most of he lerna config is in lerna.json, except --dist-tag which is at the package level (in a packageConfig)
+        this is because the new packages are just latest already (as i mistakenly published a latest and can't delete)
+        moving forward, once 2.0.1 is pushed, this can be removed.
 [ ] - document methods so the .d.ts have the docs
 [ ] - document observeEventEnvelope
 [ ] - Add Breaking Changes to release notes
-[ ] - you ube videos to help with documents
+[ ] - youtube videos to help with documents
 [ ] - document all the new modules
 [ ] - document router.broadcast being expensive
 [ ] - good docs on ConnectableComponent and connect

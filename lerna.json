@@ -1,15 +1,24 @@
 {
-  "lerna": "2.11.0",
-  "version": "1.5.2",
+  "version": "2.0.1-rc.2",
   "useWorkspaces": true,
   "npmClient": "yarn",
   "command": {
     "publish": {
+      "allowBranch": "*",
       "ignoreChanges": [
-        "ignored-file",
-        "*.md"
+        "**/test/**",
+        "**/*.md"
       ],
-      "npmClient": "yarn"
-    }
-  }
+      "forcePublish": true,
+      "bump": "prerelease",
+      "preid": "rc",
+      "npmClient": "yarn",
+      "message": "chore(release): publish %s"
+    },
+    "version": "fixed"
+  },
+  "packages": [
+    "packages/*",
+    "examples/*"
+  ]
 }

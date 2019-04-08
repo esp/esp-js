@@ -1,7 +1,7 @@
 {
   "name": "tools",
   "private": true,
-  "version": "2.0.1-rc.0",
+  "version": "2.0.1-rc.1",
   "description": "tools for esp builds (exists so it can be symlined to other packages, it's never published)",
   "main": "index.js",
   "license": "Apache-2.0",

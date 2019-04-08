@@ -12,7 +12,6 @@
       "forcePublish": true,
       "bump": "prerelease",
       "preid": "rc",
-      "dist-tag": "next",
       "npmClient": "yarn",
       "message": "chore(release): publish %s"
     },

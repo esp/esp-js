@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1-rc.0",
   "useWorkspaces": true,
   "npmClient": "yarn",
   "command": {
@@ -12,11 +12,14 @@
       "forcePublish": true,
       "bump": "prerelease",
       "preid": "rc",
-      "tag": "next",
+      "dist-tag": "next",
       "npmClient": "yarn",
       "message": "chore(release): publish %s"
     },
     "version": "fixed"
   },
-  "packages": ["packages/*", "examples/*"]
+  "packages": [
+    "packages/*",
+    "examples/*"
+  ]
 }

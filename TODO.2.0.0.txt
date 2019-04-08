@@ -81,6 +81,8 @@
 [ ] - document monorepo setup
       - only binary (in node_modules/.bin) dev dependencies at package level
       - use of tools directory
+      - lerna notes:
+        all the
 [ ] - document methods so the .d.ts have the docs
 [ ] - document observeEventEnvelope
 [ ] - Add Breaking Changes to release notes

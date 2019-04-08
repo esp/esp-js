@@ -14,7 +14,8 @@
     "test": "lerna run test --stream --sort",
     "create-package": "yarn clean && yarn build-prod && lerna run pack",
     "trash": "./scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules",
-    "publish-prerelease-version": "yarn clean && yarn build-prod && lerna publish --sort --stream --canary --preid next --npm-tag next --cd-version=premajor"
+    "publish-all": "yarn clean && yarn build-prod && lerna publish",
+    "publish-all-test": "lerna publish --no-push"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",

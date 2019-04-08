@@ -21,7 +21,7 @@
     "test-ci": "task test-ci",
     "start": "task start --watch"
   },
-  "main": "dist/esp-js-di.js",
+  "main": ".dist/esp-js-di.js",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "typings": "./esp-js-di.d.ts",

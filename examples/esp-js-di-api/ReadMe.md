@@ -1,6 +1,6 @@
-# micro-di examples
+# esp-js-di examples
 
-The [examples](examples.js) cover the main features of the container, they are fairly self explanatory.
+The [examples](src/examples.ts) cover the main features of the container, they are fairly self explanatory.
   
 To get a feel for the container you can use these as a test bed to try out features.
 

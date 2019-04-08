@@ -1,4 +1,0 @@
-{
-  "presets": ["node6"],
-  "plugins": ["transform-runtime", "transform-decorators-legacy", "transform-flow-strip-types"]
-}

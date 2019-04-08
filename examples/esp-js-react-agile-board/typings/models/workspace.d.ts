@@ -1,0 +1,30 @@
+import { ModelBase } from './modelBase';
+import { Epic } from './epic';
+import { List } from 'immutable';
+import { Modal } from './modal';
+import { Story } from './story';
+export declare class Workspace extends ModelBase {
+    private _modal;
+    private _epics;
+    private _allStories;
+    private _displayedStories;
+    private _selectedEpic;
+    private _selectedStory;
+    private _showAllStoriesButton;
+    private _createEpicDialog;
+    private _createStoryDialog;
+    constructor(router: any, modal: Modal);
+    readonly modal: Modal;
+    readonly epics: List<Epic>;
+    readonly allStories: List<Story>;
+    readonly displayedStories: List<Story>;
+    readonly selectedEpic: Epic;
+    readonly selectedStory: Story;
+    readonly showAllStoriesButton: boolean;
+    observeEvents(): void;
+    _onAddEpic(): void;
+    _onShowAllStories(): void;
+    _onEpicSelected(event: any): void;
+    _onStorySelected(event: any): void;
+    postProcess(): void;
+}

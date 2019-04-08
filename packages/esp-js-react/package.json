@@ -24,17 +24,17 @@
     "start": "task start --watch"
   },
   "devDependencies": {
-    "jest": "23.4.2",
+    "jest": "24.7.1",
     "tools": "2.0.0",
-    "typescript": "2.9.2",
-    "webpack": "4.16.3",
-    "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "3.1.5"
+    "typescript": "3.4.2",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.2.1"
   },
   "dependencies": {
     "esp-js": "^2.0.0",
     "esp-js-polimer": "^2.0.0",
-    "prop-types": "^15.6.2",
-    "react": "16.4.1"
+    "prop-types": "^15.7.2",
+    "react": "16.8.6"
   }
 }

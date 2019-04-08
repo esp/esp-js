@@ -30,6 +30,8 @@
 [ ] - Rx Js upgrade
 [ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
 [ ] - Lift Polimer state tracking to separate package so it can be swapped out
+[ ] - fix router.observeEventsOnWithDecorators_ES6_Tests.ts, some issues whereby babel isn't picking up the transpiled typescript.
+      this should prob be an integration tests after the final package is built
 [x] - rename 'store' to 'model' through out
     - there is API confusion as to what's a store and what's a model.
       In effect they are the same thing but the store is an immutable version.
@@ -64,6 +66,7 @@
 // docs
 [ ] - merge all readmes and restructure docs
 [ ] - document monorepo setup
+      - only binary (in node_modules/.bin) dev dependencies at package level
 [ ] - document methods so the .d.ts have the docs
 [ ] - document observeEventEnvelope
 [ ] - Add Breaking Changes to release notes

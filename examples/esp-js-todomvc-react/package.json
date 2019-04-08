@@ -12,15 +12,14 @@
   },
   "private": true,
   "dependencies": {
-    "babel-core": "6.26.3",
-    "babel-standalone": "^6.26.0",
+    "@babel/standalone": "^7.4.3",
     "classnames": "^2.2.5",
     "create-react-class": "^15.6.3",
     "director": "^1.2.8",
     "esp-js": "^2.0.0",
-    "react": "16.4.1",
-    "react-dom": "16.4.1",
-    "todomvc-app-css": "^2.0.0",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "todomvc-app-css": "^2.2.0",
     "todomvc-common": "^1.0.0"
   }
 }

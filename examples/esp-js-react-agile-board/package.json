@@ -1,18 +1,18 @@
 {
   "name": "esp-js-react-agile-board",
-  "version": "2.0.1-rc.2",
+  "version": "2.0.1-rc.3",
   "description": "ESP JS React Components Sample.",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^2.0.1-rc.2",
-    "esp-js-react": "^2.0.1-rc.2",
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-react": "^2.0.1-rc.3",
     "immutable": "^4.0.0-rc.12",
     "lodash": "4.17.11",
     "react": "16.8.6",
     "react-dom": "16.8.6",
-    "tools": "^2.0.1-rc.2"
+    "tools": "^2.0.1-rc.3"
   },
   "devDependencies": {
     "jest": "24.7.1",

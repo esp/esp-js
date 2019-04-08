@@ -1,40 +1,41 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
 import {ComponentFactoryBase, Logger, componentFactory, IdFactory} from 'esp-js-ui';
-import {CashTileStore, defaultStoreFactory} from './store/cashTileStore';
+import {CashTileModel, defaultModelFactory} from './model/cashTileModel';
 import {CashTileView} from './views/cashTileView';
-import {rootStateHandlerMap} from './store/root/rootState';
-import {referenceDataStateHandlerMap} from './store/refData/referenceDataState';
-import {rootStateObservable} from './store/root/rootEventStreams';
-import {inputStateHandlerMap} from './store/inputs/inputsState';
-import {RequestForQuoteStateHandlers} from './store/rfq/requestForQuoteState';
-import {RequestForQuoteEventStreams} from './store/rfq/requestForQuoteEventStreams';
+import {rootStateHandlerMap} from './model/root/rootState';
+import {referenceDataStateHandlerMap} from './model/refData/referenceDataState';
+import {rootStateObservable} from './model/root/rootEventStreams';
+import {inputStateHandlerMap} from './model/inputs/inputsState';
+import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
+import {RequestForQuoteEventStreams} from './model/rfq/requestForQuoteEventStreams';
 import {RfqService} from './services/rfqService';
 import {RootEvents} from './events';
-import {DateSelectorModel} from './store/dateSelector/dateSelectorModel';
+import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
+import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
 
 const _log = Logger.create('CashTileComponentFactory');
 
-@componentFactory('tradingModule_cashTileComponentFactory', 'Cash Tile')
-export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<CashTileStore>> {
+@componentFactory(TradingModuleContainerConst.cashTileComponentFactory, 'Cash Tile')
+export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<CashTileModel>> {
     private _router : Router;
     constructor(container, router:Router) {
         super(container);
         this._router = router;
     }
     // override
-    _createComponent(childContainer, state: CashTileStore): PolimerModel<CashTileStore> {
+    _createComponent(childContainer, state: CashTileModel): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
-        const modelId = IdFactory.createId('cashTileStore');
+        const modelId = IdFactory.createId('cashTileModel');
 
-        const initialStore = state || defaultStoreFactory(modelId, 'EURUSD');
+        const initialModel = state || defaultModelFactory(modelId, 'EURUSD');
 
         let model = this._router
             // ***************************
-            // Create a store and setup some initial state
-            .storeBuilder<CashTileStore>()
-            .withInitialStore(initialStore)
+            // Create a model and setup some initial state
+            .modelBuilder<CashTileModel>()
+            .withInitialModel(initialModel)
 
             // ***************************
             // Wire up state handlers.
@@ -48,13 +49,13 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
             //    Useful if you want to use dependency injection, or attribute based stream wire-up
             .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
             // 3) Handlers which are objects that have a function named getEspPolimerState()
-            //    These are useful if you have existing plumbing, or OO objects which you want to interop with polimer like stores
+            //    These are useful if you have existing plumbing, or OO objects which you want to interop with polimer like immutable models
             //    There are some caveats here:
             //    - The public api to the model should be accessed via events.
             //      If you have methods which get called by some background process there is now way for esp to know the state has changed.
             //      e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
             //           if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
-            //           In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileStore> created by this builder
+            //           In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileModel> created by this builder
             .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router), true)
 
             // ***************************
@@ -69,8 +70,8 @@ export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<
             .withEventStreamsOn(new RequestForQuoteEventStreams(new RfqService()))
 
             // ***************************
-            // Add some view bindings for this store.
-            // Used by ConnectableComponent to render a view for the store
+            // Add some view bindings for this model.
+            // Used by ConnectableComponent to render a view for the model
             .withViewBindings(CashTileView)
 
             // ***************************

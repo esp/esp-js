@@ -1,14 +1,11 @@
 import * as React from 'react';
 import {Router} from 'esp-js';
-import {CashTileStore} from '../store/cashTileStore';
+import {CashTileModel} from '../model/cashTileModel';
 import {DateSelectorEvents, InputEvents, RfqEvents} from '../events';
-import {InputsState} from '../store/inputs/inputsState';
-import {PolimerModel} from 'esp-js-polimer';
-import {RequestForQuoteState} from '../store/rfq/requestForQuoteState';
+import {InputsState} from '../model/inputs/inputsState';
+import {RequestForQuoteState} from '../model/rfq/requestForQuoteState';
 
-type Model = PolimerModel<CashTileStore>;
-
-export class CashTileView extends React.Component<{model:Model, router:Router}, any> {
+export class CashTileView extends React.Component<{model:CashTileModel, router:Router}, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -33,14 +30,13 @@ export class CashTileView extends React.Component<{model:Model, router:Router}, 
         this.setState({dateInput: e.target.value, updatingDate: true});
     };
     _publishEvent = (event, payload) => {
-        let store: CashTileStore = this.props.model.getStore(); // todo hide this behind infrastructure
-        this.props.router.publishEvent(store.modelId, event, payload);
+        this.props.router.publishEvent(this.props.model.modelId, event, payload);
     };
     render() {
-        let store: CashTileStore = this.props.model.getStore(); // todo hide this behind infrastructure
-        let inputs: InputsState = store.inputs;
-        let requestForQuote: RequestForQuoteState = store.requestForQuote;
-        let dateInput = this.state.updatingDate ? this.state.dateInput : store.dateSelector.resolvedDateString;
+        let model = this.props.model;
+        let inputs: InputsState = model.inputs;
+        let requestForQuote: RequestForQuoteState = model.requestForQuote;
+        let dateInput = this.state.updatingDate ? this.state.dateInput : model.dateSelector.resolvedDateString;
         let price = null;
         if (requestForQuote.quote) {
             price = (<div className='price'>{inputs.ccyPair} ${inputs.notional} @ {requestForQuote.quote.price}</div>);
@@ -48,7 +44,7 @@ export class CashTileView extends React.Component<{model:Model, router:Router}, 
         return (
             <div className='cashTileView'>
                 <div className='header'>Cash Tile</div>
-                <div className='modelId'>id: {store.modelId}</div>
+                <div className='modelId'>id: {model.modelId}</div>
                 <select value={inputs.ccyPair} onChange={this._onCurrencyPairChanged}>
                     <option value='EURGBP'>EURGBP</option>
                     <option value='AUDUSD'>AUDUSD</option>

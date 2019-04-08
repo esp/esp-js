@@ -1,7 +1,7 @@
-export interface StorePreEventProcessor<TStore> {
-    (store: TStore): TStore | void;
+export interface ModelPreEventProcessor<TModel> {
+    (model: TModel): TModel | void;
 }
 
-export interface StorePostEventProcessor<TStore> {
-    (store: TStore, eventsProcessed: string[]): TStore | void;
+export interface ModelPostEventProcessor<TModel> {
+    (model: TModel, eventsProcessed: string[]): TModel | void;
 }

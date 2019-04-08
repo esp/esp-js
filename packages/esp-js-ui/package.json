@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "2.0.0",
+  "version": "2.0.1-rc.3",
   "description": "ESP-JS-UI Package",
   "main": ".dist/esp-js-ui.js",
   "types": "esp-js-ui.d.ts",
@@ -17,21 +17,24 @@
     "start": "task start --watch"
   },
   "devDependencies": {
-    "jest": "23.4.2",
-    "tools": "2.0.0",
-    "typescript": "2.9.2",
-    "webpack": "4.16.3",
-    "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "3.1.5"
+    "jest": "24.7.1",
+    "tools": "^2.0.1-rc.3",
+    "typescript": "3.4.2",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.2.1"
   },
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^2.0.0",
-    "esp-js-react": "^2.0.0",
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-react": "^2.0.1-rc.3",
     "microdi-js": "1.1.0",
-    "query-string": "6.1.0",
-    "react": "16.4.1",
+    "query-string": "6.4.2",
+    "react": "16.8.6",
     "rx": "4.1.0",
     "uuid": "3.3.2"
+  },
+  "publishConfig": {
+    "tag": "latest"
   }
 }

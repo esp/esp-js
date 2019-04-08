@@ -13,13 +13,13 @@ build() {
     echo "yarn version: $(yarn --version)"
     echo "npm version: $(yarn --version)"
     echo "jest version: $($(pwd)/node_modules/.bin/jest --version)"
-    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details
+    $(pwd)/node_modules/.bin/webpack --display-reasons --display-error-details --color
 }
 
 runTests() {
     if [ -f $(pwd)/jest.config.js ]
     then
-        $(pwd)/node_modules/.bin/jest --verbose --no-cache -c $(pwd)/jest.config.js --rootDir . $1
+        $(pwd)/node_modules/.bin/jest --verbose --color --no-cache -c $(pwd)/jest.config.js --rootDir . $1
     else
         echo "Skipping tests no test config found"
     fi

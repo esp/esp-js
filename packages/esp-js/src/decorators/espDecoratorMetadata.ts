@@ -22,7 +22,6 @@ import {Guard} from '../system';
 export enum DecoratorTypes {
     observeEvent = 'observeEvent',
     observeEventEnvelope = 'observeEventEnvelope',
-    observeModelChangedEvent = 'observeModelChangedEvent',
     custom = 'custom'
 }
 
@@ -37,7 +36,7 @@ export interface ObserveEventPredicate {
  * A delegate signature used when esp-js-polimer queries a state handler function to see if it should receive the given event
  */
 export interface PolimerEventPredicate {
-    (stateDraft?: any, event?: any, store?: any, eventContext?: EventContext): boolean;
+    (stateDraft?: any, event?: any, model?: any, eventContext?: EventContext): boolean;
 }
 
 export type EventPredicate = ObserveEventPredicate | PolimerEventPredicate;

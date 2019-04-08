@@ -1,8 +1,8 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir" : "./.tsbuild",
-    "declarationDir": "./typings"
+    "declarationDir": "./.dist/typings"
   },
   "files": [
     "typings/custom.d.ts"

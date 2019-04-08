@@ -4,7 +4,7 @@ module.exports = {
         "^.+\\.tsx?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts"
     },
     "testMatch": [
-        "**/tests/**/*Tests.[jt]s"
+        "**/tests/**/*Tests.[jt]s?(x)"
     ],
     "moduleFileExtensions": [
         "ts",

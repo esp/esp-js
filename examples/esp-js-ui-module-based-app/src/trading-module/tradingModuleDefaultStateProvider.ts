@@ -4,21 +4,21 @@ import {DefaultStateProvider, ComponentFactoryState} from 'esp-js-ui';
 import {RegionNames} from '../shell/regionNames';
 import {BlotterState} from './blotter/models/blotterState';
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
-import {CashTileStore, defaultStoreFactory} from './cash-tile/store/cashTileStore';
+import {CashTileModel, defaultModelFactory} from './cash-tile/model/cashTileModel';
 
 export class TradingModuleDefaultStateProvider implements DefaultStateProvider {
     getComponentFactoriesState(layoutMode: string): Array<ComponentFactoryState> {
         let blotterStates = [BlotterState.create(RegionNames.blotterRegion)];
-        let cashTileStores: Array<CashTileStore> = _.map(
+        let cashTileModels: Array<CashTileModel> = _.map(
             ['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'],
-            symbol => defaultStoreFactory(uuid.v4(), symbol)
+            symbol => defaultModelFactory(uuid.v4(), symbol)
         );
         return [{
             componentFactoryKey: TradingModuleContainerConst.blotterComponentFactory,
             componentsState: blotterStates
         }, {
             componentFactoryKey: TradingModuleContainerConst.cashTileComponentFactory,
-            componentsState: cashTileStores
+            componentsState: cashTileModels
         }];
     }
 }

@@ -22,7 +22,8 @@ import {
     SmartComponent,
     ViewBinder,
     viewBinding,
-    ModelSelector,
+    getEspReactRenderModel,
+    GetEspReactRenderModelConsts,
     shouldUpdateMixin
 } from '../src';
 
@@ -47,9 +48,14 @@ describe('index exports', () => {
         expect(viewBinding).toBeDefined();
     });
 
-    it('should export ModelSelector', () => {
-        expect(espReact.ModelSelector).toBeDefined();
-        expect(ModelSelector).toBeDefined();
+    it('should export getEspReactRenderModel decorator', () => {
+        expect(espReact.getEspReactRenderModel).toBeDefined();
+        expect(getEspReactRenderModel).toBeDefined();
+    });
+
+    it('should export GetEspReactRenderModelConsts', () => {
+        expect(espReact.GetEspReactRenderModelConsts).toBeDefined();
+        expect(GetEspReactRenderModelConsts).toBeDefined();
     });
 
     it('should export shouldUpdateMixin', () => {

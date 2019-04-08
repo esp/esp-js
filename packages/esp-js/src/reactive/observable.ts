@@ -21,7 +21,7 @@ import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
 import {RouterObservable} from './routerObservable';
 import {Router} from '../router';
-import {DisposableWrapper} from '../system/disposables';
+import {Disposable, DisposableWrapper} from '../system/disposables';
 import {DictionaryDisposable} from '../system/disposables';
 import {DisposableOrFunction} from '../system/disposables/disposable';
 import {AutoConnectedObservable} from './autoConnectedObservable';
@@ -76,12 +76,12 @@ export class Observable<T> {
         this._subscribe = subscribe;
     }
 
-    public subscribe(observer: Observer<T>);
-    public subscribe(onNext: () => void);
-    public subscribe(onNext: (item: T) => void);
-    public subscribe(onNext: () => void, onCompleted: () => void);
-    public subscribe(onNext: (item: T) => void, onCompleted: () => void);
-    public subscribe(...args: any[]) {
+    public subscribe(observer: Observer<T>): Disposable;
+    public subscribe(onNext: () => void) : Disposable;
+    public subscribe(onNext: (item: T) => void) : Disposable;
+    public subscribe(onNext: () => void, onCompleted: () => void) : Disposable;
+    public subscribe(onNext: (item: T) => void, onCompleted: () => void) : Disposable;
+    public subscribe(...args: any[]): Disposable {
         let observer = (<any>Observer).wrap(...args);
         Guard.isDefined(this._subscribe, '_subscribe not set');
         return this._subscribe(observer);

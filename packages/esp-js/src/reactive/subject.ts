@@ -37,9 +37,6 @@ export class Subject<T> extends Observable<T> {
         this._subscribe = <Subscribe<T>>subscribe.bind(this);
     }
 
-    // The reactive implementation can push 3 arguments through the stream, initially this was setup to
-    // pass all arguments using .apply, however it's performance is about 40% slower than direct method calls
-    // given this, and that we only ever push a max of 3 args, it makes sense to hard code them.
     onNext(item: T) {
         if (!this._hasComplete) {
             if (this._cacheLastValue) {
@@ -68,6 +65,7 @@ export class Subject<T> extends Observable<T> {
         return this._observers.length;
     }
 }
+
 function subscribe<T>(observer: Observer<T>) {
     this._observers.push(observer);
     if (this._cacheLastValue && typeof this._lastValue !== 'undefined') {

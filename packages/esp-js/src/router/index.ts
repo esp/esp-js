@@ -19,14 +19,12 @@
 import * as devtools from './devtools';
 
 export {devtools};
-export {EventContext, DefaultEventContext, ModelChangedEventContext} from './eventContext';
+export {EventContext, DefaultEventContext} from './eventContext';
 export {ModelRecord} from './modelRecord';
 export {ObservationStage} from './observationStage';
 export {Router} from './router';
 export {SingleModelRouter} from './singleModelRouter';
 export {State} from './state';
 export {Status} from './status';
-export {Consts} from './const';
-export {ModelChangedEvent} from './modelChangedEvent';
 export {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 export {EventProcessors, PostEventProcessor, PreEventProcessor} from './eventProcessors';

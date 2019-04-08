@@ -18,7 +18,7 @@
 
 const tsc = require('typescript');
 const npath = require ('path');
-const tsconfig = require('../tsconfig.base.json');
+const tsconfig = require('../tsconfig.json');
 // const tsconfig = require(path.resolve('.', 'tsconfig.json'));
 
 /*

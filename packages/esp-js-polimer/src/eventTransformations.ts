@@ -6,7 +6,7 @@ import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, 
  */
 export function eventTransformFor(eventType: string, observationStage = ObservationStage.final) {
     return function (target, name, descriptor) {
-        Guard.stringIsNotEmpty(eventType, 'eventType passed to an observeStoreEvent decorator must not be \'\'');
+        Guard.stringIsNotEmpty(eventType, 'eventType passed to an eventTransformFor decorator must not be \'\'');
         let metadata: EspMetadata  = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
         metadata.addEvent(
             name,
@@ -19,21 +19,21 @@ export function eventTransformFor(eventType: string, observationStage = Observat
     };
 }
 
-export interface InputEvent<TStore, TEvent> {
+export interface InputEvent<TModel, TEvent> {
     readonly event: TEvent;
-    readonly store: TStore;
+    readonly model: TModel;
     readonly eventType: string;
     readonly context: EventContext;
 }
 
-export type InputEventStream<TStore, TEvent> = Rx.Observable<InputEvent<TStore, TEvent>>;
+export type InputEventStream<TModel, TEvent> = Rx.Observable<InputEvent<TModel, TEvent>>;
 
-export type InputEventStreamFactory<TStore, TEvent = any> = (eventType: string | string[], observationStage?: ObservationStage) => InputEventStream<TStore, TEvent>;
+export type InputEventStreamFactory<TModel, TEvent = any> = (eventType: string | string[], observationStage?: ObservationStage) => InputEventStream<TModel, TEvent>;
 
 export type OutputEvent<TEvent> = {
     readonly eventType: string;
     /**
-     * The modelId to publish the event to, if omitted the model for the current store will be used.
+     * The modelId to publish the event to, if omitted the current model's id will be used.
      */
     readonly modelId?: string;
     readonly event?: TEvent;
@@ -49,4 +49,4 @@ export type OutputEvent<TEvent> = {
 
 export type OutputEventStream<TEvent> = Rx.Observable<OutputEvent<TEvent>>;
 
-export type OutputEventStreamFactory<TStore, TInputEvent, TOutputEvent>  = (getEventStreamFor: InputEventStreamFactory<TStore, TInputEvent>) => OutputEventStream<TOutputEvent>;
+export type OutputEventStreamFactory<TModel, TInputEvent, TOutputEvent>  = (getEventStreamFor: InputEventStreamFactory<TModel, TInputEvent>) => OutputEventStream<TOutputEvent>;

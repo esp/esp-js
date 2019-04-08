@@ -125,11 +125,6 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
         this._devToolsDiagnostic.dispatchingViaDirective(functionName);
     }
 
-    dispatchingViaConvention(functionName) {
-        this._currentLoggingDiagnosticMonitor.dispatchingViaConvention(functionName);
-        this._devToolsDiagnostic.dispatchingViaConvention(functionName);
-    }
-
     finishDispatchingEvent() {
         this._currentLoggingDiagnosticMonitor.finishDispatchingEvent();
         this._devToolsDiagnostic.finishDispatchingEvent();

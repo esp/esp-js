@@ -27,18 +27,19 @@ let isProduction = env.trim().toUpperCase() === 'prod';
 console.log('Running in ' + env + ' environment.');
 
 let plugins = [
-    new CleanWebpackPlugin(['.dist', '.tsBuild'], {
-      root: process.cwd(),
-      verbose: true,
-      dry: false
+    new CleanWebpackPlugin({
+        cleanOnceBeforeBuildPatterns: ['.dist', '.tsBuild'],
+        root: process.cwd(),
+        verbose: true,
+        dry: false
     })
 ];
 
-if(isProduction) {
+if (isProduction) {
     plugins.push(new webpack.DefinePlugin({
-      'process.env':{
-        'NODE_ENV': JSON.stringify('production')
-      }
+        'process.env': {
+            'NODE_ENV': JSON.stringify('production')
+        }
     }));
 }
 
@@ -63,7 +64,7 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
-                use:[{
+                use: [{
                     loader: 'ts-loader',
                 }]
             },
@@ -71,12 +72,17 @@ module.exports = {
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
                 enforce: 'pre',
-                use:[{
+                use: [{
                     loader: 'tslint-loader',
                     options: {
                         failOnHint: true
                     }
                 }]
+            },
+            {
+                test: /\.jsx?$/,
+                exclude: /node_modules/,
+                loader: "babel-loader"
             }
         ]
     },

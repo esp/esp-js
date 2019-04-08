@@ -19,7 +19,6 @@
 export {
     observeEvent,
     observeEventEnvelope,
-    observeModelChangedEvent
 } from './observeEvent';
 export {
     EspDecoratorUtil,

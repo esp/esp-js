@@ -16,8 +16,7 @@
  */
 // notice_end
 
-import {Consts, EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
-import {ModelChangedEvent} from './modelChangedEvent';
+import {EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, logging, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
@@ -27,7 +26,7 @@ import {CompositeDiagnosticMonitor} from './devtools';
 import {EventProcessors} from './eventProcessors';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
-import {DefaultEventContext, ModelChangedEventContext} from './eventContext';
+import {DefaultEventContext} from './eventContext';
 import {DecoratorTypes} from '../decorators';
 
 let _log = logging.Logger.create('Router');
@@ -160,7 +159,6 @@ export class Router extends DisposableBase {
     public getEventObservable<TEvent, TModel>(modelId: string, eventType: string, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
         return Observable.create<EventEnvelope<TEvent, TModel>>(o => {
             this._throwIfHaltedOrDisposed();
-            this._guardAgainstLegacyModelChangedEventSubscription(eventType);
             Guard.isString(modelId, 'The modelId argument should be a string');
             Guard.isString(eventType, 'The eventType must be a string');
             Guard.isDefined(modelId, 'The modelId argument should be defined');
@@ -240,22 +238,6 @@ export class Router extends DisposableBase {
         });
     }
 
-    public getModelChangedEventObservable<TObservingModel, TChangedModel>(observingModelId: string, changedModelId: string): Observable<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>> {
-        return Observable.create<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>(o => {
-            this._throwIfHaltedOrDisposed();
-            Guard.isString(observingModelId, 'The modelId argument should be a string');
-            Guard.isString(changedModelId, 'The eventType must be a string');
-            const modelRecord = this._getOrCreateModelRecord(observingModelId);
-            return this._dispatchSubject
-                .cast<EventEnvelope<ModelChangedEvent<TChangedModel>, TObservingModel>>()
-                .filter(envelope => envelope.dispatchType === DispatchType.ModelChangedEvent && envelope.eventType === Consts.modelChangedEvent && envelope.event.modelId === changedModelId)
-                .map(envelope => ({...envelope, modelId: observingModelId, model: modelRecord.model}))
-                .asRouterObservable(this)
-                .streamFor(observingModelId)
-                .subscribe(o);
-        });
-    }
-
     public getModelObservable<TModel>(modelId: string): Observable<TModel> {
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
@@ -283,12 +265,11 @@ export class Router extends DisposableBase {
         return SingleModelRouter.createWithRouter<TModel>(this, targetModelId);
     }
 
-    public observeEventsOn(modelId: string, object: any, methodPrefix = '_observe_'): Disposable {
+    public observeEventsOn(modelId: string, object: any): Disposable {
         if (EspDecoratorUtil.hasMetadata(object)) {
             return this._observeEventsUsingDirectives(modelId, object);
-        } else {
-            return this._observeEventsUsingConventions(modelId, object, methodPrefix);
         }
+        return new DisposableBase();
     }
 
     public addOnErrorHandler(handler: (error: Error) => void) {
@@ -340,10 +321,6 @@ export class Router extends DisposableBase {
     }
 
     private _tryEnqueueEvent(modelId: string, eventType: string, event: any) {
-        // don't enqueue a model changed event for the same model that changed
-        if (eventType === Consts.modelChangedEvent && event.modelId === modelId) {
-            return;
-        }
         // we allow for lazy model registration, you can observe a model but then register it later,
         // this means at this point when publishing an event we need to ensure the actual model is there.
         if (!this._models.has(modelId) || !this._models.get(modelId).model) {
@@ -371,9 +348,6 @@ export class Router extends DisposableBase {
                 let eventRecord = modelRecord.eventQueue.shift();
                 this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.eventType);
                 this._state.moveToPreProcessing(modelRecord.modelId, modelRecord);
-                if (modelRecord.model.unlock && typeof modelRecord.model.unlock === 'function') {
-                    modelRecord.model.unlock();
-                }
                 this._diagnosticMonitor.preProcessingModel();
                 modelRecord.preEventProcessor(modelRecord.model);
                 if (!modelRecord.wasRemoved) {
@@ -396,7 +370,7 @@ export class Router extends DisposableBase {
                         if (modelRecord.wasRemoved) {
                             break;
                         }
-                        modelRecord.hasChanges = true;
+                        modelRecord.hasReceivedEvent = true;
                         hasEvents = modelRecord.eventQueue.length > 0;
                         if (hasEvents) {
                             eventRecord = modelRecord.eventQueue.shift();
@@ -408,12 +382,8 @@ export class Router extends DisposableBase {
                         this._state.moveToPostProcessing();
                         modelRecord.postEventProcessor(modelRecord.model, this._state.eventsProcessed);
                         this._state.clearEventDispatchQueue();
-                        if (modelRecord.model.lock && typeof modelRecord.model.lock === 'function') {
-                            modelRecord.model.lock();
-                        }
                     }
                 }
-                this._dispatchModelChangedEvent(modelRecord);
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
@@ -461,19 +431,6 @@ export class Router extends DisposableBase {
         }
     }
 
-    private _dispatchModelChangedEvent(modelRecordThatChanged: ModelRecord) {
-        this._diagnosticMonitor.dispatchingEvent(Consts.modelChangedEvent, ObservationStage.normal);
-        this._dispatchSubject.onNext({
-            event: new ModelChangedEvent(modelRecordThatChanged.modelId, modelRecordThatChanged.model),
-            eventType: Consts.modelChangedEvent,
-            modelId: null,
-            model: null,
-            context: new ModelChangedEventContext(),
-            observationStage: ObservationStage.normal,
-            dispatchType: DispatchType.ModelChangedEvent
-        });
-    }
-
     private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
         this._diagnosticMonitor.dispatchingEvent(eventType, stage);
         modelRecord.eventDispatchProcessor(modelRecord.model, eventType, event, stage);
@@ -492,8 +449,8 @@ export class Router extends DisposableBase {
     private _dispatchModelUpdates() {
         let updates: ModelRecord[] = [];
         for (let [key, value] of this._models) {
-            if (value.hasChanges) {
-                value.hasChanges = false;
+            if (value.hasReceivedEvent) {
+                value.hasReceivedEvent = false;
                 updates.push(value);
             }
         }
@@ -547,41 +504,6 @@ export class Router extends DisposableBase {
         return compositeDisposable;
     }
 
-    private _observeEventsUsingConventions(modelId, object, methodPrefix): Disposable {
-        let compositeDisposable = new CompositeDisposable();
-        let props = utils.getPropertyNames(object);
-        for (let i = 0; i < props.length; i++) {
-            let prop = props[i];
-            if (utils.startsWith(prop, methodPrefix)) {
-                let stage = ObservationStage.normal;
-                let eventType = prop.replace(methodPrefix, '');
-                let observationStageSplitIndex = eventType.lastIndexOf('_');
-                if (observationStageSplitIndex > 0) {
-                    let stageSubstring = eventType.substring(observationStageSplitIndex + 1);
-                    let stageSpecified = false;
-                    if (stageSubstring === ObservationStage.preview) {
-                        stage = ObservationStage.preview;
-                        stageSpecified = true;
-                    } else if (stageSubstring === ObservationStage.normal) {
-                        stage = ObservationStage.normal;
-                        stageSpecified = true;
-                    } else if (stageSubstring === ObservationStage.committed) {
-                        stage = ObservationStage.committed;
-                        stageSpecified = true;
-                    }
-                    if (stageSpecified) {
-                        eventType = eventType.substring(0, observationStageSplitIndex);
-                    }
-                }
-                compositeDisposable.add(this.getEventObservable(modelId, eventType, stage).subscribe((eventEnvelope) => {
-                    this._diagnosticMonitor.dispatchingViaConvention(prop);
-                    object[prop](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);
-                }));
-            }
-        }
-        return compositeDisposable;
-    }
-
     private _tryDefaultObservationStage(stage?: ObservationStage) {
         if (stage) {
             Guard.isString(stage, 'The stage argument should be a string');
@@ -598,15 +520,6 @@ export class Router extends DisposableBase {
         }
         if (this.isDisposed) {
             throw new Error(`ESP router has been disposed`);
-        }
-    }
-
-    private _guardAgainstLegacyModelChangedEventSubscription(eventType: string) {
-        let errorMessage = 'You can not observe a modelChangedEvent via router.getEventObservable(), use router.getModelChangedEvent() instead';
-        Guard.isFalsey(eventType === Consts.modelChangedEvent, errorMessage);
-        if ((<any>eventType).modelId) {
-            // guard against the old format modelChangedEvents
-            throw new Error(errorMessage);
         }
     }
 

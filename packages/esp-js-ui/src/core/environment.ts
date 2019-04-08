@@ -1,5 +1,6 @@
 import * as queryString from 'query-string';
 import *  as Utils from './utils';
+import {ParsedQuery} from 'query-string';
 
 const _isRunningOnTablet = (): boolean =>  {
     /* tslint:disable */
@@ -24,7 +25,7 @@ export class Environment {
         Environment._memoised = Environment._memoised === null 
             ? _isRunningOnTablet() 
             : Environment._memoised;
-
-        return Environment._memoised || Utils.parseBool(queryString.parse(location.search).isRunningOnTablet);
+        let parsedQuery: ParsedQuery = queryString.parse(location.search);
+        return Environment._memoised || Utils.parseBool(parsedQuery.isRunningOnTablet as string);
     }
 }

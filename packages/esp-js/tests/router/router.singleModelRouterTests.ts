@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {observeEvent} from '../../src/decorators/observeEvent';
 
 describe('Router', () => {
 
@@ -26,20 +27,23 @@ describe('Router', () => {
         _router = new esp.Router();
     });
 
+    class TestModel {
+        id = 'theModel';
+        aNumber = 0;
+        anotherNumber = 0;
+        executePassed = false;
+        fooEventReceivedCount = 0;
+        @observeEvent('fooEvent')
+        _onFooEvent() {
+            this.fooEventReceivedCount++;
+        }
+    }
+
     describe('single model router', () => {
-        let _model, _modelRouter, _dispatchedModelNumbers, _fooEventReceivedCount;
+        let _model, _modelRouter, _dispatchedModelNumbers;
 
         beforeEach(() => {
-            _model = {
-                id:'theModel',
-                aNumber:0,
-                anotherNumber:0,
-                executePassed: false,
-                _observe_fooEvent() {
-                    _fooEventReceivedCount++;
-                },
-            };
-            _fooEventReceivedCount = 0;
+            _model = new TestModel();
             _modelRouter = esp.SingleModelRouter.createWithModel(_model);
 
             _dispatchedModelNumbers = [];
@@ -76,7 +80,7 @@ describe('Router', () => {
         it('should proxy observeEventsOn', ()=> {
             _modelRouter.observeEventsOn(_model);
             _modelRouter.publishEvent('fooEvent', {});
-            expect(_fooEventReceivedCount).toEqual(1);
+            expect(_model.fooEventReceivedCount).toEqual(1);
         });
 
         it('should proxy isOnDispatchLoop', ()=> {

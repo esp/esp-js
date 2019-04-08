@@ -1,0 +1,39 @@
+{
+  "name": "esp-js-di",
+  "version": "2.0.1-rc.3",
+  "description": "A tiny DI container (formally microdi-js)",
+  "keywords": [
+    "di",
+    "dependency injection",
+    "inversion of control",
+    "ioc",
+    "container",
+    "unity",
+    "object builder",
+    "microdi-js"
+  ],
+  "scripts": {
+    "clean": "task clean",
+    "build-dev": "task build-dev",
+    "build-prod": "task build-prod",
+    "build-pack": "task pack",
+    "test": "task test",
+    "test-ci": "task test-ci",
+    "start": "task start --watch"
+  },
+  "main": ".dist/esp-js-di.js",
+  "author": "Dev Shop Limited",
+  "license": "Apache-2.0",
+  "typings": "./esp-js-di.d.ts",
+  "devDependencies": {
+    "jest": "24.7.1",
+    "tools": "^2.0.1-rc.3",
+    "typescript": "3.4.2",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.2.1"
+  },
+  "publishConfig": {
+    "tag": "latest"
+  }
+}

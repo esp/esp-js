@@ -1,7 +1,7 @@
 import {PolimerModel} from './polimerModel';
 import {logger} from './logger';
 import { Router, EventEnvelope } from 'esp-js';
-import {Store} from './store';
+import {ImmutableModel} from './immutableModel';
 
 const devToolsExtension = window['devToolsExtension']; //tslint:disable-line
 const _withDevTools = typeof window !== 'undefined' && devToolsExtension != null;
@@ -11,7 +11,7 @@ type Update = {
     payload: any
 };
 
-const onDevToolsMessage = <T extends Store>(router: Router, modelId: string, storeContext: PolimerModel<T>, instance: any) =>
+const onDevToolsMessage = <T extends ImmutableModel>(router: Router, modelId: string, model: PolimerModel<T>, instance: any) =>
     (message: any) => {
         if (message.type === 'ACTION') {
             const event: EventEnvelope<any, any> = JSON.parse(message.payload);
@@ -28,13 +28,13 @@ const onDevToolsMessage = <T extends Store>(router: Router, modelId: string, sto
         if (message.type === 'DISPATCH') {
             switch (message.payload.type) {
                 case 'COMMIT':
-                    instance.init(storeContext.getStore());
+                    instance.init(model.getImmutableModel());
                     break;
                 case 'JUMP_TO_STATE':
                 case 'JUMP_TO_ACTION':
                     const state = JSON.parse(message.state);
 
-                    router.runAction(modelId, () => storeContext.setStore(state));
+                    router.runAction(modelId, () => model.setImmutableModel(state));
                     break;
                 default:
                     break;
@@ -42,12 +42,12 @@ const onDevToolsMessage = <T extends Store>(router: Router, modelId: string, sto
         }
     };
 
-export const connect = <T extends Store>(router: Router, modelId: string, storeContext: PolimerModel<T>, instanceId: string) => {
+export const connect = <T extends ImmutableModel>(router: Router, modelId: string, model: PolimerModel<T>, instanceId: string) => {
     if (_withDevTools) {
         const options: any = {name: instanceId, instanceId};
         const instance = devToolsExtension.connect(options);
 
-        instance.subscribe(onDevToolsMessage(router, modelId, storeContext, instance));
+        instance.subscribe(onDevToolsMessage(router, modelId, model, instance));
     }
 };
 

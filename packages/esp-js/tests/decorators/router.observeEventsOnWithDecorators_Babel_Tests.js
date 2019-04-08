@@ -22,6 +22,13 @@
 
 import {Router, DisposableBase, ObservationStage, observeEvent} from '../../src';
 
+// NOTE, this requires the node presets for basil as the typescript output is in Es6, i.e. has classes, if that's not there you get odd errors.
+// You need this babel 7 config:
+// ["@babel/preset-env", {
+//     "targets": {
+//         "node": true
+//     }
+// }],
 describe('Decorators', () => {
     let _router;
 

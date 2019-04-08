@@ -1,6 +1,6 @@
 {
   "name": "esp-js-api",
-  "version": "2.0.1-rc.1",
+  "version": "2.0.1-rc.2",
   "scripts": {
     "clean": "task clean",
     "build-dev": "task build-dev",
@@ -11,12 +11,12 @@
   },
   "private": true,
   "dependencies": {
-    "esp-js": "^2.0.1-rc.1",
+    "esp-js": "^2.0.1-rc.2",
     "prompt": "1.0.0"
   },
   "devDependencies": {
     "jest": "24.7.1",
-    "tools": "^2.0.1-rc.1",
+    "tools": "^2.0.1-rc.2",
     "ts-node": "^8.0.3",
     "typescript": "3.4.2",
     "webpack": "4.29.6",

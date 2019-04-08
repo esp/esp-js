@@ -76,7 +76,7 @@ export default class Guard {
 
 function doThrow(message) {
     if(typeof message === 'undefined' || message === '') {
-        throw new Error('MicroDi: Argument error');
+        throw new Error('EspDi: Argument error');
     }
-    throw new Error('MicroDi: ' + message);
+    throw new Error('EspDi: ' + message);
 }

@@ -15,8 +15,8 @@
  notice_end */
  
 import * as utils from './utils';
-import InstanceLifecycleType from './InstanceLifecycleType';
-import Guard from './Guard';
+import InstanceLifecycleType from './instanceLifecycleType';
+import Guard from './guard';
 
 export default class RegistrationModifier  {
     constructor(registration, instanceCache, registrationGroups) {

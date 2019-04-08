@@ -17,30 +17,30 @@
 // we export both a default object and individual items, this allows for differing import usages:
 //
 // 1) import the entire namespace
-// import microdi from 'microdi-js';
-// let container = new microdi.Container();
+// import di from 'esp-js-di';
+// let container = new di.Container();
 //
 // 2) import the entire namespace using *
-// import * as microdi from from 'microdi-js';
-// let container = new microdi.Container()
+// import * as di from from 'esp-js-di';
+// let container = new di.Container()
 //
 // 2) import single items
-// import { Container } from 'microdi-js';
+// import { Container } from 'esp-js-di';
 // let container = new Container()
 
-import Container from './Container';
-import RegistrationModifier from './RegistrationModifier';
-import ResolverContext from './ResolverContext';
-import MicroDiConsts from './MicroDiConsts';
+import Container from './container';
+import RegistrationModifier from './registrationModifier';
+import ResolverContext from './resolverContext';
+import EspDiConsts from './espDiConsts';
 
 export { Container };
 export { RegistrationModifier };
 export { ResolverContext };
-export { MicroDiConsts };
+export { EspDiConsts };
 
 export default {
     Container,
     RegistrationModifier,
     ResolverContext,
-    MicroDiConsts
+    EspDiConsts
 };

@@ -14,36 +14,41 @@
  * limitations under the License.
  notice_end */
  
-import microid from '../src/index';
-import * as microidStar from '../src/index';
-import { Container, RegistrationModifier, ResolverContext  } from '../src/index';
+import espDi from '../src/index';
+import * as espDiStar from '../src/index';
+import { Container, RegistrationModifier, ResolverContext, EspDiConsts  } from '../src/index';
 
 describe('index exports', () =>  {
 
     it('Container exported on default export', () =>  {
-        expect(microid.Container).toBeDefined();
+        expect(espDi.Container).toBeDefined();
     });
 
     it('RegistrationModifier exported on default export', () =>  {
-        expect(microid.RegistrationModifier).toBeDefined();
+        expect(espDi.RegistrationModifier).toBeDefined();
     });
 
     it('ResolverContext exported on default export', () =>  {
-        expect(microid.ResolverContext).toBeDefined();
+        expect(espDi.ResolverContext).toBeDefined();
     });
 
     it('Container exported on it\'s own', () =>  {
-        expect(microidStar.Container).toBeDefined();
+        expect(espDiStar.Container).toBeDefined();
         expect(Container).toBeDefined();
     });
 
     it('RegistrationModifier exported on it\'s own', () =>  {
-        expect(microidStar.RegistrationModifier).toBeDefined();
+        expect(espDiStar.RegistrationModifier).toBeDefined();
         expect(RegistrationModifier).toBeDefined();
     });
 
     it('ResolverContext exported on it\'s own', () =>  {
-        expect(microidStar.ResolverContext).toBeDefined();
+        expect(espDiStar.ResolverContext).toBeDefined();
         expect(ResolverContext).toBeDefined();
+    });
+
+    it('EspDiConsts exported on it\'s own', () =>  {
+        expect(espDiStar.EspDiConsts).toBeDefined();
+        expect(EspDiConsts).toBeDefined();
     });
 });

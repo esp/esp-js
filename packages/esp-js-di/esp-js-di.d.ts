@@ -38,6 +38,6 @@ export class RegistrationModifier {
 export interface Resolver<T> {
     resolve(container:Container, dependencyKey:any):T
 }
-export class MicroDiConsts {
+export class EspDiConsts {
     static readonly owningContainer : string;
 }

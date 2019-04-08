@@ -21,11 +21,10 @@
     "test-ci": "task test-ci",
     "start": "task start --watch"
   },
-  "main": "dist/microdi.js",
+  "main": "dist/esp-js-di.js",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
-  "repository": "https://github.com/KeithWoods/microdi-js.git",
-  "typings": "./microdi-js.d.ts",
+  "typings": "./esp-js-di.d.ts",
   "devDependencies": {
     "jest": "24.7.1",
     "tools": "2.0.0",

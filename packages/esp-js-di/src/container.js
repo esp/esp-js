@@ -15,11 +15,11 @@
  notice_end */
  
 import * as utils from './utils';
-import ResolverContext from './ResolverContext';
-import InstanceLifecycleType from './InstanceLifecycleType';
-import RegistrationModifier from './RegistrationModifier';
-import Guard from './Guard';
-import MicroDiConsts from './MicroDiConsts';
+import ResolverContext from './resolverContext';
+import InstanceLifecycleType from './instanceLifecycleType';
+import RegistrationModifier from './registrationModifier';
+import Guard from './guard';
+import EspDiConsts from './espDiConsts';
 
 export default class Container {
     constructor() {
@@ -272,7 +272,7 @@ export default class Container {
     }
     _registerSelf() {
         // register the child with itself so any dependency that wants to resolve a container get's the container at the same scope as itself (i.e. the container that built it).
-        this.registerInstance(MicroDiConsts.owningContainer, this);
+        this.registerInstance(EspDiConsts.owningContainer, this);
     }
     _throwIfDisposed() {
         if (this._isDisposed) throw new Error("Container has been disposed");

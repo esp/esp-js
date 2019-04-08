@@ -1,15 +1,23 @@
-[![Build Status](https://travis-ci.org/KeithWoods/microdi-js.svg?branch=master)](https://travis-ci.org/KeithWoods/microdi-js)
-[![npm](https://img.shields.io/npm/v/microdi-js.svg)](https://www.npmjs.com/package/microdi-js)
+[![Build Status](https://travis-ci.org/esp/esp-js-di.svg?branch=master)](https://travis-ci.org/esp/esp-js-di)
+[![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
 
 **[Basic usage](#basic-usage)** |
 **[Concepts](#concepts)** |
 **[Features](#features)** 
 
-# Microdi-js
+# Esp-Js-Di (formally Microdi-js)
 
-Microdi-js is a tiny but feature rich dependency injection container for JavaScript.
+esp-js-di is a small but feature rich dependency injection container for JavaScript.
 
 # Basic usage
+
+## Creating a container 
+You can import and create a container like this:
+
+```
+import {Container} from 'esp-js-di';
+const container = new Container();
+```
 
 ## Object Registration 
 You can register an object using one of three methods:
@@ -97,7 +105,7 @@ class Parent {
         this._child.sayHello();
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.register('child', Child);
 container.register('parent', Parent).inject('child');
 var parent = container.resolve('parent');
@@ -107,7 +115,7 @@ parent.sayHello();
 Output:
 
 ```
-keith@devshop:~/dev/personal/microdi-js/dist/examples$ node readme.js
+$ node readme.js
 Hello from the parent
 Hello from the child
 ```
@@ -260,7 +268,7 @@ var Foo = {
 var Bar = {
     name: "theBar"
 };
-var container = new microdi.Container();
+var container = new Container();
 container.register('foo', Foo).inGroup('group1');
 container.register('bar', Bar).inGroup('group1');
 var group1 = container.resolveGroup('group1');
@@ -303,7 +311,7 @@ class Foo {
         console.log('%s %s %s', fizz.name, bar.name, bazz.name);
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.register('fizz', { name: 'fizz'});
 container.register('foo', Foo).inject('fizz');
 var foo = container.resolve('foo', { name: 'bar'}, { name: 'bazz'});
@@ -333,7 +341,7 @@ class Manager{
         return this._itemFactory(name);
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.register('item', Item).transient();
 container.register('manager', Manager).inject({ resolver: 'factory', key: 'item'});
 var manager = container.resolve('manager');
@@ -376,7 +384,7 @@ class Manager{
         return this._itemFactory(name);
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.registerInstance('otherDependencyA', 'look! a string dependency');
 container.register('item', Item).inject('otherDependencyA').transient();
 container.register('manager', Manager).inject({ resolver: 'factory', key: 'item'});
@@ -400,7 +408,7 @@ They also inherit instances from their parent depending upon the lifetime manage
 
 Create a child container by calling `createChildContainer` on a parent;
 ```javascript
-var container = new microdi.Container();
+var container = new Container();
 var childcontainer = container.createChildContainer();
 ```
 
@@ -410,7 +418,7 @@ Depending upon registration configurations, objects resolved from a child contai
 
 ```javascript
 var Foo = { };
-var container = new microdi.Container();
+var container = new Container();
 var childContainer = container.createChildContainer();
 container.register('foo', Foo); // defaults to singleton registration
 var foo1 = container.resolve('foo');
@@ -431,7 +439,7 @@ The configuration of a child container can be overridden if required.
 
 ```javascript
 var Foo = { };
-var container = new microdi.Container();
+var container = new Container();
 container.register('foo', Foo); // defaults to singleton registration
 
 var childcontainer = container.createChildContainer();
@@ -478,7 +486,7 @@ class Bootstrapper {
 Lets look at the manual way of doing this:
 
 ```javascript
-import { Container } from 'microdi-js'; 
+import { Container } from 'esp-js-di'; 
 var container = new Container();
 container.registerInstance('theRootContainer', container);
 container.register('bootstrapper', Bootstrapper).inject('theRootContainer');
@@ -489,29 +497,29 @@ let bootstrapper = container.resolve('bootstrapper');
 This will work, but when there are child container at play it gets a bit messy as you have to register things manually each time a child is created.
 Typically you strive to keep child container re-configuration to a minimum for code maintainability reasons. 
 
-microdi supports a special injection key exposed as `MicroDiConsts.owningContainer`.
+The `Container` supports a special injection key exposed as `EspDiConsts.owningContainer`.
 This key will ensure an object getting resolved get it's owning container.
 Lets re-work the above example:
 
 ```javascript
-import { Container, MicroDiConsts } from 'microdi-js'; 
+import { Container, EspDiConsts } from 'esp-js-di'; 
 var container = new Container();
 container
     .register('bootstrapper', Bootstrapper)
-    .inject(MicroDiConsts.owningContainer);
+    .inject(EspDiConsts.owningContainer);
 // bootstrapper will get injected with instance `container`
 let bootstrapper = container.resolve('bootstrapper');
 ```
 
-Objects injected with `MicroDiConsts.owningContainer` and resolved from child containers will get the owning child container injected: 
+Objects injected with `EspDiConsts.owningContainer` and resolved from child containers will get the owning child container injected: 
 
 ```javascript
-import { Container, MicroDiConsts } from 'microdi-js'; 
+import { Container, EspDiConsts } from 'esp-js-di'; 
 var container1 = new Container();
 container1
     .register('bootstrapper', Bootstrapper)
     .transient() // resolve new `Bootstrapper` instance each time
-    .inject(MicroDiConsts.owningContainer);
+    .inject(EspDiConsts.owningContainer);
 
 // bootstrapper1 will get injected with `container1`
 let bootstrapper1 = container1.resolve('bootstrapper');
@@ -540,7 +548,7 @@ class Foo {
     }
 }
 
-var container = new microdi.Container();
+var container = new Container();
 
 container.register('foo', Foo).singletonPerContainer();
 var foo1 = container.resolve('foo');
@@ -584,7 +592,7 @@ class DomResolver {
         };
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.addResolver('domResolver', new DomResolver());
 // Note the usage of 'isResolverKey' so the container can distinguish this from a normal object.
 // This is only required when you don't register a constructor function or prototype.
@@ -613,7 +621,7 @@ class DomResolver {
         };
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.addResolver('domResolver', new DomResolver());
 class Controller {
     constructor(view) {
@@ -645,7 +653,7 @@ class Foo  {
         console.log('bar is : [%s]', bar);
     }
 }
-var container = new microdi.Container();
+var container = new Container();
 container.register('foo', Foo)
     .inject(
     {

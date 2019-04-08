@@ -14,7 +14,7 @@
  * limitations under the License.
  notice_end */
  
-import microdi from 'packages/esp-js-di/microdi-js';
+import microdi from 'esp-js-di/esp-js-di';
 
 var runBasicExample =  () => {
     class Child {

@@ -24,20 +24,21 @@
         It does support an overall model pre and post hook like standard esp, that's sufficient.
         It could flip immer before calling that hook
 [x] - add dynamic module loading to esp-js-ui
-[ ] - verify examples:
-    - [ ]  esp-js-api
-    - [ ]  esp-js-chat-react-es6
-    - [ ]  esp-js-di
-    - [ ]  esp-js-react-agile-board
-    - [ ]  esp-js-todomvc-react
-    - [ ]  esp-js-ui-module-based-app
+[ ] - verify examples (add catch-all tests if possible):
+    - [ ] All should compile as part of build
+    - [x] esp-js-api
+    - [ ] esp-js-chat-react-es6
+    - [ ] esp-js-di
+    - [ ] esp-js-react-agile-board
+    - [ ] esp-js-todomvc-react
+    - [ ] esp-js-ui-module-based-app
 [ ] - more elaborate esp-js-ui application
 [ ] - shared test setups
-[ ] - bring micro-di-js under esp as esp-js-di
+[x] - bring micro-di-js under esp as esp-js-di
 [ ] - Rx Js upgrade
 [ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
 [ ] - Lift Polimer state tracking to separate package so it can be swapped out
-[ ] - fix router.observeEventsOnWithDecorators_ES6_Tests.ts, some issues whereby babel isn't picking up the transpiled typescript.
+[x] - fix router.observeEventsOnWithDecorators_ES6_Tests.ts, some issues whereby babel isn't picking up the transpiled typescript.
       this should prob be an integration tests after the final package is built
 [x] - rename 'store' to 'model' through out
     - there is API confusion as to what's a store and what's a model.

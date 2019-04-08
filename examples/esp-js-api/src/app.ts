@@ -2,35 +2,33 @@
 /*
  * Copyright 2015 Dev Shop Limited
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
  // notice_end
 
-import * as esp from 'esp-js';
-import prompt from 'prompt';
+import {Router, observeEvent, ObservationStage, EventEnvelope, RouterSubject, DisposableBase} from 'esp-js';
 
 ////////////////////////////////////////////////////////////// basic usage example //////////////////////////////////////////////////////////////
-var runBasicExample =  () => {
+export const runBasicExample =  () => {
 
     // Create a simple model
     class Car {
-        constructor() {
-            this._make = 'Unknown';
-            this._color = 'white';
-            this._isSportModel = false;
-            this._description = '';
-            this._price = 0;
-        }
+        _make = 'Unknown';
+        _color = 'white';
+        _isSportModel = false;
+        _description = '';
+        _cost = 0;
+        constructor() { }
         get make() {
             return this._make;
         }
@@ -55,19 +53,17 @@ var runBasicExample =  () => {
         set description(value) {
             this._description = value;
         }
-        get price() {
-            return this._price;
+        get cost() {
+            return this._cost;
         }
-        set price(value) {
-            this._price = value;
+        set cost(value) {
+            this._cost = value;
         }
     }
 
     // Create an event processor and observe events
     class CarEventProcessor {
-        constructor(router) {
-            this._router = router;
-        }
+        constructor(private _router: Router) { }
         start() {
             this._listenForCarMakeChangedEvent();
             this._listenForIsSportModelChangedEvent();
@@ -76,73 +72,69 @@ var runBasicExample =  () => {
         _listenForCarMakeChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'carMakeChangedEvent')
-                .subscribe((event, eventContext, model)=> {
-                    model.make = event.make;
+                .subscribe((envelope: EventEnvelope<{make: string}, Car>)=> {
+                    envelope.model.make = envelope.event.make;
                 });
         }
         _listenForIsSportModelChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'isSportModelChangedEvent')
-                .subscribe((event, eventContext, model) => {
-                    model.isSportModel = event.isSportModel;
-                    if(model.isSportModel) {
-                        model.cost = 30000;
+                .subscribe((envelope: EventEnvelope<{isSportModel: boolean}, Car>)=> {
+                    envelope.model.isSportModel = envelope.event.isSportModel;
+                    if(envelope.model.isSportModel) {
+                        envelope.model.cost = 30000;
                     } else {
-                        model.cost = 20000;
+                        envelope.model.cost = 20000;
                     }
                 });
         }
         _listenForColorModelChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'colorChangedEvent')
-                .subscribe((event, eventContext, model) => {
+                .subscribe(({event, eventContext, model}) => {
                     model.color = event.color;
                 });
         }
     }
 
     // create a post event processor to do some aggregate computations
-    class CarPostEventProcessor {
-        process(model, event, eventContext) {
-            this._updatePrice(model);
-            this._updateDescription(model);
+    const carPostEventProcessor  = (model, eventsProcessed) => {
+        let price = 10000; // base price
+        if (model.make === 'BMW') {
+            price += 20000;
         }
-        _updatePrice(model) {
-            var price = 10000; // base price
-            if(model.make === 'BMW') price += 20000;
-            if(model.isSportModel) price += 10000;
-            model.price = price;
+        if (model.isSportModel) {
+            price += 10000;
         }
-        _updateDescription(model) {
-            model.description =
-                "Your new " +
-                (model.isSportModel ? "sporty " : "standard ") +
-                "edition " +
-                model.make +
-                " (" + model.color + ") " +
-                "will cost £" +
-                model.price;
-        }
-    }
+        model.price = price;
+        model.description =
+            'Your new ' +
+            (model.isSportModel ? 'sporty ' : 'standard ') +
+            'edition ' +
+            model.make +
+            ' (' + model.color + ') ' +
+            'will cost £' +
+            model.price;
+    };
 
     // Create an event raiser and publish an event
     class CarScreenController {
-        constructor(router) {
+        constructor(private _router: Router) {
             this._router = router;
         }
         start() {
             this._listenForModelChanges();
 
-            console.log("Simulating some user actions over 4 seconds: ");
+            console.log('Simulating some user actions over 4 seconds: ');
             setTimeout(() => {
                 this._router.publishEvent('myModelId', 'carMakeChangedEvent', { make: 'BMW' });
             }, 0);
             setTimeout(() => {
                 this._router.publishEvent('myModelId', 'isSportModelChangedEvent', { isSportModel: true });
-            }, 2000);
+            }, 500);
             setTimeout(() => {
                 this._router.publishEvent('myModelId', 'colorChangedEvent', { color: 'blue' });
-            }, 2000);
+            }, 1000);
         }
         _listenForModelChanges() {
             this._router
@@ -155,26 +147,26 @@ var runBasicExample =  () => {
     }
 
     // Kick it all off
-    var router = new esp.Router();
-    router.addModel('myModelId', new Car(), { postEventProcessor : new CarPostEventProcessor() });
+    let router = new Router();
+    router.addModel('myModelId', new Car(), { postEventProcessor : carPostEventProcessor });
 
-    var carEventProcessor = new CarEventProcessor(router);
-    var carScreenController = new CarScreenController(router);
+    let carEventProcessor = new CarEventProcessor(router);
+    let carScreenController = new CarScreenController(router);
     carEventProcessor.start();
     carScreenController.start();
 
 };
+
 ////////////////////////////////////////////////////////////// event workflow examples //////////////////////////////////////////////////////////////
-var runEventWorkflowExample = () => {
+export const runEventWorkflowExample = () => {
 
     class FruitStore {
-        constructor() {
-            this._hasExpired = false;
-            this._stockCount = 10;
-            this._shouldRefreshFromStore = false;
-            this._shouldRecalculateInventory = false;
-            this._version = 0;
-        }
+        _hasExpired = false;
+        _stockCount = 10;
+        _shouldRefreshFromStore = false;
+        _shouldRecalculateInventory = false;
+        _version = 0;
+        constructor() { }
         get version() {
             return this._version;
         }
@@ -206,17 +198,17 @@ var runEventWorkflowExample = () => {
             this._shouldRecalculateInventory = value;
         }
         toString() {
-            return "Stock count: " + this.stockCount + ", shouldRefreshFromStore: " + this.shouldRefreshFromStore + ", shouldRecalculateInventory: " + this.shouldRecalculateInventory;
+            return 'Stock count: ' + this.stockCount + ', shouldRefreshFromStore: ' + this.shouldRefreshFromStore + ', shouldRecalculateInventory: ' + this.shouldRecalculateInventory;
         }
     }
 
-    var preEventProcessingExample = () => {
+    let preEventProcessingExample = () => {
 
-        console.log("** pre event processor example");
+        console.log('** pre event processor example');
 
-        var router = new esp.Router();
+        let router = new Router();
 
-        var store = new FruitStore();
+        let store = new FruitStore();
         router.addModel(
             'model1',
             store,
@@ -227,119 +219,119 @@ var runEventWorkflowExample = () => {
             }
         );
         router.publishEvent('model1', 'noopEvent', { });
-        console.log("Store version: " + store.version); // 1;
+        console.log('Store version: ' + store.version); // 1;
     };
 
-    var previewStageExample = () => {
+    let previewStageExample = () => {
 
-        console.log("** preview stage example");
+        console.log('** preview stage example');
 
-        var router = new esp.Router();
+        let router = new Router();
 
-        var store = new FruitStore();
+        let store = new FruitStore();
         router.addModel('model1', store);
 
         router
-            .getEventObservable('model1', 'fruitExpiredEvent', esp.ObservationStage.normal)
-            .subscribe((event, eventContext, model) => {
-                console.log("Setting hasExpired to " + event);
-                model.hasExpired = event;
+            .getEventObservable('model1', 'fruitExpiredEvent', ObservationStage.normal)
+            .subscribe((envelope: EventEnvelope<boolean, FruitStore>) => {
+                console.log('Setting hasExpired to ' + envelope.event);
+                envelope.model.hasExpired = envelope.event;
             });
 
         router
-            .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.preview)
-            .subscribe((event, eventContext, model) => {
-                if(model.hasExpired) {
-                    console.log("Cancelling buyFruitEvent event as all fruit has expired");
-                    eventContext.cancel();
+            .getEventObservable('model1', 'buyFruitEvent', ObservationStage.preview)
+            .subscribe((envelope: EventEnvelope<{quantity: number}, FruitStore>) => {
+                if(envelope.model.hasExpired) {
+                    console.log('Cancelling buyFruitEvent event as all fruit has expired');
+                    envelope.context.cancel();
                 }
             });
 
         router
-            .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.normal)
-            .subscribe((event, eventContext, model) => {
-                console.log("Buying fruit, quantity: " + event.quantity);
-                model.stockCount -= event.quantity;
+            .getEventObservable('model1', 'buyFruitEvent', ObservationStage.normal)
+            .subscribe((envelope: EventEnvelope<{quantity: number}, FruitStore>) => {
+                console.log('Buying fruit, quantity: ' + envelope.event.quantity);
+                envelope.model.stockCount -= envelope.event.quantity;
             });
 
         router.publishEvent('model1', 'buyFruitEvent', { quantity: 1 });
 
-        console.log("Stock count: " + store.stockCount); // "Stock count: 9"
+        console.log('Stock count: ' + store.stockCount); // 'Stock count: 9'
 
         router.publishEvent('model1', 'fruitExpiredEvent', true);
 
         router.publishEvent('model1', 'buyFruitEvent', { quantity: 1 });
 
-        console.log("Stock count: " + store.stockCount); // still "Stock count: 9", previous event was canceled by the preview handler
+        console.log('Stock count: ' + store.stockCount); // still 'Stock count: 9', previous event was canceled by the preview handler
 
         router.publishEvent('model1', 'fruitExpiredEvent', false);
 
         router.publishEvent('model1', 'buyFruitEvent', { quantity: 1 });
 
-        console.log("Stock count: " + store.stockCount); // "Stock count: 8"
+        console.log('Stock count: ' + store.stockCount); // 'Stock count: 8'
         console.log();
     };
 
-    var normalStageExample = () => {
-        console.log("** normal stage example");
+    let normalStageExample = () => {
+        console.log('** normal stage example');
 
-        var router = new esp.Router();
+        let router = new Router();
 
-        var store = new FruitStore();
+        let store = new FruitStore();
         router.addModel('model1', store);
 
-        var buyFruitEventSubscription = router
-            .getEventObservable('model1', 'buyFruitEvent') // i.e. stage = esp.ObservationStage.normal
-            .subscribe((event, eventContext, model) => {
-                console.log("Buying fruit, quantity: " + event.quantity);
-                model.stockCount -= event.quantity;
+        let buyFruitEventSubscription = router
+            .getEventObservable('model1', 'buyFruitEvent') // i.e. stage = ObservationStage.normal
+            .subscribe((envelope: EventEnvelope<{quantity: number}, FruitStore>) => {
+                console.log('Buying fruit, quantity: ' + envelope.event.quantity);
+                envelope.model.stockCount -= envelope.event.quantity;
             });
 
         router.publishEvent('model1', 'buyFruitEvent', { quantity: 1 });
 
-        console.log("Stock count: " + store.stockCount); // "Stock count: 9"
+        console.log('Stock count: ' + store.stockCount); // 'Stock count: 9'
 
         buyFruitEventSubscription.dispose();
 
         router.publishEvent('model1', 'buyFruitEvent', false);
 
-        console.log("Stock count: " + store.stockCount); // still "Stock count: 9", event not delivered as subscription removed
+        console.log('Stock count: ' + store.stockCount); // still 'Stock count: 9', event not delivered as subscription removed
         console.log();
     };
 
-    var committedStageExample = () => {
+    let committedStageExample = () => {
 
-        console.log("** committed stage example");
+        console.log('** committed stage example');
 
-        var router = new esp.Router();
+        let router = new Router();
 
-        var store = new FruitStore();
+        let store = new FruitStore();
         router.addModel('model1', store);
 
         router
             .getEventObservable('model1', 'buyFruitEvent')
-            .subscribe((event, eventContext, model) => {
-                console.log("Buying fruit, quantity: " + event.quantity);
-                model.stockCount -= event.quantity;
-                eventContext.commit();
+            .subscribe((envelope: EventEnvelope<{quantity: number}, FruitStore>) => {
+                console.log('Buying fruit, quantity: ' + envelope.event.quantity);
+                envelope.model.stockCount -= envelope.event.quantity;
+                envelope.context.commit();
             });
 
         router
-            .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.committed)
-            .subscribe((event, eventContext, model) => {
+            .getEventObservable('model1', 'buyFruitEvent', ObservationStage.committed)
+            .subscribe((envelope: EventEnvelope<{quantity: number}, FruitStore>) => {
                 // reacting to the buyFruitEvent we check if the shelf quantity requires refilling
-                var shouldRefreshFromStore = model.stockCount < 3;
-                console.log("Checking if we should refresh from store. Should refresh: " + shouldRefreshFromStore);
-                model.shouldRefreshFromStore = shouldRefreshFromStore;
+                let shouldRefreshFromStore = envelope.model.stockCount < 3;
+                console.log('Checking if we should refresh from store. Should refresh: ' + shouldRefreshFromStore);
+                envelope.model.shouldRefreshFromStore = shouldRefreshFromStore;
             });
 
         router
-            .getEventObservable('model1', 'buyFruitEvent', esp.ObservationStage.committed)
-            .subscribe((event, eventContext, model) => {
+            .getEventObservable('model1', 'buyFruitEvent', ObservationStage.committed)
+            .subscribe((envelope: EventEnvelope<{quantity: number}, FruitStore>) => {
                 // given we've sold something we flip a dirty flag which could be used by another
                 // // periodic event to determine if we should recalculate inventory
-                console.log("Flagging inventory recalculate");
-                model.shouldRecalculateInventory = true;
+                console.log('Flagging inventory recalculate');
+                envelope.model.shouldRecalculateInventory = true;
             });
 
         router.publishEvent('model1', 'buyFruitEvent', { quantity: 1 });
@@ -357,33 +349,41 @@ var runEventWorkflowExample = () => {
 };
 
 ////////////////////////////////////////////////////////////// model observation example //////////////////////////////////////////////////////////////
-var runModelObserveExample = () => {
-    var router = new esp.Router();
-    router.addModel("modelId", { foo: 1 });
+export const runModelObserveExample = () => {
+    let router = new Router();
+    router.addModel('modelId', { foo: 1 });
     router
         .getEventObservable('modelId', 'fooChanged')
-        .subscribe((event, eventContext, model)=> {
-            model.foo = event.newFoo;
+        .subscribe((envelope: EventEnvelope<{newFoo: number}, {foo: number}>) => {
+            envelope.model.foo = envelope.event.newFoo;
         });
     router
         .getModelObservable('modelId')
         .subscribe(model => {
-            console.log("Foo is " + model.foo);
+            console.log('Foo is ' + model.foo);
         });
     router.publishEvent('modelId', 'fooChanged', { newFoo: 2 });
 };
 
 ////////////////////////////////////////////////////////////// observable API example //////////////////////////////////////////////////////////////
-var runObserveApiBasicExample = () => {
+export const runObserveApiBasicExample = () => {
+
+    interface TheModel {
+        staticData: {
+            initialised: boolean,
+            clientMargin: number,
+        };
+        price: number;
+    }
 
     // note there are several concerns here that would exist in different
     // objects within your architecture, they are all together here to demo the concepts.
-    var router = new esp.Router();
+    let router = new Router();
 
     // add a basic model
     router.addModel(
-        "modelId",
-        {
+        'modelId',
+        <TheModel>{
             staticData:
             {
                 initialised: false,
@@ -394,27 +394,27 @@ var runObserveApiBasicExample = () => {
     );
 
     // create an event stream that listens for static data
-    var staticDataSubscriptionDisposable = router
+    let staticDataSubscriptionDisposable = router
         .getEventObservable('modelId', 'staticDataReceivedEvent')
-        .subscribe((event, eventContext, model) => {
-            console.log("Static data received");
-            model.staticData.initialised = true;
-            model.staticData.clientMargin = event.clientMargin;
+        .subscribe((envelope: EventEnvelope<{clientMargin: number}, TheModel>) => {
+            console.log('Static data received');
+            envelope.model.staticData.initialised = true;
+            envelope.model.staticData.clientMargin = envelope.event.clientMargin;
         }
     );
 
     // create an event stream that listens for prices
-    var eventSubscriptionDisposable = router
+    let eventSubscriptionDisposable = router
         .getEventObservable('modelId', 'priceReceivedEvent')
         // run an action when the stream yields
-        .do((event, eventContext, model) => console.log("Price received"))
+        .do(() => console.log('Price received'))
         // only procure the event if the condition matches
-        .filter((event, eventContext, model) => model.staticData.initialised)
-        .subscribe((event, eventContext, model) => {
-            model.newPrice =
-                event.price +
-                model.staticData.clientMargin;
-            console.log("Price with margin was set to " + model.newPrice);
+        .filter((envelope: EventEnvelope<{price: number}, TheModel>) => envelope.model.staticData.initialised)
+        .subscribe((envelope: EventEnvelope<{price: number}, TheModel>) => {
+            envelope.model.price =
+                envelope.event.price +
+                envelope.model.staticData.clientMargin;
+            console.log('Price with margin was set to ' + envelope.model.price);
         });
 
     // publish some prices, the first 2 will get ignored as the .filter() waits until the
@@ -433,45 +433,49 @@ var runObserveApiBasicExample = () => {
 };
 
 ////////////////////////////////////////////////////////////// model to model communications with events example //////////////////////////////////////////////////////////////
-var modelToModelCommunicationsWithEvents = () => {
+export const runModelToModelCommunicationsWithEvents = () => {
+    interface PriceRequestedEvent { symbol: string; replyTo: string; }
+
+    interface PriceReceivedEvent { symbol: string; bid: number; ask: number; }
+
     class BaseModel {
-        constructor(modelId, router) {
+        constructor(public modelId: string, protected _router: Router) {
             this.modelId = modelId;
-            this.router = router;
+            this._router = _router;
         }
         registerWithRouter() {
-            this.router.addModel(this.modelId, this);
-            this.router.observeEventsOn(this.modelId, this);
+            this._router.addModel(this.modelId, this);
+            this._router.observeEventsOn(this.modelId, this);
         }
     }
 
     class TradingModel extends BaseModel {
-        constructor(router) {
-            super('tradingModelId', router);
+        constructor(_router: Router) {
+            super('tradingModelId', _router);
         }
-        @esp.observeEvent('userRequestedPrice')
-        _onUserRequestedPrice(priceRequestEvent) {
+        @observeEvent('userRequestedPrice')
+        _onUserRequestedPrice(priceRequestEvent: PriceRequestedEvent) {
             console.log(`TradingModel: User requested price, sending request to pricing model`);
-            this.router.publishEvent('pricingModelId', 'priceRequested', { symbol:priceRequestEvent.symbol, replyTo:this.modelId });
+            this._router.publishEvent('pricingModelId', 'priceRequested', { symbol:priceRequestEvent.symbol, replyTo:this.modelId });
         }
-        @esp.observeEvent('priceReceived')
-        _onPriceReceived(priceEvent) {
+        @observeEvent('priceReceived')
+        _onPriceReceived(priceEvent: PriceReceivedEvent) {
             console.log(`TradingModel: Price received: ${priceEvent.symbol} - ${priceEvent.bid} - ${priceEvent.ask}`);
         }
     }
 
     class PricingModel extends BaseModel {
-        constructor(router) {
-            super('pricingModelId', router);
+        constructor(_router: Router) {
+            super('pricingModelId', _router);
         }
-        @esp.observeEvent('priceRequested')
-        _onPriceRequested(priceRequestedEvent) {
+        @observeEvent('priceRequested')
+        _onPriceRequested(priceRequestedEvent: PriceRequestedEvent) {
             console.log(`PricingModel: price request received, responding with last price`);
-            this.router.publishEvent(priceRequestedEvent.replyTo, 'priceReceived', { symbol:priceRequestedEvent.symbol, bid:1, ask:2 });
+            this._router.publishEvent(priceRequestedEvent.replyTo, 'priceReceived', { symbol:priceRequestedEvent.symbol, bid:1, ask:2 });
         }
     }
 
-    var router = new esp.Router();
+    let router = new Router();
     let pricingModel = new PricingModel(router);
     pricingModel.registerWithRouter();
     let tradingModel = new TradingModel(router);
@@ -481,47 +485,43 @@ var modelToModelCommunicationsWithEvents = () => {
 };
 
 ////////////////////////////////////////////////////////////// model to model communications with runAction example //////////////////////////////////////////////////////////////
-var modelToModelCommunicationsWithRunAction = () => {
+export const runModelToModelCommunicationsWithRunAction = () => {
     class BaseModel {
-        constructor(modelId, router) {
-            this.modelId = modelId;
-            this.router = router;
-        }
+        constructor(public modelId, protected _router) { }
         registerWithRouter() {
-            this.router.addModel(this.modelId, this);
-            this.router.observeEventsOn(this.modelId, this);
+            this._router.addModel(this.modelId, this);
+            this._router.observeEventsOn(this.modelId, this);
         }
     }
 
     class TradingModel extends BaseModel {
-        constructor(router, pricingModel) {
-            super('tradingModelId', router);
-            this._pricingModel = pricingModel;
+        constructor(_router, private _pricingModel) {
+            super('tradingModelId', _router);
         }
-        @esp.observeEvent('userRequestedPrice')
+        @observeEvent('userRequestedPrice')
         _onUserRequestedPrice(priceRequestEvent) {
             console.log(`TradingModel: User requested price, sending request to pricing model`);
             this._pricingModel.onPriceRequested({ symbol:priceRequestEvent.symbol, replyTo:this.modelId });
         }
-        @esp.observeEvent('priceReceived')
+        @observeEvent('priceReceived')
         _onPriceReceived(priceEvent) {
             console.log(`TradingModel: Price received: ${priceEvent.symbol} - ${priceEvent.bid} - ${priceEvent.ask}`);
         }
     }
 
     class PricingModel extends BaseModel {
-        constructor(router) {
-            super('pricingModelId', router);
+        constructor(_router) {
+            super('pricingModelId', _router);
         }
         onPriceRequested(priceRequest) {
-            this.router.runAction(this.modelId, () => {
+            this._router.runAction(this.modelId, () => {
                 console.log(`PricingModel: price request received, responding with last price`);
-                this.router.publishEvent(priceRequest.replyTo, 'priceReceived', { symbol:priceRequest.symbol, bid:1, ask:2 });
+                this._router.publishEvent(priceRequest.replyTo, 'priceReceived', { symbol:priceRequest.symbol, bid:1, ask:2 });
             });
         }
     }
 
-    var router = new esp.Router();
+    let router = new Router();
     let pricingModel = new PricingModel(router);
     pricingModel.registerWithRouter();
     let tradingModel = new TradingModel(router, pricingModel);
@@ -531,25 +531,25 @@ var modelToModelCommunicationsWithRunAction = () => {
 };
 
 ////////////////////////////////////////////////////////////// model to model communications with observables (Unique Request -> Many Responses) example /////////////////////////
-var modelToModelCommunicationsWithObservables1 = () => {
+export const runModelToModelCommunicationsWithObservables1 = () => {
     class BaseModel {
-        constructor(modelId, router) {
+        constructor(public modelId, protected _router) {
             this.modelId = modelId;
-            this.router = router;
+            this._router = _router;
         }
         registerWithRouter() {
-            this.router.addModel(this.modelId, this);
-            this.router.observeEventsOn(this.modelId, this);
+            this._router.addModel(this.modelId, this);
+            this._router.observeEventsOn(this.modelId, this);
         }
     }
 
     class TradingModel extends BaseModel {
-        constructor(router, pricingModel) {
-            super('tradingModelId', router);
-            this._pricingModel = pricingModel;
-            this.lastPrice = null;
+        lastPrice = null;
+        constructor(_router, private _pricingModel) {
+            super('tradingModelId', _router);
+            this._pricingModel = _pricingModel;
         }
-        @esp.observeEvent('userRequestedPrice')
+        @observeEvent('userRequestedPrice')
         _onUserRequestedPrice(priceRequestEvent) {
             console.log(`TradingModel: User requested price, sending request to pricing model`);
             // subscribe to another models observable stream.
@@ -558,7 +558,7 @@ var modelToModelCommunicationsWithObservables1 = () => {
                 // streamFor : ensure our observable stream yields on the dispatch loop for this model
                 .streamFor(this.modelId)
                 .subscribe(price => {
-                    let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
+                    let isOnCorrectDispatchLoop = this._router.isOnDispatchLoopFor(this.modelId);
                     console.log(`TradingModel: Price received: ${price.symbol} - ${price.bid} - ${price.ask}. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);
                     // Store the last price so the/a view can pick it up.
                     // Given we're on the dispatch loop for this model, the router will be pushing the model to observers after this function ends.
@@ -569,14 +569,14 @@ var modelToModelCommunicationsWithObservables1 = () => {
     }
 
     class PricingModel extends BaseModel {
-        constructor(router) {
-            super('pricingModelId', router);
+        constructor(_router: Router) {
+            super('pricingModelId', _router);
         }
         getPriceStream(priceRequest) {
-            return this.router.createObservableFor(this.modelId, observer => {
+            return this._router.createObservableFor(this.modelId, observer => {
                 // This gets invoked when the caller subscribes to the observable stream.
                 // Typically you'd wire the observer up to some async service and push updates to it
-                let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
+                let isOnCorrectDispatchLoop = this._router.isOnDispatchLoopFor(this.modelId);
                 console.log(`PricingModel: price request received, responding with last price. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);
                 observer.onNext({ symbol:priceRequest.symbol, bid:1, ask:2 });
                 observer.onNext({ symbol:priceRequest.symbol, bid:1.1, ask:2.1 });
@@ -588,7 +588,7 @@ var modelToModelCommunicationsWithObservables1 = () => {
         }
     }
 
-    var router = new esp.Router();
+    let router = new Router();
     let pricingModel = new PricingModel(router);
     pricingModel.registerWithRouter();
     let tradingModel = new TradingModel(router, pricingModel);
@@ -598,22 +598,23 @@ var modelToModelCommunicationsWithObservables1 = () => {
 };
 
 ////////////////////////////////////////////////////////////// model to model communications with observables (streaming) example /////////////////////////
-var modelToModelCommunicationsWithObservables2 = () => {
+export const runModelToModelCommunicationsWithObservables2 = () => {
     class BaseModel {
-        constructor(modelId, router) {
+        constructor(public modelId, protected _router) {
             this.modelId = modelId;
-            this.router = router;
+            this._router = _router;
         }
         registerWithRouter() {
-            this.router.addModel(this.modelId, this);
-            this.router.observeEventsOn(this.modelId, this);
+            this._router.addModel(this.modelId, this);
+            this._router.observeEventsOn(this.modelId, this);
         }
     }
 
     class TradingModel extends BaseModel {
-        constructor(router, pricingModel) {
-            super('tradingModelId', router);
-            this._pricingModel = pricingModel;
+        _currentSymbol = 'EURUSD';
+        lastPrice = null;
+        constructor(_router: Router, private _pricingModel: PricingModel) {
+            super('tradingModelId', _router);
             this._currentSymbol = 'EURUSD';
             this.lastPrice = null;
         }
@@ -626,36 +627,37 @@ var modelToModelCommunicationsWithObservables2 = () => {
                 .streamFor(this.modelId)
                 .filter(price => price.symbol === this._currentSymbol)
                 .subscribe(price => {
-                    let isOnCorrectDispatchLoop = this.router.isOnDispatchLoopFor(this.modelId);
+                    let isOnCorrectDispatchLoop = this._router.isOnDispatchLoopFor(this.modelId);
                     console.log(`TradingModel: Price received: ${price.symbol} - ${price.bid} - ${price.ask}. On correct dispatch loop: ${isOnCorrectDispatchLoop}`);
                     this.lastPrice = price;
                 });
             // later, when the model is destroyed : subscription.dispose();
         }
-        @esp.observeEvent('userRequestedPrice')
+        @observeEvent('userRequestedPrice')
         _onUserRequestedPrice(priceRequestEvent) {
             this._currentSymbol = priceRequestEvent.symbol;
         }
     }
 
     class PricingModel extends BaseModel {
-        constructor(router) {
-            super('pricingModelId', router);
-            this._priceSubject = router.createSubject();
+        private _priceSubject: RouterSubject<any>;
+        constructor(_router: Router) {
+            super('pricingModelId', _router);
+            this._priceSubject = _router.createSubject();
         }
         get priceStream() {
             // Expose our internal price stream.
             // `asRouterObservable()` wraps the subject hiding functions such as onNext from consumers
-            return this._priceSubject.asRouterObservable();
+            return this._priceSubject.asRouterObservable(this._router);
         }
         // expose a function so we can push prices, in a real app
         // this model would own interactions with downstream objects, receive prices and push them internally
-        pushPrice(price){
+        pushPrice(price) {
             this._priceSubject.onNext(price);
         }
     }
 
-    var router = new esp.Router();
+    let router = new Router();
     let pricingModel = new PricingModel(router);
     pricingModel.registerWithRouter();
     let tradingModel = new TradingModel(router, pricingModel);
@@ -671,27 +673,30 @@ var modelToModelCommunicationsWithObservables2 = () => {
 };
 
 ////////////////////////////////////////////////////////////// async operation with workitem //////////////////////////////////////////////////////////////
-var runAcyncOperationWithWorkItemExample = () => {
+export const runAcyncOperationWithWorkItemExample = () => {
 
-    class GetUserStaticDataWorkItem extends esp.DisposableBase {
-        constructor(router) {
+    interface StaticDataModel {
+        staticData: string[];
+    }
+
+    class GetUserStaticDataWorkItem extends DisposableBase {
+        constructor(private _router: Router) {
             super();
-            this._router = router;
         }
         start() {
             setTimeout(() => {
-                console.log("Sending results event for StaticDataA");
-                this._router.publishEvent('modelId', 'userStaticReceivedEvent', "StaticDataA");
+                console.log('Sending results event for StaticDataA');
+                this._router.publishEvent('modelId', 'userStaticReceivedEvent', 'StaticDataA');
             }, 1000);
             setTimeout(() => {
-                console.log("Sending results event for StaticDataB");
-                this._router.publishEvent('modelId', 'userStaticReceivedEvent', "StaticDataB");
+                console.log('Sending results event for StaticDataB');
+                this._router.publishEvent('modelId', 'userStaticReceivedEvent', 'StaticDataB');
             }, 2000);
         }
     }
 
-    class StaticDataEventProcessor extends esp.DisposableBase {
-        constructor(router) {
+    class StaticDataEventProcessor extends DisposableBase {
+        constructor(private _router: Router) {
             super();
             this._router = router;
         }
@@ -704,8 +709,8 @@ var runAcyncOperationWithWorkItemExample = () => {
                 .getEventObservable('modelId', 'initialiseEvent')
                 .take(1)
                 .subscribe(() => {
-                    console.log("Starting work item to get static data");
-                    var getUserStaticWorkItem = new GetUserStaticDataWorkItem(this._router);
+                    console.log('Starting work item to get static data');
+                    let getUserStaticWorkItem = new GetUserStaticDataWorkItem(this._router);
                     this.addDisposable(getUserStaticWorkItem);
                     getUserStaticWorkItem.start();
                 })
@@ -717,59 +722,70 @@ var runAcyncOperationWithWorkItemExample = () => {
             // open if you were to later expect events matching its eventType
             this.addDisposable(this._router
                 .getEventObservable('modelId', 'userStaticReceivedEvent')
-                .subscribe((event, eventContext, model) => {
-                    console.log("Adding static data [" + event + "] to model");
-                    model.staticData.push(event);
+                .subscribe((envelope: EventEnvelope<string, StaticDataModel>) => {
+                    console.log('Adding static data [' + envelope.event + '] to model');
+                    envelope.model.staticData.push(envelope.event);
                 })
             );
         }
     }
 
-    var router = new esp.Router();
-    router.addModel("modelId", { staticData:[]});
-    var staticDataEventProcessor = new StaticDataEventProcessor(router);
+    let router = new Router();
+    router.addModel('modelId', <StaticDataModel>{ staticData:[]});
+    let staticDataEventProcessor = new StaticDataEventProcessor(router);
     staticDataEventProcessor.initialise();
-    console.log("Sending initialiseEvent");
+    console.log('Sending initialiseEvent');
     router.publishEvent('modelId', 'initialiseEvent', {});
 };
 
 ////////////////////////////////////////////////////////////// async operation with runAction //////////////////////////////////////////////////////////////
-var runAcyncOperationWithRunActionExample = () => {
-    var myModel = {
+export const runAcyncOperationWithRunActionExample = () => {
+    interface TestModel {
+        foo: number;
+        backgroundOperations: number;
+    }
+    let myModel: TestModel = {
         foo:0,
         backgroundOperations: 0
     };
-    var router = new esp.Router();
+    let router = new Router();
     router.addModel('myModelId', myModel);
-    router.getEventObservable('myModelId', 'getAsyncDataEvent').subscribe((e, c, m) => {
-        console.log('About to do async work');
-        m.backgroundOperations++;
-        setTimeout(() => {
-            router.runAction('myModelId', m2 => { // you could close over m here if you prefer
-                m2.backgroundOperations--;
-                console.log('Async work received. Updating model');
-                m2.foo = 1;
-            });
-        }, 2000);
-    });
-    router.publishEvent('myModelId', 'getAsyncDataEvent', { request: "someRequest" });
+    router
+        .getEventObservable('myModelId', 'getAsyncDataEvent')
+        .subscribe((envelope: EventEnvelope<string, TestModel>) => {
+            console.log('About to do async work');
+            envelope.model.backgroundOperations++;
+            setTimeout(() => {
+                router.runAction('myModelId', (m2: TestModel) => { // you could close over m here if you prefer
+                    m2.backgroundOperations--;
+                    console.log('Async work received. Updating model');
+                    m2.foo = 1;
+                });
+            }, 2000);
+        });
+    router.publishEvent('myModelId', 'getAsyncDataEvent', { request: 'someRequest' });
     router.getModelObservable('myModelId').subscribe(m => {
         console.log('Update, background operation count is: %s. foo is %s', m.backgroundOperations, m.foo);
     });
 };
 
 ////////////////////////////////////////////////////////////// SingleModelRouter example //////////////////////////////////////////////////////////////
-var runModelRouter = () => {
-    var myModel = {
+export const runModelRouter = () => {
+    interface TestModel {
+        foo: number;
+    }
+    let myModel: TestModel = {
         foo:0
     };
-    var router = new esp.Router();
+    let router = new Router();
     router.addModel('myModel', myModel);
-    var modelRouter = router.createModelRouter('myModel');
+    let modelRouter = router.createModelRouter('myModel');
 
-    modelRouter.getEventObservable('fooEvent').subscribe((e, c, m) => {
-        m.foo = e.theFoo;
-    });
+    modelRouter
+        .getEventObservable('fooEvent')
+        .subscribe((envelope: EventEnvelope<{ theFoo: number }, TestModel>) => {
+            envelope.model.foo = envelope.event.theFoo;
+        });
     modelRouter.getModelObservable().subscribe(m => {
         console.log('Update, foo is: %s', m.foo);
     });
@@ -777,80 +793,27 @@ var runModelRouter = () => {
     modelRouter.publishEvent('fooEvent', { theFoo: 2});
 };
 
-
 ////////////////////////////////////////////////////////////// error flows example //////////////////////////////////////////////////////////////
-var runErrorFlowsExample = () => {
-    var router = new esp.Router();
-    router.addModel("modelId", { });
+export const runErrorFlowsExample = () => {
+    let router = new Router();
+    router.addModel('modelId', { });
     router
         .getEventObservable('modelId', 'boomEvent')
-        .do(() => {throw new Error("Boom");})
+        .do(() => {throw new Error('Boom');})
         .subscribe(
             () => {
-                console.log("This never run");
+                console.log('This never run');
             }
         );
     try {
         router.publishEvent('modelId', 'boomEvent', {});
     } catch(err) {
-        console.log("Error caught: " + err.message);
+        console.log('Error caught: ' + err.message);
     }
     // this won't make it to any observers as the router is halted
     try {
         router.publishEvent('modelId', 'boomEvent', {});
     } catch(err) {
-        console.log("Error caught 2: " + err.message);
+        console.log('Error caught 2: ' + err.message);
     }
 };
-
-///////////////////////// example bootstrap code /////////////////
-// Call one of the functions above via the prompt setup below
-//////////////////////////////////////////////////////////////////
-
-var examples = {
-    "1" : { description : "Basic Example", action : runBasicExample },
-    "2" : { description : "Event Workflow", action : runEventWorkflowExample },
-    "3" : { description : "Model Observe", action : runModelObserveExample },
-    "4" : { description : "Observable Api", action : runObserveApiBasicExample },
-    "5" : { description : "Model to model communications with events", action : modelToModelCommunicationsWithEvents },
-    "6" : { description : "Model to model communications with runAction", action : modelToModelCommunicationsWithRunAction },
-    "7" : { description : "Model to model communications with observables (Unique Request -> Many Responses)", action : modelToModelCommunicationsWithObservables1 },
-    "8" : { description : "Model to model communications with observables (streaming)", action : modelToModelCommunicationsWithObservables2 },
-    "9" : { description : "Async operation with work item", action : runAcyncOperationWithWorkItemExample },
-    "10" : { description : "Async operation with run action", action : runAcyncOperationWithRunActionExample},
-    "11" : { description : "Single model routers", action : runModelRouter },
-    "12" : { description : "Error flows example", action : runErrorFlowsExample }
-};
-
-console.log('Which sample do you want to run (enter a number)?');
-for (let exampleKey in examples) {
-    if (examples.hasOwnProperty(exampleKey)) {
-        console.log('%s - %s', exampleKey, examples[exampleKey].description);
-    }
-}
-
-var properties = [
-    {
-        name: 'sampleNumber',
-        validator: /^[1-9].*$/,
-        warning: 'Sample number must be a number between 1-12 inclusive'
-    }
-];
-
-prompt.start();
-
-prompt.get(properties, function (err, result) {
-    if (err) { return onErr(err); }
-    var example = examples[result.sampleNumber];
-    if (!example) {
-        console.error('Can\'t find sample with number %s\'', result.sampleNumber);
-        return;
-    }
-    console.log('Running sample \'%s\'', example.description);
-    examples[result.sampleNumber].action();
-});
-
-function onErr(err) {
-    console.log(err);
-    return 1;
-}

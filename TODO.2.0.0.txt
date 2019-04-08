@@ -24,6 +24,13 @@
         It does support an overall model pre and post hook like standard esp, that's sufficient.
         It could flip immer before calling that hook
 [x] - add dynamic module loading to esp-js-ui
+[ ] - verify examples:
+    - [ ]  esp-js-api
+    - [ ]  esp-js-chat-react-es6
+    - [ ]  esp-js-di
+    - [ ]  esp-js-react-agile-board
+    - [ ]  esp-js-todomvc-react
+    - [ ]  esp-js-ui-module-based-app
 [ ] - more elaborate esp-js-ui application
 [ ] - shared test setups
 [ ] - bring micro-di-js under esp as esp-js-di
@@ -62,6 +69,10 @@
 // build
 [ ] - single travis build with lerna
 [ ] - Ensure dependencies are exact versions
+
+// misc
+[ ] - push 'moved' checkins to esp-js-ui, esp-js-react, microdi-js
+[ ] - write tests for examples to ensure they work after esp changes
 
 // docs
 [ ] - merge all readmes and restructure docs

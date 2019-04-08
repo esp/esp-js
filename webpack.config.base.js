@@ -78,6 +78,11 @@ module.exports = {
                         failOnHint: true
                     }
                 }]
+            },
+            {
+                test: /\.jsx?$/,
+                exclude: /node_modules/,
+                loader: "babel-loader"
             }
         ]
     },

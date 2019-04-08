@@ -1,0 +1,23 @@
+{
+  "node": true,
+  "laxbreak": true,
+  "debug": true,
+  "globals": {
+    "console": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+    }
+  },
+  "ignoreDelimiters": [
+    {
+      "start": "start-non-standard",
+      "end": "end-non-standard"
+    }
+  ],
+  "rules": {
+    "no-var": "warn"
+  }
+}

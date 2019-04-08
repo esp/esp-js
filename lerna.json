@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1-rc.0",
   "useWorkspaces": true,
   "npmClient": "yarn",
   "command": {
@@ -18,5 +18,8 @@
     },
     "version": "fixed"
   },
-  "packages": ["packages/*", "examples/*"]
+  "packages": [
+    "packages/*",
+    "examples/*"
+  ]
 }

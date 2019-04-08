@@ -25,13 +25,13 @@
         It could flip immer before calling that hook
 [x] - add dynamic module loading to esp-js-ui
 [ ] - verify examples (add catch-all tests if possible):
-    - [ ] Delete old examples, best to have current rather than ES5 examples
+    - [x] Delete old examples, best to have current rather than ES5 examples
     - [ ] All should compile as part of build
     - [x] esp-js-api
-    - [ ] esp-js-chat-react-es6
-    - [ ] esp-js-di
+    - [x] esp-js-chat-react-es6
+    - [x] esp-js-di
     - [ ] esp-js-react-agile-board
-    - [ ] esp-js-todomvc-react
+    - [x] esp-js-todomvc-react
     - [ ] esp-js-ui-module-based-app
 [ ] - more elaborate esp-js-ui application
 [ ] - shared test setups

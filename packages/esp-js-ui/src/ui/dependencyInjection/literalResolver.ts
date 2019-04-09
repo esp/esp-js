@@ -1,5 +1,5 @@
 // allows you to inject a literal value, for example a string
-import {Container, Resolver} from 'microdi-js';
+import {Container, Resolver} from 'esp-js-di';
 
 // a resolver that allows you to to inject/resolve a literal value (for example a string)
 export class LiteralResolver<T> implements Resolver<T> {

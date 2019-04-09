@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 import * as Rx from 'rx';
-import {Container, MicroDiConsts} from 'microdi-js';
+import {Container, EspDiConsts} from 'esp-js-di';
 import {
     ModuleBase,
     StateService,
@@ -47,13 +47,13 @@ export class TradingModule extends ModuleBase {
         _log.debug(`Registering ${TradingModuleContainerConst.cashTileComponentFactory}`);
         this.container
             .register(TradingModuleContainerConst.cashTileComponentFactory, CashTileComponentFactory)
-            .inject(MicroDiConsts.owningContainer, SystemContainerConst.router)
+            .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
             .inGroup(this._componentFactoryGroupId);
         _log.debug(`Registering ${TradingModuleContainerConst.blotterComponentFactory}`);
         this.container
             .register(TradingModuleContainerConst.blotterComponentFactory, BlotterComponentFactory)
-            .inject(MicroDiConsts.owningContainer, SystemContainerConst.router)
+            .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
             .inGroup(this._componentFactoryGroupId);
         _log.debug(`Registering ${TradingModuleContainerConst.blotterModel}`);

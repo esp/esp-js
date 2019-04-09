@@ -22,13 +22,5 @@ module.exports = {
     ...baseConfig,
     entry: {
         'esp-js-ui': './src/index.ts'
-    },
-    externals: {
-        'rx': 'rx',
-        'react': 'react',
-        'classnames': 'classnames',
-        'esp-js': 'esp-js',
-        'esp-js-react': 'esp-js-react',
-        'microdi-js': 'microdi-js'
-    },
+    }
 };

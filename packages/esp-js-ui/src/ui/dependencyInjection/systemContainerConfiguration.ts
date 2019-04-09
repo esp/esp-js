@@ -1,4 +1,4 @@
-import {Container, MicroDiConsts} from 'microdi-js';
+import {Container, EspDiConsts} from 'esp-js-di';
 import {Logger} from '../../core/logger';
 import {SystemContainerConst} from './systemContainerConst';
 import {StateService} from '../state/stateService';
@@ -37,7 +37,7 @@ export class SystemContainerConfiguration {
         // module loader
         rootContainer.register(SystemContainerConst.module_loader, ModuleLoader)
             .inject(
-                MicroDiConsts.owningContainer,
+                EspDiConsts.owningContainer,
                 SystemContainerConst.components_registry_model,
                 SystemContainerConst.state_service
             )

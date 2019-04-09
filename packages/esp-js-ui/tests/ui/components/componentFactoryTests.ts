@@ -1,6 +1,6 @@
 import {DisposableBase} from 'esp-js';
 import {ComponentFactoryBase, stateSaveHandler, ComponentStateSet, componentFactory, ComponentInstance} from '../../../src';
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 
 @componentFactory('key', 'shortName')
 class TestComponentFactory<T extends ComponentInstance> extends ComponentFactoryBase<T> {

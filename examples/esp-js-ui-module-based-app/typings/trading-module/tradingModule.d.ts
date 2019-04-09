@@ -1,4 +1,4 @@
-import { Container } from 'microdi-js';
+import { Container } from 'esp-js-di';
 import { ModuleBase, StateService, ComponentFactoryBase, PrerequisiteRegistrar } from 'esp-js-ui';
 export declare class TradingModule extends ModuleBase {
     _componentFactoryGroupId: string;

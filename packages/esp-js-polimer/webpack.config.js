@@ -22,10 +22,5 @@ module.exports = {
     ...baseConfig,
     entry: {
         'esp-js-polimer': './src/index.ts'
-    },
-    externals: {
-        'rx': 'rx',
-        'esp-js': 'esp-js',
-        'immer': 'immer'
-    },
+    }
 };

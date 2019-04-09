@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {RouterProvider, ConnectableComponent} from 'esp-js-react';
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 import {
     Logger,
     MultiItemRegionModel,

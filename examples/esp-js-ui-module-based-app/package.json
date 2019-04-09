@@ -10,7 +10,7 @@
     "esp-js-react": "^2.0.1-rc.3",
     "esp-js-ui": "^2.0.1-rc.3",
     "lodash": "4.17.11",
-    "microdi-js": "1.1.0",
+    "esp-js-di": "^2.0.1-rc.3",
     "react": "16.8.6",
     "react-dom": "16.8.6",
     "typescript": "3.4.2",

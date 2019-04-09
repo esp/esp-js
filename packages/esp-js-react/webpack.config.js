@@ -22,11 +22,5 @@ module.exports = {
     ...baseConfig,
     entry: {
         'esp-react': './src/index.ts'
-    },
-    externals: {
-        'react': 'react',
-        'prop-types': 'prop-types',
-        'esp-js': 'esp-js',
-        'esp-js-polimer': 'esp-js-polimer'
     }
 };

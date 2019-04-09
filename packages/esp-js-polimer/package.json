@@ -31,9 +31,12 @@
     "typescript": "3.4.2",
     "webpack": "4.29.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.2.1"
+    "webpack-dev-server": "3.2.1",
+    "esp-js": "^2.0.1-rc.3",
+    "immer": "2.1.5",
+    "rx": "4.1.0"
   },
-  "dependencies": {
+  "peerDependencies": {
     "esp-js": "^2.0.1-rc.3",
     "immer": "2.1.5",
     "rx": "4.1.0"

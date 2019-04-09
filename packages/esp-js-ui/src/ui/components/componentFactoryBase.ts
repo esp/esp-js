@@ -1,4 +1,4 @@
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 import {getComponentFactoryMetadata} from './componentDecorator';
 import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
 import {ComponentFactoryMetadata} from './componentDecorator';

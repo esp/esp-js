@@ -1,5 +1,5 @@
 import * as Rx from 'rx';
-import { Container } from 'microdi-js';
+import { Container } from 'esp-js-di';
 import { ComponentRegistryModel} from '../components';
 import {StateService} from '../state/stateService';
 import {Logger} from '../../core';

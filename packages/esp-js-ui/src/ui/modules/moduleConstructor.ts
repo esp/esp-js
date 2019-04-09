@@ -1,5 +1,5 @@
 import {StateService} from '../state/stateService';
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 import {Module} from './module';
 
 export interface ModuleConstructor {

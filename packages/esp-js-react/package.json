@@ -29,13 +29,17 @@
     "typescript": "3.4.2",
     "webpack": "4.29.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.2.1"
-  },
-  "dependencies": {
-    "esp-js": "^2.0.1-rc.3",
-    "esp-js-polimer": "^2.0.1-rc.3",
+    "webpack-dev-server": "3.2.1",
+    "react": "16.8.6",
     "prop-types": "^15.7.2",
-    "react": "16.8.6"
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-polimer": "^2.0.1-rc.3"
+  },
+  "peerDependencies": {
+    "react": "16.8.6",
+    "prop-types": "^15.7.2",
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-polimer": "^2.0.1-rc.3"
   },
   "publishConfig": {
     "tag": "latest"

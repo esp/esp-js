@@ -1,7 +1,7 @@
 import * as Rx from 'rx';
 import {DefaultPrerequisiteRegistrar} from './prerequisites';
 import {Logger} from '../../core';
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 import {ModuleLoadResult, ModuleChangeType} from './moduleLoadResult';
 import {ComponentRegistryModel} from '../components';
 import {ModuleDescriptor} from './moduleDescriptor';

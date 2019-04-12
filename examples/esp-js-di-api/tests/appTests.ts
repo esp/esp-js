@@ -11,7 +11,7 @@ import {
     runCustomDependencyResolver,
     runCustomDependencyResolver2,
     runDelegeateResolver,
-} from '../examples';
+} from '../src/examples';
 
 /**
  * This is a bit of a poor-mans catch all.

@@ -11,7 +11,7 @@ import {
     runModelToModelCommunicationsWithRunAction,
     runModelToModelCommunicationsWithObservables1,
     runModelToModelCommunicationsWithObservables2,
-} from '../app';
+} from '../src/app';
 
 /**
  * This is a bit of a poor-mans catch all.

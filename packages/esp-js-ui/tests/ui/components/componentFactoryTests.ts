@@ -1,6 +1,6 @@
 import {DisposableBase} from 'esp-js';
 import {ComponentFactoryBase, stateSaveHandler, ComponentStateSet, componentFactory, ComponentInstance} from '../../../src';
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 
 @componentFactory('key', 'shortName')
 class TestComponentFactory<T extends ComponentInstance> extends ComponentFactoryBase<T> {
@@ -44,10 +44,10 @@ class ModelWithNoStateSaving extends DisposableBase {
 }
 
 describe('ComponentFactory Tests', () => {
-    function runTest(componentFactory: ComponentFactoryBase<any>) {
-        let c1 = componentFactory.createComponent('testState1');
-        let c2 = componentFactory.createComponent('testState2');
-        let stateSet: ComponentStateSet = componentFactory.getAllComponentsState();
+    function runTest(cf: ComponentFactoryBase<any>) {
+        let c1 = cf.createComponent('testState1');
+        let c2 = cf.createComponent('testState2');
+        let stateSet: ComponentStateSet = cf.getAllComponentsState();
         expect(stateSet.componentsState.length).toEqual(2);
         expect(stateSet.componentsState[0].stateKey).toEqual('testState1');
         expect(stateSet.componentsState[1].stateKey).toEqual('testState2');

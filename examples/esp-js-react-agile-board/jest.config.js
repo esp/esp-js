@@ -16,11 +16,10 @@
  */
 // notice_end
 
-const baseConfig = require("../../webpack.config.base");
-
+let defaults = require('../../__jest__/jest.config');
 module.exports = {
-    ...baseConfig,
-    entry: {
-        'esp-js-ui': './src/index.ts'
-    }
+    ...defaults,
+    "setupFiles": [
+        "<rootDir>/../../__jest__/configureEspLogging.ts"
+    ]
 };

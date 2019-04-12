@@ -25,6 +25,7 @@ export class Container {
     isGroupRegistered(groupName : string) : boolean;
     addResolver<T>(name:String, resolver:Resolver<T>);
     dispose():void;
+    isDisposed: boolean;
 }
 
 export class RegistrationModifier {

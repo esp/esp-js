@@ -22,10 +22,5 @@ module.exports = {
     ...baseConfig,
     entry: {
         'esp-js-di': './src/index.js'
-    },
-    externals: {
-        'rx': 'rx',
-        'esp-js': 'esp-js',
-        'immer': 'immer'
-    },
+    }
 };

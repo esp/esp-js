@@ -18,8 +18,9 @@
 /*eslint-env node */
 'use strict';
 
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
 
 let env = process.env.NODE_ENV || 'dev';
 let isProduction = env.trim().toUpperCase() === 'prod';
@@ -32,7 +33,8 @@ let plugins = [
         root: process.cwd(),
         verbose: true,
         dry: false
-    })
+    }),
+    new PeerDepsExternalsPlugin(),
 ];
 
 if (isProduction) {

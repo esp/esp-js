@@ -75,6 +75,8 @@
 // misc
 [ ] - push 'moved' checkins to old esp-js-ui, esp-js-react, microdi-js repos
 [ ] - write tests for examples to ensure they work after esp changes
+[ ] - close out existing PRs
+[ ] - close out existing issues
 
 // docs
 [ ] - merge all readmes and restructure docs
@@ -85,6 +87,8 @@
         most of he lerna config is in lerna.json, except --dist-tag which is at the package level (in a packageConfig)
         this is because the new packages are just latest already (as i mistakenly published a latest and can't delete)
         moving forward, once 2.0.1 is pushed, this can be removed.
+[ ] - document peerDependecies
+      They are also devDependencies so `yarn install` adds them. bit of duplication but that's the weirdness with peerDependencies
 [ ] - document methods so the .d.ts have the docs
 [ ] - document observeEventEnvelope
 [ ] - Add Breaking Changes to release notes
@@ -92,6 +96,7 @@
 [ ] - document all the new modules
 [ ] - document router.broadcast being expensive
 [ ] - good docs on ConnectableComponent and connect
+[ ] - mention esp dependencies which are marked as external/peer
 
 // notes on esp-js-react's connect
 
@@ -142,3 +147,18 @@
         };
      ```
  - fixed inconsistent usage of eventName/eventType, now eventType:string everywhere
+
+ // esp-js-ui fluent api ideas
+
+ espui
+ .createApplication() // applicationBuilder, root container, router in container
+ .configureShell()
+    .withLayout(RegionType, name)
+    .createShellModule()
+.end()
+.createModule()
+    .withName()
+    .withContainerConfiguration()
+    .withPermissions()
+.end()
+.addModule(/* module from import */)

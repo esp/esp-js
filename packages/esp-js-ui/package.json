@@ -8,31 +8,38 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
   "scripts": {
-    "clean": "task clean",
-    "build-dev": "task build-dev",
-    "build-prod": "task build-prod",
-    "build-pack": "task pack",
-    "test": "task test",
-    "test-ci": "task test-ci",
-    "start": "task start --watch"
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "build-pack": "nps build-pack",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "start": "nps start"
   },
   "devDependencies": {
     "jest": "24.7.1",
-    "tools": "^2.0.1-rc.3",
     "typescript": "3.4.2",
     "webpack": "4.29.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.2.1"
-  },
-  "dependencies": {
+    "webpack-dev-server": "3.2.1",
+    "rx": "4.1.0",
+    "react": "16.8.6",
     "classnames": "2.2.6",
     "esp-js": "^2.0.1-rc.3",
     "esp-js-react": "^2.0.1-rc.3",
-    "microdi-js": "1.1.0",
+    "esp-js-di": "^2.0.1-rc.3"
+  },
+  "dependencies": {
     "query-string": "6.4.2",
-    "react": "16.8.6",
-    "rx": "4.1.0",
     "uuid": "3.3.2"
+  },
+  "peerDependencies": {
+    "rx": "4.1.0",
+    "react": "16.8.6",
+    "classnames": "2.2.6",
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-react": "^2.0.1-rc.3",
+    "esp-js-di": "^2.0.1-rc.3"
   },
   "publishConfig": {
     "tag": "latest"

@@ -1,4 +1,4 @@
-import {Container} from 'microdi-js';
+import {Container} from 'esp-js-di';
 import {DisposableBase, Guard} from 'esp-js';
 import {StateService} from '../state';
 import {ComponentRegistryModel, ComponentFactoryBase} from '../components';

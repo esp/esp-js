@@ -147,3 +147,18 @@
         };
      ```
  - fixed inconsistent usage of eventName/eventType, now eventType:string everywhere
+
+ // esp-js-ui fluent api ideas
+
+ espui
+ .createApplication() // applicationBuilder, root container, router in container
+ .configureShell()
+    .withLayout(RegionType, name)
+    .createShellModule()
+.end()
+.createModule()
+    .withName()
+    .withContainerConfiguration()
+    .withPermissions()
+.end()
+.addModule(/* module from import */)

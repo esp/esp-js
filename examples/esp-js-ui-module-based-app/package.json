@@ -18,18 +18,17 @@
   },
   "devDependencies": {
     "jest": "24.7.1",
-    "tools": "^2.0.1-rc.3",
     "typescript": "2.9.2",
     "webpack": "4.29.6",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "3.2.1"
   },
   "scripts": {
-    "clean": "task clean",
-    "build-dev": "task build-dev",
-    "build-prod": "task build-prod",
-    "test": "task test",
-    "test-ci": "task test-ci",
-    "start": "task start --watch"
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "start": "nps start"
   }
 }

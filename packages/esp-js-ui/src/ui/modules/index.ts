@@ -3,7 +3,6 @@ export { ComponentFactoryState } from './componentFactoryState';
 export { DefaultStateProvider } from './defaultStateProvider';
 export { Module } from './module';
 export { ModuleBase } from './moduleBase';
-export { ModuleConstructor } from './moduleConstructor';
 export { ModuleDescriptor } from './moduleDescriptor';
 export * from './moduleLoadResult';
 export { ModuleLoader } from './moduleLoader';

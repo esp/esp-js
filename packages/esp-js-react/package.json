@@ -21,7 +21,7 @@
     "build-pack": "nps build-pack",
     "test": "nps test",
     "test-ci": "nps test-ci",
-    "start": "nps start"
+    "dev": "nps dev"
   },
   "devDependencies": {
     "jest": "24.7.1",

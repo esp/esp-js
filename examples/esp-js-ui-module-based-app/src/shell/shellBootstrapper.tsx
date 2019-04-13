@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import {RouterProvider, ConnectableComponent} from 'esp-js-react';
 import {Container} from 'esp-js-di';
 import {
@@ -17,15 +16,20 @@ import {Router} from 'esp-js';
 
 const _log = Logger.create('ShellBootstrapper');
 
-class ShellBootstrapper {
-    private _container: Container;
+export class ShellBootstrapper {
+    private readonly _container: Container;
+    private readonly _rootElement: any;
 
-    start() {
+    constructor() {
         this._container = new Container();
         SystemContainerConfiguration.configureContainer(this._container);
         this._configureContainer();
         this._container.resolve<Router>(SystemContainerConst.router).enableDiagnosticLogging = true;
-        this._displayShell();
+        this._rootElement = this._createRootElement();
+    }
+
+    get rootElement() {
+        return this._rootElement;
     }
 
     _configureContainer() {
@@ -55,21 +59,18 @@ class ShellBootstrapper {
             );
     }
 
-    _displayShell() {
+    _createRootElement(): any {
         let shellModel = this._container.resolve<ShellModel>(ShellModuleContainerConst.shell_model);
         let router = this._container.resolve<Router>(SystemContainerConst.router);
         shellModel.observeEvents();
+        shellModel.init();
         _log.verbose('Displaying UI');
-        ReactDOM.render(
+        return (
             <RouterProvider router={router}>
                 <div>
                     <ConnectableComponent modelId={shellModel.modelId}/>
                 </div>
-            </RouterProvider>,
-            document.getElementById('root')
+            </RouterProvider>
         );
-        shellModel.init();
     }
 }
-
-new ShellBootstrapper().start();

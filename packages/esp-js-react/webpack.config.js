@@ -21,6 +21,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-react': './src/index.ts'
+        'esp-react': './src/index.ts',
+        'esp-react.min': './src/index.ts',
     }
 };

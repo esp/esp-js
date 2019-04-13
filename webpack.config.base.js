@@ -21,32 +21,17 @@
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
+const logger = require('webpack-log')({ name: 'BaseConfig' });
+const TerserPlugin = require('terser-webpack-plugin');
 
-let env = process.env.NODE_ENV || 'dev';
-let isProduction = env.trim().toUpperCase() === 'prod';
+const env = process.env.NODE_ENV || 'dev';
+const isProduction = env.trim().toLowerCase() === 'prod';
+const mode = isProduction ? 'production' : 'development';
 
-console.log('Running in ' + env + ' environment.');
-
-let plugins = [
-    new CleanWebpackPlugin({
-        cleanOnceBeforeBuildPatterns: ['.dist', '.tsBuild'],
-        root: process.cwd(),
-        verbose: true,
-        dry: false
-    }),
-    new PeerDepsExternalsPlugin(),
-];
-
-if (isProduction) {
-    plugins.push(new webpack.DefinePlugin({
-        'process.env': {
-            'NODE_ENV': JSON.stringify('production')
-        }
-    }));
-}
+logger.info('Running for env:' + process.env.NODE_ENV);
 
 module.exports = {
-    mode: isProduction ? 'production' : 'development',
+    mode,
     output: {
         libraryTarget: 'umd',
         sourcePrefix: '    ',
@@ -59,6 +44,14 @@ module.exports = {
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
+    },
+    optimization: {
+       // minimize: false, // we only min specific bundles below
+        minimizer: [
+            new TerserPlugin({
+                test:  /\.min\.js$/,
+            }),
+        ],
     },
     devtool: 'source-map',
     module: {
@@ -88,5 +81,18 @@ module.exports = {
             }
         ]
     },
-    plugins: plugins
+    plugins: [
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: ['.dist'],
+            root: process.cwd(),
+            verbose: true,
+            dry: false
+        }),
+        new PeerDepsExternalsPlugin(),
+        new webpack.DefinePlugin({
+            'process.env': {
+                'NODE_ENV': JSON.stringify(mode)
+            }
+        })
+    ]
 };

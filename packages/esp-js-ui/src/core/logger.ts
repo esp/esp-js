@@ -92,10 +92,19 @@ export interface LoggerConfig {
     level: Level;
 }
 
-function getOrCreateLoggerConfig(loggerName: string) {
+function getOrCreateLoggerConfig(loggerName: string, overrides: Partial<LoggerConfig> = {}) {
     let loggerConfig = _loggerConfigs[loggerName];
     if (!loggerConfig) {
-        loggerConfig = Object.create(LoggingConfig.defaultLoggerConfig, {});
+        // using .create here as the config programmatically inherits from the base.
+        // this allows the global logging level to be changed for all loggers.
+        loggerConfig = Object.create(LoggingConfig.defaultLoggerConfig);
+        // note we can't spread due to this config prototypically inheriting
+        if (typeof overrides.level !== 'undefined') {
+            loggerConfig.level = overrides.level;
+        }
+        if (typeof overrides.dumpAdditionalDetailsToConsole !== 'undefined') {
+            loggerConfig.dumpAdditionalDetailsToConsole = overrides.dumpAdditionalDetailsToConsole;
+        }
         _loggerConfigs[loggerName] = loggerConfig;
     }
     return loggerConfig;
@@ -104,17 +113,27 @@ function getOrCreateLoggerConfig(loggerName: string) {
 export class LoggingConfig {
     private static _defaultLoggerConfig = { dumpAdditionalDetailsToConsole:true, level: _currentLevel };
 
+    /**
+     * Sets the level for all loggers, including existing ones
+     * @param level
+     */
     static setLevel(level: Level): void {
         _currentLevel = level;
         LoggingConfig._defaultLoggerConfig.level = _currentLevel;
     }
 
+    /**
+     * Adds a sink to process log results
+     * @param sink
+     */
     static addSinks(...sink: Array<Sink>): void {
         _sink.addSinks(...sink);
     }
+
     static get defaultLoggerConfig()  : LoggerConfig {
         return LoggingConfig._defaultLoggerConfig;
     }
+
     static getLoggerConfig(loggerName: string): LoggerConfig {
         return getOrCreateLoggerConfig(loggerName);
     }
@@ -135,12 +154,14 @@ export class Logger {
     ) {
     }
 
-    static create(name: string): Logger {
+    public get config() {
+        return this._loggerConfig;
+    }
+
+    static create(name: string, loggerConfig: Partial<LoggerConfig> = {}): Logger {
         Guard.isDefined(name, 'The name argument should be defined');
         Guard.isString(name, 'The name argument should be a string');
-
-        let loggerConfig = getOrCreateLoggerConfig(name);
-        return new Logger(name, loggerConfig);
+        return new Logger(name, getOrCreateLoggerConfig(name, loggerConfig));
     }
 
     group(...args: any[]) {

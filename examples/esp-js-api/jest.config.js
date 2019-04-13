@@ -16,10 +16,4 @@
  */
 // notice_end
 
-let defaults = require('../../__jest__/jest.config');
-module.exports = {
-    ...defaults,
-    "setupFiles": [
-        "<rootDir>/../../__jest__/configureEspLogging.ts"
-    ]
-};
+module.exports = require('../../__jest__/jest.config');

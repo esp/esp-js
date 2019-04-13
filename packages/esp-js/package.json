@@ -18,7 +18,7 @@
     "build-pack": "nps build-pack",
     "test": "nps test",
     "test-ci": "nps test-ci",
-    "start": "nps start"
+    "dev": "nps dev"
   },
   "main": ".dist/esp-js.js",
   "typings": ".dist/typings/index.d.ts",

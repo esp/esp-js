@@ -21,6 +21,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-js-polimer': './src/index.ts'
+        'esp-js-polimer': './src/index.ts',
+        'esp-js-polimer.min': './src/index.ts',
     }
 };

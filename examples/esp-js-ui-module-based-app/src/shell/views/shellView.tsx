@@ -5,7 +5,7 @@ import {MultiItemRegionView, SingleItemRegionView} from 'esp-js-ui';
 import {ShellModel} from '../models/shellModel';
 import {SplashScreenState} from '../models/splashScreenModel';
 
-export class ShellView extends React.Component<{ model: ShellModel, router: Router }, any> {
+export class ShellView extends React.Component<{ model?: ShellModel, router?: Router }, any> {
     render() {
         let model: ShellModel = this.props.model;
         let mainContent;

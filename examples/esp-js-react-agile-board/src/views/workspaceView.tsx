@@ -9,8 +9,8 @@ import { Workspace } from '../models/workspace';
 import { shouldUpdateMixin } from 'esp-js-react';
 
 export interface WorkspaceViewProps {
-    model: Workspace;
-    router: Router;
+    model?: Workspace;
+    router?: Router;
 }
 
 @shouldUpdateMixin((nextProps: WorkspaceViewProps) => {

@@ -1,27 +1,39 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { RouterProvider, SmartComponent } from 'esp-js-react';
-import { Workspace } from './models/workspace';
-import { Modal } from './models/modal';
-import { Router } from 'esp-js';
+import {SmartComponent} from 'esp-js-react';
+import {Workspace} from './models/workspace';
+import {Modal} from './models/modal';
+import {Router} from 'esp-js';
+import {RouterProvider} from 'esp-js-react';
 
-// create an app wide router
-let router = new Router();
+export class App extends React.PureComponent {
+    private readonly router: Router;
+    private readonly workspaceModelId: string;
+    private readonly modalModelId: string;
 
-// create a model responsible for displaying app wide modal windows
-let modal = new Modal(router);
-modal.observeEvents();
+    constructor(props) {
+        super(props);
+        // create an app wide router
+        this.router = new Router();
 
-// create the main model
-let workspace = new Workspace(router, modal);
-workspace.observeEvents();
+        // create a model responsible for displaying app wide modal windows
+        let modal = new Modal(this.router);
+        modal.observeEvents();
+        this.modalModelId = modal.modelId;
 
-ReactDOM.render(
-    <RouterProvider router={router}>
-        <div>
-            <SmartComponent modelId={workspace.modelId}/>
-            <SmartComponent modelId={modal.modelId}/>
-        </div>
-    </RouterProvider>,
-    document.getElementById('root')
-);
+        // create the main model
+        let workspace = new Workspace(this.router, modal);
+        this.workspaceModelId = workspace.modelId;
+        workspace.observeEvents();
+    }
+
+    render() {
+        return (
+            <RouterProvider router={this.router}>
+                <div>
+                    <SmartComponent modelId={this.workspaceModelId}/>
+                    <SmartComponent modelId={this.modalModelId}/>
+                </div>
+            </RouterProvider>
+        );
+    }
+}

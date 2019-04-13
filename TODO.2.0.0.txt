@@ -69,7 +69,7 @@
 [ ] - write tests for examples to ensure they work after esp changes
     [x] esp-js-api
     [x] esp-js-di-api
-    [ ] esp-js-react-agile-board
+    [x] esp-js-react-agile-board
     [x] esp-js-ui-module-based-app
 [x] - close out existing PRs
 [x] - close out existing issues

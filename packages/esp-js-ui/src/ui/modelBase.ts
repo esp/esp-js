@@ -14,8 +14,6 @@ export abstract class ModelBase extends DisposableBase implements ComponentInsta
         this._log = Logger.create(`ModelBase-${_modelId}`);
     }
 
-    public getTitle(): string { return ''; }
-
     public observeEvents() {
         if (this._observeEventsCalled) {
             throw new Error(`observeEvents already called for model with id ${this._modelId}`);

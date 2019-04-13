@@ -97,6 +97,7 @@
 [ ] - document router.broadcast being expensive
 [ ] - good docs on ConnectableComponent and connect
 [ ] - mention esp dependencies which are marked as external/peer
+[ ] - document observe event predicates:  @esp.observeEvent('fruitEvent', (currentEntity, event) => event.type === 'orange')
 
 // notes on esp-js-react's connect
 

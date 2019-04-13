@@ -19,3 +19,6 @@
 const esp = require('../packages/esp-js/src/index');
 // comment this out if you want more verbose logging, i.e. any esp logging (mostly for unhappy path test cases) spat out.
 esp.logging.Logger.setSink(() => { /* noop */});
+
+const espUi = require('esp-js-ui');
+espUi.LoggingConfig.setLevel(espUi.Level.none);

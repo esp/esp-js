@@ -83,7 +83,7 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin({
-            cleanOnceBeforeBuildPatterns: ['.dist', '.tsBuild'],
+            cleanOnceBeforeBuildPatterns: ['.dist'],
             root: process.cwd(),
             verbose: true,
             dry: false

@@ -25,7 +25,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-js-ui-module-based-app': './src/shell/shellBootstrapper.tsx'
+        'esp-js-ui-module-based-app': './src/index.tsx'
     },
     plugins:  [
         ...baseConfig.plugins,

@@ -1,5 +1,6 @@
 2.0.0 update todos
 
+// code changes
 [x] - Convert to tyepscript
 [x] - makes observices of T, not t123
 [x] - remove model changed event (fixed, or modified, not deleted)
@@ -10,13 +11,6 @@
 [x] - expose single event subject for all events for a model
 [x] - single publish step via lerna
 [x] - polimer tests
-
-// code changes
-[ ] - more elaborate esp-js-ui application
-[ ] - shared test setups
-[ ] - Rx Js upgrade
-[ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
-[ ] - Lift Polimer state tracking to separate package so it can be swapped out
 [x] - add support for pre and post processing to polimer states
       -How-to notes added in polimerModel.ts-
       - This isn't possible in a decent way.
@@ -67,16 +61,18 @@
     ---- this is no sensible way to know this as the fat pipe may or may not deliver to an ultimate observer based on filters in the obs stream
     ---- I;ve been back and forth on this, in the end I don't think there is an issue. If you use broadcast event it's an expensive operation
     ---- should shouldn't be used lightly. There is an edge case whereby the model changed event would fire, but that is to be removed leasing the impact
-
-// build
 [x] - single travis build with lerna
 [x] - Ensure dependencies are exact versions
 
 // misc
 [ ] - push 'moved' checkins to old esp-js-ui, esp-js-react, microdi-js repos
 [ ] - write tests for examples to ensure they work after esp changes
-[ ] - close out existing PRs
-[ ] - close out existing issues
+    [x] esp-js-api
+    [x] esp-js-di-api
+    [ ] esp-js-react-agile-board
+    [x] esp-js-ui-module-based-app
+[x] - close out existing PRs
+[x] - close out existing issues
 
 // docs
 [ ] - merge all readmes and restructure docs
@@ -163,3 +159,10 @@
     .withPermissions()
 .end()
 .addModule(/* module from import */)
+
+// vNext
+[ ] - more elaborate esp-js-ui application
+[ ] - shared test setups
+[ ] - Rx Js upgrade
+[ ] - Add support to halt just a single model, but the model would need to opt in or be flagged explicitly for this functionality
+[ ] - Lift Polimer state tracking to separate package so it can be swapped out

@@ -1,5 +1,5 @@
 export * from './prerequisites';
-export { ComponentFactoryState } from './componentFactoryState';
+export { ViewFactoryState } from './viewFactoryState';
 export { DefaultStateProvider } from './defaultStateProvider';
 export { Module, ModuleConstructor } from './module';
 export { espModule } from './moduleDecorator';

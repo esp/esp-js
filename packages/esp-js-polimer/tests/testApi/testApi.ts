@@ -257,7 +257,7 @@ export class Asserts {
         return this;
     }
     public assertSavedState(assertingFunction: (savedStateState) => void) {
-        assertingFunction(this._model.getEspUiComponentState());
+        assertingFunction(this._model.getEspUiModelState());
         return this;
     }
 }

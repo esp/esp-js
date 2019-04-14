@@ -5,7 +5,7 @@ import {StateService} from '../state/stateService';
 import {Router} from 'esp-js';
 import {RegionManager} from '../regions/regionManager';
 import {SchedulerService} from '../../core';
-import {ComponentRegistryModel} from '../components';
+import {ViewRegistryModel} from '../viewFactory';
 import {LiteralResolver} from './literalResolver';
 import {ModuleLoader} from '../modules/moduleLoader';
 
@@ -38,14 +38,14 @@ export class SystemContainerConfiguration {
         rootContainer.register(SystemContainerConst.module_loader, ModuleLoader)
             .inject(
                 EspDiConsts.owningContainer,
-                SystemContainerConst.components_registry_model,
+                SystemContainerConst.views_registry_model,
                 SystemContainerConst.state_service
             )
             .singleton();
 
         // component registry
         rootContainer
-            .register(SystemContainerConst.components_registry_model, ComponentRegistryModel)
+            .register(SystemContainerConst.views_registry_model, ViewRegistryModel)
             .inject(SystemContainerConst.router)
             .singleton();
     }

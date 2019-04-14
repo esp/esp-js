@@ -1,4 +1,4 @@
-export * from './components';
+export * from './viewFactory';
 export * from './regions';
 export * from './state';
 export * from './dependencyInjection';

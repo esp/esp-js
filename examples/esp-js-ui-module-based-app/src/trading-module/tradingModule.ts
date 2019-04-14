@@ -4,15 +4,15 @@ import {Container, EspDiConsts} from 'esp-js-di';
 import {
     ModuleBase,
     StateService,
-    ComponentFactoryBase,
     SystemContainerConst,
+    ViewFactoryBase,
     PrerequisiteRegister,
     Logger,
     espModule
 } from 'esp-js-ui';
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
-import {CashTileComponentFactory} from './cash-tile/cashTileComponentFactory';
-import {BlotterComponentFactory} from './blotter/blotterComponentFactory';
+import {CashTileViewFactory} from './cash-tile/cashTileViewFactory';
+import {BlotterViewFactory} from './blotter/blotterViewFactory';
 import {BlotterModel} from './blotter/models/blotterModel';
 import {TradingModuleDefaultStateProvider} from './tradingModuleDefaultStateProvider';
 
@@ -20,12 +20,12 @@ let _log = Logger.create('TradingModule');
 
 @espModule('trading-module', 'Trading Module')
 export class TradingModule extends ModuleBase {
-    _componentFactoryGroupId: string;
+    _viewFactoryGroupId: string;
     _tradingModuleDefaultStateProvider = new TradingModuleDefaultStateProvider();
 
     constructor(container: Container, stateService: StateService) {
         super(container, stateService);
-        this._componentFactoryGroupId = uuid.v4();
+        this._viewFactoryGroupId = uuid.v4();
     }
 
     protected getDefaultStateProvider() {
@@ -34,18 +34,18 @@ export class TradingModule extends ModuleBase {
 
     configureContainer() {
         _log.group('Configuring container');
-        _log.debug(`Registering ${TradingModuleContainerConst.cashTileComponentFactory}`);
+        _log.debug(`Registering ${TradingModuleContainerConst.cashTileViewFactory}`);
         this.container
-            .register(TradingModuleContainerConst.cashTileComponentFactory, CashTileComponentFactory)
+            .register(TradingModuleContainerConst.cashTileViewFactory, CashTileViewFactory)
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
-            .inGroup(this._componentFactoryGroupId);
-        _log.debug(`Registering ${TradingModuleContainerConst.blotterComponentFactory}`);
+            .inGroup(this._viewFactoryGroupId);
+        _log.debug(`Registering ${TradingModuleContainerConst.blotterViewFactory}`);
         this.container
-            .register(TradingModuleContainerConst.blotterComponentFactory, BlotterComponentFactory)
+            .register(TradingModuleContainerConst.blotterViewFactory, BlotterViewFactory)
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
-            .inGroup(this._componentFactoryGroupId);
+            .inGroup(this._viewFactoryGroupId);
         _log.debug(`Registering ${TradingModuleContainerConst.blotterModel}`);
         this.container
             .register(TradingModuleContainerConst.blotterModel, BlotterModel)
@@ -54,8 +54,8 @@ export class TradingModule extends ModuleBase {
         _log.groupEnd();
     }
 
-    getComponentsFactories(): Array<ComponentFactoryBase<any>> {
-        return this.container.resolveGroup(this._componentFactoryGroupId);
+    getViewFactories(): Array<ViewFactoryBase<any>> {
+        return this.container.resolveGroup(this._viewFactoryGroupId);
     }
 
     registerPrerequisites(register: PrerequisiteRegister): void {

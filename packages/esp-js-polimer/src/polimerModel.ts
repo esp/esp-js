@@ -120,7 +120,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
      * Polimer doesn't have a hard dependency on esp-js-ui, however if your models are created using esp-js-ui then this hook will be used to save state.
      *
      * */
-    getEspUiComponentState(): any {
+    getEspUiModelState(): any {
         if (!this._initialSetup.stateSaveHandler) {
             return null;
         }

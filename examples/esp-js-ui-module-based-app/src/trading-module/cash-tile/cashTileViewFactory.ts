@@ -1,6 +1,6 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
-import {ComponentFactoryBase, Logger, componentFactory, IdFactory} from 'esp-js-ui';
+import {ViewFactoryBase, Logger,  viewFactory, IdFactory} from 'esp-js-ui';
 import {CashTileModel, defaultModelFactory} from './model/cashTileModel';
 import {CashTileView} from './views/cashTileView';
 import {rootStateHandlerMap} from './model/root/rootState';
@@ -14,17 +14,16 @@ import {RootEvents} from './events';
 import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
 
-const _log = Logger.create('CashTileComponentFactory');
+const _log = Logger.create('CashTileViewFactory');
 
-@componentFactory(TradingModuleContainerConst.cashTileComponentFactory, 'Cash Tile')
-export class CashTileComponentFactory extends ComponentFactoryBase<PolimerModel<CashTileModel>> {
+@viewFactory(TradingModuleContainerConst.cashTileViewFactory, 'Cash Tile')
+export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileModel>> {
     private _router : Router;
     constructor(container, router:Router) {
         super(container);
         this._router = router;
     }
-    // override
-    _createComponent(childContainer, state: CashTileModel): PolimerModel<CashTileModel> {
+    _createView(childContainer, state: CashTileModel): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
         const modelId = IdFactory.createId('cashTileModel');

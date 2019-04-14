@@ -1,11 +1,11 @@
 import {Container} from 'esp-js-di';
 import {DisposableBase, Guard} from 'esp-js';
 import {StateService} from '../state';
-import {ComponentRegistryModel, ComponentFactoryBase} from '../components';
+import {ViewRegistryModel, ViewFactoryBase} from '../viewFactory';
 import {Logger} from '../../core';
 import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
-import {ComponentFactoryState} from './componentFactoryState';
+import {ViewFactoryState} from './viewFactoryState';
 import {ModelBase} from '../modelBase';
 import {StateSaveMonitor} from '../state/stateSaveMonitor';
 import {ModuleMetadata} from './moduleDecorator';
@@ -64,43 +64,43 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         }
     }
 
-    registerComponents(componentRegistryModel: ComponentRegistryModel) {
-        _log.debug('Registering components');
-        let componentFactories: Array<ComponentFactoryBase<any>> = this.getComponentsFactories();
-        componentFactories.forEach(componentFactory => {
-            componentRegistryModel.registerComponentFactory(this._moduleMetadata.moduleName, componentFactory);
+    registerViewFactories(viewRegistryModel: ViewRegistryModel) {
+        _log.debug('Registering views');
+        let viewFactories: Array<ViewFactoryBase<any>> = this.getViewFactories();
+        viewFactories.forEach(viewFactory => {
+            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleName, viewFactory);
             this.addDisposable(() => {
-                componentRegistryModel.unregisterComponentFactory(componentFactory);
+                viewRegistryModel.unregisterViewFactory(viewFactory);
             });
         });
     }
 
     // override if required
-    getComponentsFactories(): Array<ComponentFactoryBase<ModelBase>> {
+    getViewFactories(): Array<ViewFactoryBase<ModelBase>> {
         return [];
     }
 
-    loadLayout(layoutMode: string, componentRegistryModel: ComponentRegistryModel) {
+    loadLayout(layoutMode: string, viewRegistryModel: ViewRegistryModel) {
         if (this._currentLayout) {
             this.unloadLayout();
         }
         this._currentLayout = layoutMode;
-        let componentFactoriesState = this._stateService.getModuleState<ComponentFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
-        if (componentFactoriesState === null) {
+        let viewFactoriesState = this._stateService.getModuleState<ViewFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
+        if (viewFactoriesState === null) {
             Guard.isDefined(this.getDefaultStateProvider(), `_defaultStateProvider was not provided for module ${this._moduleMetadata.moduleKey}`);
-            componentFactoriesState = this.getDefaultStateProvider().getComponentFactoriesState(layoutMode);
+            viewFactoriesState = this.getDefaultStateProvider().getViewFactoriesState(layoutMode);
         }
 
-        if (componentFactoriesState) {
-            componentFactoriesState.forEach((componentFactoryState: ComponentFactoryState) => {
-                if (componentRegistryModel.hasComponentFacotory(componentFactoryState.componentFactoryKey)) {
-                    let componentFactory: ComponentFactoryBase<ModelBase> = componentRegistryModel.getComponentFactory(componentFactoryState.componentFactoryKey);
-                    componentFactoryState.componentsState.forEach((state: any) => {
-                        componentFactory.createComponent(state);
+        if (viewFactoriesState) {
+            viewFactoriesState.forEach((viewFactoryState: ViewFactoryState) => {
+                if (viewRegistryModel.hasViewFacotory(viewFactoryState.viewFactoryKey)) {
+                    let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
+                    viewFactoryState.state.forEach((state: any) => {
+                        viewFactory.createView(state);
                     });
                 } else {
                     // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
-                    _log.warn(`Skipping load for component as it's factory of type [${componentFactoryState.componentFactoryKey}] is not registered`);
+                    _log.warn(`Skipping load for component as it's factory of type [${viewFactoryState.viewFactoryKey}] is not registered`);
                 }
             });
         }
@@ -113,8 +113,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         if (this.stateSavingEnabled) {
             this._saveAllComponentState();
         }
-        this.getComponentsFactories().forEach((factory: ComponentFactoryBase<ModelBase>) => {
-            factory.shutdownAllComponents();
+        this.getViewFactories().forEach((factory: ViewFactoryBase<ModelBase>) => {
+            factory.shutdownAllViews();
         });
         this._currentLayout = null;
     }
@@ -123,8 +123,8 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         if (this._currentLayout == null) {
             return;
         }
-        let state = this.getComponentsFactories()
-            .map(f => f.getAllComponentsState())
+        let state = this.getViewFactories()
+            .map(f => f.getAllViewsState())
             .filter(f => f != null);
         if (state.length > 0) {
             this._stateService.saveModuleState(this._moduleMetadata.moduleKey, this._currentLayout, state);

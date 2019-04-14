@@ -3,7 +3,7 @@ import {DefaultPrerequisiteRegister} from './prerequisites';
 import {Logger} from '../../core';
 import {Container} from 'esp-js-di';
 import {ModuleLoadResult, ModuleChangeType} from './moduleLoadResult';
-import {ComponentRegistryModel} from '../components';
+import {ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state';
 import {ResultStage, LoadResult} from './prerequisites';
 import {Module} from './module';
@@ -18,7 +18,7 @@ export class SingleModuleLoader {
 
     constructor(
         private _container: Container,
-        private _componentRegistryModel: ComponentRegistryModel,
+        private _viewRegistryModel: ViewRegistryModel,
         private _stateService: StateService,
         private _moduleConstructor: ModuleConstructor,
         private _moduleMetadata: ModuleMetadata
@@ -53,7 +53,7 @@ export class SingleModuleLoader {
                 this.module.configureContainer();
 
                 this._log.debug(`Registering Components for ${moduleName}`);
-                this.module.registerComponents(this._componentRegistryModel);
+                this.module.registerViewFactories(this._viewRegistryModel);
 
                 this._log.debug(`Registering prereqs for ${moduleName}`);
                 this.module.registerPrerequisites(this._preReqsLoader);
@@ -83,7 +83,7 @@ export class SingleModuleLoader {
         if (!this.module) {
             return;
         }
-        this.module.loadLayout(layoutMode, this._componentRegistryModel);
+        this.module.loadLayout(layoutMode, this._viewRegistryModel);
     }
 
     public unloadModuleLayout(): void {

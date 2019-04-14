@@ -1,6 +1,6 @@
 import * as Rx from 'rx';
 import { Container } from 'esp-js-di';
-import { ComponentRegistryModel} from '../components';
+import { ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state/stateService';
 import {Logger} from '../../core';
 import {ModuleLoadResult} from './moduleLoadResult';
@@ -17,7 +17,7 @@ export class ModuleLoader {
 
     constructor(
         private _container: Container,
-        private _componentRegistryModel: ComponentRegistryModel,
+        private _viewRegistryModel: ViewRegistryModel,
         private _stateService:StateService) {
     }
 
@@ -68,7 +68,7 @@ export class ModuleLoader {
         _log.debug(`Creating module Loader for ${moduleMetadata.moduleKey}`);
         let moduleLoader = new SingleModuleLoader(
             this._container,
-            this._componentRegistryModel,
+            this._viewRegistryModel,
             this._stateService,
             moduleConstructor,
             moduleMetadata

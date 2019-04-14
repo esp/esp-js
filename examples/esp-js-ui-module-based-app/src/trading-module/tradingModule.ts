@@ -6,8 +6,9 @@ import {
     StateService,
     ComponentFactoryBase,
     SystemContainerConst,
-    PrerequisiteRegistrar,
-    Logger
+    PrerequisiteRegister,
+    Logger,
+    espModule
 } from 'esp-js-ui';
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
 import {CashTileComponentFactory} from './cash-tile/cashTileComponentFactory';
@@ -17,29 +18,18 @@ import {TradingModuleDefaultStateProvider} from './tradingModuleDefaultStateProv
 
 let _log = Logger.create('TradingModule');
 
+@espModule('trading-module', 'Trading Module')
 export class TradingModule extends ModuleBase {
     _componentFactoryGroupId: string;
+    _tradingModuleDefaultStateProvider = new TradingModuleDefaultStateProvider();
 
     constructor(container: Container, stateService: StateService) {
-        super(
-            'trading-module',
-            container,
-            stateService,
-            new TradingModuleDefaultStateProvider()
-        );
+        super(container, stateService);
         this._componentFactoryGroupId = uuid.v4();
     }
 
-    static get requiredPermission(): string {
-        return 'fx-trading';
-    }
-
-    get moduleName() {
-        return 'Trading Module';
-    }
-
-    initialise() {
-
+    protected getDefaultStateProvider() {
+        return this._tradingModuleDefaultStateProvider;
     }
 
     configureContainer() {
@@ -68,15 +58,15 @@ export class TradingModule extends ModuleBase {
         return this.container.resolveGroup(this._componentFactoryGroupId);
     }
 
-    registerPrerequisites(registrar: PrerequisiteRegistrar): void {
+    registerPrerequisites(register: PrerequisiteRegister): void {
         _log.groupCollapsed('Registering  Prerequisites');
         _log.debug(`Registering 1`);
-        registrar.registerStream(
+        register.registerStream(
             Rx.Observable.timer(2000).take(1).concat(Rx.Observable.throw(new Error('Load error'))),
             'Loading Module That Fails'
         );
         _log.debug(`Registering 2`);
-        registrar.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
+        register.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
         _log.groupEnd();
     }
 }

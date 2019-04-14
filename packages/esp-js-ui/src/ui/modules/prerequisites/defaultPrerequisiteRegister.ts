@@ -1,12 +1,12 @@
 import * as Rx from 'rx';
 import {DisposableBase} from 'esp-js';
-import {PrerequisiteRegistrar} from './prerequisiteRegistrar';
+import {PrerequisiteRegister} from './prerequisiteRegister';
 import {LoadResult, ResultStage} from './loadResult';
 import {Logger, Unit} from '../../../core';
 
-const _log: Logger = Logger.create('PrerequisiteRegistrar');
+const _log: Logger = Logger.create('PrerequisiteRegister');
 
-export class DefaultPrerequisiteRegistrar extends DisposableBase implements PrerequisiteRegistrar  {
+export class DefaultPrerequisiteRegister extends DisposableBase implements PrerequisiteRegister  {
     private _stream: Rx.Observable<LoadResult> = Rx.Observable.empty<LoadResult>();
     private readonly _publishedStream: Rx.Observable<LoadResult>;
 

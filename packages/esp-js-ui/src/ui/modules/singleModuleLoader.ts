@@ -1,33 +1,40 @@
 import * as Rx from 'rx';
-import {DefaultPrerequisiteRegistrar} from './prerequisites';
+import {DefaultPrerequisiteRegister} from './prerequisites';
 import {Logger} from '../../core';
 import {Container} from 'esp-js-di';
 import {ModuleLoadResult, ModuleChangeType} from './moduleLoadResult';
 import {ComponentRegistryModel} from '../components';
-import {ModuleDescriptor} from './moduleDescriptor';
 import {StateService} from '../state';
 import {ResultStage, LoadResult} from './prerequisites';
 import {Module} from './module';
+import {ModuleMetadata} from './moduleDecorator';
+import {ModuleConstructor} from './module';
 
 export class SingleModuleLoader {
-    private readonly _preReqsLoader: DefaultPrerequisiteRegistrar;
+    private readonly _preReqsLoader: DefaultPrerequisiteRegister;
     private _log: Logger;
 
-    public functionalModule: Module;
+    public module: Module;
 
-    constructor(private _container: Container,
-                private _componentRegistryModel: ComponentRegistryModel,
-                private _stateService: StateService,
-                private _descriptor: ModuleDescriptor
+    constructor(
+        private _container: Container,
+        private _componentRegistryModel: ComponentRegistryModel,
+        private _stateService: StateService,
+        private _moduleConstructor: ModuleConstructor,
+        private _moduleMetadata: ModuleMetadata
     ) {
+        this._log = Logger.create(`SingleModuleLoader-${this._moduleMetadata.moduleKey}`);
+        this._preReqsLoader = new DefaultPrerequisiteRegister();
+    }
 
-        this._log = Logger.create(`SingleModuleLoader-${this._descriptor.moduleName}`);
-        this._preReqsLoader = new DefaultPrerequisiteRegistrar();
+    public get moduleMetadata(): ModuleMetadata {
+        return this._moduleMetadata;
     }
 
     public load(): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
-            let moduleName = this._descriptor.moduleName;
+            let moduleName = this._moduleMetadata.moduleName;
+
             obs.onNext({
                 type: ModuleChangeType.Change,
                 moduleName: moduleName,
@@ -37,20 +44,19 @@ export class SingleModuleLoader {
             try {
                 this._log.debug(`Creating module ${moduleName}`);
 
-                let FunctionalModule = this._descriptor.factory;
-                this.functionalModule = new FunctionalModule(
+                this.module = new this._moduleConstructor(
                     this._container.createChildContainer(),
                     this._stateService
                 );
 
                 this._log.debug(`Configuring Container for ${moduleName}`);
-                this.functionalModule.configureContainer();
+                this.module.configureContainer();
 
                 this._log.debug(`Registering Components for ${moduleName}`);
-                this.functionalModule.registerComponents(this._componentRegistryModel);
+                this.module.registerComponents(this._componentRegistryModel);
 
                 this._log.debug(`Registering prereqs for ${moduleName}`);
-                this.functionalModule.registerPrerequisites(this._preReqsLoader);
+                this.module.registerPrerequisites(this._preReqsLoader);
             } catch (e) {
                 this._log.error(`Failed to create module ${moduleName}`, e);
                 obs.onNext({
@@ -63,7 +69,7 @@ export class SingleModuleLoader {
                 };
             }
 
-            let initStream = this._buildInitStream(this.functionalModule);
+            let initStream = this._buildInitStream(this.module);
 
             return this._preReqsLoader
                 .load()
@@ -74,27 +80,27 @@ export class SingleModuleLoader {
     }
 
     public loadModuleLayout(layoutMode: string): void {
-        if (!this.functionalModule) {
+        if (!this.module) {
             return;
         }
-        this.functionalModule.loadLayout(layoutMode, this._componentRegistryModel);
+        this.module.loadLayout(layoutMode, this._componentRegistryModel);
     }
 
     public unloadModuleLayout(): void {
-        if (!this.functionalModule) {
+        if (!this.module) {
             return;
         }
-        this.functionalModule.unloadLayout();
+        this.module.unloadLayout();
     }
 
     public disposeModule(): void {
-        if (!this.functionalModule) {
+        if (!this.module) {
             return;
         }
-        this.functionalModule.dispose();
+        this.module.dispose();
     }
 
-    private _buildInitStream(functionalModule: Module): Rx.Observable<ModuleLoadResult> {
+    private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
@@ -102,22 +108,22 @@ export class SingleModuleLoader {
                 // so we'd rather let consumers know where it's stuck
                 obs.onNext({
                     type: ModuleChangeType.Change,
-                    moduleName: this._descriptor.moduleName,
-                    description: `Initialising Module ${this._descriptor.moduleName}`
+                    moduleName: this._moduleMetadata.moduleName,
+                    description: `Initialising Module ${this._moduleMetadata.moduleName}`
                 });
 
-                functionalModule.initialise();
+                module.initialise();
                 obs.onNext({
                     type: ModuleChangeType.Change,
-                    moduleName: this._descriptor.moduleName,
-                    description: `Initialised Module ${this._descriptor.moduleName}`
+                    moduleName: this._moduleMetadata.moduleName,
+                    description: `Initialised Module ${this._moduleMetadata.moduleName}`
                 });
             } catch (e) {
-                this._log.error(`Failed to initialise module ${this._descriptor.moduleName}`, e);
+                this._log.error(`Failed to initialise module ${this._moduleMetadata.moduleName}`, e);
                 obs.onNext({
                     type: ModuleChangeType.Error,
-                    moduleName: this._descriptor.moduleName,
-                    errorMessage: `Failed to load module ${this._descriptor.moduleName}`
+                    moduleName: this._moduleMetadata.moduleName,
+                    errorMessage: `Failed to load module ${this._moduleMetadata.moduleName}`
                 });
                 return () => {
                 };
@@ -131,26 +137,26 @@ export class SingleModuleLoader {
             case ResultStage.Starting:
                 return {
                     type: ModuleChangeType.Change,
-                    moduleName: this._descriptor.moduleName,
+                    moduleName: this._moduleMetadata.moduleName,
                     description: `${result.name} Starting`,
                     prerequisiteResult: result
                 };
             case ResultStage.Completed:
                 return {
                     type: ModuleChangeType.Change,
-                    moduleName: this._descriptor.moduleName,
+                    moduleName: this._moduleMetadata.moduleName,
                     description: `${result.name} Finished`,
                     prerequisiteResult: result
                 };
             case ResultStage.Error:
                 return {
                     type: ModuleChangeType.Error,
-                    moduleName: this._descriptor.moduleName,
+                    moduleName: this._moduleMetadata.moduleName,
                     errorMessage: result.errorMessage,
                     prerequisiteResult: result
                 };
             default:
-                let errorMessage = `Unknown stage from the pre-req loader for ${this._descriptor.moduleName}.`;
+                let errorMessage = `Unknown stage from the pre-req loader for ${this._moduleMetadata.moduleName}.`;
                 this._log.error(errorMessage, result);
                 throw new Error(errorMessage);
         }

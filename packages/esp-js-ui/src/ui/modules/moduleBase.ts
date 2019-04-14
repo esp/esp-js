@@ -3,60 +3,72 @@ import {DisposableBase, Guard} from 'esp-js';
 import {StateService} from '../state';
 import {ComponentRegistryModel, ComponentFactoryBase} from '../components';
 import {Logger} from '../../core';
-import {PrerequisiteRegistrar} from './prerequisites';
+import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
-import {DefaultStateProvider} from './defaultStateProvider';
 import {ComponentFactoryState} from './componentFactoryState';
 import {ModelBase} from '../modelBase';
 import {StateSaveMonitor} from '../state/stateSaveMonitor';
+import {ModuleMetadata} from './moduleDecorator';
+import {EspDecoratorUtil} from 'esp-js';
+import {espModuleMetadataKey} from './moduleDecorator';
 
 const _log: Logger = Logger.create('ModuleBase');
 
 export abstract class ModuleBase extends DisposableBase implements Module {
     private _currentLayout: string = null;
-    private _stateSaveMonitor: StateSaveMonitor;
+    private readonly _stateSaveMonitor: StateSaveMonitor;
+    private readonly _moduleMetadata: ModuleMetadata;
 
-    constructor(
-        public readonly moduleKey,
+    protected constructor(
         protected readonly container: Container,
-        private readonly _stateService: StateService,
-        private readonly _defaultStateProvider?: DefaultStateProvider) {
-
+        private readonly _stateService: StateService
+    ) {
         super();
-        Guard.isString(moduleKey, 'moduleKey must a string');
         Guard.isDefined(container, 'container must be defined');
         Guard.isDefined(_stateService, '_stateService must be defined');
         // seems to make sense for the module to own it's container,
         // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
-
+        this._moduleMetadata = EspDecoratorUtil.getCustomData(ModuleBase, espModuleMetadataKey);
+        Guard.isDefined(this._moduleMetadata, `Module does not have an @espModule decorator. Name: ${ModuleBase.name}`);
         if (this.stateSavingEnabled && this.stateSaveIntervalMs > 0) {
             this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
             this.addDisposable(this._stateSaveMonitor);
         }
     }
 
-    public get moduleName(): string { return ''; }
-
-    // override if you want to have automatic state saving for your module
+    /**
+     * if true automatic state saving for all the modules models using the provided StateService will apply
+     */
     protected get stateSavingEnabled(): boolean {
         return false;
     }
 
-    // override if required
+    /**
+     * The interval of which this module will save state
+     */
     protected get stateSaveIntervalMs(): number {
         return 60_000;
     }
 
+    protected abstract getDefaultStateProvider?();
+
     abstract configureContainer();
 
-    abstract registerPrerequisites(registrar: PrerequisiteRegistrar): void;
+    abstract registerPrerequisites(register: PrerequisiteRegister): void;
+
+    // override if required
+    initialise(): void {
+        if (this.stateSavingEnabled) {
+            this._stateSaveMonitor.start();
+        }
+    }
 
     registerComponents(componentRegistryModel: ComponentRegistryModel) {
         _log.debug('Registering components');
         let componentFactories: Array<ComponentFactoryBase<any>> = this.getComponentsFactories();
         componentFactories.forEach(componentFactory => {
-            componentRegistryModel.registerComponentFactory(this.moduleName, componentFactory);
+            componentRegistryModel.registerComponentFactory(this._moduleMetadata.moduleName, componentFactory);
             this.addDisposable(() => {
                 componentRegistryModel.unregisterComponentFactory(componentFactory);
             });
@@ -68,22 +80,15 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         return [];
     }
 
-    // override if required
-    initialise(): void {
-        if (this.stateSavingEnabled) {
-            this._stateSaveMonitor.start();
-        }
-    }
-
     loadLayout(layoutMode: string, componentRegistryModel: ComponentRegistryModel) {
         if (this._currentLayout) {
             this.unloadLayout();
         }
         this._currentLayout = layoutMode;
-        let componentFactoriesState = this._stateService.getModuleState<ComponentFactoryState[]>(this.moduleKey, this._currentLayout);
-        if (componentFactoriesState === null && this._defaultStateProvider) {
-            Guard.isDefined(this._defaultStateProvider, `_defaultStateProvider was not provided for module ${this.moduleKey}`);
-            componentFactoriesState = this._defaultStateProvider.getComponentFactoriesState(layoutMode);
+        let componentFactoriesState = this._stateService.getModuleState<ComponentFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
+        if (componentFactoriesState === null) {
+            Guard.isDefined(this.getDefaultStateProvider(), `_defaultStateProvider was not provided for module ${this._moduleMetadata.moduleKey}`);
+            componentFactoriesState = this.getDefaultStateProvider().getComponentFactoriesState(layoutMode);
         }
 
         if (componentFactoriesState) {
@@ -122,9 +127,9 @@ export abstract class ModuleBase extends DisposableBase implements Module {
             .map(f => f.getAllComponentsState())
             .filter(f => f != null);
         if (state.length > 0) {
-            this._stateService.saveModuleState(this.moduleKey, this._currentLayout, state);
+            this._stateService.saveModuleState(this._moduleMetadata.moduleKey, this._currentLayout, state);
         } else {
-            this._stateService.clearModuleState(this.moduleKey, this._currentLayout);
+            this._stateService.clearModuleState(this._moduleMetadata.moduleKey, this._currentLayout);
         }
     }
 }

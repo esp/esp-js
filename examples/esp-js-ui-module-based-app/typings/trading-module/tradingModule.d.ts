@@ -1,5 +1,5 @@
 import { Container } from 'esp-js-di';
-import { ModuleBase, StateService, ComponentFactoryBase, PrerequisiteRegistrar } from 'esp-js-ui';
+import { ModuleBase, StateService, ComponentFactoryBase, PrerequisiteRegister } from 'esp-js-ui';
 export declare class TradingModule extends ModuleBase {
     _componentFactoryGroupId: string;
     constructor(container: Container, stateService: StateService);
@@ -8,5 +8,5 @@ export declare class TradingModule extends ModuleBase {
     initialise(): void;
     configureContainer(): void;
     getComponentsFactories(): Array<ComponentFactoryBase<any>>;
-    registerPrerequisites(registrar: PrerequisiteRegistrar): void;
+    registerPrerequisites(register: PrerequisiteRegister): void;
 }

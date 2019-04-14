@@ -9,7 +9,6 @@ import {
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
-    ModuleDescriptor,
     ModuleChangeType
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
@@ -38,18 +37,8 @@ export class ShellModel extends ModelBase {
                 message: `Loading Modules`
             };
 
-            let permissions = ['fx-trading']; // hardcoded
-            let modulesToLoad: ModuleDescriptor[] = [];
-            if (permissions.indexOf(TradingModule.requiredPermission) >= 0) {
-                let descriptor: ModuleDescriptor = {
-                    factory: TradingModule,
-                    moduleName: 'Trading Module'
-                };
-                modulesToLoad.push(descriptor);
-            }
-
-            let loadModules = this._moduleLoader.loadModules(modulesToLoad);
-            this.addDisposable(loadModules.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
+            let moduleLoadStream = this._moduleLoader.loadModules(TradingModule);
+            this.addDisposable(moduleLoadStream.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
                     _log.debug(`Load Change detected`, change);
 
                     if (change.type === ModuleChangeType.Error) {

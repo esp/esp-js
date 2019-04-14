@@ -2,7 +2,7 @@ var isWindows = require('is-os').isWindows();
 module.exports = {
     scripts: {
         // Scripts shared by each package under examples & packages
-        dev: 'cross-env NODE_ENV=dev webpack --display "errors-only" --color --watch',
+        dev: 'cross-env NODE_ENV=dev webpack --display "normal" --color --watch',
         buildDev: 'cross-env NODE_ENV=dev webpack --display-reasons --display-error-details --color && yarn test-ci',
         buildProd: 'cross-env NODE_ENV=prod webpack --display-reasons --display-error-details --color && yarn test-ci',
         buildPack: 'cross-env NODE_ENV=prod yarn pack',

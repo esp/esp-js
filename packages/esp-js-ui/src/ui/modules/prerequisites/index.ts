@@ -1,3 +1,3 @@
-export {DefaultPrerequisiteRegistrar} from './defaultPrerequisiteRegistrar';
+export {DefaultPrerequisiteRegister} from './defaultPrerequisiteRegister';
 export * from './loadResult';
-export {PrerequisiteRegistrar} from './prerequisiteRegistrar';
+export {PrerequisiteRegister} from './prerequisiteRegister';

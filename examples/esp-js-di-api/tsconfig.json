@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir" : "./.tsbuild",
-    "declarationDir": "./.dist/typings"
+    "declaration": false
   },
   "include": [
     "src/**/*"

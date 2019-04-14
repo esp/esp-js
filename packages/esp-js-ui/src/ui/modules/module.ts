@@ -1,14 +1,19 @@
 import {DisposableBase} from 'esp-js';
-import {ComponentRegistryModel} from '../components';
-import {PrerequisiteRegistrar} from './prerequisites';
+import {ViewRegistryModel} from '../viewFactory';
+import {PrerequisiteRegister} from './prerequisites';
+import {Container} from 'esp-js-di';
+import {StateService} from '../state/stateService';
+
+export interface ModuleConstructor {
+    new (container: Container, stateService: StateService) : Module;
+}
 
 export interface Module extends DisposableBase {
-    moduleName: string;
     initialise(): void;
     configureContainer(): void;
-    registerComponents(componentRegistryModel:ComponentRegistryModel);
-    getComponentsFactories();
-    loadLayout(layoutMode:string, componentRegistryModel:ComponentRegistryModel);
+    registerViewFactories(viewRegistryModel:ViewRegistryModel);
+    getViewFactories();
+    loadLayout(layoutMode:string, viewRegistryModel:ViewRegistryModel);
     unloadLayout(): void;
-    registerPrerequisites(registrar: PrerequisiteRegistrar): void;
+    registerPrerequisites(register: PrerequisiteRegister): void;
 }

@@ -63,6 +63,11 @@
     ---- should shouldn't be used lightly. There is an edge case whereby the model changed event would fire, but that is to be removed leasing the impact
 [x] - single travis build with lerna
 [x] - Ensure dependencies are exact versions
+[x] - Rename component factory to view factory
+[ ] - Rename Statehanflers to event handlers
+[x] - Create decorator for Modules
+[x] - Get rid of module descriptor, just pass the module
+[x] - rename @stateSaveHandler to @stateProvider
 
 // misc
 [ ] - push 'moved' checkins to old esp-js-ui, esp-js-react, microdi-js repos

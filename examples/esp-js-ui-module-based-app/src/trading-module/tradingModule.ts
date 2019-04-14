@@ -4,58 +4,48 @@ import {Container, EspDiConsts} from 'esp-js-di';
 import {
     ModuleBase,
     StateService,
-    ComponentFactoryBase,
     SystemContainerConst,
-    PrerequisiteRegistrar,
-    Logger
+    ViewFactoryBase,
+    PrerequisiteRegister,
+    Logger,
+    espModule
 } from 'esp-js-ui';
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
-import {CashTileComponentFactory} from './cash-tile/cashTileComponentFactory';
-import {BlotterComponentFactory} from './blotter/blotterComponentFactory';
+import {CashTileViewFactory} from './cash-tile/cashTileViewFactory';
+import {BlotterViewFactory} from './blotter/blotterViewFactory';
 import {BlotterModel} from './blotter/models/blotterModel';
 import {TradingModuleDefaultStateProvider} from './tradingModuleDefaultStateProvider';
 
 let _log = Logger.create('TradingModule');
 
+@espModule('trading-module', 'Trading Module')
 export class TradingModule extends ModuleBase {
-    _componentFactoryGroupId: string;
+    _viewFactoryGroupId: string;
+    _tradingModuleDefaultStateProvider = new TradingModuleDefaultStateProvider();
 
     constructor(container: Container, stateService: StateService) {
-        super(
-            'trading-module',
-            container,
-            stateService,
-            new TradingModuleDefaultStateProvider()
-        );
-        this._componentFactoryGroupId = uuid.v4();
+        super(container, stateService);
+        this._viewFactoryGroupId = uuid.v4();
     }
 
-    static get requiredPermission(): string {
-        return 'fx-trading';
-    }
-
-    get moduleName() {
-        return 'Trading Module';
-    }
-
-    initialise() {
-
+    protected getDefaultStateProvider() {
+        return this._tradingModuleDefaultStateProvider;
     }
 
     configureContainer() {
         _log.group('Configuring container');
-        _log.debug(`Registering ${TradingModuleContainerConst.cashTileComponentFactory}`);
+        _log.debug(`Registering ${TradingModuleContainerConst.cashTileViewFactory}`);
         this.container
-            .register(TradingModuleContainerConst.cashTileComponentFactory, CashTileComponentFactory)
+            .register(TradingModuleContainerConst.cashTileViewFactory, CashTileViewFactory)
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
-            .inGroup(this._componentFactoryGroupId);
-        _log.debug(`Registering ${TradingModuleContainerConst.blotterComponentFactory}`);
+            .inGroup(this._viewFactoryGroupId);
+        _log.debug(`Registering ${TradingModuleContainerConst.blotterViewFactory}`);
         this.container
-            .register(TradingModuleContainerConst.blotterComponentFactory, BlotterComponentFactory)
+            .register(TradingModuleContainerConst.blotterViewFactory, BlotterViewFactory)
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
-            .inGroup(this._componentFactoryGroupId);
+            .inGroup(this._viewFactoryGroupId);
         _log.debug(`Registering ${TradingModuleContainerConst.blotterModel}`);
         this.container
             .register(TradingModuleContainerConst.blotterModel, BlotterModel)
@@ -64,19 +54,19 @@ export class TradingModule extends ModuleBase {
         _log.groupEnd();
     }
 
-    getComponentsFactories(): Array<ComponentFactoryBase<any>> {
-        return this.container.resolveGroup(this._componentFactoryGroupId);
+    getViewFactories(): Array<ViewFactoryBase<any>> {
+        return this.container.resolveGroup(this._viewFactoryGroupId);
     }
 
-    registerPrerequisites(registrar: PrerequisiteRegistrar): void {
+    registerPrerequisites(register: PrerequisiteRegister): void {
         _log.groupCollapsed('Registering  Prerequisites');
         _log.debug(`Registering 1`);
-        registrar.registerStream(
+        register.registerStream(
             Rx.Observable.timer(2000).take(1).concat(Rx.Observable.throw(new Error('Load error'))),
             'Loading Module That Fails'
         );
         _log.debug(`Registering 2`);
-        registrar.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
+        register.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
         _log.groupEnd();
     }
 }

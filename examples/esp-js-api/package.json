@@ -1,6 +1,6 @@
 {
   "name": "esp-js-api",
-  "version": "2.0.1-rc.4",
+  "version": "2.0.1-rc.5",
   "private": true,
   "scripts": {
     "clean": "nps clean",
@@ -11,7 +11,7 @@
     "start": "./node_modules/.bin/ts-node src/index.ts"
   },
   "dependencies": {
-    "esp-js": "^2.0.1-rc.4",
+    "esp-js": "^2.0.1-rc.5",
     "prompt": "1.0.0"
   },
   "devDependencies": {

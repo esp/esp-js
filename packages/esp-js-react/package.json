@@ -41,6 +41,6 @@
     "react": "16.8.6"
   },
   "publishConfig": {
-    "tag": "latest"
+    "tag": "next"
   }
 }

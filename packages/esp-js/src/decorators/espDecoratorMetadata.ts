@@ -127,6 +127,7 @@ export const EspDecoratorUtil = {
         let prototype = Object.getPrototypeOf(objectInstance);
         return !!prototype._espDecoratorMetadata;
     },
+
     /**
      * Gets or creates esp related metadata which is stores as an own prop on the given constructor-function's .prototype property
      */

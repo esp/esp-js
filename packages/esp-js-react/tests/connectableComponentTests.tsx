@@ -81,6 +81,7 @@ interface MappedModel {
     value2: string;
     value3: string;
 }
+
 interface TestOptions {
     useConnectFunction?: boolean;
     useMapModelToProps?: boolean;
@@ -98,6 +99,7 @@ describe('ConnectableComponent', () => {
         connectableComponentProps: ConnectableComponentProps<TestModel>,
         mapModelToProps,
         createPublishEventProps,
+        publishEventProps,
         userAlternativeViewContext,
         otherProps = { other1: 'other-value' };
 
@@ -120,20 +122,20 @@ describe('ConnectableComponent', () => {
             modelId: 'model-id'
         };
         if (options.useMapModelToProps) {
-            mapModelToProps = (model: TestModel | MappedModel) => {
+            mapModelToProps = (model: TestModel | MappedModel, publishEventProps: any) => {
                 return {
                     foo: model.value,
+                    publishEventProps,
                     ...model
                 };
             };
         }
         if (options.useCreatePublishEventProps) {
-            createPublishEventProps = (publishEvent: PublishEvent) => {
-                return {
-                    publishEvent1: () => {
-                    }
-                };
+            publishEventProps = {
+                publishEvent1: () => {
+                }
             };
+            createPublishEventProps = (publishEvent: PublishEvent) => publishEventProps;
         }
         if (options.useAlternativeViewContext) {
             userAlternativeViewContext = 'alternative-view-context';
@@ -184,6 +186,11 @@ describe('ConnectableComponent', () => {
             it('passes mapped props', () => {
                 let props = getChidViewProps();
                 expect(props.foo).toEqual('initial-value');
+            });
+
+            it('passes publishEventProps to props mapper', () => {
+                let props = getChidViewProps();
+                expect(props.publishEventProps).toBe(publishEventProps);
             });
 
             it('passes model', () => {

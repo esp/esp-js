@@ -6,9 +6,7 @@ import {Logger} from '../../core';
 import {ModuleLoadResult} from './moduleLoadResult';
 import {SingleModuleLoader} from './singleModuleLoader';
 import {ModuleConstructor} from './module';
-import {EspDecoratorUtil} from 'esp-js';
-import {espModuleMetadataKey} from './moduleDecorator';
-import {Guard} from 'esp-js';
+import {EspModuleDecoratorUtils} from './moduleDecorator';
 
 const _log = Logger.create('ModuleLoader');
 
@@ -63,8 +61,7 @@ export class ModuleLoader {
     }
 
     private _createModuleLoader(moduleConstructor: ModuleConstructor): SingleModuleLoader {
-        let moduleMetadata = EspDecoratorUtil.getCustomData(moduleConstructor, espModuleMetadataKey);
-        Guard.isDefined(moduleMetadata, `Module does not have an @espModule decorator. Name: ${moduleConstructor.name}`);
+        let moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleClass(moduleConstructor);
         _log.debug(`Creating module Loader for ${moduleMetadata.moduleKey}`);
         let moduleLoader = new SingleModuleLoader(
             this._container,

@@ -8,14 +8,14 @@ export type PublishEvent = (eventType: string, event: any) => void;
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishEvent: PublishEvent) => TPublishEventProps;
 
-export type MapModelToProps<TModel, TModelMappedToProps> = (model: TModel) => TModelMappedToProps;
+export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
-export interface ConnectableComponentProps<TModel, TPublishEventProps = {}, TModelMappedToProps = {}> {
+export interface ConnectableComponentProps<TModel ={}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     modelId?: string;
     viewContext?: string;
     view?: React.ComponentClass | React.SFC;
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
-    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps>;
+    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
     [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
 }
 
@@ -127,7 +127,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
         if (this.props.mapModelToProps) {
             childProps = {
                 ...childProps,
-                ...(this.props.mapModelToProps(model) as any)
+                ...(this.props.mapModelToProps(model, this.state.publishProps) as any)
             };
         }
         return childProps;
@@ -158,7 +158,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 export type ConnectableView = React.ComponentClass | React.SFC;
 
 export const connect = function<TModel, TPublishEventProps, TModelMappedToProps = {}>(
-    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps>,
+    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>
 ): (view: ConnectableView) => (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) => JSX.Element {
     return function(view: ConnectableView) {

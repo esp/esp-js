@@ -1,6 +1,4 @@
-import {EspDecoratorUtil, Guard, EspMetadata} from 'esp-js';
-
-export const espModuleMetadataKey = 'esp-module-metadata';
+import {Guard} from 'esp-js';
 
 export interface ModuleMetadata {
     moduleKey: string;
@@ -8,16 +6,44 @@ export interface ModuleMetadata {
     customMetadata?: any;
 }
 
-export function espModule(moduleKey: string, modeuleName: string, customMetadata?: any) {
+export function espModule(moduleKey: string, moduleName: string, customMetadata?: any) {
     return function (target) {
         Guard.stringIsNotEmpty(moduleKey, 'moduleKey passed to an espModule decorator must not be \'\'');
-        Guard.stringIsNotEmpty(modeuleName, 'moduleKey passed to an espModule decorator must not be \'\'');
-        let metadata: EspMetadata  = EspDecoratorUtil.getOrCreateMetaData(target.constructor);
-        let moduleMetadata = <ModuleMetadata>{
+        Guard.stringIsNotEmpty(moduleName, 'moduleKey passed to an espModule decorator must not be \'\'');
+
+        target.__espModuleMetadata = <ModuleMetadata>{
             moduleKey,
-            moduleName: modeuleName,
+            moduleName: moduleName,
             customMetadata
         };
-        metadata.addCustomData(espModuleMetadataKey, moduleMetadata);
     };
+}
+
+export namespace EspModuleDecoratorUtils {
+    export function getMetadataFromModuleClass(moduleClass: any): any {
+        if (moduleClass.__espModuleMetadata) {
+            return moduleClass.__espModuleMetadata;
+        }
+        throw new Error(`No esp module metadata found on '${moduleClass && moduleClass.name}'`);
+    }
+
+    export function getCustomMetadataFromModuleClass(target: any): any {
+        let moduleMetadata = getMetadataFromModuleClass(target);
+        return moduleMetadata.customMetadata;
+    }
+
+    export function getMetadataFromModuleInstance(moduleInstance: any): any {
+        let constructor = Object.getPrototypeOf(moduleInstance).constructor;
+        if (constructor) {
+            if (constructor.__espModuleMetadata) {
+                return constructor.__espModuleMetadata;
+            }
+        }
+        throw new Error(`No esp module metadata found on '${moduleInstance && moduleInstance.name}'`);
+    }
+
+    export function getCustomMetadataFromModuleInstance(target: any): any {
+        let moduleMetadata = getMetadataFromModuleInstance(target);
+        return moduleMetadata.customMetadata;
+    }
 }

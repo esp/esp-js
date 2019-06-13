@@ -20,7 +20,7 @@ export class Container {
     registerInstance<T>(name:String, instance:T, isExternallyOwned?):void;
     registerFactory<T>(name:String, factory:(context:Container, ...additionalDependencies:any[]) => T):RegistrationModifier;
     resolve<T>(name:String, ...additionalDependencies):T;
-    resolveGroup(groupName:String):Array<any>;
+    resolveGroup<T>(groupName:String):Array<T>;
     isRegistered(name : string) : boolean;
     isGroupRegistered(groupName : string) : boolean;
     addResolver<T>(name:String, resolver:Resolver<T>);

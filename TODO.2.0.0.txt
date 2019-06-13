@@ -64,7 +64,8 @@
 [x] - single travis build with lerna
 [x] - Ensure dependencies are exact versions
 [x] - Rename component factory to view factory
-[ ] - Rename Statehanflers to event handlers
+[x] - Rename state handlers to event handlers
+    - On reflection this doesn't need to be changed. A model in polimer has a series of child states, so naming is ok.
 [x] - Create decorator for Modules
 [x] - Get rid of module descriptor, just pass the module
 [x] - rename @stateSaveHandler to @stateProvider

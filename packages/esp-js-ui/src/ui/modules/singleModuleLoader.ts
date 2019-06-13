@@ -1,14 +1,14 @@
 import * as Rx from 'rx';
 import {DefaultPrerequisiteRegister} from './prerequisites';
+import {LoadResult, ResultStage} from './prerequisites';
 import {Logger} from '../../core';
 import {Container} from 'esp-js-di';
-import {ModuleLoadResult, ModuleChangeType} from './moduleLoadResult';
+import {ModuleChangeType, ModuleLoadResult} from './moduleLoadResult';
 import {ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state';
-import {ResultStage, LoadResult} from './prerequisites';
 import {Module} from './module';
-import {ModuleMetadata} from './moduleDecorator';
 import {ModuleConstructor} from './module';
+import {ModuleMetadata} from './moduleDecorator';
 
 export class SingleModuleLoader {
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
@@ -35,7 +35,7 @@ export class SingleModuleLoader {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             let moduleName = this._moduleMetadata.moduleName;
 
-            obs.onNext({
+            obs.onNext(<ModuleLoadResult>{
                 type: ModuleChangeType.Change,
                 moduleName: moduleName,
                 description: `Starting module ${moduleName}`
@@ -59,10 +59,15 @@ export class SingleModuleLoader {
                 this.module.registerPrerequisites(this._preReqsLoader);
             } catch (e) {
                 this._log.error(`Failed to create module ${moduleName}`, e);
-                obs.onNext({
+                obs.onNext(<ModuleLoadResult>{
                     type: ModuleChangeType.Error,
                     moduleName,
-                    errorMessage: `Failed to load module ${moduleName}`
+                    errorMessage: `Failed to load module ${moduleName}`,
+                    prerequisiteResult: {
+                        stage: ResultStage.Error,
+                        name: `Module bootstrapping`,
+                        errorMessage: `Failed to load module ${moduleName}`
+                    }
                 });
                 obs.onCompleted();
                 return () => {

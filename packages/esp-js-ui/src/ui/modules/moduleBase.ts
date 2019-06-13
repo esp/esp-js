@@ -9,8 +9,8 @@ import {ViewFactoryState} from './viewFactoryState';
 import {ModelBase} from '../modelBase';
 import {StateSaveMonitor} from '../state/stateSaveMonitor';
 import {ModuleMetadata} from './moduleDecorator';
-import {EspDecoratorUtil} from 'esp-js';
-import {espModuleMetadataKey} from './moduleDecorator';
+import {DefaultStateProvider} from './defaultStateProvider';
+import {EspModuleDecoratorUtils} from './moduleDecorator';
 
 const _log: Logger = Logger.create('ModuleBase');
 
@@ -29,8 +29,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         // seems to make sense for the module to own it's container,
         // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
-        this._moduleMetadata = EspDecoratorUtil.getCustomData(ModuleBase, espModuleMetadataKey);
-        Guard.isDefined(this._moduleMetadata, `Module does not have an @espModule decorator. Name: ${ModuleBase.name}`);
+        this._moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleInstance(this);
         if (this.stateSavingEnabled && this.stateSaveIntervalMs > 0) {
             this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
             this.addDisposable(this._stateSaveMonitor);
@@ -51,7 +50,9 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         return 60_000;
     }
 
-    protected abstract getDefaultStateProvider?();
+    protected getDefaultStateProvider(): DefaultStateProvider {
+        return null;
+    }
 
     abstract configureContainer();
 
@@ -86,7 +87,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         }
         this._currentLayout = layoutMode;
         let viewFactoriesState = this._stateService.getModuleState<ViewFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
-        if (viewFactoriesState === null) {
+        if (viewFactoriesState === null && this.getDefaultStateProvider()) {
             Guard.isDefined(this.getDefaultStateProvider(), `_defaultStateProvider was not provided for module ${this._moduleMetadata.moduleKey}`);
             viewFactoriesState = this.getDefaultStateProvider().getViewFactoriesState(layoutMode);
         }

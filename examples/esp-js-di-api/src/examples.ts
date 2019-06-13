@@ -103,7 +103,7 @@ export const runGroups = () => {
     let container = new Container();
     container.register('foo', Foo).inGroup('group1');
     container.register('bar', Bar).inGroup('group1');
-    let group1 = container.resolveGroup('group1');
+    let group1 = container.resolveGroup<{name: string}>('group1');
     for (let i = 0, len = group1.length; i < len; i++) {
         console.log(group1[i].name);
     }

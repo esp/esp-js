@@ -7,8 +7,10 @@ export enum ModuleChangeType {
 
 export interface ModuleLoadResult {
     type: ModuleChangeType;
+    moduleKey: string;
     moduleName: string;
     description?: string;
     prerequisiteResult?: LoadResult;
     errorMessage?: string;
+    hasCompletedLoaded?: boolean;
 }

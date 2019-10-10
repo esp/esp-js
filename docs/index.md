@@ -2,6 +2,11 @@
 [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
 [![Join the chat at https://gitter.im/esp/chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/esp/chat?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+> ## NOTE
+> These are v1 documentations, they've not yet been updated to ESP 2.0. 
+> The core concepts are largely the same, they are just missing information about the newer esp packages (esp-js-react, esp-js-ui, esp-js-polimer)
+> The 2.0 documentation is currently being refreshed. 
+
 # Evented State Processor (ESP)
 
 ESP gives you the ability to manage changes to a model in a deterministic event driven manner.

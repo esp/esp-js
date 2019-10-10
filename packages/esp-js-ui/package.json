@@ -1,0 +1,47 @@
+{
+  "name": "esp-js-ui",
+  "version": "2.0.1",
+  "description": "ESP-JS-UI Package",
+  "main": ".dist/esp-js-ui.js",
+  "types": "esp-js-ui.d.ts",
+  "author": "Dev Shop Limited",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/esp/esp-js",
+  "scripts": {
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "build-pack": "nps build-pack",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "dev": "nps dev"
+  },
+  "devDependencies": {
+    "classnames": "2.2.6",
+    "esp-js": "^2.0.1",
+    "esp-js-di": "^2.0.1",
+    "esp-js-react": "^2.0.1",
+    "jest": "24.7.1",
+    "react": "16.8.6",
+    "rx": "4.1.0",
+    "typescript": "3.4.2",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.2.1"
+  },
+  "dependencies": {
+    "query-string": "6.4.2",
+    "uuid": "3.3.2"
+  },
+  "peerDependencies": {
+    "classnames": "2.2.6",
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-di": "^2.0.1-rc.3",
+    "esp-js-react": "^2.0.1-rc.3",
+    "react": "16.8.6",
+    "rx": "4.1.0"
+  },
+  "publishConfig": {
+    "tag": "latest"
+  }
+}

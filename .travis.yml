@@ -1,10 +1,5 @@
 language: node_js
 node_js:
-  - "node"
+  - "8"
 script:
-    - yarn test:ci
-    - yarn build:prod
-cache:
-  yarn: true
-  directories:
-    - node_modules
+    - yarn build-prod

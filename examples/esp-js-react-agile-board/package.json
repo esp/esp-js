@@ -1,34 +1,32 @@
 {
   "name": "esp-js-react-agile-board",
-  "version": "0.0.1",
+  "version": "2.0.1",
   "description": "ESP JS React Components Sample.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/esp/esp-js"
-  },
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "classnames": "^2.2.5",
-    "esp-js": "^1.5.0",
-    "esp-js-react": "0.4.0",
-    "immutable": "^3.8.2",
-    "lodash": "^4.15.0",
-    "react": "16.2.0",
-    "react-dom": "16.2.0"
+    "classnames": "2.2.6",
+    "esp-js": "^2.0.1",
+    "esp-js-react": "^2.0.1",
+    "immutable": "^4.0.0-rc.12",
+    "lodash": "4.17.11",
+    "react": "16.8.6",
+    "react-dom": "16.8.6"
   },
   "devDependencies": {
-    "@types/react": "16.0.9",
-    "awesome-typescript-loader": "^3.4.1",
-    "clean-webpack-plugin": "^0.1.16",
-    "html-webpack-plugin": "2.28.0",
-    "tslint": "5.8.0",
-    "tslint-loader": "3.5.3",
-    "typescript": "^2.2.2",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7"
+    "jest": "24.7.1",
+    "typescript": "3.4.2",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.2.1"
   },
   "scripts": {
-    "start": "webpack-dev-server --inline --watch --progress --colors"
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "dev": "nps dev",
+    "start": "cross-env NODE_ENV=dev && webpack-dev-server -d --inline --watch --progress --colors"
   }
 }

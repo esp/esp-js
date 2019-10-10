@@ -1,0 +1,24 @@
+{
+  "version": "2.0.1",
+  "useWorkspaces": true,
+  "npmClient": "yarn",
+  "command": {
+    "publish": {
+      "allowBranch": "*",
+      "ignoreChanges": [
+        "**/test/**",
+        "**/*.md"
+      ],
+      "forcePublish": true,
+      "bump": "patch",
+      "preid": "rc",
+      "npmClient": "yarn",
+      "message": "chore(release): publish %s"
+    },
+    "version": "fixed"
+  },
+  "packages": [
+    "packages/*",
+    "examples/*"
+  ]
+}

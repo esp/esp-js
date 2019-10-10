@@ -8,9 +8,8 @@ export interface ItemNameDialogViewProps {
 }
 
 export class ItemNameDialogView extends React.Component<ItemNameDialogViewProps, {}> {
-
-    _publishEvent(eventName, event) {
-        this.props.router.publishEvent(this.props.model.modelId, eventName, event);
+    private _publishEvent(eventType, event) {
+        this.props.router.publishEvent(this.props.model.modelId, eventType, event);
     }
 
     render() {

@@ -1,0 +1,46 @@
+{
+  "name": "esp-js-react",
+  "version": "2.0.1",
+  "description": "Evented State Processor (ESP) React Components",
+  "keywords": [
+    "esp",
+    "state processor",
+    "evented state processor",
+    "reactive",
+    "react"
+  ],
+  "main": ".dist/esp-react.js",
+  "types": ".dist/typings/index.d.ts",
+  "author": "Dev Shop Limited",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/esp/esp-js",
+  "scripts": {
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "build-pack": "nps build-pack",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "dev": "nps dev"
+  },
+  "devDependencies": {
+    "esp-js": "^2.0.1",
+    "esp-js-polimer": "^2.0.1",
+    "jest": "24.7.1",
+    "prop-types": "^15.7.2",
+    "react": "16.8.6",
+    "typescript": "3.4.2",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.2.1"
+  },
+  "peerDependencies": {
+    "esp-js": "^2.0.1-rc.3",
+    "esp-js-polimer": "^2.0.1-rc.3",
+    "prop-types": "^15.7.2",
+    "react": "16.8.6"
+  },
+  "publishConfig": {
+    "tag": "latest"
+  }
+}

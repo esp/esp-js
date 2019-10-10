@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir" : "./.tsbuild",
+    "declarationDir": "./.dist/typings"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "files": [
+    "typings/custom.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}

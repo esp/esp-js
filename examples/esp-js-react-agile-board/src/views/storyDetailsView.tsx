@@ -13,7 +13,7 @@ export interface StoryDetailsViewProps {
 export class StoryDetailsView extends React.Component<StoryDetailsViewProps, {}> {
 
     constructor(props?: StoryDetailsViewProps, context?: any) {
-        super();
+        super(props, context);
     }
 
     public shouldComponentUpdate(nextProps: Readonly<StoryDetailsViewProps>, nextState: Readonly<StoryDetailsViewProps>, nextContext: any) : boolean {

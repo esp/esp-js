@@ -5,7 +5,7 @@ Similar to `router.getEventObservable()`, this call returns an observable object
 
 Below we enhance the example used previously to add model observation.
 In this instance we have 2 observations on the `Router` for the model.
-The second observation uses the chaining API provided by the `ModelObservable`, this filters (`.where(predicate)`) the model update stream for a specific user.
+The second observation uses the chaining API provided by the `ModelObservable`, this filters (`.filter(predicate)`) the model update stream for a specific user.
 All observations against the `Router` can be disposed to remove the given observer from the model.
 
 ``` js
@@ -33,7 +33,7 @@ var modelSubscription1 = router
     );
 var modelSubscription2 = router
     .getModelObservable('myModel')
-    .where(m => m.userName === 'Fred')
+    .filter(m => m.userName === 'Fred')
     .subscribe(
         (model) => {
             console.log('Look ' + model.userName + ' is online');

@@ -1,5 +1,5 @@
 {
-  "version": "2.0.1-rc.5",
+  "version": "2.0.1",
   "useWorkspaces": true,
   "npmClient": "yarn",
   "command": {
@@ -10,7 +10,7 @@
         "**/*.md"
       ],
       "forcePublish": true,
-      "bump": "prerelease",
+      "bump": "patch",
       "preid": "rc",
       "npmClient": "yarn",
       "message": "chore(release): publish %s"

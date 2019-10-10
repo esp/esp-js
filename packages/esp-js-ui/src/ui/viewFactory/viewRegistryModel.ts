@@ -17,6 +17,7 @@ export interface FactoryEntry {
     shortName: string;
     customMetadata?: any;
     moduleName: string;
+    moduleKey: string;
 }
 
 interface KeyToFactoryEntryMap {
@@ -48,7 +49,7 @@ export class ViewRegistryModel extends ModelBase {
         this.viewsMetadata = [...this._getViewsMetaData()];
     }
 
-    public registerViewFactory(moduleName: string, viewFactory: ViewFactoryBase<ModelBase>): void {
+    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase>): void {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(viewFactory, 'viewFactory must be defined');
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);
@@ -59,7 +60,8 @@ export class ViewRegistryModel extends ModelBase {
                 factory: viewFactory,
                 shortName: metadata.shortName,
                 customMetadata: metadata.customMetadata,
-                moduleName: moduleName
+                moduleName: moduleName,
+                moduleKey: moduleKey
             });
         });
     }

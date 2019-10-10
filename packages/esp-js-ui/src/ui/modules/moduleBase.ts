@@ -69,7 +69,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         _log.debug('Registering views');
         let viewFactories: Array<ViewFactoryBase<any>> = this.getViewFactories();
         viewFactories.forEach(viewFactory => {
-            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleName, viewFactory);
+            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleKey, this._moduleMetadata.moduleName, viewFactory);
             this.addDisposable(() => {
                 viewRegistryModel.unregisterViewFactory(viewFactory);
             });

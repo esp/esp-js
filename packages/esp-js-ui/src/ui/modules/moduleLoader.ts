@@ -25,9 +25,8 @@ export class ModuleLoader {
     public loadModules(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
             _log.debug(`Loading ${moduleConstructors.length} modules`);
-
             return Rx.Observable
-                .concat(moduleConstructors.map(moduleCtor => this.loadModule(moduleCtor)))
+                .merge(moduleConstructors.map(moduleCtor => this.loadModule(moduleCtor)))
                 .subscribe(obs);
         });
     }
@@ -39,8 +38,18 @@ export class ModuleLoader {
         });
     }
 
+    public unloadModules(): void {
+        _log.debug(`'Unloading all modules`);
+        this._moduleLoaders.forEach(moduleLoader => {
+            _log.debug(`'Unloading module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
+            moduleLoader.unloadModuleLayout();
+            moduleLoader.disposeModule();
+        });
+        this._moduleLoaders.length = 0;
+    }
+
     public unloadModule(moduleKey: string): void {
-        let moduleLoader = this._moduleLoaders.find(m => m.moduleMetadata.moduleKey === moduleKey);
+        let moduleLoader = this._findModuleLoader(moduleKey);
 
         if (!moduleLoader) {
             throw new Error(`Module ${moduleKey} could not be found in registry`);
@@ -53,11 +62,22 @@ export class ModuleLoader {
         this._moduleLoaders.splice(this._moduleLoaders.indexOf(moduleLoader), 1);
     }
 
-    public loadLayout(layoutMode:string): void {
-        this._moduleLoaders.forEach(moduleLoader => {
-            _log.debug(`Loading layout for ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
+    public loadLayout(layoutMode: string, moduleKey: string): void;
+    public loadLayout(layoutMode: string): void;
+    public loadLayout(...args: any[]): void {
+        const layoutMode = args[0];
+        const moduleKey = args.length === 2 ? args[1] : null;
+        if (moduleKey) {
+            const moduleLoader = this._findModuleLoader(moduleKey);
+            _log.debug(`Loading layout for single module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
             moduleLoader.loadModuleLayout(layoutMode);
-        });
+        } else {
+            _log.debug(`Loading layout ${layoutMode} for all modules`);
+            this._moduleLoaders.forEach(moduleLoader => {
+                _log.debug(`Loading layout for ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
+                moduleLoader.loadModuleLayout(layoutMode);
+            });
+        }
     }
 
     private _createModuleLoader(moduleConstructor: ModuleConstructor): SingleModuleLoader {
@@ -72,5 +92,9 @@ export class ModuleLoader {
         );
         this._moduleLoaders.push(moduleLoader);
         return moduleLoader;
+    }
+
+    private _findModuleLoader(moduleKey: string) {
+        return this._moduleLoaders.find(m => m.moduleMetadata.moduleKey === moduleKey);
     }
 }

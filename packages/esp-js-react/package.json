@@ -26,13 +26,13 @@
   "devDependencies": {
     "esp-js": "^2.0.1",
     "esp-js-polimer": "^2.0.1",
-    "jest": "24.7.1",
+    "jest": "24.9.0",
     "prop-types": "^15.7.2",
-    "react": "16.8.6",
-    "typescript": "3.4.2",
-    "webpack": "4.29.6",
+    "react": "16.11.0",
+    "typescript": "3.6.4",
+    "webpack": "4.41.2",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.2.1"
+    "webpack-dev-server": "3.9.0"
   },
   "peerDependencies": {
     "esp-js": "^2.0.1-rc.3",

@@ -1,4 +1,4 @@
-export type ImmutableModel = {
+export interface ImmutableModel {
     modelId: string;
-    [key: string]: any
-};
+    [key: string]: any;
+}

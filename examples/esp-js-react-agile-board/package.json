@@ -9,16 +9,15 @@
     "esp-js": "^2.0.1",
     "esp-js-react": "^2.0.1",
     "immutable": "^4.0.0-rc.12",
-    "lodash": "4.17.11",
-    "react": "16.8.6",
-    "react-dom": "16.8.6"
+    "react": "16.11.0",
+    "react-dom": "16.11.0"
   },
   "devDependencies": {
-    "jest": "24.7.1",
-    "typescript": "3.4.2",
-    "webpack": "4.29.6",
+    "jest": "24.9.0",
+    "typescript": "3.6.4",
+    "webpack": "4.41.2",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.2.1"
+    "webpack-dev-server": "3.9.0"
   },
   "scripts": {
     "clean": "nps clean",

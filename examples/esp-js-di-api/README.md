@@ -1,6 +1,10 @@
-# API Examples
+# esp-js-di examples
 
-This example contains the code showing the lower level APIs in the ESP `Router`.
+The [examples](src/examples.ts) cover the main features of the container, they are fairly self explanatory.
+  
+To get a feel for the container you can use these as a test bed to try out features.
+
+The container is a stand-alone package, it has no dependency on other esp packages. 
 
 ## Running
 
@@ -26,6 +30,4 @@ And finally start the example:
 
 This example runs in the console:
 
-![ESP JS DI example](../../docs/images/esp-js-api-example.png)
-
-
+![ESP JS DI example](../../docs/images/esp-js-di-example.png)

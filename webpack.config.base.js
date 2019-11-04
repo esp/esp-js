@@ -19,6 +19,7 @@
 'use strict';
 
 const webpack = require('webpack');
+const path  = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
 const logger = require('webpack-log')({ name: 'BaseConfig' });
@@ -40,7 +41,11 @@ module.exports = {
         // This is a workaround to enable node to consume esp's umc, see
         // https://github.com/webpack/webpack/issues/6522
         globalObject: "typeof self !== 'undefined' ? self : this",
-        filename: '[name].js'
+        filename: '[name].js',
+        devtoolModuleFilenameTemplate: info => {
+            // in a mono repo setup we need to override the source map file locations otherwise everything get'd dumped under a '.' folder in chrome
+            return path.resolve(info.absoluteResourcePath).replace(/\\/g, "/");
+        },
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],

@@ -3,32 +3,31 @@
 This example demonstrates a simple agile planning board.
 It uses both [esp-js](https://www.npmjs.com/package/esp-js) and [esp-js-react](https://www.npmjs.com/package/esp-js-react) to build a unidirectional, model first application.
 
+The model is an OO style model.
+
 ![ESP Agile board Example](../../docs/images/esp-agile-demo.gif)
-
-## Learning ESP
-
-- [Documentation](http://keithwoods.gitbooks.io/esp-js/content)
-
-### Get help from other users:
-- [GitHub Issues](https://github.com/esp/esp-js/issues)
-
-*Let us [know](https://github.com/esp/esp-js/issues) if you discover anything worth sharing!*
 
 ## Running
 
 You must have [yarn](https://yarnpkg.com/) or yarn installed on your computer.
-From the root project directory run these commands from the command line:
+
+From the root directory of the repo first do a yarn install:
 
 `yarn install`
 
-This will install all dependencies.
+This will install all dependencies and setup the mono repo structure.
 
-To build the project, first run this command:
+Next build all the esp packages:
+
+`yarn build-dev`
+ 
+Then cd into the example you want to run:
+
+`cd example/the-example-directory`
+
+And finally start the example:
 
 `yarn start`
 
-This will perform an initial build and bundle using webpack and typescript, it's then start webpacks dev server.
-Webpack has typescript and JSX support built in so the final bundle is ready for consumption via a script tag.
-
-Browse to [http://localhost:4000](http://localhost:4000) to view the app.
+Browse to [http://localhost:4000](http://localhost:4000) to view the example.
 

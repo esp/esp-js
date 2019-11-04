@@ -1,6 +1,8 @@
-# API Examples
+# Evented State Processor (ESP) Module Based App Example 
 
-This example contains the code showing the lower level APIs in the ESP `Router`.
+This example demonstrates features of esp-js-ui.
+
+![ESP Module Based App](../../docs/images/esp-js-ui-module-based-app.png)
 
 ## Running
 
@@ -24,8 +26,5 @@ And finally start the example:
 
 `yarn start`
 
-This example runs in the console:
-
-![ESP JS DI example](../../docs/images/esp-js-api-example.png)
-
+Browse to [http://localhost:4000](http://localhost:4000) to view the example.
 

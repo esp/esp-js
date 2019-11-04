@@ -25,7 +25,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-js-react-agile-board': './src/app.tsx'
+        'esp-js-react-agile-board': './src/index.tsx'
     },
     plugins:  [
         ...baseConfig.plugins,

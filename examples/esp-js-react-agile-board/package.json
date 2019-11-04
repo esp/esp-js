@@ -9,7 +9,7 @@
     "esp-js": "^2.0.1",
     "esp-js-react": "^2.0.1",
     "immutable": "^4.0.0-rc.12",
-    "lodash": "4.17.11",
+    "lodash": "4.17.15",
     "react": "16.8.6",
     "react-dom": "16.8.6"
   },

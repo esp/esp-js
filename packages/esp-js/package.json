@@ -16,6 +16,7 @@
     "build-dev": "nps build-dev",
     "build-prod": "nps build-prod",
     "build-pack": "nps build-pack",
+    "build-docs": "nps build-docs",
     "test": "nps test",
     "test-ci": "nps test-ci",
     "dev": "nps dev"
@@ -27,7 +28,8 @@
   "repository": "https://github.com/esp/esp-js",
   "devDependencies": {
     "jest": "24.9.0",
-    "typescript": "3.6.4",
+    "typedoc": "^0.15.2",
+    "typescript": "3.7.2",
     "webpack": "4.41.2",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "3.9.0"

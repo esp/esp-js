@@ -24,6 +24,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
 const logger = require('webpack-log')({ name: 'BaseConfig' });
 const TerserPlugin = require('terser-webpack-plugin');
+const TypedocWebpackPlugin = require('typedoc-webpack-plugin');
 
 const env = process.env.NODE_ENV || 'dev';
 const isProduction = env.trim().toLowerCase() === 'prod';
@@ -31,7 +32,7 @@ const mode = isProduction ? 'production' : 'development';
 
 logger.info('Running for env:' + process.env.NODE_ENV);
 
-module.exports = {
+const config = {
     mode,
     output: {
         libraryTarget: 'umd',
@@ -98,6 +99,23 @@ module.exports = {
             'process.env': {
                 'NODE_ENV': JSON.stringify(mode)
             }
-        })
+        }),
     ]
 };
+
+if (process.env.NODE_ENV) {
+    config.plugins.push(
+        new TypedocWebpackPlugin(
+            {
+                out: './docs',
+                excludeExternals: true,
+                excludeNotExported: true,
+                excludePrivate: true,
+                tsconfig: './tsconfig.json'
+            },
+            ['./src', './typings']
+        )
+    );
+}
+
+module.exports = config;

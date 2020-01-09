@@ -91,7 +91,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 this._immutableModel = newModel;
             }
         }
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
             if(metadata.model.preProcess) {
                 metadata.model.preProcess(metadata.model);
                 this._immutableModel[stateName] = metadata.model.getEspPolimerState();
@@ -107,7 +107,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 this._immutableModel = newModel;
             }
         }
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
+        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
             if(metadata.model.postProcess) {
                 metadata.model.postProcess(metadata.model, eventsProcessed);
                 this._immutableModel[stateName] = metadata.model.getEspPolimerState();
@@ -143,7 +143,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         if (handlers) {
             handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TModel>) => {
                 // Given an event processed by the model in question has just finished, we replace the relevant state on the immutable model
-                this._immutableModel[modelHandlerMetadata.stateName] = modelHandlerMetadata.model.getEspPolimerState();
+                (<any>this._immutableModel[modelHandlerMetadata.stateName]) = modelHandlerMetadata.model.getEspPolimerState();
             });
             sendUpdateToDevTools({eventType: eventType, event: event}, this._immutableModel, this._modelId);
         }
@@ -166,7 +166,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 .filter(eventEnvelope => (eventEnvelope.modelId === this._modelId))
                 .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
                     const eventReceivers = this._eventHandlersByEventName.get(eventEnvelope.eventType);
-                    const model = this._immutableModel;
+                    const model = <any>this._immutableModel;
                     eventReceivers.forEach((handlerMetadata: EventHandlerMetadata) => {
                         if (handlerMetadata.observationStage === eventEnvelope.observationStage) {
                             const beforeState = model[handlerMetadata.stateName];

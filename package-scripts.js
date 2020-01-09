@@ -6,7 +6,7 @@ module.exports = {
         buildDev: 'cross-env NODE_ENV=dev webpack --display-reasons --display-error-details --color && yarn test-ci',
         buildProd: 'cross-env NODE_ENV=prod webpack --display-reasons --display-error-details --color && yarn test-ci',
         buildPack: 'cross-env NODE_ENV=prod yarn pack',
-        test: 'jest --verbose --color --no-cache -c ./jest.config.js --rootDir . --watchAll',
+        buildDocs: 'cross-env NODE_ENV=dev BUILD_DOCS=true webpack --display-reasons --display-error-details --color',
         testCi: 'jest --verbose --color --no-cache -c ./jest.config.js --rootDir .',
         clean: isWindows
             ? 'rmdir -r ./.dist && rmdir -r ./.tsbuild && del /s /q esp*.tgz'

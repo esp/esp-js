@@ -24,6 +24,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
 const logger = require('webpack-log')({ name: 'BaseConfig' });
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const env = process.env.NODE_ENV || 'dev';
 const isProduction = env.trim().toLowerCase() === 'prod';
@@ -31,7 +32,7 @@ const mode = isProduction ? 'production' : 'development';
 
 logger.info('Running for env:' + process.env.NODE_ENV);
 
-module.exports = {
+const config = {
     mode,
     output: {
         libraryTarget: 'umd',
@@ -98,6 +99,26 @@ module.exports = {
             'process.env': {
                 'NODE_ENV': JSON.stringify(mode)
             }
-        })
+        }),
     ]
 };
+
+if (isProduction && path.resolve().includes('packages')) {
+    config.plugins.push(
+        new CopyPlugin([{
+            from: '../../README.md',
+            to: '../',
+            transform(content, p) {
+                let token = '# Evented State Processor (ESP)';
+                let contentAsString = content.toString();
+                if (!contentAsString.includes(token)) {
+                    throw new Error('README missing given token');
+                } else {
+                    return contentAsString.replace(token, `# Evented State Processor (ESP) - Package ${path.basename(path.resolve())}`);
+                }
+            },
+        }])
+    );
+}
+
+module.exports = config;

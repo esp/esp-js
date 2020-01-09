@@ -1,1 +1,3 @@
-/// <reference path="custom/browser/index.d.ts" />
+interface Window {
+    __espAnalyticsMonitor: any;
+}

@@ -16,7 +16,6 @@
     "build-dev": "nps build-dev",
     "build-prod": "nps build-prod",
     "build-pack": "nps build-pack",
-    "build-docs": "nps build-docs",
     "test": "nps test",
     "test-ci": "nps test-ci",
     "dev": "nps dev"

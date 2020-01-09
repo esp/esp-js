@@ -12,7 +12,6 @@
     "build-dev": "lerna run build-dev --sort --stream",
     "build-prod": "lerna run build-prod --sort --stream",
     "build-pack": "lerna run build-pack --sort --stream",
-    "build-docs": "lerna run build-docs --sort --stream",
     "test": "lerna run test --stream --sort",
     "create-package": "nps create-package",
     "trash": "nps trash",

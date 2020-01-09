@@ -15,4 +15,3 @@ dist/
 lerna-debug.log
 package-lock.json
 .DS_Store
-**/README.md

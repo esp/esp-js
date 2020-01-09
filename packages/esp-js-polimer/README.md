@@ -2,7 +2,7 @@
 ![](https://img.shields.io/npm/types/esp-js)
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
 
-# Evented State Processor (ESP)
+# Evented State Processor (ESP) - Package esp-js-polimer
 
 ESP gives you the ability to manage changes to a model in a deterministic event driven manner.
 It does this by adding specific processing workflow around changes to a model's state. 

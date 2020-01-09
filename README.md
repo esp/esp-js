@@ -26,4 +26,4 @@ Features include:
 
 It's built on typescript and type definitions are included in the npm packages.
 
-For full documentation please see [https://esp.github.io/](http://https://esp.github.io/).
+For full documentation please see [https://esp.github.io/](https://esp.github.io/).

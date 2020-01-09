@@ -65,8 +65,6 @@
     "ts-node": "^8.0.3",
     "tslint": "^5.15.0",
     "tslint-loader": "^3.6.0",
-    "typedoc": "^0.15.2",
-    "typedoc-webpack-plugin": "^1.1.4",
     "typescript": "3.7.2",
     "webpack": "4.41.2",
     "webpack-cli": "^3.3.0",

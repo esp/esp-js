@@ -27,6 +27,6 @@ Features include:
 
 It's built on typescript and exposes the full type definitions.
 
-# Help Topics
+# Documentation
 
-[Documentation Home](docs/index.md)
+[https://esp.github.io/](http://https://esp.github.io/)

@@ -42,7 +42,7 @@ const onDevToolsMessage = <T extends ImmutableModel>(router: Router, modelId: st
         }
     };
 
-export const connect = <T extends ImmutableModel>(router: Router, modelId: string, model: PolimerModel<T>, instanceId: string) => {
+export const connectDevTools = <T extends ImmutableModel>(router: Router, modelId: string, model: PolimerModel<T>, instanceId: string) => {
     if (_withDevTools) {
         const options: any = {name: instanceId, instanceId};
         const instance = devToolsExtension.connect(options);

@@ -19,6 +19,7 @@
   },
   "packages": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "docs/*"
   ]
 }

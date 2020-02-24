@@ -179,8 +179,8 @@ describe('Router', () => {
                     eventContextActions.shouldCommit = true;
                     eventContextActions.commitStage = esp.ObservationStage.committed;
                     _router.getEventObservable('modelId1', 'Event1')
-                        .subscribe((event, eventContext, model) => {
-                            eventContext.commit();
+                        .subscribe((envelope) => {
+                            envelope.context.commit();
                         });
                     expect(() => {
                         publishEvent();

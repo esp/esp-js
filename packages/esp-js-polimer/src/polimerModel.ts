@@ -1,5 +1,5 @@
 import {MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './stateEventHandlers';
-import {connect, sendUpdateToDevTools} from './reduxDevToolsConnector';
+import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
 import {logger} from './logger';
@@ -73,7 +73,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     public initialize = () => {
-        connect(this._router, this._modelId, this, this._modelId);
+        connectDevTools(this._router, this._modelId, this, this._modelId);
         sendUpdateToDevTools('@@INIT', this._immutableModel, this._modelId);
         this._wireUpStateHandlerModels();
         this._wireUpStateHandlerObjects();

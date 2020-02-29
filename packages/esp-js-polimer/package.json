@@ -39,8 +39,5 @@
     "esp-js": "^2.0.1-rc.3",
     "immer": "2.1.5",
     "rx": "4.1.0"
-  },
-  "publishConfig": {
-    "tag": "latest"
   }
 }

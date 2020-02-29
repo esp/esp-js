@@ -40,8 +40,5 @@
     "esp-js-react": "^2.0.1-rc.3",
     "react": "16.8.6",
     "rx": "4.1.0"
-  },
-  "publishConfig": {
-    "tag": "latest"
   }
 }

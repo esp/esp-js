@@ -39,8 +39,5 @@
     "esp-js-polimer": "^2.0.1-rc.3",
     "prop-types": "^15.7.2",
     "react": "16.8.6"
-  },
-  "publishConfig": {
-    "tag": "latest"
   }
 }

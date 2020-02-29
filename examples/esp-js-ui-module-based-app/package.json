@@ -10,9 +10,9 @@
     "esp-js-polimer": "^2.1.0-next.0",
     "esp-js-react": "^2.1.0-next.0",
     "esp-js-ui": "^2.1.0-next.0",
-    "react": "16.11.0",
-    "react-dom": "16.11.0",
-    "uuid": "3.3.3"
+    "react": "16.13.0",
+    "react-dom": "16.13.0",
+    "uuid": "7.0.1"
   },
   "devDependencies": {
     "jest": "24.9.0",

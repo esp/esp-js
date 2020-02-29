@@ -30,8 +30,8 @@
     "webpack-dev-server": "3.9.0"
   },
   "dependencies": {
-    "query-string": "6.8.3",
-    "uuid": "3.3.3"
+    "query-string": "6.11.0",
+    "uuid": "7.0.1"
   },
   "peerDependencies": {
     "classnames": "2.2.6",

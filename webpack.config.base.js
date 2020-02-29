@@ -30,11 +30,14 @@ const env = process.env.NODE_ENV || 'dev';
 const isProduction = env.trim().toLowerCase() === 'prod';
 const mode = isProduction ? 'production' : 'development';
 
+
+
 logger.info('Running for env:' + process.env.NODE_ENV);
 
 const config = {
     mode: mode,
     output: {
+        library: path.basename(process.cwd()),
         libraryTarget: 'umd',
         sourcePrefix: '    ',
         path: process.cwd() + '/.dist',

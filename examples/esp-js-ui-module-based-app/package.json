@@ -10,8 +10,8 @@
     "esp-js-polimer": "^3.2.18",
     "esp-js-react": "^3.2.18",
     "esp-js-ui": "^3.2.18",
-    "react": "16.11.0",
-    "react-dom": "16.11.0",
+    "react": "16.13.0",
+    "react-dom": "16.13.0",
     "uuid": "8.3.2"
   },
   "devDependencies": {

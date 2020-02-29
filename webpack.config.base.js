@@ -20,7 +20,7 @@
 
 const webpack = require('webpack');
 const path  = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
 const logger = require('webpack-log')({ name: 'BaseConfig' });
 const TerserPlugin = require('terser-webpack-plugin');

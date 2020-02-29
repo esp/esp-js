@@ -9,8 +9,8 @@
     "esp-js": "^3.2.18",
     "esp-js-react": "^3.2.18",
     "immutable": "^4.0.0-rc.12",
-    "react": "16.11.0",
-    "react-dom": "16.11.0"
+    "react": "16.13.0",
+    "react-dom": "16.13.0"
   },
   "devDependencies": {
     "jest": "24.9.0",

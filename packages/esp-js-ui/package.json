@@ -17,13 +17,7 @@
     "dev": "nps dev"
   },
   "devDependencies": {
-    "classnames": "2.2.6",
-    "esp-js": "^3.2.18",
-    "esp-js-di": "^3.2.18",
-    "esp-js-react": "^3.2.18",
-    "jest": "24.9.0",
-    "react": "16.11.0",
-    "rx": "4.1.0",
+    "jest": "25.1.0",
     "typescript": "3.7.2",
     "webpack": "4.41.2",
     "webpack-cli": "^3.3.0",
@@ -31,7 +25,13 @@
   },
   "dependencies": {
     "query-string": "6.11.0",
-    "uuid": "8.3.2"
+    "uuid": "8.3.2",
+    "classnames": "2.2.6",
+    "esp-js": "^3.2.18",
+    "esp-js-di": "^3.2.18",
+    "esp-js-react": "^3.2.18",
+    "react": "16.11.0",
+    "rx": "4.1.0"
   },
   "peerDependencies": {
     "classnames": "2.2.6",

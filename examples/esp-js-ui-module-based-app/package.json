@@ -1,15 +1,15 @@
 {
   "name": "esp-js-ui-module-based-app",
-  "version": "2.0.1",
+  "version": "2.1.0-next.0",
   "license": "MIT",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "esp-js": "^2.0.1",
-    "esp-js-di": "^2.0.1",
-    "esp-js-polimer": "^2.0.1",
-    "esp-js-react": "^2.0.1",
-    "esp-js-ui": "^2.0.1",
+    "esp-js": "^2.1.0-next.0",
+    "esp-js-di": "^2.1.0-next.0",
+    "esp-js-polimer": "^2.1.0-next.0",
+    "esp-js-react": "^2.1.0-next.0",
+    "esp-js-ui": "^2.1.0-next.0",
     "react": "16.11.0",
     "react-dom": "16.11.0",
     "uuid": "3.3.3"

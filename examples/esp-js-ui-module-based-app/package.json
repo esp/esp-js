@@ -15,7 +15,7 @@
     "uuid": "7.0.1"
   },
   "devDependencies": {
-    "jest": "24.9.0",
+    "jest": "25.1.0",
     "typescript": "3.7.2",
     "webpack": "4.41.2",
     "webpack-cli": "^3.3.0",

@@ -1,5 +1,5 @@
 import * as uuid from 'uuid';
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {Container, EspDiConsts} from 'esp-js-di';
 import {
     ModuleBase,

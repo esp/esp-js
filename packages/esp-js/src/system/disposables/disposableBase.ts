@@ -17,7 +17,7 @@
 // notice_end
 
 import {CompositeDisposable} from './compositeDisposable';
-import {Disposable} from './disposable';
+import {Disposable, DisposableItem} from './disposable';
 
 export class DisposableBase implements Disposable {
     private _disposables: CompositeDisposable;
@@ -31,7 +31,7 @@ export class DisposableBase implements Disposable {
     }
 
     public addDisposable(disposable: () => void);
-    public addDisposable(disposable: Disposable);
+    public addDisposable(disposable: DisposableItem);
     public addDisposable(disposable: any) {
         this._disposables.add(disposable);
     }

@@ -1,13 +1,13 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {EspUiEventNames, EspUiEvents, RegionManager, Logger} from 'esp-js-ui';
-import {OutputEvent, InputEventStreamFactory} from 'esp-js-polimer';
+import {InputEvent, OutputEvent, InputEventStreamFactory} from 'esp-js-polimer';
 import { RootEvents } from '../../events';
 import {CashTileModel} from '../cashTileModel';
 
 const _log = Logger.create('CashTile-rootObservables');
 
-const addToRegionEventStream = (getInputEventStreamFor: InputEventStreamFactory<RootEvents.BootstrapEvent, CashTileModel>): Rx.Observable<OutputEvent<EspUiEvents.AddToRegionEvent>> => {
-    return getInputEventStreamFor(RootEvents.bootstrap).map(inputEvent => {
+const addToRegionEventStream = (getInputEventStreamFor: InputEventStreamFactory<CashTileModel, RootEvents.BootstrapEvent>): Rx.Observable<OutputEvent<EspUiEvents.AddToRegionEvent>> => {
+    return getInputEventStreamFor(RootEvents.bootstrap).map((inputEvent: InputEvent<CashTileModel, RootEvents.BootstrapEvent>) => {
         _log.debug(`Processing bootstrap event`);
         return {
             eventType: EspUiEventNames.regions_regionManager_addToRegion,

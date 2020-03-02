@@ -3,7 +3,7 @@ import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
 import {logger} from './logger';
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
 import produce from 'immer';
@@ -298,32 +298,32 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
+                const inputEventStream = Rx.Observable.merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
         });
 
-        // now we've normalised them as a single observable and we can kick it off
-        this.addDisposable(
-            Rx.Observable.merge(...observables)
-                .filter(output => output != null)
-                .subscribe(
-                    (outputEvent: OutputEvent<any>) => {
-                        if (outputEvent.broadcast) {
-                            logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent);
-                            this._router.broadcastEvent(outputEvent.eventType, outputEvent.event || {});
-                        } else {
-                            const targetModelId = outputEvent.modelId || this._modelId;
-                            logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent);
-                            this._router.publishEvent(targetModelId, outputEvent.eventType, outputEvent.event);
-                        }
-                    },
-                    (err) => {
-                        logger.error(`Error on observable stream for model ${this.modelId}.`, err);
+       let subscription: Rx.Subscription = Rx.Observable
+            .merge(...observables)
+            .filter(output => output != null)
+            .subscribe(
+                (outputEvent: OutputEvent<any>) => {
+                    if (outputEvent.broadcast) {
+                        logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent);
+                        this._router.broadcastEvent(outputEvent.eventType, outputEvent.event || {});
+                    } else {
+                        const targetModelId = outputEvent.modelId || this._modelId;
+                        logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent);
+                        this._router.publishEvent(targetModelId, outputEvent.eventType, outputEvent.event);
                     }
-                )
-        );
+                },
+                (err: any) => {
+                    logger.error(`Error on observable stream for model ${this.modelId}.`, err);
+                }
+            );
+        // now we've normalised them as a single observable and we can kick it off
+        this.addDisposable(subscription);
     };
 
     private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
@@ -341,13 +341,13 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                             // They need to bake in their own exception handling.
                             // We wrap in a try catch just to stop any exception bubbling to the router
                             try {
-                                obs.onNext(inputEvent);
+                                obs.next(inputEvent);
                             } catch (err) {
                                 logger.error(`Error caught on event observable stream for event ${eventType}.`, err);
                                 throw err;
                             }
                         },
-                        () => obs.onCompleted()
+                        () => obs.complete()
                     );
                 return espEventStreamSubscription;
             }

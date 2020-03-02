@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {DefaultPrerequisiteRegister} from './prerequisites';
 import {LoadResult, ResultStage} from './prerequisites';
 import {Logger} from '../../core';
@@ -32,11 +32,11 @@ export class SingleModuleLoader {
     }
 
     public load(): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
-            obs.onNext(<ModuleLoadResult>{
+            obs.next(<ModuleLoadResult>{
                 type: ModuleChangeType.Change,
                 moduleName: moduleName,
                 moduleKey,
@@ -62,7 +62,7 @@ export class SingleModuleLoader {
                 this.module.registerPrerequisites(this._preReqsLoader);
             } catch (e) {
                 this._log.error(`Failed to create module ${moduleName}`, e);
-                obs.onNext(<ModuleLoadResult>{
+                obs.next(<ModuleLoadResult>{
                     type: ModuleChangeType.Error,
                     moduleName,
                     moduleKey,
@@ -74,7 +74,7 @@ export class SingleModuleLoader {
                     },
                     hasCompletedLoaded: false
                 });
-                obs.onCompleted();
+                obs.complete();
                 return () => {
                 };
             }
@@ -111,12 +111,12 @@ export class SingleModuleLoader {
     }
 
     private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module
                 // so we'd rather let consumers know where it's stuck
-                obs.onNext({
+                obs.next({
                     type: ModuleChangeType.Change,
                     moduleName: this._moduleMetadata.moduleName,
                     moduleKey: this._moduleMetadata.moduleKey,
@@ -124,24 +124,24 @@ export class SingleModuleLoader {
                     hasCompletedLoaded: false
                 });
                 module.initialise();
-                obs.onNext({
+                obs.next({
                     type: ModuleChangeType.Change,
                     moduleName: this._moduleMetadata.moduleName,
                     moduleKey: this._moduleMetadata.moduleKey,
                     description: `Module initialised`,
                     hasCompletedLoaded: true
                 });
-                obs.onCompleted();
+                obs.complete();
             } catch (e) {
                 this._log.error(`Failed to initialise module ${this._moduleMetadata.moduleName}`, e);
-                obs.onNext({
+                obs.next({
                     type: ModuleChangeType.Error,
                     moduleName: this._moduleMetadata.moduleName,
                     moduleKey: this._moduleMetadata.moduleKey,
                     errorMessage: `Module initialisation failed`,
                     hasCompletedLoaded: false
                 });
-                obs.onCompleted();
+                obs.complete();
                 return () => {
                 };
             }

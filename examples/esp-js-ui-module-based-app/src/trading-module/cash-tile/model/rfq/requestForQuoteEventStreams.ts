@@ -1,8 +1,8 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {InputEvent, OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
 import {CashTileModel} from '../cashTileModel';
 import {InputEvents, RfqEvents} from '../../events';
-import {RfqRequest, RfqService} from '../../services/rfqService';
+import {RfqRequest, RfqService, RfqUpdate} from '../../services/rfqService';
 import {Logger} from 'esp-js-ui';
 
 const _log = Logger.create('CashTile-RequestForQuoteObservables');
@@ -17,22 +17,23 @@ export class RequestForQuoteEventStreams {
     onRfqTypeEvent(inputEventStream: InputEventStream<CashTileModel, RfqEvents.RequestQuoteEvent | InputEvents.NotionalChanged | InputEvents.CurrencyPairChangedEvent>): OutputEventStream<RfqEvents.RfqUpdateEvent> {
         _log.debug('Wiring up rfq transform streams');
         return inputEventStream
-            .map(inputEvent => {
+            .map((inputEvent: InputEvent<CashTileModel, RfqEvents.RequestQuoteEvent | InputEvents.NotionalChanged | InputEvents.CurrencyPairChangedEvent>) => {
                 if (inputEvent.eventType === RfqEvents.requestQuote) {
                     let request: RfqRequest = {
                         rfqId: inputEvent.model.requestForQuote.rfqId,
                         ccyPair: inputEvent.model.inputs.ccyPair,
                         notional: inputEvent.model.inputs.notional
                     };
-                    this._logQuoteDebug(request, 'Mapped input to RfqRequest');
+                    _log.debug(`[RFQ new Quote ${request.rfqId} ${request.ccyPair} ${request.notional}] - Mapped input to RfqRequest`);
                     return this._rfqService.requestQuote(request);
                 } else {
+                    // else deals with updating the quote stream... but not in this demo
                     return Rx.Observable.never();
                 }
             })
             .switch()
-            .map(response => {
-                this._logQuoteDebug(response, 'Mapping RfqResponse to OutputEvent');
+            .map((response: RfqUpdate) => {
+                _log.debug(`[RFQ new Quote ${response.rfqId} ] - Mapping RfqResponse to OutputEvent`);
                 return <OutputEvent<RfqEvents.RfqUpdateEvent>>{
                     eventType: RfqEvents.rfqUpdate,
                     event: <RfqEvents.RfqUpdateEvent> {
@@ -44,8 +45,5 @@ export class RequestForQuoteEventStreams {
             });
     }
 
-    private _logQuoteDebug({rfqId, ccyPair, notional}, message) {
-        _log.debug(`[${rfqId} ${ccyPair} ${notional}] - ${message}`);
-    }
     // TODO other events in RfqEvents
 }

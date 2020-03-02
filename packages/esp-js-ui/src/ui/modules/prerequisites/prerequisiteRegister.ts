@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {Unit} from '../../../core';
 
 export interface PrerequisiteRegister {

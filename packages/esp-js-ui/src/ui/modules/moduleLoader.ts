@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import { Container } from 'esp-js-di';
 import { ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state/stateService';
@@ -23,16 +23,16 @@ export class ModuleLoader {
      * takes an array of modules class that will be new-ed up, i.e. constructor functions
      */
     public loadModules(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create(obs => {
             _log.debug(`Loading ${moduleConstructors.length} modules`);
             return Rx.Observable
-                .merge(moduleConstructors.map(moduleCtor => this.loadModule(moduleCtor)))
+                .merge(...moduleConstructors.map(moduleCtor => this.loadModule(moduleCtor)))
                 .subscribe(obs);
         });
     }
 
     public loadModule(moduleConstructor: ModuleConstructor): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create(obs => {
             let moduleLoader = this._createModuleLoader(moduleConstructor);
             return moduleLoader.load().subscribe(obs);
         });

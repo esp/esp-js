@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import '../../../../src/core/observableExt';
 import {DefaultPrerequisiteRegister} from '../../../../src/ui/modules/prerequisites';
 import {Unit} from '../../../../src/core';
@@ -33,7 +33,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                     onCompletedCount++;
                });
 
-           stream.onError(new Error('Spanner in the works'));
+           stream.error(new Error('Spanner in the works'));
 
            expect(errorCount).toEqual(0);
            expect(onCompletedCount).toEqual(1);
@@ -48,7 +48,7 @@ describe('Default Prerequisite Registrar Tests', () => {
             let subscribed = false;
             let nonStartedStream = Rx.Observable.defer(() => {
                 subscribed = true;
-                return Rx.Observable.return(Unit.default);
+                return Rx.Observable.of(Unit.default);
             });
             register.registerStream(nonStartedStream, 'Barry');
 
@@ -66,7 +66,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                         onCompletedCount++;
                     });
 
-            stream.onError(new Error('Spanner in the works'));
+            stream.error(new Error('Spanner in the works'));
             expect(onCompletedCount).toEqual(1);
             expect(onNextCount).toEqual(2);
             expect(actualResult.stage).toEqual(ResultStage.Error);
@@ -148,7 +148,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                     () => completed = true
                 );
 
-            stream.onNext(1);
+            stream.next(1);
 
             expect(results.length).toEqual(2);
             expect(results[0].stage).toEqual(ResultStage.Starting);
@@ -171,7 +171,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                     () => completed = true
                 );
 
-            stream1.onNext(1);
+            stream1.next(1);
 
             expect(results.length).toEqual(3);
             expect(results[0].stage).toEqual(ResultStage.Starting);
@@ -183,7 +183,7 @@ describe('Default Prerequisite Registrar Tests', () => {
 
             expect(completed).toEqual(false);
 
-            stream2.onNext(2);
+            stream2.next(2);
             expect(results.length).toEqual(4);
             expect(results[3].stage).toEqual(ResultStage.Completed);
             expect(results[3].name).toEqual('stream2');
@@ -207,7 +207,7 @@ describe('Default Prerequisite Registrar Tests', () => {
             expect(stream1Counter).toEqual(1);
             expect(stream2Counter).toEqual(0);
 
-            stream1.onNext({});
+            stream1.next({});
             expect(stream2Counter).toEqual(2);
         });
 
@@ -223,7 +223,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                 });
 
             expect(counter).toEqual(0);
-            stream.onCompleted();
+            stream.complete();
             expect(counter).toEqual(1);
         });
     });

@@ -17,13 +17,13 @@
 // notice_end
 
 import {Guard} from '../guard';
-import {Disposable, DisposableOrFunction} from './disposable';
+import {Disposable, DisposableOrFunction, DisposableItem, Subscription} from './disposable';
 
 export class DisposableWrapper implements Disposable {
     private _isDisposed: boolean = false;
     private _disposable: Disposable;
 
-    public constructor(disposable: DisposableOrFunction) {
+    public constructor(disposable: DisposableItem) {
         Guard.isDefined(disposable, 'disposable must be defined');
         let innerDisposable;
         if (typeof disposable === 'function') {
@@ -32,13 +32,16 @@ export class DisposableWrapper implements Disposable {
                     disposable();
                 }
             };
-        } else if (disposable.dispose && typeof disposable.dispose === 'function') {
+        } else if ((disposable as Disposable).dispose) {
             innerDisposable = {
                 dispose: () => {
-                    // at this point if something has deleted the dispose or it's not a function we just ignore it.
-                    if (disposable.dispose && typeof disposable.dispose === 'function') {
-                        disposable.dispose();
-                    }
+                    (disposable as Disposable).dispose();
+                }
+            };
+        } else if ((disposable as Subscription).unsubscribe) {
+            innerDisposable = {
+                dispose: () => {
+                    (disposable as Subscription).unsubscribe();
                 }
             };
         } else {

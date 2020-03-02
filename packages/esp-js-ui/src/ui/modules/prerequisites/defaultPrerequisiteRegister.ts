@@ -1,5 +1,5 @@
-import * as Rx from 'rx';
-import {DisposableBase} from 'esp-js';
+import * as Rx from 'rxjs';
+import {CompositeDisposable, DisposableBase} from 'esp-js';
 import {PrerequisiteRegister} from './prerequisiteRegister';
 import {LoadResult, ResultStage} from './loadResult';
 import {Logger, Unit} from '../../../core';
@@ -13,27 +13,25 @@ export class DefaultPrerequisiteRegister extends DisposableBase implements Prere
     constructor() {
         super();
 
-        let loadDisposable = new Rx.SingleAssignmentDisposable();
-        this.addDisposable(loadDisposable);
-
         this._stream = Rx.Observable.empty<LoadResult>();
-        this._publishedStream = Rx.Observable.defer<LoadResult>(() => {
-            // We close over _stream so that we allow the class to modify
-            // it (see registerStream function)
-            return this._stream;
-        })
-        // When we load, stop on the first error result we get
-        // But yield it back to the consumer so they know it stopped
-        .takeUntilInclusive((result: LoadResult) =>  result.stage === ResultStage.Error)
-        .multicast(new Rx.ReplaySubject<LoadResult>(1))
-        .lazyConnect<LoadResult>(loadDisposable);
+        this._publishedStream = Rx.Observable
+            .defer<LoadResult>(() => {
+                // We close over _stream so that we allow the class to modify
+                // it (see registerStream function)
+                return this._stream;
+            })
+            // When we load, stop on the first error result we get
+            // But yield it back to the consumer so they know it stopped
+            .takeUntilInclusive((result: LoadResult) =>  result.stage === ResultStage.Error)
+            .multicast(new Rx.ReplaySubject<LoadResult>(1))
+            .lazyConnect<LoadResult>(sub => this.addDisposable(sub));
     }
 
     public registerAction(action: () => void, name: string, errorMessage?: (e: Error) => string): void {
-        let stream = Rx.Observable.create<any>(obs => {
+        let stream = Rx.Observable.create((obs: Rx.Subscriber<Unit>) => {
             action();
-            obs.onNext(Unit.default);
-            obs.onCompleted();
+            obs.next(Unit.default);
+            obs.complete();
         });
         this.registerStream(stream, name, errorMessage);
     }
@@ -54,8 +52,8 @@ export class DefaultPrerequisiteRegister extends DisposableBase implements Prere
     }
 
     private _buildStream(stream: Rx.Observable<Unit>, name: string, errorMessage: (e: Error) => string = e => e.message) : Rx.Observable<LoadResult> {
-        return Rx.Observable.create<LoadResult>(obs => {
-            obs.onNext({
+        return Rx.Observable.create((obs: Rx.Subscriber<Unit>) => {
+            obs.next({
                 stage: ResultStage.Starting,
                 name
             });
@@ -63,12 +61,12 @@ export class DefaultPrerequisiteRegister extends DisposableBase implements Prere
             let handleError = (e: Error) => {
                 let message = `Error in async load for ${name}`;
                 _log.error(message, e);
-                obs.onNext({
+                obs.next({
                     stage: ResultStage.Error,
                     name,
                     errorMessage: errorMessage(e)
                 });
-                obs.onCompleted();
+                obs.complete();
             };
 
             return stream
@@ -79,11 +77,11 @@ export class DefaultPrerequisiteRegister extends DisposableBase implements Prere
                     },
                     e => handleError(e),
                     () => {
-                        obs.onNext({
+                        obs.next({
                             stage: ResultStage.Completed,
                             name
                         });
-                        obs.onCompleted();
+                        obs.complete();
                     }
                 );
         });

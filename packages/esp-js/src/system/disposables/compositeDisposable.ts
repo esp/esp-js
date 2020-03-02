@@ -17,7 +17,7 @@
 // notice_end
 
 import {DisposableWrapper}  from './disposableWrapper';
-import {Disposable} from './disposable';
+import {Disposable, DisposableItem} from './disposable';
 
 export class CompositeDisposable implements Disposable {
     private readonly _disposables: Disposable[];
@@ -36,7 +36,7 @@ export class CompositeDisposable implements Disposable {
     }
 
     public add(disposable: () => void);
-    public add(disposable: Disposable);
+    public add(disposable: DisposableItem);
     public add(disposable: any) {
         let disposableWrapper = new DisposableWrapper(disposable);
         if (this._isDisposed) {

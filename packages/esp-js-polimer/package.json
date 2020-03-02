@@ -27,18 +27,18 @@
   "license": "Apache-2.0",
   "dependencies": {
     "esp-js": "^3.2.18",
-    "immer": "2.1.5",
-    "rx": "4.1.0"
+    "immer": "5.3.6",
+    "rxjs": "5.5.12"
   },
   "devDependencies": {
     "jest": "25.1.0",
-    "typescript": "3.7.2",
-    "webpack": "4.41.2",
+    "typescript": "3.8.3",
+    "webpack": "4.41.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.9.0"
+    "webpack-dev-server": "3.10.3"
   },
   "peerDependencies": {
-    "esp-js": "^2.0.1-rc.3",
-    "rx": "4.1.0"
+    "esp-js": "^3.2.18",
+    "rxjs": "5.5.12"
   }
 }

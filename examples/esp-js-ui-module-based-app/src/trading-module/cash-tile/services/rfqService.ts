@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {Logger} from 'esp-js-ui';
 
 export enum RfqStatus {
@@ -48,13 +48,13 @@ export class RfqService {
         this._logQuoteDebug(request, `Quote request received for`);
         return Rx.Observable
             .timer(2000, 2000)
-            .map<RfqUpdate>(i => {
+            .map<number, RfqUpdate>((i: number) => {
                 const update = {
                     rfqId: request.rfqId,
                     status: RfqStatus.Quoting,
                     quote: {
                         quoteId: i.toString(),
-                        price: (1.2345 + i / 10000).toFixed(4)
+                        price: Number((1.2345 + i / 10000).toFixed(4))
                     }
                 };
                 this._logQuoteDebug(request, `Yielding new quote. Price: ${update.quote.price}`);
@@ -63,8 +63,8 @@ export class RfqService {
             .finally(() => this._logQuoteDebug(request, `Quote stream completed`));
     }
 
-    private _logQuoteDebug({rfqId, ccyPair, notional}, message) {
-        _log.debug(`[${rfqId} ${ccyPair} ${notional}] - ${message}`);
+    private _logQuoteDebug({rfqId, ccyPair, notional}  : RfqRequest, message) {
+        _log.debug(`[RFQ ${rfqId} ${ccyPair} ${notional}] - ${message}`);
     }
 
     public cancelRfq(request: CancelRfqRequest): Rx.Observable<RfqOperationAck> {

@@ -27,14 +27,14 @@
     "esp-js": "^3.2.18",
     "esp-js-polimer": "^3.2.18",
     "prop-types": "^15.7.2",
-    "react": "16.11.0"
+    "react": "16.13.0"
   },
   "devDependencies": {
     "jest": "25.1.0",
-    "typescript": "3.7.2",
-    "webpack": "4.41.2",
+    "typescript": "3.8.3",
+    "webpack": "4.41.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.9.0"
+    "webpack-dev-server": "3.10.3"
   },
   "peerDependencies": {
     "esp-js": "^2.0.1-rc.3",

@@ -18,27 +18,27 @@
   },
   "devDependencies": {
     "jest": "25.1.0",
-    "typescript": "3.7.2",
-    "webpack": "4.41.2",
+    "typescript": "3.8.3",
+    "webpack": "4.41.6",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.9.0"
+    "webpack-dev-server": "3.10.3"
   },
   "dependencies": {
-    "query-string": "6.11.0",
-    "uuid": "8.3.2",
     "classnames": "2.2.6",
     "esp-js": "^3.2.18",
     "esp-js-di": "^3.2.18",
     "esp-js-react": "^3.2.18",
-    "react": "16.11.0",
-    "rx": "4.1.0"
+    "query-string": "6.11.0",
+    "react": "16.13.0",
+    "rxjs": "5.5.12",
+    "uuid": "8.3.2",
   },
   "peerDependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^2.0.1-rc.3",
-    "esp-js-di": "^2.0.1-rc.3",
-    "esp-js-react": "^2.0.1-rc.3",
+    "esp-js": "^3.2.18",
+    "esp-js-di": "^3.2.18",
+    "esp-js-react": "^3.2.18",
     "react": "16.8.6",
-    "rx": "4.1.0"
+    "rxjs": "5.5.12"
   }
 }

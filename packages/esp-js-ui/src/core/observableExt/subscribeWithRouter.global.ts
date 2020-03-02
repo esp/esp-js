@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {Router} from 'esp-js';
 import {Guard} from 'esp-js';
 
@@ -13,16 +13,16 @@ import {Guard} from 'esp-js';
  *
  * @param router
  * @param modelId : the model id you want to update
- * @param onNext
- * @param onError
- * @param onCompleted
+ * @param next
+ * @param error
+ * @param complete
  */
 Rx.Observable.prototype.subscribeWithRouter = function <T, TModel>(
     router: Router,
     modelId: string,
-    onNext?: (value: T, model: TModel) => void,
-    onError?: (exception: any, model: TModel) => void,
-    onCompleted?: (model: TModel) => void): Rx.Disposable {
+    next?: (value: T, model: TModel) => void,
+    error?: (exception: any, model: TModel) => void,
+    complete?: (model: TModel) => void): Rx.Subscription {
 
     Guard.isDefined(router, 'router should be defined');
     Guard.isString(modelId, 'modelId should be defined and a string');
@@ -31,20 +31,20 @@ Rx.Observable.prototype.subscribeWithRouter = function <T, TModel>(
     return source.materialize().subscribe(i => {
         switch (i.kind) {
             case 'N':
-                if (onNext !== null && onNext !== undefined) {
-                    router.runAction<TModel>(modelId, model => onNext(i.value, model));
+                if (next !== null && next !== undefined) {
+                    router.runAction<TModel>(modelId, model => next(i.value, model));
                 }
                 break;
             case 'E':
-                if (onError === null || onError === undefined) {
+                if (error === null || error === undefined) {
                     throw i.error;
                 } else {
-                    router.runAction<TModel>(modelId, model => onError(i.error, model));
+                    router.runAction<TModel>(modelId, model => error(i.error, model));
                 }
                 break;
             case 'C':
-                if (onCompleted !== null && onCompleted !== undefined) {
-                    router.runAction<TModel>(modelId, model => onCompleted(model));
+                if (complete !== null && complete !== undefined) {
+                    router.runAction<TModel>(modelId, model => complete(model));
                 }
                 break;
             default:

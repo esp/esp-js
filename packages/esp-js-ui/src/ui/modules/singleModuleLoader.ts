@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {DefaultPrerequisiteRegister, LoadResult, ResultStage} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {ModuleChangeType, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
@@ -77,7 +77,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     }
 
     private _createLoadStream(): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create<ModuleLoadResult>((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
@@ -89,7 +89,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: false,
                 stage: ModuleLoadStage.Loading
             });
-            obs.onNext(this._lastModuleLoadResult);
+            obs.next(this._lastModuleLoadResult);
 
             try {
                 this._log.debug(`Creating module ${moduleName}`);
@@ -126,9 +126,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Loading
                 });
-                obs.onNext(this._lastModuleLoadResult);
+                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
-                obs.onCompleted();
+                obs.complete();
                 return () => {
                 };
             }
@@ -141,7 +141,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: false,
                 stage: ModuleLoadStage.Registered
             });
-            obs.onNext(this._lastModuleLoadResult);
+            obs.next(this._lastModuleLoadResult);
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
 
             let initStream = this._buildInitStream(this.module);
@@ -162,7 +162,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     }
 
     private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create<ModuleLoadResult>((obs: Rx.Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module
@@ -175,7 +175,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Initialising
                 });
-                obs.onNext(this._lastModuleLoadResult);
+                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
                 module.initialise();
             } catch (e) {
@@ -188,9 +188,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Initialising
                 });
-                obs.onNext(this._lastModuleLoadResult);
+                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
-                obs.onCompleted();
+                obs.complete();
                 return () => {
                 };
             }
@@ -202,9 +202,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: true,
                 stage: ModuleLoadStage.Loaded
             });
-            obs.onNext(this._lastModuleLoadResult);
+            obs.next(this._lastModuleLoadResult);
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
-            obs.onCompleted();
+            obs.complete();
         });
     }
 

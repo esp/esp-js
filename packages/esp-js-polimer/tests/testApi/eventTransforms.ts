@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {EventConst, TestEvent, TestImmutableModel} from './testModel';
 import {eventTransformFor, InputEvent, InputEventStream, OutputEvent, OutputEventStream} from '../../src';
 
@@ -12,11 +12,11 @@ export class ObjectEventTransforms {
                     eventType: EventConst.event8,
                     event: { transformedEventKey: 'transformedEvent_event7', eventKey: inputEvent.event.eventKey }
                 };
-                return Rx.Observable.return(event);
+                return Rx.Observable.of(event);
             })
-            .switch()
-            ;
+            .switch();
     }
+
     @eventTransformFor(EventConst.eventNotObservedByModel)
     _onEventNotObservedByModel(inputEventStream: InputEventStream<TestImmutableModel, TestEvent>): OutputEventStream<TestEvent> {
         return inputEventStream
@@ -26,7 +26,7 @@ export class ObjectEventTransforms {
                     modelId: inputEvent.event.publishToModelId,
                     event: { transformedEventKey: 'transformedEvent_eventNotObservedByModel', eventKey: inputEvent.event.eventKey }
                 };
-                return Rx.Observable.return(event);
+                return Rx.Observable.of(event);
             })
             .switch();
     }

@@ -1,9 +1,20 @@
-import * as Rx from 'rxjs/Rx';
+import { Observable } from 'rxjs';
 
-Rx.Observable.prototype.doOnSubscribe = function<T>(action: () => void) : Rx.Observable<T> {
-    let source = this;
-    return Rx.Observable.defer<T>(() => {
+export function doOnSubscribe<T>(action: () => void) : (source: Observable<T>) => Observable<T> {
+    return (source: Observable<T>) => new Observable<T>((subscriber) => {
         action();
-        return source;
+        let subscription = source.subscribe(subscriber);
+        return () => {
+            console.log(`Unsubscribed`);
+            subscription.unsubscribe();
+        };
     });
-};
+}
+
+// Compatibility layer:
+(Observable as any).prototype.doOnSubscribe = doOnSubscribe;
+declare module 'rxjs/internal/Observable' {
+    interface Observable<T> {
+        doOnSubscribe: typeof doOnSubscribe;
+    }
+}

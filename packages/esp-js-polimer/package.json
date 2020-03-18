@@ -28,7 +28,8 @@
   "dependencies": {
     "esp-js": "^2.1.0-next.0",
     "immer": "5.3.6",
-    "rxjs": "5.5.12"
+    "rxjs": "6.5.4",
+    "rxjs-compat": "^6.5.4"
   },
   "devDependencies": {
     "jest": "25.1.0",

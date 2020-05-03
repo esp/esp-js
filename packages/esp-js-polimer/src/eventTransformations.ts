@@ -1,5 +1,5 @@
-import * as Rx from 'rxjs';
 import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, EventContext} from 'esp-js';
+import {Observable} from 'rxjs';
 
 /**
  * A decorator which can be used to declare an event transformation handler
@@ -26,7 +26,7 @@ export interface InputEvent<TModel, TEvent> {
     readonly context: EventContext;
 }
 
-export type InputEventStream<TModel, TEvent> = Rx.Observable<InputEvent<TModel, TEvent>>;
+export type InputEventStream<TModel, TEvent> = Observable<InputEvent<TModel, TEvent>>;
 
 export type InputEventStreamFactory<TModel, TEvent = any> = (eventType: string | string[], observationStage?: ObservationStage) => InputEventStream<TModel, TEvent>;
 
@@ -47,6 +47,6 @@ export type OutputEvent<TEvent> = {
     readonly broadcast?: boolean
 };
 
-export type OutputEventStream<TEvent> = Rx.Observable<OutputEvent<TEvent>>;
+export type OutputEventStream<TEvent> = Observable<OutputEvent<TEvent>>;
 
 export type OutputEventStreamFactory<TModel, TInputEvent, TOutputEvent>  = (getEventStreamFor: InputEventStreamFactory<TModel, TInputEvent>) => OutputEventStream<TOutputEvent>;

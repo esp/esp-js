@@ -81,14 +81,3 @@ export function liftToEspObservable<T, TModel>(
     Guard.isString(modelId, 'modelId should be defined and a string');
     return (source: Observable<T>) => new EspRouterObservable<T, TModel>(router, modelId, source);
 }
-
-// Compatibility layer:
-export function liftToEspObservableCompat<T, TModel>(router: Router, modelId: string): EspRouterObservable<T, TModel> {
-    return liftToEspObservable<T, TModel>(router, modelId)(this);
-}
-(Observable as any).prototype.liftToEspObservable = liftToEspObservableCompat;
-declare module 'rxjs/internal/Observable' {
-    interface Observable<T> {
-        liftToEspObservable: typeof liftToEspObservableCompat;
-    }
-}

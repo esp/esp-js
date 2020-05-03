@@ -9,14 +9,3 @@ export function doOnSubscribe<T>(action: () => void) : (source: Observable<T>) =
         };
     });
 }
-
-// Compatibility layer:
-export function doOnSubscribeCompat<T>(action: () => void): Observable<T> {
-    return doOnSubscribe<T>(action)(this);
-}
-(Observable as any).prototype.doOnSubscribe = doOnSubscribeCompat;
-declare module 'rxjs/internal/Observable' {
-    interface Observable<T> {
-        doOnSubscribe: typeof doOnSubscribeCompat;
-    }
-}

@@ -1,9 +1,9 @@
 {
-  "name": "esp-js-ui",
+  "name": "esp-js-ui-rx-compat",
   "version": "2.1.0-next.0",
-  "description": "ESP-JS-UI Package",
-  "main": ".dist/esp-js-ui.js",
-  "types": "esp-js-ui.d.ts",
+  "description": "esp-js-ui-rx-compat Package",
+  "main": ".dist/esp-js-ui-rx-compat.js",
+  "types": "esp-js-ui-rx-compat.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
@@ -24,21 +24,17 @@
     "webpack-dev-server": "3.10.3"
   },
   "dependencies": {
-    "classnames": "2.2.6",
     "esp-js": "^2.1.0-next.0",
-    "esp-js-di": "^2.1.0-next.0",
-    "esp-js-react": "^2.1.0-next.0",
-    "query-string": "6.11.1",
-    "react": "16.13.0",
+    "esp-js-ui": "^2.1.0-next.0",
+    "esp-js-polimer": "^2.1.0-next.0",
     "rxjs": "6.5.4",
-    "uuid": "7.0.1"
+    "rxjs-compat": "^6.5.4"
   },
   "peerDependencies": {
-    "classnames": "2.2.6",
     "esp-js": "^2.0.1-rc.3",
-    "esp-js-di": "^2.0.1-rc.3",
-    "esp-js-react": "^2.0.1-rc.3",
-    "react": "16.8.6",
-    "rxjs": "5.5.12"
+    "esp-js-ui": "^2.1.0-next.0",
+    "esp-js-polimer": "^2.1.0-next.0",
+    "rxjs": "5.5.12",
+    "rxjs-compat": "^6.5.4"
   }
 }

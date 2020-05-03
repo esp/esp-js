@@ -12,6 +12,7 @@
     "esp-js-ui": "^2.1.0-next.0",
     "react": "16.13.0",
     "react-dom": "16.13.0",
+    "rxjs": "6.5.4",
     "uuid": "7.0.1"
   },
   "devDependencies": {

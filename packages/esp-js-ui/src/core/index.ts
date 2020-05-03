@@ -1,3 +1,4 @@
+// Rx compat layer still requires these to be imported for side effects
 import './observableExt';
 
 export * from './observableExt';

@@ -9,7 +9,10 @@ import {
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
-    ModuleChangeType
+    ModuleChangeType,
+    liftToEspObservable,
+    EspRouterObservable,
+    ValueAndModel
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
 
@@ -37,16 +40,20 @@ export class ShellModel extends ModelBase {
                 message: `Loading Modules`
             };
 
-            let moduleLoadStream = this._moduleLoader.loadModules(TradingModule);
-            this.addDisposable(moduleLoadStream.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
-                    _log.debug(`Load Change detected`, change);
+            let moduleLoadStream = this._moduleLoader.loadModules(TradingModule).pipe(
+                liftToEspObservable(this.router, this.modelId)
+            ) as EspRouterObservable<ModuleLoadResult, ShellModel>;
 
-                    if (change.type === ModuleChangeType.Error) {
-                        _log.error(`Pre-requisite failed. Pre Req Name: ${change.prerequisiteResult.name}, Error Message: ${change.errorMessage}`);
+            this.addDisposable(moduleLoadStream.subscribe(
+                ({value: moduleLoadResult, model} : ValueAndModel<ModuleLoadResult, ShellModel>) => {
+                    _log.debug(`Load Change detected`, moduleLoadResult);
+
+                    if (moduleLoadResult.type === ModuleChangeType.Error) {
+                        _log.error(`Pre-requisite failed. Pre Req Name: ${moduleLoadResult.prerequisiteResult.name}, Error Message: ${moduleLoadResult.errorMessage}`);
                     } else {
                         this.splashScreen = {
                             state: SplashScreenState.Loading,
-                            message: change.description
+                            message: moduleLoadResult.description
                         };
                     }
                 },
@@ -63,7 +70,8 @@ export class ShellModel extends ModelBase {
                     this.splashScreen = {
                         state: SplashScreenState.Idle
                     };
-                }));
+                }
+            ));
         });
     }
 

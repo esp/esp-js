@@ -1,5 +1,4 @@
 import * as uuid from 'uuid';
-import * as Rx from 'rxjs';
 import {Container, EspDiConsts} from 'esp-js-di';
 import {
     ModuleBase,
@@ -15,6 +14,8 @@ import {CashTileViewFactory} from './cash-tile/cashTileViewFactory';
 import {BlotterViewFactory} from './blotter/blotterViewFactory';
 import {BlotterModel} from './blotter/models/blotterModel';
 import {TradingModuleDefaultStateProvider} from './tradingModuleDefaultStateProvider';
+import {concat, Observable, throwError, timer} from 'rxjs';
+import {take} from 'rxjs/operators';
 
 let _log = Logger.create('TradingModule');
 
@@ -62,11 +63,14 @@ export class TradingModule extends ModuleBase {
         _log.groupCollapsed('Registering  Prerequisites');
         _log.debug(`Registering 1`);
         register.registerStream(
-            Rx.Observable.timer(2000).take(1).concat(Rx.Observable.throw(new Error('Load error'))),
+            concat(
+                timer(2000).pipe(take(1)),
+                throwError(new Error('Load error'))
+            ),
             'Loading Module That Fails'
         );
         _log.debug(`Registering 2`);
-        register.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
+        register.registerStream(timer(2000).pipe(take(1)), 'Loading Referential Data');
         _log.groupEnd();
     }
 }

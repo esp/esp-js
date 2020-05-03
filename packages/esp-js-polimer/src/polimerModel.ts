@@ -3,12 +3,13 @@ import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
 import {logger} from './logger';
-import * as Rx from 'rxjs';
 import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
 import produce from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
+import {merge, Observable, Subscriber, Subscription} from 'rxjs';
+import {filter} from 'rxjs/operators';
 
 export interface PolimerModelSetup<TModel extends ImmutableModel> {
     initialModel: TModel;
@@ -298,15 +299,16 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
+                const inputEventStream = merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
         });
 
-       let subscription: Rx.Subscription = Rx.Observable
-            .merge(...observables)
-            .filter(output => output != null)
+       let subscription: Subscription = merge(...observables)
+           .pipe(
+               filter(output => output != null)
+           )
             .subscribe(
                 (outputEvent: OutputEvent<any>) => {
                     if (outputEvent.broadcast) {
@@ -326,8 +328,8 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(subscription);
     };
 
-    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
-        return Rx.Observable.create((obs: Rx.Observer<any>) => {
+    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Observable<InputEvent<TModel, any>> => {
+        return new Observable((obs: Subscriber<any>) => {
                 const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
                     .getAllEventsObservable(events, observationStage)
@@ -349,7 +351,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                         },
                         () => obs.complete()
                     );
-                return espEventStreamSubscription;
+                return () => {
+                    espEventStreamSubscription.dispose();
+                };
             }
         );
     };

@@ -4,41 +4,48 @@ import {Guard} from 'esp-js';
 import {materialize} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 import {PartialObserver} from 'rxjs';
+import {toSubscriber} from 'rxjs/internal-compatibility';
 
-export class EspRouterObservable<T, TModel> extends Observable<T> {
+export interface ValueAndModel<T, TModel> {
+    value: T;
+    model: TModel;
+}
+
+export class EspRouterObservable<T, TModel> extends Observable<ValueAndModel<T, TModel>> {
     constructor(private _router: Router, private _modelId: string, private _source: Observable<T>) {
         super();
     }
 
     // override the underlying subscribe
-    subscribe(observerOrNext?: PartialObserver<T> | ((value: T) => void),
-              error?: (error: any) => void,
-              complete?: () => void): Subscription {
-        throw new Error(`Invalid usage, use subscribeWithRouter, not subscribe `);
-    }
-
-    subscribeWithRouter(
-        next?: (value: T, model: TModel) => void,
-        error?: (exception: any, model: TModel) => void,
-        complete?: (model: TModel) => void
+    subscribe(
+        observerOrNext?: PartialObserver<ValueAndModel<T, TModel>> | ((value: ValueAndModel<T, TModel>) => void),
+        error?: (error: any) => void,
+        complete?: () => void
     ): Subscription {
+        const subscriber = toSubscriber(observerOrNext, error, complete);
         return this._source.pipe(materialize()).subscribe(i => {
             switch (i.kind) {
                 case 'N':
-                    if (next !== null && next !== undefined) {
-                        this._router.runAction<TModel>(this._modelId, model => next(i.value, model));
+                    if (observerOrNext !== null && observerOrNext !== undefined) {
+                        this._router.runAction<TModel>(
+                            this._modelId,
+                                (model: TModel) => {
+                                    let item = { value: i.value, model: model };
+                                    subscriber.next(item);
+                            }
+                        );
                     }
                     break;
                 case 'E':
                     if (error === null || error === undefined) {
                         throw i.error;
                     } else {
-                        this._router.runAction<TModel>(this._modelId, model => error(i.error, model));
+                        this._router.runAction<TModel>(this._modelId, model => subscriber.error(i.error));
                     }
                     break;
                 case 'C':
                     if (complete !== null && complete !== undefined) {
-                        this._router.runAction<TModel>(this._modelId, model => complete(model));
+                        this._router.runAction<TModel>(this._modelId, model => subscriber.complete());
                     }
                     break;
                 default:

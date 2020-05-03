@@ -1,6 +1,5 @@
-import '../../../../src/core/observableExt';
 import {DefaultPrerequisiteRegister} from '../../../../src/ui/modules/prerequisites';
-import {Unit} from '../../../../src/core';
+import {doOnSubscribe, Unit} from '../../../../src/core';
 import {LoadResult, ResultStage} from '../../../../src/ui/modules/prerequisites';
 import {Observable, of, Subject} from 'rxjs';
 
@@ -198,8 +197,8 @@ describe('Default Prerequisite Registrar Tests', () => {
             let stream1Counter = 0;
             let stream2Counter = 0;
 
-            register.registerStream(stream1.doOnSubscribe(() => stream1Counter = ++counter), 'stream1');
-            register.registerStream(stream2.doOnSubscribe(() => stream2Counter = ++counter), 'stream2');
+            register.registerStream(stream1.pipe(doOnSubscribe(() => stream1Counter = ++counter)), 'stream1');
+            register.registerStream(stream2.pipe(doOnSubscribe(() => stream2Counter = ++counter)), 'stream2');
 
             register.load()
                 .subscribe();

@@ -1,4 +1,4 @@
-import * as Rx from 'rxjs';
+import {concat, Observable, Subscriber} from 'rxjs';
 import {DefaultPrerequisiteRegister} from './prerequisites';
 import {LoadResult, ResultStage} from './prerequisites';
 import {Logger} from '../../core';
@@ -9,6 +9,7 @@ import {StateService} from '../state';
 import {Module} from './module';
 import {ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
+import {map} from 'rxjs/operators';
 
 export class SingleModuleLoader {
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
@@ -31,8 +32,8 @@ export class SingleModuleLoader {
         return this._moduleMetadata;
     }
 
-    public load(): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
+    public load(): Observable<ModuleLoadResult> {
+        return new Observable((obs: Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
@@ -81,11 +82,12 @@ export class SingleModuleLoader {
 
             let initStream = this._buildInitStream(this.module);
 
-            return this._preReqsLoader
+            let preReqsStream = this._preReqsLoader
                 .load()
-                .map((result: LoadResult) => this._mapPreReqsLoadResult(result))
-                .concat(initStream)
-                .subscribe(obs);
+                .pipe(
+                    map((result: LoadResult) => this._mapPreReqsLoadResult(result))
+                );
+            return concat(preReqsStream, initStream).subscribe(obs);
         });
     }
 
@@ -110,8 +112,8 @@ export class SingleModuleLoader {
         this.module.dispose();
     }
 
-    private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
+    private _buildInitStream(module: Module): Observable<ModuleLoadResult> {
+        return new Observable((obs: Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module

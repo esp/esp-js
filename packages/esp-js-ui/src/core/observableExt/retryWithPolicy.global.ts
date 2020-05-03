@@ -1,29 +1,28 @@
-import * as Rx from 'rxjs';
+import {NEVER, Observable, SchedulerLike, Subscription} from 'rxjs';
 import {RetryPolicy} from './retryPolicy';
-import {Subscriber} from 'rxjs/src/Subscriber';
-import { IScheduler } from 'rxjs/Scheduler';
 import {Logger} from 'esp-js';
+import {async} from 'rxjs/internal/scheduler/async';
+import {catchError} from 'rxjs/operators';
 
 const _log = Logger.create('retryWithPolicy');
 
-Rx.Observable.prototype.retryWithPolicy = function<T>(policy: RetryPolicy, error?: (err: Error) => void, scheduler?: IScheduler): Rx.Observable<T>  {
-    let _scheduler = scheduler || Rx.Scheduler.async;
-    let _source = this;
-    return Rx.Observable.create(
-        (o: Subscriber<T>) => {
-            let subscription = new Rx.Subscription,
-                isDisposed = false,
-                isCompleted = false,
-                hasError = false,
-                subscribe,
-                isRetry = false;
-            subscribe = () => {
-                // given we could try resubscribe via a timer callback, we need to ensure the stream is still value
-                if (!isDisposed && !isCompleted && !hasError) {
-                    if (isRetry) {
-                        _log.debug(`operation [${policy.description}] retrying`);
-                    }
-                    subscription = _source.catch(err => {
+export function retryWithPolicy<T>(policy: RetryPolicy, error?: (err: Error) => void, scheduler?: SchedulerLike) : (source: Observable<T>) => Observable<T> {
+    let _scheduler = scheduler || async;
+    return (source: Observable<T>) => new Observable<T>((subscriber) => {
+        let subscription: Subscription,
+            isDisposed = false,
+            isCompleted = false,
+            hasError = false,
+            subscribe,
+            isRetry = false;
+        subscribe = () => {
+            // given we could try resubscribe via a timer callback, we need to ensure the stream is still value
+            if (!isDisposed && !isCompleted && !hasError) {
+                if (isRetry) {
+                    _log.debug(`operation [${policy.description}] retrying`);
+                }
+                subscription = source.pipe(
+                    catchError(err => {
                         if (error) {
                             error(err);
                         }
@@ -40,30 +39,41 @@ Rx.Observable.prototype.retryWithPolicy = function<T>(policy: RetryPolicy, error
                                 policy.retryAfterElapsedMs,
                             );
                         } else {
-                            o.error(new Error(`Retry policy reached retry limit of [${policy.retryCount}]. Error: [${policy.errorMessage}], Exception: [${err}]`));
+                            subscriber.error(new Error(`Retry policy reached retry limit of [${policy.retryCount}]. Error: [${policy.errorMessage}], Exception: [${err}]`));
                         }
-                        return Rx.Observable.never();
-                    }).subscribe(
-                        i => {
-                            policy.reset();
-                            o.next(i);
-                        },
-                        err => {
-                            hasError = true;
-                            o.error(err);
-                        },
-                        () => {
-                            isCompleted = true;
-                            o.complete();
-                        }
-                    );
-                }
-            };
-            subscribe();
-            return () => {
-                isDisposed = true;
-                subscription.unsubscribe();
-            };
-        }
-    );
-};
+                        return NEVER;
+                    }
+                )).subscribe(
+                    i => {
+                        policy.reset();
+                        subscriber.next(i);
+                    },
+                    err => {
+                        hasError = true;
+                        subscriber.error(err);
+                    },
+                    () => {
+                        isCompleted = true;
+                        subscriber.complete();
+                    }
+                );
+            }
+        };
+        subscribe();
+        return () => {
+            isDisposed = true;
+            subscription.unsubscribe();
+        };
+    });
+}
+
+// Compatibility layer:
+export function retryWithPolicyCompat<T>(policy: RetryPolicy, error?: (err: Error) => void, scheduler?: SchedulerLike): Observable<T> {
+    return retryWithPolicy<T>(policy, error, scheduler)(this);
+}
+(Observable as any).prototype.retryWithPolicy = retryWithPolicyCompat;
+declare module 'rxjs/internal/Observable' {
+    interface Observable<T> {
+        retryWithPolicy: typeof retryWithPolicyCompat;
+    }
+}

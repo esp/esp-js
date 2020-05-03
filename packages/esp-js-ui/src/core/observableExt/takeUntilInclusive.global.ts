@@ -1,15 +1,26 @@
-import * as Rx from 'rxjs';
+import {Observable} from 'rxjs';
 
-Rx.Observable.prototype.takeUntilInclusive = function<T>(predicate: (item: T) => boolean) : Rx.Observable<T> {
-    let source = this;
-    return Rx.Observable.create((obs: Rx.Subscriber<T>) => {
+export function takeUntilInclusive<T>(predicate: (item: T) => boolean) : (source: Observable<T>) => Observable<T> {
+    return (source: Observable<T>) => new Observable<T>((subscriber) => {
         return source.subscribe(item => {
-            obs.next(item);
-            if (predicate(item)) {
-                obs.complete();
-            }
-        },
-        e => obs.error(e),
-        () =>  obs.complete());
+                subscriber.next(item);
+                if (predicate(item)) {
+                    subscriber.complete();
+                }
+            },
+            e => subscriber.error(e),
+            () =>  subscriber.complete()
+        );
     });
-};
+}
+
+// Compatibility layer:
+export function takeUntilInclusiveCompat<T>(predicate: (item: T) => boolean): Observable<T> {
+    return takeUntilInclusive<T>(predicate)(this);
+}
+(Observable as any).prototype.takeUntilInclusive = takeUntilInclusiveCompat;
+declare module 'rxjs/internal/Observable' {
+    interface Observable<T> {
+        takeUntilInclusive: typeof takeUntilInclusiveCompat;
+    }
+}

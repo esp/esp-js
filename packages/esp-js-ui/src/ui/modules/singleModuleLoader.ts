@@ -1,4 +1,5 @@
-import * as Rx from 'rxjs';
+import {concat, Observable, Subscriber} from 'rxjs';
+import {map} from 'rxjs/operators';
 import {DefaultPrerequisiteRegister, LoadResult, ResultStage} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {ModuleChangeType, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
@@ -76,7 +77,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     }
 
     private _createLoadStream(): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
+        return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
@@ -145,11 +146,12 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
 
             let initStream = this._buildInitStream(this.module);
 
-            return this._preReqsLoader
+            let preReqsStream = this._preReqsLoader
                 .load()
-                .map((result: LoadResult) => this._mapPreReqsLoadResult(result))
-                .concat(initStream)
-                .subscribe(obs);
+                .pipe(
+                    map((result: LoadResult) => this._mapPreReqsLoadResult(result))
+                );
+            return concat(preReqsStream, initStream).subscribe(obs);
         });
     }
 
@@ -161,7 +163,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     }
 
     private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
+        return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module

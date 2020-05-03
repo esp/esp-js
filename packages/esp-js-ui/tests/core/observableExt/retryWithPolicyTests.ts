@@ -1,25 +1,26 @@
-import * as Rx from 'rxjs';
-
+import { TestScheduler } from 'rxjs/testing';
 import { RetryPolicy } from '../../../src/core/observableExt';
+import {Observable, Subject, Subscription} from 'rxjs';
+import {retryWithPolicy} from '../../../src/core/observableExt/retryWithPolicy';
 
 describe('.retryWithPolicy()', () => {
-    let _subject:Rx.Subject<any>,
+    let _subject:Subject<any>,
         _stream,
-        _testScheduler:Rx.TestScheduler,
+        _testScheduler:TestScheduler,
         _relievedValue,
         _throwIf,
         _policy,
         _onRetryErr,
         _err,
-        _subscription: Rx.Subscription;
+        _subscription: Subscription;
 
     beforeEach(() => {
-        _subject = new Rx.Subject<any>();
+        _subject = new Subject<any>();
         _relievedValue = 0;
         _throwIf = -1;
         jest.useFakeTimers();
         _policy = new RetryPolicy('TestOperation', 2, 1000, 'An Error');
-        _stream = Rx.Observable.create(o => {
+        _stream = new Observable(o => {
             _subject.subscribe(
                 i => {
                     if(i ===  _throwIf) {
@@ -29,17 +30,20 @@ describe('.retryWithPolicy()', () => {
                     }
                 }
             );
+            return () => {};
         });
 
     });
 
     function subscribe() {
         _subscription = _stream
-            .retryWithPolicy(
-                _policy, err => {
-                    _onRetryErr = err;
-                },
-                _testScheduler
+            .pipe(
+                retryWithPolicy(
+                    _policy, err => {
+                        _onRetryErr = err;
+                    },
+                    _testScheduler
+                )
             )
             .subscribe(
                 i => _relievedValue = i,

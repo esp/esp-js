@@ -38,7 +38,8 @@
     "webpack-dev-server": "3.10.3"
   },
   "peerDependencies": {
-    "esp-js": "^2.0.1-rc.3",
+    "esp-js": "^3.0.0-next.0",
     "rxjs": "5.5.12"
-  }
+  },
+  "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
 }

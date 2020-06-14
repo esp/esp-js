@@ -7,9 +7,6 @@
   "include": [
     "src/**/*"
   ],
-  "files": [
-    "typings/custom.d.ts"
-  ],
   "exclude": [
     "node_modules",
     "**/*.spec.ts"

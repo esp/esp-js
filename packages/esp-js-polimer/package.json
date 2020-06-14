@@ -28,7 +28,7 @@
   "dependencies": {
     "esp-js": "^3.2.18",
     "immer": "5.3.6",
-    "rxjs": "6.5.4"
+    "rxjs": "6.6.6"
   },
   "devDependencies": {
     "jest": "25.1.0",
@@ -39,6 +39,6 @@
   },
   "peerDependencies": {
     "esp-js": "^3.2.18",
-    "rxjs": "5.5.12"
+    "rxjs": "^6.6.6"
   }
 }

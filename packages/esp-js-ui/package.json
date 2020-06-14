@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "2.1.0-next.0",
+  "version": "3.0.0-next.0",
   "description": "ESP-JS-UI Package",
   "main": ".dist/esp-js-ui.js",
   "types": "esp-js-ui.d.ts",
@@ -25,9 +25,9 @@
   },
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^2.1.0-next.0",
-    "esp-js-di": "^2.1.0-next.0",
-    "esp-js-react": "^2.1.0-next.0",
+    "esp-js": "^3.0.0-next.0",
+    "esp-js-di": "^3.0.0-next.0",
+    "esp-js-react": "^3.0.0-next.0",
     "query-string": "6.11.1",
     "react": "16.13.0",
     "rxjs": "6.5.4",

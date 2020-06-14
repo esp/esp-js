@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui-rx-compat",
-  "version": "2.1.0-next.0",
+  "version": "3.0.0-next.0",
   "description": "esp-js-ui-rx-compat Package",
   "main": ".dist/esp-js-ui-rx-compat.js",
   "types": "esp-js-ui-rx-compat.d.ts",
@@ -24,16 +24,16 @@
     "webpack-dev-server": "3.10.3"
   },
   "dependencies": {
-    "esp-js": "^2.1.0-next.0",
-    "esp-js-ui": "^2.1.0-next.0",
-    "esp-js-polimer": "^2.1.0-next.0",
+    "esp-js": "^3.0.0-next.0",
+    "esp-js-polimer": "^3.0.0-next.0",
+    "esp-js-ui": "^3.0.0-next.0",
     "rxjs": "6.5.4",
     "rxjs-compat": "^6.5.4"
   },
   "peerDependencies": {
     "esp-js": "^2.0.1-rc.3",
-    "esp-js-ui": "^2.1.0-next.0",
     "esp-js-polimer": "^2.1.0-next.0",
+    "esp-js-ui": "^2.1.0-next.0",
     "rxjs": "5.5.12",
     "rxjs-compat": "^6.5.4"
   }

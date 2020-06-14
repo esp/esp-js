@@ -34,7 +34,6 @@
     "no-trailing-whitespace": false,
     "no-unused-expression": true,
     "no-unused-variable": [false, "react"],
-    "no-use-before-declare": true,
     "no-var-keyword": true,
     "object-literal-sort-keys": false,
     "one-line": [true,

@@ -17,20 +17,20 @@
     "dev": "nps dev"
   },
   "devDependencies": {
-    "jest": "25.1.0",
-    "typescript": "3.8.3",
-    "webpack": "4.42.0",
+    "jest": "26.0.1",
+    "typescript": "3.9.5",
+    "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.10.3"
+    "webpack-dev-server": "3.11.0"
   },
   "dependencies": {
     "classnames": "2.2.6",
     "esp-js": "^3.2.18",
     "esp-js-di": "^3.2.18",
     "esp-js-react": "^3.2.18",
-    "query-string": "6.11.1",
-    "react": "16.13.0",
-    "rxjs": "6.6.6",
+    "query-string": "6.13.1",
+    "react": "16.13.1",
+    "rxjs": "6.5.4",
     "rxjs-compat": "6.6.6",
     "uuid": "8.3.2"
   },

@@ -15,11 +15,11 @@
     "prompt": "1.0.0"
   },
   "devDependencies": {
-    "jest": "25.1.0",
+    "jest": "26.0.1",
     "ts-node": "^8.0.3",
-    "typescript": "3.8.3",
-    "webpack": "4.42.0",
+    "typescript": "3.9.5",
+    "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.10.3"
+    "webpack-dev-server": "3.11.0"
   }
 }

@@ -1,9 +1,9 @@
 {
-  "name": "esp-js-ui-rx-compat",
+  "name": "esp-js-ui-rxcompat",
   "version": "3.2.18",
-  "description": "esp-js-ui-rx-compat Package",
-  "main": ".dist/esp-js-ui-rx-compat.js",
-  "types": "esp-js-ui-rx-compat.d.ts",
+  "description": "esp-js-ui-rxcompat Package",
+  "main": ".dist/esp-js-ui-rxcompat.js",
+  "types": "esp-js-ui-rxcompat.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",

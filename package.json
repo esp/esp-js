@@ -15,7 +15,12 @@
     "test": "lerna run test --stream --sort",
     "create-package": "nps create-package",
     "trash": "nps trash",
-    "publish-all": "nps publish-all"
+    "release-minor": "yarn build-prod && lerna publish minor",
+    "release-major": "yarn build-prod && lerna publish major",
+    "release-patch": "yarn build-prod && lerna publish patch",
+    "pre-release-major": "yarn build-prod && lerna publish premajor --preid next --dist-tag next",
+    "pre-release-minor": "yarn build-prod && lerna publish preminor --preid next --dist-tag next",
+    "pre-release-patch": "yarn build-prod && lerna publish prepatch --preid next --dist-tag next"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",

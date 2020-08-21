@@ -27,7 +27,7 @@ export class State {
     private _eventsDispatched: any[];
     private _currentModelId: string;
     private _currentModelRecord: ModelRecord;
-    private _circularEventDispatchLimit = 200;
+    private _circularEventDispatchLimit = 10000;
     private _currentDispatchCount = 0;
 
     public constructor(private _compositeDiagnosticMonitor: CompositeDiagnosticMonitor) {

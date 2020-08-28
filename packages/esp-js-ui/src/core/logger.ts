@@ -111,7 +111,7 @@ function getOrCreateLoggerConfig(loggerName: string, overrides: Partial<LoggerCo
 }
 
 export class LoggingConfig {
-    private static _defaultLoggerConfig = { dumpAdditionalDetailsToConsole:true, level: _currentLevel };
+    private static _defaultLoggerConfig = { dumpAdditionalDetailsToConsole: false, level: _currentLevel };
 
     /**
      * Sets the level for all loggers, including existing ones

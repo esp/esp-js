@@ -9,7 +9,7 @@ export class StateService {
         Guard.isDefined(state, 'state must be a defined');
         let stateJson = JSON.stringify(state);
         let stateKey = this._getStateKey(moduleKey, layoutMode);
-        _log.debug(`saving layout state for key ${stateKey}. State:${stateJson}`, state);
+        _log.debug(`saving layout state for key ${stateKey}.`, state);
         localStorage.setItem(stateKey, stateJson);
     }
 

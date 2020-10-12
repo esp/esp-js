@@ -81,7 +81,7 @@ export class ViewRegistryModel extends ModelBase {
         this._createView(event.viewFactoryKey);
     }
 
-    public hasViewFacotory(viewFactoryKey: string) {
+    public hasViewFactory(viewFactoryKey: string) {
         return this._viewFactoriesEntries.hasOwnProperty(viewFactoryKey);
     }
 

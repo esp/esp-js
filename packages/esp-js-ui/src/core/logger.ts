@@ -50,17 +50,33 @@ export class ConsoleSink implements Sink {
     public log(logEvent: LogEvent) : void {
         let dateTime = new Date();
         let message = `[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logEvent.message}`;
-        if(logEvent.markers && Object.keys(logEvent.markers).length) {
-            if(logEvent.dumpAdditionalDetailsToConsole) {
-                console.log(message, logEvent.markers, ...logEvent.additionalDetails);
-                return;
+        // The below could be simplified by pushing markers into a new array along with additionalDetails.
+        // However given the amount of times logs are written the below doesn't allocate anything extra
+        const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;
+        if (logEvent.level === Level.error) {
+            // for errors we always dump additionalDetails as these are the actual errors
+            if (logEvent.dumpAdditionalDetailsToConsole && hasMarkers) {
+                console.error(message, logEvent.markers, ...logEvent.additionalDetails);
             } else {
-                console.log(message);
+                console.error(message, ...logEvent.additionalDetails);
+            }
+        } else if (logEvent.level === Level.warn) {
+            if (logEvent.dumpAdditionalDetailsToConsole) {
+                if (hasMarkers) {
+                    console.warn(message, logEvent.markers, ...logEvent.additionalDetails);
+                } else {
+                    console.warn(message, ...logEvent.additionalDetails);
+                }
+            } else {
+                console.warn(message);
             }
         } else {
-            if(logEvent.dumpAdditionalDetailsToConsole) {
-                console.log(message, ...logEvent.additionalDetails);
-                return;
+            if (logEvent.dumpAdditionalDetailsToConsole) {
+                if (hasMarkers) {
+                    console.log(message, logEvent.markers, ...logEvent.additionalDetails);
+                } else {
+                    console.log(message, ...logEvent.additionalDetails);
+                }
             } else {
                 console.log(message);
             }
@@ -79,6 +95,9 @@ export class CompositeSink implements Sink {
     }
     public addSinks(...sinks:Array<Sink>) {
         this._sinks.push(...sinks);
+    }
+    public clearSinks() {
+        this._sinks.length = 0;
     }
 }
 
@@ -128,6 +147,13 @@ export class LoggingConfig {
      */
     static addSinks(...sink: Array<Sink>): void {
         _sink.addSinks(...sink);
+    }
+
+    /**
+     * Clears all logging sinks (all logs will be dropped).
+     */
+    static clearSinks(): void {
+        _sink.clearSinks();
     }
 
     static get defaultLoggerConfig()  : LoggerConfig {

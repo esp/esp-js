@@ -1,21 +1,20 @@
 import {Container} from 'esp-js-di';
-import {Guard, Router} from 'esp-js';
+import {DisposableBase, Guard} from 'esp-js';
 import {StateService} from '../state';
-import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
+import {ViewRegistryModel, ViewFactoryBase} from '../viewFactory';
 import {Logger} from '../../core';
 import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
 import {ViewFactoryState} from './viewFactoryState';
 import {ModelBase} from '../modelBase';
 import {StateSaveMonitor} from '../state/stateSaveMonitor';
-import {EspModuleDecoratorUtils, ModuleMetadata} from './moduleDecorator';
+import {ModuleMetadata} from './moduleDecorator';
 import {DefaultStateProvider} from './defaultStateProvider';
-import {IdFactory} from '../idFactory';
-import {SystemContainerConst} from '../dependencyInjection';
+import {EspModuleDecoratorUtils} from './moduleDecorator';
 
 const _log: Logger = Logger.create('ModuleBase');
 
-export abstract class ModuleBase extends ModelBase implements Module {
+export abstract class ModuleBase extends DisposableBase implements Module {
     private _currentLayout: string = null;
     private readonly _stateSaveMonitor: StateSaveMonitor;
     private readonly _moduleMetadata: ModuleMetadata;
@@ -24,7 +23,7 @@ export abstract class ModuleBase extends ModelBase implements Module {
         protected readonly container: Container,
         private readonly _stateService: StateService
     ) {
-        super(IdFactory.createId('esp-module'), container.resolve<Router>(SystemContainerConst.router));
+        super();
         Guard.isDefined(container, 'container must be defined');
         Guard.isDefined(_stateService, '_stateService must be defined');
         // seems to make sense for the module to own it's container,
@@ -35,7 +34,6 @@ export abstract class ModuleBase extends ModelBase implements Module {
             this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
             this.addDisposable(this._stateSaveMonitor);
         }
-        this.observeEvents();
     }
 
     /**
@@ -95,18 +93,16 @@ export abstract class ModuleBase extends ModelBase implements Module {
         }
 
         if (viewFactoriesState) {
-            this.ensureOnDispatchLoop(() => {
-                viewFactoriesState.forEach((viewFactoryState: ViewFactoryState) => {
-                    if (viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
-                        let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
-                        viewFactoryState.state.forEach((state: any) => {
-                            viewFactory.createView(state);
-                        });
-                    } else {
-                        // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
-                        _log.warn(`Skipping load for component as it's factory of type [${viewFactoryState.viewFactoryKey}] is not registered`);
-                    }
-                });
+            viewFactoriesState.forEach((viewFactoryState: ViewFactoryState) => {
+                if (viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
+                    let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
+                    viewFactoryState.state.forEach((state: any) => {
+                        viewFactory.createView(state);
+                    });
+                } else {
+                    // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
+                    _log.warn(`Skipping load for component as it's factory of type [${viewFactoryState.viewFactoryKey}] is not registered`);
+                }
             });
         }
     }

@@ -94,7 +94,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
         if (viewFactoriesState) {
             viewFactoriesState.forEach((viewFactoryState: ViewFactoryState) => {
-                if (viewRegistryModel.hasViewFacotory(viewFactoryState.viewFactoryKey)) {
+                if (viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
                     let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
                     viewFactoryState.state.forEach((state: any) => {
                         viewFactory.createView(state);
@@ -132,5 +132,5 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         } else {
             this._stateService.clearModuleState(this._moduleMetadata.moduleKey, this._currentLayout);
         }
-    }
+    };
 }

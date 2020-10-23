@@ -39,7 +39,8 @@ export class SystemContainerConfiguration {
             .inject(
                 EspDiConsts.owningContainer,
                 SystemContainerConst.views_registry_model,
-                SystemContainerConst.state_service
+                SystemContainerConst.state_service,
+                SystemContainerConst.router
             )
             .singleton();
 

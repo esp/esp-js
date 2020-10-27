@@ -1,5 +1,5 @@
 import { Logger } from '../../core';
-import {Router} from 'esp-js';
+import {Disposable, Guard, Router} from 'esp-js';
 import {ModelBase} from '../modelBase';
 import {IdFactory} from '../idFactory';
 import {RegionManager} from './regionManager';
@@ -14,7 +14,10 @@ export interface RegionModel extends ModelBase {
 }
 
 export abstract class RegionModelBase extends ModelBase implements RegionModel {
-    constructor(
+    private _modelsById = new Map<string, any>();
+    private _modelsSubscriptionsById = new Map<string, Disposable>();
+
+    protected constructor(
         protected _regionName : string,
         router: Router,
         protected _regionManager: RegionManager
@@ -38,6 +41,16 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
 
     public reset() { }
 
+    /**
+     * Returns the underlying models currently registered with the region.
+     *
+     * This is useful if you need to readonly query them (perhaps to save state).
+     * You should not modify these, if you meed to modify raise an event to the model via the Router.
+     */
+    protected get modelsById() {
+        return new Map(this._modelsById);
+    }
+
     private _registerWithRegionManager(regionName) {
         this._regionManager.registerRegion(
             regionName,
@@ -47,6 +60,7 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
                     this.modelId,
                     () => {
                         _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}`);
+                        this._observeModel(regionItem);
                         this._addToRegion(regionItem);
                     }
                 );
@@ -57,6 +71,7 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
                     this.modelId,
                     () => {
                         _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}`);
+                        this._stopObservingModel(regionItem);
                         this._removeFromRegion(regionItem);
                     }
                 );
@@ -65,5 +80,22 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         this.addDisposable(() => {
             this._regionManager.unregisterRegion(regionName);
         });
+    }
+
+    private _observeModel(regionItem: RegionItem) {
+        Guard.isFalsey(this._modelsSubscriptionsById.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
+        let disposable: Disposable = this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
+            this._modelsById.set(regionItem.modelId, model);
+        });
+        this._modelsSubscriptionsById.set(regionItem.modelId, disposable);
+    }
+
+    private _stopObservingModel(regionItem: RegionItem) {
+        if (this._modelsSubscriptionsById.has(regionItem.modelId)) {
+            let disposable = this._modelsSubscriptionsById.get(regionItem.modelId);
+            this._modelsSubscriptionsById.delete(regionItem.modelId);
+            this._modelsById.delete(regionItem.modelId);
+            disposable.dispose();
+        }
     }
 }

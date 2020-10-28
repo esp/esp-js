@@ -91,6 +91,8 @@ export class RegionModel extends ModelBase {
         let copy = this._items.slice();
         copy.push(regionItem);
         this._items = copy;
+
+        this._tryDefaultSelectedItem();
     }
 
     private _removeFromRegionInternal(regionItem: RegionItem): void {
@@ -107,9 +109,7 @@ export class RegionModel extends ModelBase {
                 break;
             }
         }
-        if (!this.selectedItem && this._items.length > 0) {
-            this.selectedItem = this._items[0];
-        }
+        this._tryDefaultSelectedItem();
     }
 
     private _registerWithRegionManager(regionName) {
@@ -139,6 +139,12 @@ export class RegionModel extends ModelBase {
         this.addDisposable(() => {
             this._regionManager.unregisterRegion(regionName);
         });
+    }
+
+    private _tryDefaultSelectedItem() {
+        if (!this.selectedItem && this._items.length > 0) {
+            this.selectedItem = this._items[0];
+        }
     }
 }
 

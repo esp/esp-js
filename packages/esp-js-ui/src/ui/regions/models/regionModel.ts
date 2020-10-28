@@ -52,31 +52,13 @@ export class RegionModel extends ModelBase {
     public reset() {
         this._regionState = new Map();
         this._items = [];
+        this.selectedItem = null;
     }
 
     @observeEvent(EspUiEventNames.regions_multiItemRegion_selectedItemChanged)
     private _observeSelectedItemChanged(ev: SelectedItemChangedEvent) {
         this.selectedItem = ev.selectedItem;
     }
-
-    // public getEspUiModelState(): RegionItemState[] {
-    //     _log.verbose('Staving state');
-    //     const states: RegionItemState[] = [];
-    //     this._regionState.forEach((metadata, modelId) => {
-    //         if (metadata.model[StateSaveProviderConsts.HandlerFunctionName]) {
-    //             const state = metadata.model[StateSaveProviderConsts.HandlerFunctionName]();
-    //             if (state) {
-    //                 states.push({
-    //                     viewKey: metadata.viewFactoryMetadata.viewKey,
-    //                     state
-    //                 });
-    //             } else {
-    //                 _log.warn(`State for model with id ${modelId} was null or undefined`);
-    //             }
-    //         }
-    //     });
-    //     return states;
-    // }
 
     // exists for backwards compatibility
     protected _addToRegion(regionItem: RegionItem): void {

@@ -3,8 +3,7 @@ import {RouterProvider, ConnectableComponent} from 'esp-js-react';
 import {Container} from 'esp-js-di';
 import {
     Logger,
-    MultiItemRegionModel,
-    SingleItemRegionModel,
+    RegionModel,
     LiteralResolver,
     SystemContainerConfiguration,
     SystemContainerConst
@@ -34,7 +33,7 @@ export class ShellBootstrapper {
 
     _configureContainer() {
         this._container
-            .register(ShellModuleContainerConst.workspace_region, MultiItemRegionModel)
+            .register(ShellModuleContainerConst.workspace_region, RegionModel)
             .inject(
                 {resolver: LiteralResolver.resolverName, value: RegionNames.workspaceRegion},
                 SystemContainerConst.router,
@@ -42,7 +41,7 @@ export class ShellBootstrapper {
             )
             .singleton();
         this._container
-            .register(ShellModuleContainerConst.blotter_region, SingleItemRegionModel)
+            .register(ShellModuleContainerConst.blotter_region, RegionModel)
             .inject(
                 {resolver: LiteralResolver.resolverName, value: RegionNames.blotterRegion},
                 SystemContainerConst.router,

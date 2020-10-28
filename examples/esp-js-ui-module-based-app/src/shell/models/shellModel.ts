@@ -4,8 +4,7 @@ import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
 import {
     Logger,
     ModelBase,
-    MultiItemRegionModel,
-    SingleItemRegionModel,
+    RegionModel,
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
@@ -21,8 +20,8 @@ export class ShellModel extends ModelBase {
 
     constructor(router,
                 private _moduleLoader: ModuleLoader,
-                private _workspaceRegion: MultiItemRegionModel,
-                private _blotterRegion: SingleItemRegionModel
+                private _workspaceRegion: RegionModel,
+                private _blotterRegion: RegionModel
     ) {
         super(IdFactory.createId('shellModelId'), router);
         this.splashScreen = {

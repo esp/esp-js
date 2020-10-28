@@ -78,7 +78,17 @@ export class RegionModel extends ModelBase {
     //     return states;
     // }
 
-    private _addToRegion(regionItem: RegionItem): void {
+    // exists for backwards compatibility
+    protected _addToRegion(regionItem: RegionItem): void {
+        this._addToRegionInternal(regionItem);
+    }
+
+    // exists for backwards compatibility
+    protected _removeFromRegion(regionItem: RegionItem): void {
+        this._removeFromRegionInternal(regionItem);
+    }
+
+    private _addToRegionInternal(regionItem: RegionItem): void {
         Guard.isFalsey(this._regionState.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
         this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
             this._router.runAction(this.modelId, () => {
@@ -101,7 +111,7 @@ export class RegionModel extends ModelBase {
         this._items = copy;
     }
 
-    private _removeFromRegion(regionItem: RegionItem): void {
+    private _removeFromRegionInternal(regionItem: RegionItem): void {
         for (let i = this._items.length; i--;) {
             let item = this._items[i];
             if (item.equals(regionItem)) {
@@ -129,7 +139,7 @@ export class RegionModel extends ModelBase {
                     this.modelId,
                     () => {
                         _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}`);
-                        this._addToRegion(regionItem);
+                        this._addToRegionInternal(regionItem);
                     }
                 );
             },
@@ -139,7 +149,7 @@ export class RegionModel extends ModelBase {
                     this.modelId,
                     () => {
                         _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}`);
-                        this._removeFromRegion(regionItem);
+                        this._addToRegionInternal(regionItem);
                     }
                 );
             }

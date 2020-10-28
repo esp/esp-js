@@ -4,7 +4,7 @@ import {ModelBase} from '../modelBase';
 import {IdFactory} from '../idFactory';
 import {RegionManager} from './regionManager';
 import {RegionItem} from './regionItem';
-import {getViewFactoryMetadataFromModelInstance, ViewFactoryMetadata} from '../viewFactory';
+import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, ViewFactoryMetadata} from '../viewFactory';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
@@ -17,6 +17,11 @@ export interface RegionModel extends ModelBase {
 export interface RegionItemModelMetadata {
     viewFactoryMetadata: ViewFactoryMetadata;
     model: any;
+}
+
+export interface RegionItemState {
+    viewKey: string;
+    state: any;
 }
 
 export abstract class RegionModelBase extends ModelBase implements RegionModel {
@@ -34,6 +39,25 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         super.observeEvents();
         _log.verbose('starting. Adding model and observing events');
         this._registerWithRegionManager(this._regionName);
+    }
+
+    public getEspUiModelState(): RegionItemState[] {
+        _log.verbose('Staving state');
+        const states: RegionItemState[] = [];
+        this._regionItemMetadataByModelId.forEach((metadata, modelId) => {
+            if (metadata.model[StateSaveProviderConsts.HandlerFunctionName]) {
+                const state = metadata.model[StateSaveProviderConsts.HandlerFunctionName]();
+                if (state) {
+                    states.push({
+                        viewKey: metadata.viewFactoryMetadata.viewKey,
+                        state
+                    });
+                } else {
+                    _log.warn(`State for model with id ${modelId} was null or undefined`);
+                }
+            }
+        });
+        return states;
     }
 
     public getTitle(): string {

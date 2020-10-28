@@ -1,9 +1,10 @@
 import { Logger } from '../../core';
-import {Disposable, Guard, Router} from 'esp-js';
+import {Guard, Router} from 'esp-js';
 import {ModelBase} from '../modelBase';
 import {IdFactory} from '../idFactory';
 import {RegionManager} from './regionManager';
 import {RegionItem} from './regionItem';
+import {getViewFactoryMetadataFromModelInstance, ViewFactoryMetadata} from '../viewFactory';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
@@ -13,9 +14,13 @@ export interface RegionModel extends ModelBase {
     reset(): void;
 }
 
+export interface RegionItemModelMetadata {
+    viewFactoryMetadata: ViewFactoryMetadata;
+    model: any;
+}
+
 export abstract class RegionModelBase extends ModelBase implements RegionModel {
-    private _modelsById = new Map<string, any>();
-    private _modelsSubscriptionsById = new Map<string, Disposable>();
+    private _regionItemMetadataByModelId = new Map<string, RegionItemModelMetadata>();
 
     protected constructor(
         protected _regionName : string,
@@ -47,8 +52,8 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
      * This is useful if you need to readonly query them (perhaps to save state).
      * You should not modify these, if you meed to modify raise an event to the model via the Router.
      */
-    protected get modelsById() {
-        return new Map(this._modelsById);
+    protected get regionItemMetadataByModelId(): Map<string, RegionItemModelMetadata> {
+        return new Map(this._regionItemMetadataByModelId);
     }
 
     private _registerWithRegionManager(regionName) {
@@ -60,7 +65,7 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
                     this.modelId,
                     () => {
                         _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}`);
-                        this._observeModel(regionItem);
+                        this._setRegionItemMetadata(regionItem);
                         this._addToRegion(regionItem);
                     }
                 );
@@ -82,20 +87,20 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         });
     }
 
-    private _observeModel(regionItem: RegionItem) {
-        Guard.isFalsey(this._modelsSubscriptionsById.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
-        let disposable: Disposable = this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
-            this._modelsById.set(regionItem.modelId, model);
+    private _setRegionItemMetadata(regionItem: RegionItem) {
+        this._router.getModelObservable<any>(regionItem.modelId).take(1).subscribe(model => {
+            Guard.isFalsey(this._regionItemMetadataByModelId.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
+            let viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
+            this._regionItemMetadataByModelId.set(regionItem.modelId, {
+                viewFactoryMetadata: viewFactoryMetadata,
+                model: model
+            });
         });
-        this._modelsSubscriptionsById.set(regionItem.modelId, disposable);
     }
 
     private _stopObservingModel(regionItem: RegionItem) {
-        if (this._modelsSubscriptionsById.has(regionItem.modelId)) {
-            let disposable = this._modelsSubscriptionsById.get(regionItem.modelId);
-            this._modelsSubscriptionsById.delete(regionItem.modelId);
-            this._modelsById.delete(regionItem.modelId);
-            disposable.dispose();
+        if (this._regionItemMetadataByModelId.has(regionItem.modelId)) {
+            this._regionItemMetadataByModelId.delete(regionItem.modelId);
         }
     }
 }

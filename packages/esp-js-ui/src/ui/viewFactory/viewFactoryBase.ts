@@ -1,5 +1,5 @@
 import {Container} from 'esp-js-di';
-import {getViewFactoryMetadata} from './viewFactoryDecorator';
+import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance} from './viewFactoryDecorator';
 import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
 import {ViewFactoryMetadata} from './viewFactoryDecorator';
 import {Disposable} from 'esp-js';
@@ -60,6 +60,9 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
                 throw new Error('Could not find a model in our set');
             }
         });
+        // Attach the metadata of this view factory to any model created by it.
+        // This wil help with other functionality such as state saving.
+        setViewFactoryMetadataOnModelInstance(model, this._metadata);
         this._currentViewModels.push(model);
         return model;
     }

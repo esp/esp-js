@@ -45,7 +45,7 @@ export class RegionManager extends ModelBase {
         Guard.isFunction(onAddingViewToRegionCallback, 'onAddingViewToRegionCallback must be a function');
         Guard.isFunction(onRemovingFromRegionCallback, 'onRemovingFromRegionCallback must be a function');
 
-        _log.debug('registering region {0}', regionName);
+        _log.debug(`registering region ${regionName}`);
         if (this._regions[regionName]) {
             let message = `Cannot register region ${regionName} as it is already registered`;
             _log.error(message);

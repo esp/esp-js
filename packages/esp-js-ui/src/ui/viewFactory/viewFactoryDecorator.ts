@@ -21,3 +21,14 @@ export class ViewFactoryMetadata {
         Guard.isString(shortName, 'shortName must be defined and be a string');
     }
 }
+
+export function getViewFactoryMetadataFromModelInstance(model: any): ViewFactoryMetadata {
+    if (model.__viewFactoryMetadata) {
+        return model.__viewFactoryMetadata;
+    }
+    throw new Error(`No view factory metadata found on model`);
+}
+
+export function setViewFactoryMetadataOnModelInstance(model: any, metadata: ViewFactoryMetadata): void {
+    model.__viewFactoryMetadata = metadata;
+}

@@ -1,10 +1,12 @@
 import { Logger } from '../../core';
-import {Guard, Router} from 'esp-js';
+import {Guard, observeEvent, Router} from 'esp-js';
 import {ModelBase} from '../modelBase';
 import {IdFactory} from '../idFactory';
 import {RegionManager} from './regionManager';
 import {RegionItem} from './regionItem';
 import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, ViewFactoryMetadata} from '../viewFactory';
+import {EspUiEventNames} from '../espUiEventNames';
+import {SelectedItemChangedEvent} from './multiItemRegion/model';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
@@ -24,8 +26,10 @@ export interface RegionItemState {
     state: any;
 }
 
-export abstract class RegionModelBase extends ModelBase implements RegionModel {
+export class RegionModelBase extends ModelBase implements RegionModel {
     private _regionItemMetadataByModelId = new Map<string, RegionItemModelMetadata>();
+    public items: Array<RegionItem> = [];
+    public selectedItem: RegionItem;
 
     protected constructor(
         protected _regionName : string,
@@ -39,6 +43,11 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         super.observeEvents();
         _log.verbose('starting. Adding model and observing events');
         this._registerWithRegionManager(this._regionName);
+    }
+
+    @observeEvent(EspUiEventNames.regions_multiItemRegion_selectedItemChanged)
+    private _observeSelectedItemChanged(ev: SelectedItemChangedEvent) {
+        this.selectedItem = ev.selectedItem;
     }
 
     public getEspUiModelState(): RegionItemState[] {
@@ -64,11 +73,29 @@ export abstract class RegionModelBase extends ModelBase implements RegionModel {
         return '';
     }
 
-    protected abstract _addToRegion(regionItem: RegionItem);
+    protected _addToRegion(regionItem: RegionItem): void {
+        this.items.push(regionItem);
+    }
 
-    protected abstract _removeFromRegion(regionItem: RegionItem);
+    public reset() {
+        this.items.length = 0;
+    }
 
-    public reset() { }
+    protected _removeFromRegion(regionItem: RegionItem): void {
+        for (let i = this.items.length; i--;) {
+            let item = this.items[i];
+            if (item.equals(regionItem)) {
+                this.items.splice(i, 1);
+                if (item === this.selectedItem) {
+                    this.selectedItem = null;
+                }
+                break;
+            }
+        }
+        if (!this.selectedItem && this.items.length > 0) {
+            this.selectedItem = this.items[0];
+        }
+    }
 
     /**
      * Returns the underlying models currently registered with the region.

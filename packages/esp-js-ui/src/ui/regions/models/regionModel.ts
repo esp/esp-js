@@ -159,3 +159,6 @@ export class RegionModel extends ModelBase {
         });
     }
 }
+
+// exists for backwards compatibility
+export class RegionModelBase extends RegionModel { }

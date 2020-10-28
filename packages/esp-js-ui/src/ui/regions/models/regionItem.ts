@@ -1,4 +1,4 @@
-import {DisplayOptions} from './regionManager';
+import {DisplayOptions} from '../regionManager';
 import * as uuid from 'uuid';
 
 export class RegionItem {

@@ -1,10 +1,10 @@
 import {Guard, observeEvent} from 'esp-js';
-import { Logger } from '../../core';
-import {RegionItem} from './regionItem';
 import {Router} from '../../../../esp-js/.dist/typings';
 import {ModelBase} from '../modelBase';
 import {EspUiEventNames} from '../espUiEventNames';
-import * as EspUiEvents from '../espUiEvents';
+import {Logger} from '../../core';
+import {RegionItem} from './models';
+import {EspUiEvents} from '../espUiEvents';
 
 const _log = Logger.create('RegionManager');
 

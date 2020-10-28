@@ -4,10 +4,10 @@ import {SystemContainerConst} from './systemContainerConst';
 import {StateService} from '../state/stateService';
 import {Router} from 'esp-js';
 import {RegionManager} from '../regions/regionManager';
-import {SchedulerService} from '../../core';
 import {ViewRegistryModel} from '../viewFactory';
 import {LiteralResolver} from './literalResolver';
 import {ModuleLoader} from '../modules/moduleLoader';
+import {SchedulerService} from '../../core';
 
 const _log = Logger.create('SystemContainerConfiguration');
 

@@ -1,23 +1,22 @@
 import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
-import {Logger} from '../../../../core';
+import {Logger} from '../../../core';
 import {ItemView} from './itemView';
-import {MultiItemRegionModel} from '../model/multiItemRegionModel';
-import {ViewBase} from '../../../viewBase';
-import {RegionItem} from '../../regionItem';
-import {ViewBaseProps} from '../../../viewBase';
+import {ViewBase} from '../../viewBase';
+import {RegionItem, RegionModel} from '../models';
+import {ViewBaseProps} from '../../viewBase';
 
 const _log = Logger.create('MultiItemRegionView');
 
-export interface MultiItemRegionViewProps extends ViewBaseProps<MultiItemRegionModel> {
+export interface MultiItemRegionViewProps extends ViewBaseProps<RegionModel> {
     className?: string;
 }
 
-export class MultiItemRegionView extends ViewBase<MultiItemRegionView, MultiItemRegionModel, MultiItemRegionViewProps> {
+export class MultiItemRegionView extends ViewBase<MultiItemRegionView, RegionModel, MultiItemRegionViewProps> {
     render() {
         _log.verbose('Rendering');
-        let model: MultiItemRegionModel = this.props.model;
+        let model: RegionModel = this.props.model;
         if (!model) {
             return null;
         }

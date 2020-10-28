@@ -2,7 +2,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const fileExclusions = ['.js', '.less', '.md', '.png', '.jpg', '.json', '.xml', 'webpack.config.js', 'jest.config.js', 'index.ts'];
-const directoryExclusions = ['__tests__', 'dist', 'node_modules','esp-js', 'esp-js-di', 'esp-js-polimer', 'esp-js-react', 'esp-js-ui-rxcompat'];
+const directoryExclusions = ['tests', 'typings', 'dist', 'node_modules','esp-js', 'esp-js-di', 'esp-js-polimer', 'esp-js-react', 'esp-js-ui-rxcompat'];
 
 const logger = (message) => {
     console.log(`IndexWriter: ${message}`);
@@ -10,7 +10,7 @@ const logger = (message) => {
 
 const fileSorter = (a, b) => a.toLowerCase().localeCompare(b.toLowerCase());
 
-const tryRecursivelyWriteIndexFiles = function (directory, isPackageRoot = false) {
+const tryRecursivelyWriteIndexFiles = function (directory) {
     if (directoryExclusions.includes(path.basename(directory))) {
         return;
     }
@@ -34,7 +34,6 @@ const tryRecursivelyWriteIndexFiles = function (directory, isPackageRoot = false
             let excludeFile =
                 fileExclusions.includes(path.extname(file).toLowerCase()) ||
                 fileExclusions.includes(path.basename(file).toLowerCase()) ||
-                file.toLowerCase().includes('stories.tsx') ||
                 file.includes('DS_Store');
             if (!excludeFile) {
                 if (file.includes('.global')) {
@@ -47,15 +46,12 @@ const tryRecursivelyWriteIndexFiles = function (directory, isPackageRoot = false
     });
     let finalOutput = ``;
     if (directoryExports) {
-        finalOutput += `// directory exports:${newLine}`;
         finalOutput += directoryExports;
     }
     if (sideEffectImport) {
-        finalOutput += `// side effects: importing for side effects only (based on .global file naming convention):${newLine}`;
         finalOutput += sideEffectImport;
     }
     if (fileExports) {
-        finalOutput += `// file exports:${newLine}`;
         finalOutput += fileExports;
     }
 
@@ -63,7 +59,7 @@ const tryRecursivelyWriteIndexFiles = function (directory, isPackageRoot = false
         finalOutput = 'export { };';
     }
 
-    let blurb = `// Auto-generated, don't modify ${newLine}${newLine}`;
+    let blurb = `// Auto-generated ${newLine}`;
     let indexFile = `${directory}/index.ts`;
     finalOutput = `${blurb}${finalOutput}`;
     fs.writeFileSync(indexFile, finalOutput);

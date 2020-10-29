@@ -1,53 +1,28 @@
 import {Container} from 'esp-js-di';
 import {DisposableBase, Guard} from 'esp-js';
-import {StateService} from '../state';
 import {ViewRegistryModel, ViewFactoryBase} from '../viewFactory';
-import {Logger} from '../../core';
 import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
 import {ViewFactoryState} from './viewFactoryState';
 import {ModelBase} from '../modelBase';
-import {StateSaveMonitor} from '../state/stateSaveMonitor';
 import {ModuleMetadata} from './moduleDecorator';
 import {DefaultStateProvider} from './defaultStateProvider';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
+import {Logger} from '../../core';
 
 const _log: Logger = Logger.create('ModuleBase');
 
 export abstract class ModuleBase extends DisposableBase implements Module {
-    private _currentLayout: string = null;
-    private readonly _stateSaveMonitor: StateSaveMonitor;
+    protected _hasLoaded: boolean = false;
     private readonly _moduleMetadata: ModuleMetadata;
 
-    protected constructor(
-        protected readonly container: Container,
-        private readonly _stateService: StateService
-    ) {
+    protected constructor(protected readonly container: Container) {
         super();
         Guard.isDefined(container, 'container must be defined');
-        Guard.isDefined(_stateService, '_stateService must be defined');
         // seems to make sense for the module to own it's container,
         // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
         this._moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleInstance(this);
-        if (this.stateSavingEnabled && this.stateSaveIntervalMs > 0) {
-            this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
-            this.addDisposable(this._stateSaveMonitor);
-        }
-    }
-
-    /**
-     * if true automatic state saving for all the modules models using the provided StateService will apply
-     */
-    protected get stateSavingEnabled(): boolean {
-        return false;
-    }
-
-    /**
-     * The interval of which this module will save state
-     */
-    protected get stateSaveIntervalMs(): number {
-        return 60_000;
     }
 
     protected getDefaultStateProvider(): DefaultStateProvider {
@@ -58,12 +33,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
     abstract registerPrerequisites(register: PrerequisiteRegister): void;
 
-    // override if required
-    initialise(): void {
-        if (this.stateSavingEnabled) {
-            this._stateSaveMonitor.start();
-        }
-    }
+    initialise(): void { }
 
     registerViewFactories(viewRegistryModel: ViewRegistryModel) {
         _log.debug('Registering views');
@@ -81,19 +51,18 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         return [];
     }
 
-    loadLayout(layoutMode: string, viewRegistryModel: ViewRegistryModel) {
-        if (this._currentLayout) {
-            this.unloadLayout();
+    loadViews(viewRegistryModel: ViewRegistryModel, viewStates: ViewFactoryState[]) {
+        if (this._hasLoaded) {
+            this.unloadViews();
         }
-        this._currentLayout = layoutMode;
-        let viewFactoriesState = this._stateService.getModuleState<ViewFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
-        if (viewFactoriesState === null && this.getDefaultStateProvider()) {
+       // let viewFactoriesState = this._stateService.getModuleState<ViewFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
+        if (viewStates === null && this.getDefaultStateProvider()) {
             Guard.isDefined(this.getDefaultStateProvider(), `_defaultStateProvider was not provided for module ${this._moduleMetadata.moduleKey}`);
-            viewFactoriesState = this.getDefaultStateProvider().getViewFactoriesState(layoutMode);
+            viewStates = this.getDefaultStateProvider().getViewFactoriesState();
         }
 
-        if (viewFactoriesState) {
-            viewFactoriesState.forEach((viewFactoryState: ViewFactoryState) => {
+        if (viewStates) {
+            viewStates.forEach((viewFactoryState: ViewFactoryState) => {
                 if (viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
                     let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
                     viewFactoryState.state.forEach((state: any) => {
@@ -107,30 +76,13 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         }
     }
 
-    unloadLayout() {
-        if (!this._currentLayout) {
+    unloadViews() {
+        if (!this._hasLoaded) {
             return;
-        }
-        if (this.stateSavingEnabled) {
-            this._saveAllComponentState();
         }
         this.getViewFactories().forEach((factory: ViewFactoryBase<ModelBase>) => {
             factory.shutdownAllViews();
         });
-        this._currentLayout = null;
+        this._hasLoaded = false;
     }
-
-    _saveAllComponentState = () => {
-        if (this._currentLayout == null) {
-            return;
-        }
-        let state = this.getViewFactories()
-            .map(f => f.getAllViewsState())
-            .filter(f => f != null);
-        if (state.length > 0) {
-            this._stateService.saveModuleState(this._moduleMetadata.moduleKey, this._currentLayout, state);
-        } else {
-            this._stateService.clearModuleState(this._moduleMetadata.moduleKey, this._currentLayout);
-        }
-    };
 }

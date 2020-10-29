@@ -2,10 +2,10 @@ import {DisposableBase} from 'esp-js';
 import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Container} from 'esp-js-di';
-import {StateService} from '../state/stateService';
+import {ViewFactoryState} from './viewFactoryState';
 
 export interface ModuleConstructor {
-    new (container: Container, stateService: StateService) : Module;
+    new (container: Container) : Module;
 }
 
 export interface Module extends DisposableBase {
@@ -13,7 +13,7 @@ export interface Module extends DisposableBase {
     configureContainer(): void;
     registerViewFactories(viewRegistryModel:ViewRegistryModel);
     getViewFactories();
-    loadLayout(layoutMode:string, viewRegistryModel:ViewRegistryModel);
-    unloadLayout(): void;
+    loadViews(viewRegistryModel:ViewRegistryModel, viewStates: ViewFactoryState[]);
+    unloadViews(): void;
     registerPrerequisites(register: PrerequisiteRegister): void;
 }

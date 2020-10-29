@@ -58,7 +58,7 @@ export class ShellModel extends ModelBase {
                 },
                 () => {
                     _log.info(`Modules loaded, loading layout`);
-                    this._moduleLoader.loadLayout('default-layout-mode');
+                    this._moduleLoader.loadViews();
                     this.splashScreen = {
                         state: SplashScreenState.Idle
                     };

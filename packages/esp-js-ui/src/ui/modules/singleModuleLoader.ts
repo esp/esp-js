@@ -1,14 +1,15 @@
 import * as Rx from 'rx';
 import {DefaultPrerequisiteRegister} from './prerequisites';
 import {LoadResult, ResultStage} from './prerequisites';
-import {Logger} from '../../core';
 import {Container} from 'esp-js-di';
 import {ModuleChangeType, ModuleLoadResult} from './moduleLoadResult';
 import {ViewRegistryModel} from '../viewFactory';
-import {StateService} from '../state';
 import {Module} from './module';
 import {ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
+import { Logger } from '../../core';
+import {StateService} from '../state';
+import {ViewFactoryState} from './viewFactoryState';
 
 export class SingleModuleLoader {
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
@@ -48,8 +49,7 @@ export class SingleModuleLoader {
                 this._log.debug(`Creating module ${moduleName}`);
 
                 this.module = new this._moduleConstructor(
-                    this._container.createChildContainer(),
-                    this._stateService
+                    this._container.createChildContainer()
                 );
 
                 this._log.debug(`Configuring Container for ${moduleName}`);
@@ -89,18 +89,18 @@ export class SingleModuleLoader {
         });
     }
 
-    public loadModuleLayout(layoutMode: string): void {
+    public loadViews(viewStates: ViewFactoryState[]): void {
         if (!this.module) {
             return;
         }
-        this.module.loadLayout(layoutMode, this._viewRegistryModel);
+        this.module.loadViews(this._viewRegistryModel, viewStates);
     }
 
     public unloadModuleLayout(): void {
         if (!this.module) {
             return;
         }
-        this.module.unloadLayout();
+        this.module.unloadViews();
     }
 
     public disposeModule(): void {

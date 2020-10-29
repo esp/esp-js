@@ -1,8 +1,35 @@
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
-const fileExclusions = ['.js', '.less', '.md', '.png', '.jpg', '.json', '.xml', 'webpack.config.js', 'jest.config.js', 'index.ts'];
-const directoryExclusions = ['tests', 'typings', 'dist', 'node_modules','esp-js', 'esp-js-di', 'esp-js-polimer', 'esp-js-react', 'esp-js-ui-rxcompat'];
+const fileExclusions = [
+    '.js',
+    '.less',
+    '.md',
+    '.png',
+    '.jpg',
+    '.json',
+    '.xml',
+    'webpack.config.js',
+    'jest.config.js',
+    '.yarnignore',
+    'NOTICE',
+    'LICENSE',
+    '.d.ts',
+    '.DS_Store',
+];
+const directoryExclusions = [
+    'tests',
+    'typings',
+    'dist',
+    '.dist',
+    'node_modules',
+    'observableExt',
+    'esp-js',
+    'esp-js-di',
+    'esp-js-polimer',
+    'esp-js-react',
+    'esp-js-ui-rxcompat',
+];
 
 const logger = (message) => {
     console.log(`IndexWriter: ${message}`);
@@ -31,10 +58,10 @@ const tryRecursivelyWriteIndexFiles = function (directory) {
             }
         }
         else {
-            let excludeFile =
-                fileExclusions.includes(path.extname(file).toLowerCase()) ||
-                fileExclusions.includes(path.basename(file).toLowerCase()) ||
-                file.includes('DS_Store');
+            const baseName = path.basename(file);
+            let excludeFile = baseName === 'index.ts' || fileExclusions.some(exclusion => {
+                return baseName.toLowerCase().endsWith(exclusion.toLowerCase());
+            });
             if (!excludeFile) {
                 if (file.includes('.global')) {
                     sideEffectImport += `import './${path.parse(file).name}';${newLine}`;

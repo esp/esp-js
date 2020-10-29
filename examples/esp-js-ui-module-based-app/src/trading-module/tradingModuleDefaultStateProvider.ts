@@ -6,7 +6,7 @@ import {TradingModuleContainerConst} from './tradingModuleContainerConst';
 import {CashTileModel, defaultModelFactory} from './cash-tile/model/cashTileModel';
 
 export class TradingModuleDefaultStateProvider implements DefaultStateProvider {
-    getViewFactoriesState(layoutMode: string): Array<ViewFactoryState> {
+    getViewFactoriesState(): Array<ViewFactoryState> {
         let blotterStates = [BlotterState.create(RegionNames.blotterRegion)];
         let cashTileModels: Array<CashTileModel> =
             ['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'].map(

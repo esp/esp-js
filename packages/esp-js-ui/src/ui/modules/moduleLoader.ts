@@ -2,13 +2,14 @@ import * as Rx from 'rx';
 import { Container } from 'esp-js-di';
 import { ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state/stateService';
-import {Logger} from '../../core';
 import {ModuleLoadResult} from './moduleLoadResult';
 import {SingleModuleLoader} from './singleModuleLoader';
 import {ModuleConstructor} from './module';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Router} from 'esp-js';
 import {IdFactory} from '../idFactory';
+import {Logger} from '../../core';
+import {ViewFactoryState} from './viewFactoryState';
 
 const _log = Logger.create('ModuleLoader');
 
@@ -73,21 +74,26 @@ export class ModuleLoader {
         this._moduleLoaders.splice(this._moduleLoaders.indexOf(moduleLoader), 1);
     }
 
-    public loadLayout(layoutMode: string, moduleKey: string): void;
-    public loadLayout(layoutMode: string): void;
-    public loadLayout(...args: any[]): void {
+    public loadViews(viewStates: ViewFactoryState[]): void;
+    public loadViews(moduleKey: string, viewStates: ViewFactoryState[]): void;
+    public loadViews(...args: any[]): void {
         this._router.runAction(this._modalLoaderModelId, () => {
-            const layoutMode = args[0];
-            const moduleKey = args.length === 2 ? args[1] : null;
+            let viewStates: ViewFactoryState[], moduleKey: string = null;
+            if (args.length === 1) {
+                viewStates = args[0];
+            } else {
+                moduleKey = args[0];
+                viewStates = args[1];
+            }
             if (moduleKey) {
                 const moduleLoader = this._findModuleLoader(moduleKey);
                 _log.debug(`Loading layout for single module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-                moduleLoader.loadModuleLayout(layoutMode);
+                moduleLoader.loadViews(viewStates);
             } else {
-                _log.debug(`Loading layout ${layoutMode} for all modules`);
+                _log.debug(`Loading layout for all modules`);
                 this._moduleLoaders.forEach(moduleLoader => {
                     _log.debug(`Loading layout for ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-                    moduleLoader.loadModuleLayout(layoutMode);
+                    moduleLoader.loadViews(viewStates);
                 });
             }
         });

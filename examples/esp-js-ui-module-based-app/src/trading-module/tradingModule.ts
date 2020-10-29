@@ -3,7 +3,6 @@ import * as Rx from 'rx';
 import {Container, EspDiConsts} from 'esp-js-di';
 import {
     ModuleBase,
-    StateService,
     SystemContainerConst,
     ViewFactoryBase,
     PrerequisiteRegister,
@@ -23,8 +22,8 @@ export class TradingModule extends ModuleBase {
     _viewFactoryGroupId: string;
     _tradingModuleDefaultStateProvider = new TradingModuleDefaultStateProvider();
 
-    constructor(container: Container, stateService: StateService) {
-        super(container, stateService);
+    constructor(container: Container) {
+        super(container);
         this._viewFactoryGroupId = uuid.v4();
     }
 

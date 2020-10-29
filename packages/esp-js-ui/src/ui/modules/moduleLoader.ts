@@ -4,17 +4,20 @@ import { ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state/stateService';
 import {ModuleLoadResult} from './moduleLoadResult';
 import {SingleModuleLoader} from './singleModuleLoader';
-import {ModuleConstructor} from './module';
+import {ModuleConstructor, ShellModuleConstructor} from './module';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Router} from 'esp-js';
 import {IdFactory} from '../idFactory';
 import {Logger} from '../../core';
 import {ViewFactoryState} from './viewFactoryState';
+import {ShellModule} from './shellModule';
+import {ModuleBase} from './moduleBase';
+import {ApplicationState} from './applicationState';
 
 const _log = Logger.create('ModuleLoader');
 
 export class ModuleLoader {
-    private _moduleLoaders: Array<SingleModuleLoader> = [];
+    private _moduleLoaders: SingleModuleLoader<ModuleBase>[] = [];
     private _modalLoaderModelId = IdFactory.createId('module-loader');
 
     constructor(
@@ -34,72 +37,74 @@ export class ModuleLoader {
     /**
      * takes an array of modules class that will be new-ed up, i.e. constructor functions
      */
-    public loadModules(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
+    public loadModules(shellModuleConstructor: ShellModuleConstructor, ...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
-            _log.debug(`Loading ${moduleConstructors.length} modules`);
+            _log.debug(`Loading shell and ${moduleConstructors.length} additional modules`);
             return Rx.Observable
-                .merge(moduleConstructors.map(moduleCtor => this.loadModule(moduleCtor)))
+                .merge([this.loadModule(shellModuleConstructor, true), ...moduleConstructors.map(moduleCtor => this.loadModule(moduleCtor, false))])
                 .subscribe(obs);
         });
     }
 
-    public loadModule(moduleConstructor: ModuleConstructor): Rx.Observable<ModuleLoadResult> {
+    private loadModule(moduleConstructor: ModuleConstructor, isShellModule: boolean): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create<ModuleLoadResult>(obs => {
-            let moduleLoader = this._createModuleLoader(moduleConstructor);
+            let moduleLoader = this._createModuleLoader(moduleConstructor, isShellModule);
             return moduleLoader.load().subscribe(obs);
         });
     }
 
     public unloadModules(): void {
         _log.debug(`'Unloading all modules`);
+        let shellModuleLoader = this._shellModuleLoader();
+        shellModuleLoader.module.unloadViews();
         this._moduleLoaders.forEach(moduleLoader => {
+            if (moduleLoader.isShellModule) {
+                // do the shell last
+                return;
+            }
             _log.debug(`'Unloading module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-            moduleLoader.unloadModuleLayout();
             moduleLoader.disposeModule();
         });
+        shellModuleLoader.disposeModule();
         this._moduleLoaders.length = 0;
     }
 
-    public unloadModule(moduleKey: string): void {
-        let moduleLoader = this._findModuleLoader(moduleKey);
-
-        if (!moduleLoader) {
-            throw new Error(`Module ${moduleKey} could not be found in registry`);
-        }
-
-        _log.debug(`'Unloading module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-        moduleLoader.unloadModuleLayout();
-        moduleLoader.disposeModule();
-
-        this._moduleLoaders.splice(this._moduleLoaders.indexOf(moduleLoader), 1);
+    public loadViews() {
+        let viewFactoryStates: ViewFactoryState[] = this._moduleLoaders
+            .filter(ml =>  ml.isShellModule || !!ml.module.getDefaultStateProvider())
+            .flatMap(ml => {
+                return ml.module.getDefaultStateProvider().getViewFactoriesState();
+            });
+        let shellModuleLoader = this._shellModuleLoader();
+        shellModuleLoader.module.loadViews(viewFactoryStates);
     }
 
-    public loadViews(viewStates: ViewFactoryState[]): void;
-    public loadViews(moduleKey: string, viewStates: ViewFactoryState[]): void;
-    public loadViews(...args: any[]): void {
-        this._router.runAction(this._modalLoaderModelId, () => {
-            let viewStates: ViewFactoryState[], moduleKey: string = null;
-            if (args.length === 1) {
-                viewStates = args[0];
-            } else {
-                moduleKey = args[0];
-                viewStates = args[1];
-            }
-            if (moduleKey) {
-                const moduleLoader = this._findModuleLoader(moduleKey);
-                _log.debug(`Loading layout for single module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-                moduleLoader.loadViews(viewStates);
-            } else {
-                _log.debug(`Loading layout for all modules`);
-                this._moduleLoaders.forEach(moduleLoader => {
-                    _log.debug(`Loading layout for ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-                    moduleLoader.loadViews(viewStates);
-                });
-            }
-        });
-    }
+    // public loadViews(viewStates: ViewFactoryState[]): void;
+    // public loadViews(moduleKey: string, viewStates: ViewFactoryState[]): void;
+    // public loadViews(...args: any[]): void {
+    //     this._router.runAction(this._modalLoaderModelId, () => {
+    //         let viewStates: ViewFactoryState[], moduleKey: string = null;
+    //         if (args.length === 1) {
+    //             viewStates = args[0];
+    //         } else {
+    //             moduleKey = args[0];
+    //             viewStates = args[1];
+    //         }
+    //         if (moduleKey) {
+    //             const moduleLoader = this._findModuleLoader(moduleKey);
+    //             _log.debug(`Loading layout for single module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
+    //             moduleLoader.loadViews(viewStates);
+    //         } else {
+    //             _log.debug(`Loading layout for all modules`);
+    //             this._moduleLoaders.forEach(moduleLoader => {
+    //                 _log.debug(`Loading layout for ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
+    //                 moduleLoader.loadViews(viewStates);
+    //             });
+    //         }
+    //     });
+    // }
 
-    private _createModuleLoader(moduleConstructor: ModuleConstructor): SingleModuleLoader {
+    private _createModuleLoader(moduleConstructor: ModuleConstructor, isShellModule: boolean): SingleModuleLoader {
         let moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleClass(moduleConstructor);
         _log.debug(`Creating module Loader for ${moduleMetadata.moduleKey}`);
         let moduleLoader = new SingleModuleLoader(
@@ -107,7 +112,8 @@ export class ModuleLoader {
             this._viewRegistryModel,
             this._stateService,
             moduleConstructor,
-            moduleMetadata
+            moduleMetadata,
+            isShellModule
         );
         this._moduleLoaders.push(moduleLoader);
         return moduleLoader;
@@ -115,5 +121,10 @@ export class ModuleLoader {
 
     private _findModuleLoader(moduleKey: string) {
         return this._moduleLoaders.find(m => m.moduleMetadata.moduleKey === moduleKey);
+    }
+
+    private _shellModuleLoader(): SingleModuleLoader<ShellModule> {
+        let singleModuleLoader = <SingleModuleLoader<ShellModule>>this._moduleLoaders.find(m => m.isShellModule);
+        return singleModuleLoader;
     }
 }

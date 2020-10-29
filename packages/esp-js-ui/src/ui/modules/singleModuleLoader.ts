@@ -9,23 +9,28 @@ import {ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
 import { Logger } from '../../core';
 import {StateService} from '../state';
-import {ViewFactoryState} from './viewFactoryState';
+import {ModuleBase} from './moduleBase';
 
-export class SingleModuleLoader {
+export class SingleModuleLoader<T extends ModuleBase> {
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
     private _log: Logger;
 
-    public module: Module;
+    public module: T;
 
     constructor(
         private _container: Container,
         private _viewRegistryModel: ViewRegistryModel,
         private _stateService: StateService,
         private _moduleConstructor: ModuleConstructor,
-        private _moduleMetadata: ModuleMetadata
+        private _moduleMetadata: ModuleMetadata,
+        private _isShellModule: boolean
     ) {
         this._log = Logger.create(`SingleModuleLoader-${this._moduleMetadata.moduleKey}`);
         this._preReqsLoader = new DefaultPrerequisiteRegister();
+    }
+
+    public get isShellModule(): boolean {
+        return this._isShellModule;
     }
 
     public get moduleMetadata(): ModuleMetadata {
@@ -48,7 +53,7 @@ export class SingleModuleLoader {
             try {
                 this._log.debug(`Creating module ${moduleName}`);
 
-                this.module = new this._moduleConstructor(
+                this.module = <T>new this._moduleConstructor(
                     this._container.createChildContainer()
                 );
 
@@ -89,19 +94,19 @@ export class SingleModuleLoader {
         });
     }
 
-    public loadViews(viewStates: ViewFactoryState[]): void {
-        if (!this.module) {
-            return;
-        }
-        this.module.loadViews(this._viewRegistryModel, viewStates);
-    }
-
-    public unloadModuleLayout(): void {
-        if (!this.module) {
-            return;
-        }
-        this.module.unloadViews();
-    }
+    // public loadViews(viewStates: ViewFactoryState[]): void {
+    //     if (!this.module) {
+    //         return;
+    //     }
+    //     this.module.loadViews(this._viewRegistryModel, viewStates);
+    // }
+    //
+    // public unloadModuleLayout(): void {
+    //     if (!this.module) {
+    //         return;
+    //     }
+    //     this.module.unloadViews();
+    // }
 
     public disposeModule(): void {
         if (!this.module) {

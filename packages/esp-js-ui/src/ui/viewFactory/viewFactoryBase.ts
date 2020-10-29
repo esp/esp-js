@@ -4,11 +4,7 @@ import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
 import {ViewFactoryMetadata} from './viewFactoryDecorator';
 import {Disposable} from 'esp-js';
 import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
-
-export interface ViewStateSet {
-    viewFactoryKey: string;
-    state: Array<any>;
-}
+import {ViewFactoryState} from '../modules';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
@@ -67,7 +63,7 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
         return model;
     }
 
-    public getAllViewsState(): ViewStateSet {
+    public getAllViewsState(): ViewFactoryState {
         let state = this._currentViewModels
             .map(c => {
                 // try see if there was a @stateProvider decorator on the views model,

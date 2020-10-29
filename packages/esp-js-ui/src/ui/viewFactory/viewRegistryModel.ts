@@ -11,7 +11,7 @@ export interface ViewMetadata {
     shortName: string;
 }
 
-export interface FactoryEntry {
+export interface ViewFactoryEntry {
     viewFactoryKey: string;
     factory: ViewFactoryBase<ModelBase>;
     shortName: string;
@@ -21,7 +21,7 @@ export interface FactoryEntry {
 }
 
 interface KeyToFactoryEntryMap {
-    [key: string]: FactoryEntry;
+    [key: string]: ViewFactoryEntry;
 }
 
 export class ViewRegistryModel extends ModelBase {
@@ -37,7 +37,7 @@ export class ViewRegistryModel extends ModelBase {
         this.observeEvents();
     }
 
-    public get viewFactories(): Array<FactoryEntry> {
+    public get viewFactories(): Array<ViewFactoryEntry> {
         let entries = [];
         for (let key in this._viewFactoriesEntries) { //tslint:disable-line
             entries.push(this._viewFactoriesEntries[key]);
@@ -85,10 +85,14 @@ export class ViewRegistryModel extends ModelBase {
         return this._viewFactoriesEntries.hasOwnProperty(viewFactoryKey);
     }
 
-    public getViewFactory<T extends ModelBase>(viewFactoryKey: string): ViewFactoryBase<T> {
-        let entry: FactoryEntry = this._viewFactoriesEntries[viewFactoryKey];
+    public getViewFactoryEntry(viewFactoryKey: string): ViewFactoryEntry {
+        let entry: ViewFactoryEntry = this._viewFactoriesEntries[viewFactoryKey];
         Guard.isDefined(entry, `viewFactory with key ${viewFactoryKey} not registered`);
-        return <ViewFactoryBase<T>>entry.factory;
+        return entry;
+    }
+
+    public getViewFactoryEntries(): ViewFactoryEntry[] {
+        return  Object.values(this._viewFactoriesEntries);
     }
 
     private _getViewsMetaData(): Array<ViewMetadata> {

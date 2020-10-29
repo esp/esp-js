@@ -1,4 +1,6 @@
 export interface ViewFactoryState {
-    viewFactoryKey:string;
+    moduleKey: string;
+    viewFactoryKey: string;
+    stateVersion: string;
     state: Array<any>;
 }

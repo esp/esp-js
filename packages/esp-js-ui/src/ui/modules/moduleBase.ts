@@ -3,7 +3,6 @@ import {DisposableBase, Guard} from 'esp-js';
 import {ViewRegistryModel, ViewFactoryBase} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
-import {ViewFactoryState} from './viewFactoryState';
 import {ModelBase} from '../modelBase';
 import {ModuleMetadata} from './moduleDecorator';
 import {DefaultStateProvider} from './defaultStateProvider';
@@ -13,7 +12,6 @@ import {Logger} from '../../core';
 const _log: Logger = Logger.create('ModuleBase');
 
 export abstract class ModuleBase extends DisposableBase implements Module {
-    protected _hasLoaded: boolean = false;
     private readonly _moduleMetadata: ModuleMetadata;
 
     protected constructor(protected readonly container: Container) {
@@ -25,7 +23,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         this._moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleInstance(this);
     }
 
-    protected getDefaultStateProvider(): DefaultStateProvider {
+    public getDefaultStateProvider(): DefaultStateProvider {
         return null;
     }
 
@@ -51,38 +49,38 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         return [];
     }
 
-    loadViews(viewRegistryModel: ViewRegistryModel, viewStates: ViewFactoryState[]) {
-        if (this._hasLoaded) {
-            this.unloadViews();
-        }
-       // let viewFactoriesState = this._stateService.getModuleState<ViewFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
-        if (viewStates === null && this.getDefaultStateProvider()) {
-            Guard.isDefined(this.getDefaultStateProvider(), `_defaultStateProvider was not provided for module ${this._moduleMetadata.moduleKey}`);
-            viewStates = this.getDefaultStateProvider().getViewFactoriesState();
-        }
-
-        if (viewStates) {
-            viewStates.forEach((viewFactoryState: ViewFactoryState) => {
-                if (viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
-                    let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
-                    viewFactoryState.state.forEach((state: any) => {
-                        viewFactory.createView(state);
-                    });
-                } else {
-                    // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
-                    _log.warn(`Skipping load for component as it's factory of type [${viewFactoryState.viewFactoryKey}] is not registered`);
-                }
-            });
-        }
-    }
-
-    unloadViews() {
-        if (!this._hasLoaded) {
-            return;
-        }
-        this.getViewFactories().forEach((factory: ViewFactoryBase<ModelBase>) => {
-            factory.shutdownAllViews();
-        });
-        this._hasLoaded = false;
-    }
+    // loadViews(viewRegistryModel: ViewRegistryModel, viewStates: ViewFactoryState[]) {
+    //     if (this._hasLoaded) {
+    //         this.unloadViews();
+    //     }
+    //    // let viewFactoriesState = this._stateService.getModuleState<ViewFactoryState[]>(this._moduleMetadata.moduleKey, this._currentLayout);
+    //     if (viewStates === null && this.getDefaultStateProvider()) {
+    //         Guard.isDefined(this.getDefaultStateProvider(), `_defaultStateProvider was not provided for module ${this._moduleMetadata.moduleKey}`);
+    //         viewStates = this.getDefaultStateProvider().getViewFactoriesState();
+    //     }
+    //
+    //     if (viewStates) {
+    //         viewStates.forEach((viewFactoryState: ViewFactoryState) => {
+    //             if (viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
+    //                 let viewFactory: ViewFactoryBase<ModelBase> = viewRegistryModel.getViewFactory(viewFactoryState.viewFactoryKey);
+    //                 viewFactoryState.state.forEach((state: any) => {
+    //                     viewFactory.createView(state);
+    //                 });
+    //             } else {
+    //                 // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
+    //                 _log.warn(`Skipping load for component as it's factory of type [${viewFactoryState.viewFactoryKey}] is not registered`);
+    //             }
+    //         });
+    //     }
+    // }
+    //
+    // unloadViews() {
+    //     if (!this._hasLoaded) {
+    //         return;
+    //     }
+    //     this.getViewFactories().forEach((factory: ViewFactoryBase<ModelBase>) => {
+    //         factory.shutdownAllViews();
+    //     });
+    //     this._hasLoaded = false;
+    // }
 }

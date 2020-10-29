@@ -1,5 +1,5 @@
 import {DisposableBase} from 'esp-js';
-import {ViewFactoryBase, stateProvider, ViewStateSet, viewFactory, ViewInstance} from '../../../src';
+import {ViewFactoryBase, stateProvider, ViewFactoryState, viewFactory, ViewInstance} from '../../../src';
 import {Container} from 'esp-js-di';
 
 @viewFactory('key', 'shortName')
@@ -47,7 +47,7 @@ describe('ViewFactory Tests', () => {
     function runTest(cf: ViewFactoryBase<any>) {
         let c1 = cf.createView('testState1');
         let c2 = cf.createView('testState2');
-        let stateSet: ViewStateSet = cf.getAllViewsState();
+        let stateSet: ViewFactoryState = cf.getAllViewsState();
         expect(stateSet.state.length).toEqual(2);
         expect(stateSet.state[0].stateKey).toEqual('testState1');
         expect(stateSet.state[1].stateKey).toEqual('testState2');
@@ -65,7 +65,7 @@ describe('ViewFactory Tests', () => {
         let cf = new TestViewFactory(state => new ModelWithNoStateSaving());
         let m = cf.createView();
         expect(m.bar).toEqual('bar');
-        let stateSet: ViewStateSet = cf.getAllViewsState();
+        let stateSet: ViewFactoryState = cf.getAllViewsState();
         expect(stateSet).toBeNull();
     });
 });

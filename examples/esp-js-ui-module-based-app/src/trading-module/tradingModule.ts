@@ -33,7 +33,6 @@ export class TradingModule extends ModuleBase {
     }
 
     configureContainer() {
-        _log.group('Configuring container');
         _log.debug(`Registering ${TradingModuleContainerConst.cashTileViewFactory}`);
         this.container
             .register(TradingModuleContainerConst.cashTileViewFactory, CashTileViewFactory)
@@ -51,7 +50,6 @@ export class TradingModule extends ModuleBase {
             .register(TradingModuleContainerConst.blotterModel, BlotterModel)
             .inject(SystemContainerConst.router, SystemContainerConst.region_manager)
             .singletonPerContainer();
-        _log.groupEnd();
     }
 
     getViewFactories(): Array<ViewFactoryBase<any>> {
@@ -59,7 +57,6 @@ export class TradingModule extends ModuleBase {
     }
 
     registerPrerequisites(register: PrerequisiteRegister): void {
-        _log.groupCollapsed('Registering  Prerequisites');
         _log.debug(`Registering 1`);
         register.registerStream(
             Rx.Observable.timer(2000).take(1).concat(Rx.Observable.throw(new Error('Load error'))),
@@ -67,6 +64,5 @@ export class TradingModule extends ModuleBase {
         );
         _log.debug(`Registering 2`);
         register.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
-        _log.groupEnd();
     }
 }

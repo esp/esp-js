@@ -1,6 +1,6 @@
 {
   "name": "esp-js-di-api",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "scripts": {
     "clean": "nps clean",
@@ -11,7 +11,7 @@
     "start": "./node_modules/.bin/ts-node src/index.ts"
   },
   "dependencies": {
-    "esp-js-di": "^2.1.0",
+    "esp-js-di": "^2.2.0",
     "prompt": "1.0.0"
   },
   "devDependencies": {

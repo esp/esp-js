@@ -19,3 +19,7 @@ export const isString = (value: any) => {
 export const isInt = (n: number|string) => {
     return Number(n) % 1 === 0;
 };
+
+export const isObject = (value: any) => {
+    return typeof value === 'object' && value !== null;
+};

@@ -24,6 +24,10 @@ export interface RouterProviderProps {
     router: Router;
 }
 
+export const RouterContext = React.createContext<Router>(null);
+
+export const HooksRouterProvider = RouterContext.Provider;
+
 export class RouterProvider extends React.Component<RouterProviderProps, any> {
     static childContextTypes = {
         router: PropTypes.instanceOf(Router).isRequired
@@ -34,6 +38,6 @@ export class RouterProvider extends React.Component<RouterProviderProps, any> {
         };
     }
     render() {
-        return React.Children.only(this.props.children);
+        return (<HooksRouterProvider value={this.props.router}>{this.props.children}</HooksRouterProvider>);
     }
 }

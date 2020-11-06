@@ -19,6 +19,7 @@
 import * as espReact from '../src/index';
 import {
     RouterProvider,
+    RouterContext,
     SmartComponent,
     ViewBinder,
     viewBinding,
@@ -31,6 +32,11 @@ describe('index exports', () => {
     it('should export RouterProvider', () => {
         expect(espReact.RouterProvider).toBeDefined();
         expect(RouterProvider).toBeDefined();
+    });
+
+    it('should export RouterContext', () => {
+        expect(espReact.RouterContext).toBeDefined();
+        expect(RouterContext).toBeDefined();
     });
 
     it('should export SmartComponent', () => {

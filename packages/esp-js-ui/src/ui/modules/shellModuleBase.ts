@@ -6,10 +6,12 @@ import {PrerequisiteRegister} from './prerequisites';
 import {ViewFactoryState} from './viewFactoryState';
 import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
+import {ApplicationState} from './applicationState';
+import {ShellModule} from './module';
 
 const _log: Logger = Logger.create('ShellModule');
 
-export abstract class ShellModule extends ModuleBase {
+export abstract class ShellModuleBase extends ModuleBase implements ShellModule {
     private readonly _stateSaveMonitor: StateSaveMonitor;
     protected _hasLoaded: boolean = false;
 
@@ -44,13 +46,10 @@ export abstract class ShellModule extends ModuleBase {
         return `${this.appKey}-state`;
     }
 
-    private get _modulesPreviouslySeenList(): string {
-        return `${this.appKey}-modules-previously-seen-list`;
-    }
-
     private get _viewRegistryModel(): ViewRegistryModel {
         return this.container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
     }
+
     configureContainer() {
 
     }
@@ -65,36 +64,41 @@ export abstract class ShellModule extends ModuleBase {
         }
     }
 
-    loadViews(defaultViewFactoryStates: ViewFactoryState[]) {
+    loadViews(defaultViewFactoryStates?: ViewFactoryState[]) {
         _log.debug(`Loading views`);
         if (this._hasLoaded) {
             _log.debug(`First unloading existing views`);
             this.unloadViews();
         }
         this._hasLoaded = true;
-        let modulesPreviouslySeenList = this._stateService.getState<string[]>(this._modulesPreviouslySeenList);
-        let viewFactoryStates = this._stateService.getState<ViewFactoryState[]>(this._stateKey);
+        let applicationState = this._stateService.getState<ApplicationState>(this._stateKey);
 
         // At this point we need to decide how much of defaultViewFactoryStates we should use.
-        // If we've seen the users before it's possible we use non of it as what ever is in applicationState will take precedence
+        // If we've seen the users before it's possible we use non of it as what ever is in viewFactoryStates will take precedence
         // However there may be new modules in defaultViewFactoryStates which were not seen before.
         // If so we should merge that state into applicationState.
 
-        if (viewFactoryStates) {
-            defaultViewFactoryStates.forEach(viewFactoryState => {
-                let isFirstTimeTheViewsModuleHasBeenSeen = !modulesPreviouslySeenList.includes(viewFactoryState.moduleKey);
-                if (isFirstTimeTheViewsModuleHasBeenSeen) {
-                    viewFactoryStates.push(viewFactoryState);
-                }
-            });
-        } else {
-            viewFactoryStates = defaultViewFactoryStates;
+        if (defaultViewFactoryStates) {
+            if (applicationState) {
+                _log.debug(`Found applicationState via state service.`);
+                let viewsPreviouslySeen = Object.keys(applicationState);
+                defaultViewFactoryStates.forEach(viewFactoryState => {
+                    let firstTimeSeen = !viewsPreviouslySeen.includes(viewFactoryState.viewFactoryKey);
+                    if (firstTimeSeen) {
+                        applicationState[viewFactoryState.viewFactoryKey] = viewFactoryState;
+                    }
+                });
+            } else {
+                _log.debug(`No state in state service, will default state.`);
+                applicationState = defaultViewFactoryStates.reduce(
+                    (appState, viewFactoryState) => appState[viewFactoryState.viewFactoryKey] = viewFactoryState && appState,
+                    {}
+                );
+            }
         }
 
-        _log.debug(`Found state in state service, will use that rather than default state.`);
-        // it's possible we have new default state for some modules, if that's the case we merge that in.
-        if (viewFactoryStates) {
-            viewFactoryStates.forEach((viewFactoryState: ViewFactoryState) => {
+        if (applicationState) {
+            Object.values(applicationState).forEach((viewFactoryState: ViewFactoryState) => {
                 if (this._viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
                     let viewFactoryEntry: ViewFactoryEntry = this._viewRegistryModel.getViewFactoryEntry(viewFactoryState.viewFactoryKey);
                     viewFactoryState.state.forEach((state: any) => {
@@ -124,23 +128,18 @@ export abstract class ShellModule extends ModuleBase {
         if (!this._hasLoaded) {
             return;
         }
-        let appState: ApplicationState = {};
+        let appState: ApplicationState = { };
         let viewFactoryEntries: ViewFactoryEntry[] = this._viewRegistryModel.getViewFactoryEntries();
         viewFactoryEntries.forEach(viewFactoryEntry => {
-            let allViewsState: ViewFactoryState = viewFactoryEntry.factory.getAllViewsState();
-            if (allViewsState) {
-                let moduleState: any[] = appState[viewFactoryEntry.moduleKey];
-                if (!moduleState) {
-                    moduleState = [];
-                    appState[viewFactoryEntry.moduleKey] = moduleState;
-                }
-                moduleState.push(allViewsState);
+            let viewFactoryState: ViewFactoryState = viewFactoryEntry.factory.getAllViewsState();
+            if (viewFactoryState && viewFactoryState.state.length > 0) {
+                appState[viewFactoryState.viewFactoryKey] = viewFactoryState;
             }
         });
         if (Object.keys(appState).length > 0) {
-            this._stateService.saveState(this.stateKey, appState);
+            this._stateService.saveState(this._stateKey, appState);
         } else {
-            this._stateService.clearState(this.stateKey);
+            this._stateService.clearState(this._stateKey);
         }
     };
 }

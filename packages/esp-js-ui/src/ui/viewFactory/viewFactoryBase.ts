@@ -34,6 +34,13 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
     }
 
     /**
+     * A version which will be associated with any state saved for this view factory.
+     */
+    public get stateVersion() {
+        return 1;
+    }
+
+    /**
      * Creates a view.
      *
      * This must return the model that manages the view.
@@ -87,7 +94,8 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
         } else {
             return {
                 viewFactoryKey: this.viewKey,
-                state: state
+                state: state,
+                stateVersion: this.stateVersion
             };
         }
     }

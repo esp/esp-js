@@ -6,14 +6,14 @@ import {RegionManager} from '../regionManager';
 import {RegionItem} from './regionItem';
 import {getViewFactoryMetadataFromModelInstance, ViewFactoryMetadata} from '../../viewFactory';
 import {EspUiEventNames} from '../../espUiEventNames';
-import {RegionItemState} from './regionItemState';
+import {RegionItemRecord} from './regionItemRecord';
 import {SelectedItemChangedEvent} from './events';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
 
 export class RegionModel extends ModelBase {
-    private _regionState = new Map<string, RegionItemState>();
+    private _regionRecords = new Map<string, RegionItemRecord>();
     private _items: Array<RegionItem> = [];
     public selectedItem: RegionItem;
 
@@ -35,8 +35,8 @@ export class RegionModel extends ModelBase {
      * This is useful if you need to readonly query them (perhaps to save state).
      * You should not modify these, if you meed to modify raise an event to the model via the Router.
      */
-    protected get regionState(): Map<string, RegionItemState> {
-        return new Map(this._regionState);
+    protected get regionRecords(): Map<string, RegionItemRecord> {
+        return new Map(this._regionRecords);
     }
 
     public observeEvents() {
@@ -50,7 +50,7 @@ export class RegionModel extends ModelBase {
     }
 
     public reset() {
-        this._regionState = new Map();
+        this._regionRecords = new Map();
         this._items = [];
         this.selectedItem = null;
     }
@@ -71,19 +71,19 @@ export class RegionModel extends ModelBase {
     }
 
     private _addToRegionInternal(regionItem: RegionItem): void {
-        Guard.isFalsey(this._regionState.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
+        Guard.isFalsey(this._regionRecords.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
         this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
             this._router.runAction(this.modelId, () => {
                 let viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
-                let regionItemState = this._regionState.get(regionItem.modelId);
+                let regionItemRecord = this._regionRecords.get(regionItem.modelId);
                 // We code a bit defensively here as the model could be added later, perhaps code removed it from a region by this point.
-                if (regionItemState) {
-                    regionItemState.model = model;
-                    regionItemState.viewFactoryMetadata = viewFactoryMetadata;
+                if (regionItemRecord) {
+                    regionItemRecord.model = model;
+                    regionItemRecord.viewFactoryMetadata = viewFactoryMetadata;
                 }
             });
         });
-        this._regionState.set(
+        this._regionRecords.set(
             regionItem.modelId,
             { viewFactoryMetadata: null, model: null, regionItem}
         );
@@ -102,7 +102,7 @@ export class RegionModel extends ModelBase {
                 this._items.splice(i, 1);
                 // poor mans immutability:
                 this._items = this._items.slice();
-                this._regionState.delete(item.modelId);
+                this._regionRecords.delete(item.modelId);
                 if (item === this.selectedItem) {
                     this.selectedItem = null;
                 }

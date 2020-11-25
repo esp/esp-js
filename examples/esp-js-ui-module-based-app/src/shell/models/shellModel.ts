@@ -11,6 +11,7 @@ import {
     ModuleChangeType
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
+import {DemoAppShellModule} from '../demoAppShellModule';
 
 const _log = Logger.create('ShellModel');
 
@@ -36,7 +37,7 @@ export class ShellModel extends ModelBase {
                 message: `Loading Modules`
             };
 
-            let moduleLoadStream = this._moduleLoader.loadModules(TradingModule);
+            let moduleLoadStream = this._moduleLoader.loadModules(DemoAppShellModule, TradingModule);
             this.addDisposable(moduleLoadStream.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
                     _log.debug(`Load Change detected`, change);
 

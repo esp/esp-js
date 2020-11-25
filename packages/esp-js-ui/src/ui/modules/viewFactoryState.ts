@@ -1,6 +1,5 @@
 export interface ViewFactoryState {
-    moduleKey: string;
     viewFactoryKey: string;
-    stateVersion: string;
+    stateVersion?: number;
     state: Array<any>;
 }

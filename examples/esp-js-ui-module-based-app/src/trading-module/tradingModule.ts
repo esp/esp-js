@@ -27,7 +27,7 @@ export class TradingModule extends ModuleBase {
         this._viewFactoryGroupId = uuid.v4();
     }
 
-    protected getDefaultStateProvider() {
+    public getDefaultStateProvider() {
         return this._tradingModuleDefaultStateProvider;
     }
 

@@ -1,7 +1,21 @@
-import {PrerequisiteRegister, ShellModule, ViewRegistryModel} from 'esp-js-ui';
+import {ShellModuleBase, StateService} from 'esp-js-ui';
+import {Container} from 'esp-js-di';
 
-export class DemoAppShellModule extends ShellModule {
-    protected get stateKey(): string {
+export class DemoAppShellModule extends ShellModuleBase {
+
+    constructor(container: Container, stateService: StateService) {
+        super(container, stateService);
+    }
+
+    protected get appKey(): string {
         return 'esp-js-ui-module-based-app-state';
+    }
+
+    protected get stateSavingEnabled(): boolean {
+        return false;
+    }
+
+    protected get stateSaveIntervalMs(): number {
+        return 10_000;
     }
 }

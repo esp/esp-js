@@ -12,7 +12,7 @@ export class DemoAppShellModule extends ShellModuleBase {
     }
 
     protected get stateSavingEnabled(): boolean {
-        return false;
+        return true;
     }
 
     protected get stateSaveIntervalMs(): number {

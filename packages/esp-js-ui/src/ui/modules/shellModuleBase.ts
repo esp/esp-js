@@ -6,17 +6,19 @@ import {PrerequisiteRegister} from './prerequisites';
 import {ViewFactoryState} from './viewFactoryState';
 import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
-import {ApplicationState} from './applicationState';
 import {ShellModule} from './module';
+import {espModule} from './moduleDecorator';
 
 const _log: Logger = Logger.create('ShellModule');
 
+@espModule('shell-module', 'Shell Module')
 export abstract class ShellModuleBase extends ModuleBase implements ShellModule {
     private readonly _stateSaveMonitor: StateSaveMonitor;
     protected _hasLoaded: boolean = false;
 
     protected constructor(container: Container, private _stateService: StateService) {
         super(container);
+
         if (this.stateSavingEnabled && this.stateSaveIntervalMs > 0) {
             this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
             this.addDisposable(this._stateSaveMonitor);
@@ -71,7 +73,7 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
             this.unloadViews();
         }
         this._hasLoaded = true;
-        let applicationState = this._stateService.getState<ApplicationState>(this._stateKey);
+        let applicationState = this._stateService.getState<ViewFactoryState[]>(this._stateKey);
 
         // At this point we need to decide how much of defaultViewFactoryStates we should use.
         // If we've seen the users before it's possible we use non of it as what ever is in viewFactoryStates will take precedence
@@ -81,24 +83,21 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (defaultViewFactoryStates) {
             if (applicationState) {
                 _log.debug(`Found applicationState via state service.`);
-                let viewsPreviouslySeen = Object.keys(applicationState);
+                let viewsPreviouslySeen = applicationState.map(vfs => vfs.viewFactoryKey);
                 defaultViewFactoryStates.forEach(viewFactoryState => {
                     let firstTimeSeen = !viewsPreviouslySeen.includes(viewFactoryState.viewFactoryKey);
                     if (firstTimeSeen) {
-                        applicationState[viewFactoryState.viewFactoryKey] = viewFactoryState;
+                        applicationState.push(viewFactoryState);
                     }
                 });
             } else {
                 _log.debug(`No state in state service, will default state.`);
-                applicationState = defaultViewFactoryStates.reduce(
-                    (appState, viewFactoryState) => appState[viewFactoryState.viewFactoryKey] = viewFactoryState && appState,
-                    {}
-                );
+                applicationState = defaultViewFactoryStates;
             }
         }
 
         if (applicationState) {
-            Object.values(applicationState).forEach((viewFactoryState: ViewFactoryState) => {
+            applicationState.forEach((viewFactoryState: ViewFactoryState) => {
                 if (this._viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
                     let viewFactoryEntry: ViewFactoryEntry = this._viewRegistryModel.getViewFactoryEntry(viewFactoryState.viewFactoryKey);
                     viewFactoryState.state.forEach((state: any) => {
@@ -128,15 +127,15 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (!this._hasLoaded) {
             return;
         }
-        let appState: ApplicationState = { };
+        let appState: ViewFactoryState[] = [];
         let viewFactoryEntries: ViewFactoryEntry[] = this._viewRegistryModel.getViewFactoryEntries();
         viewFactoryEntries.forEach(viewFactoryEntry => {
             let viewFactoryState: ViewFactoryState = viewFactoryEntry.factory.getAllViewsState();
             if (viewFactoryState && viewFactoryState.state.length > 0) {
-                appState[viewFactoryState.viewFactoryKey] = viewFactoryState;
+                appState.push(viewFactoryState);
             }
         });
-        if (Object.keys(appState).length > 0) {
+        if (appState.length > 0) {
             this._stateService.saveState(this._stateKey, appState);
         } else {
             this._stateService.clearState(this._stateKey);

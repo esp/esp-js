@@ -10,21 +10,27 @@ export function espModule(moduleKey: string, moduleName: string, customMetadata?
     return function (target) {
         Guard.stringIsNotEmpty(moduleKey, 'moduleKey passed to an espModule decorator must not be \'\'');
         Guard.stringIsNotEmpty(moduleName, 'moduleKey passed to an espModule decorator must not be \'\'');
-
-        target.__espModuleMetadata = <ModuleMetadata>{
-            moduleKey,
-            moduleName: moduleName,
-            customMetadata
-        };
+        EspModuleDecoratorUtils.setMetadataOnModuleClass(
+            target,
+            <ModuleMetadata>{
+                moduleKey,
+                moduleName: moduleName,
+                customMetadata
+            }
+        );
     };
 }
 
 export namespace EspModuleDecoratorUtils {
-    export function getMetadataFromModuleClass(moduleClass: any): any {
+    export function getMetadataFromModuleClass(moduleClass: any): ModuleMetadata {
         if (moduleClass.__espModuleMetadata) {
             return moduleClass.__espModuleMetadata;
         }
         throw new Error(`No esp module metadata found on '${moduleClass && moduleClass.name}'`);
+    }
+
+    export function setMetadataOnModuleClass(moduleClass: any, metadata: ModuleMetadata): void {
+        moduleClass.__espModuleMetadata = metadata;
     }
 
     export function getCustomMetadataFromModuleClass(target: any): any {

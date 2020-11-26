@@ -5,7 +5,7 @@ import {StateService} from '../state/stateService';
 import {ModuleLoadResult} from './moduleLoadResult';
 import {SingleModuleLoader} from './singleModuleLoader';
 import {ModuleConstructor, ShellModuleConstructor} from './module';
-import {EspModuleDecoratorUtils} from './moduleDecorator';
+import {EspModuleDecoratorUtils, ModuleMetadata} from './moduleDecorator';
 import {Router} from 'esp-js';
 import {IdFactory} from '../idFactory';
 import {Logger} from '../../core';

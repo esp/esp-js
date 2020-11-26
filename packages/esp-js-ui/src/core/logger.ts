@@ -70,10 +70,11 @@ export class ConsoleSink implements Sink {
         const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;
         if (logEvent.level === Level.error) {
             // for errors we always dump additionalDetails as these are the actual errors
+            const additionalArgsWithError = logEvent.error ? [logEvent.error, ...additionalArgs] : additionalArgs;
             if (logEvent.dumpAdditionalDetailsToConsole && hasMarkers) {
-                consoleError(logLine, logEvent.markers, ...additionalArgs);
+                consoleError(logLine, logEvent.markers, [logEvent.error, ...additionalArgsWithError]);
             } else {
-                consoleError(logLine, ...additionalArgs);
+                consoleError(logLine,  [logEvent.error, ...additionalArgsWithError]);
             }
         } else if (logEvent.level === Level.warn) {
             if (logEvent.dumpAdditionalDetailsToConsole) {

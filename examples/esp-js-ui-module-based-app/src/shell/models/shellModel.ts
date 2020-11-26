@@ -51,7 +51,7 @@ export class ShellModel extends ModelBase {
                     }
                 },
                 e => {
-                    _log.error(`Error in the module load stream.`, e);
+                    _log.error(`Error in the module load stream ${e}.`, e);
                     this.splashScreen = {
                         state: SplashScreenState.Error,
                         message: `There has been an error loading the modules.  Please refresh`

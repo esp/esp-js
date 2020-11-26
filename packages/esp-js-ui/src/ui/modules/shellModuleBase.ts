@@ -3,11 +3,11 @@ import {StateSaveMonitor, StateService} from '../state';
 import {Container} from 'esp-js-di';
 import {ViewFactoryEntry, ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
-import {ViewFactoryState} from './viewFactoryState';
 import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
 import {ShellModule} from './module';
 import {espModule} from './moduleDecorator';
+import {RegionItemState, RegionManager} from '../regions/models';
 
 const _log: Logger = Logger.create('ShellModule');
 
@@ -52,6 +52,10 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         return this.container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
     }
 
+    private get _regionManager(): RegionManager {
+        return this.container.resolve<RegionManager>(SystemContainerConst.region_manager);
+    }
+
     configureContainer() {
 
     }
@@ -66,7 +70,7 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         }
     }
 
-    loadViews(defaultViewFactoryStates?: ViewFactoryState[]) {
+    loadViews(defaultViewFactoryStates?: RegionItemState[]) {
         _log.debug(`Loading views`);
         if (this._hasLoaded) {
             _log.debug(`First unloading existing views`);
@@ -127,10 +131,11 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (!this._hasLoaded) {
             return;
         }
+
         let appState: ViewFactoryState[] = [];
         let viewFactoryEntries: ViewFactoryEntry[] = this._viewRegistryModel.getViewFactoryEntries();
-        viewFactoryEntries.forEach(viewFactoryEntry => {
-            let viewFactoryState: ViewFactoryState = viewFactoryEntry.factory.getAllViewsState();
+        this._regionManager.getRegions().forEach(region => {
+            let viewFactoryState: ViewFactoryState = region.factory.getAllViewsState();
             if (viewFactoryState && viewFactoryState.state.length > 0) {
                 appState.push(viewFactoryState);
             }

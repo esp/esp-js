@@ -1,18 +1,21 @@
 import { Logger } from '../../../core';
-import {Guard, observeEvent, Router} from 'esp-js';
+import {EspDecoratorUtil, Guard, observeEvent, Router, utils} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';
-import {RegionManager} from '../regionManager';
+import {RegionManager, ViewCallBack} from '../regionManager';
 import {RegionItem} from './regionItem';
-import {getViewFactoryMetadataFromModelInstance, ViewFactoryMetadata} from '../../viewFactory';
+import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, StateSaveProviderMetadata, ViewFactoryMetadata} from '../../viewFactory';
 import {EspUiEventNames} from '../../espUiEventNames';
 import {RegionItemRecord} from './regionItemRecord';
 import {SelectedItemChangedEvent} from './events';
+import {Region, RegionState} from './regionManager';
+import {ViewFactoryState} from '../../modules/module';
+import {ViewState} from '../../modules';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
 
-export class RegionModel extends ModelBase {
+export class RegionModel extends ModelBase implements Region {
     private _regionRecords = new Map<string, RegionItemRecord>();
     private _items: Array<RegionItem> = [];
     public selectedItem: RegionItem;
@@ -27,6 +30,13 @@ export class RegionModel extends ModelBase {
 
     public get items() {
         return this._items;
+    }
+
+    /**
+     * A version which will be associated with any state saved for this view factory.
+     */
+    public get stateVersion() {
+        return 1;
     }
 
     /**
@@ -55,22 +65,58 @@ export class RegionModel extends ModelBase {
         this.selectedItem = null;
     }
 
+    public getRegionState(): RegionState {
+        let state = Array
+            .from(this._regionRecords)
+            .map<ViewState>(([modelId, regionItemRecord]) => {
+                let model = regionItemRecord.model;
+                // try see if there was a @stateProvider decorator on the views model,
+                // if so invoke the function it was declared on to get the state.
+
+                if (EspDecoratorUtil.hasMetadata(regionItemRecord)) {
+                    let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
+                    if (metadata) {
+                        return {
+                            viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
+                            stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
+                            state: model[metadata.functionName]()
+                        };
+                    }
+                }
+                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
+                let stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
+                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
+                    return {
+                        viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
+                        stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
+                        state: stateProviderFunction.call(model)
+                    };
+                }
+                return null;
+            })
+            .filter(c => c != null);
+        if (state.length === 0) {
+            return null;
+        } else {
+            return {
+                regionName: this._regionName,
+                stateVersion: this.stateVersion,
+                viewState: state,
+            };
+        }
+    }
+
     @observeEvent(EspUiEventNames.regions_multiItemRegion_selectedItemChanged)
     private _observeSelectedItemChanged(ev: SelectedItemChangedEvent) {
         this.selectedItem = ev.selectedItem;
     }
 
-    // exists for backwards compatibility
-    protected _addToRegion(regionItem: RegionItem): void {
-        this._addToRegionInternal(regionItem);
-    }
-
-    // exists for backwards compatibility
-    protected _removeFromRegion(regionItem: RegionItem): void {
-        this._removeFromRegionInternal(regionItem);
-    }
-
-    private _addToRegionInternal(regionItem: RegionItem): void {
+    public addRegionItem(regionItem: RegionItem): void {
+        if (!this.isOnDispatchLoop()) {
+            this.ensureOnDispatchLoop(() => this.addRegionItem(regionItem));
+            return;
+        }
+        _log.debug(`Adding to region ${this._regionName}. ${regionItem.toString()}`);
         Guard.isFalsey(this._regionRecords.has(regionItem.modelId), `Model ${regionItem.modelId} already in region`);
         this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
             this._router.runAction(this.modelId, () => {
@@ -95,7 +141,12 @@ export class RegionModel extends ModelBase {
         this._tryDefaultSelectedItem();
     }
 
-    private _removeFromRegionInternal(regionItem: RegionItem): void {
+    public removeRegionItem(regionItem: RegionItem): void {
+        if (!this.isOnDispatchLoop()) {
+            this.ensureOnDispatchLoop(() => this.removeRegionItem(regionItem));
+            return;
+        }
+        _log.debug(`Removing from region ${this._regionName}. ${regionItem.toString()}`);
         for (let i = this._items.length; i--;) {
             let item = this._items[i];
             if (item.equals(regionItem)) {
@@ -115,26 +166,27 @@ export class RegionModel extends ModelBase {
     private _registerWithRegionManager(regionName) {
         this._regionManager.registerRegion(
             regionName,
-            // on add
-            (regionItem: RegionItem) => {
-                this._router.runAction(
-                    this.modelId,
-                    () => {
-                        _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}`);
-                        this._addToRegionInternal(regionItem);
-                    }
-                );
-            },
-            // on remove
-            (regionItem: RegionItem) => {
-                this._router.runAction(
-                    this.modelId,
-                    () => {
-                        _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}`);
-                        this._addToRegionInternal(regionItem);
-                    }
-                );
-            }
+            this,
+            // // on add
+            // (regionItem: RegionItem) => {
+            //     this._router.runAction(
+            //         this.modelId,
+            //         () => {
+            //             _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}`);
+            //             this._addToRegionInternal(regionItem);
+            //         }
+            //     );
+            // },
+            // // on remove
+            // (regionItem: RegionItem) => {
+            //     this._router.runAction(
+            //         this.modelId,
+            //         () => {
+            //             _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}`);
+            //             this._addToRegionInternal(regionItem);
+            //         }
+            //     );
+            // }
         );
         this.addDisposable(() => {
             this._regionManager.unregisterRegion(regionName);

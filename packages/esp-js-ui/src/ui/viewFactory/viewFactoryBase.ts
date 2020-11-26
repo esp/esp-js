@@ -1,10 +1,8 @@
 import {Container} from 'esp-js-di';
 import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance} from './viewFactoryDecorator';
-import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
+import {DisposableBase} from 'esp-js';
 import {ViewFactoryMetadata} from './viewFactoryDecorator';
 import {Disposable} from 'esp-js';
-import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
-import {ViewFactoryState} from '../modules';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
@@ -31,13 +29,6 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
 
     public get customMetadata(): any {
         return this._metadata.customMetadata;
-    }
-
-    /**
-     * A version which will be associated with any state saved for this view factory.
-     */
-    public get stateVersion() {
-        return 1;
     }
 
     /**
@@ -68,36 +59,6 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
         setViewFactoryMetadataOnModelInstance(model, this._metadata);
         this._currentViewModels.push(model);
         return model;
-    }
-
-    public getAllViewsState(): ViewFactoryState {
-        let state = this._currentViewModels
-            .map(c => {
-                // try see if there was a @stateProvider decorator on the views model,
-                // if so invoke the function it was declared on to get the state.
-                if (EspDecoratorUtil.hasMetadata(c)) {
-                    let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(c, StateSaveProviderConsts.CustomDataKey);
-                    if (metadata) {
-                        return c[metadata.functionName]();
-                    }
-                }
-                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-                let stateProviderFunction = c[StateSaveProviderConsts.HandlerFunctionName];
-                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-                    return stateProviderFunction.call(c);
-                }
-                return null;
-            })
-            .filter(c => c != null);
-        if (state.length === 0) {
-            return null;
-        } else {
-            return {
-                viewFactoryKey: this.viewKey,
-                state: state,
-                stateVersion: this.stateVersion
-            };
-        }
     }
 
     public shutdownAllViews(): void {

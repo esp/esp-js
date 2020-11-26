@@ -16,9 +16,10 @@ export function viewFactory(viewKey: string, shortName: string, customMetadata?:
 }
 
 export class ViewFactoryMetadata {
-    constructor(public readonly viewKey: string, public readonly shortName: string, public readonly customMetadata?: any) {
+    constructor(public readonly viewKey: string, public readonly shortName: string, public readonly stateVersion: number, public readonly customMetadata?: any) {
         Guard.isString(viewKey, 'viewKey must be defined and be a string');
         Guard.isString(shortName, 'shortName must be defined and be a string');
+        Guard.isNumber(stateVersion, 'stateVersion must be defined and be a string');
     }
 }
 

@@ -10,4 +10,4 @@ export * from './shellModuleBase';
 export * from './shellModuleLoader';
 export * from './singleModuleLoader';
 export * from './singleModuleLoaderBase';
-export * from './viewFactoryState';
+export * from './viewState';

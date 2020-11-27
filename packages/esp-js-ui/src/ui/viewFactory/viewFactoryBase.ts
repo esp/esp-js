@@ -3,20 +3,27 @@ import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance} from './v
 import {DisposableBase} from 'esp-js';
 import {ViewFactoryMetadata} from './viewFactoryDecorator';
 import {Disposable} from 'esp-js';
+import {ViewState} from './viewState';
+import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
+import {PersistedViewState} from './persistedViewState';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
     addDisposable(disposable: Disposable);
 }
 
-export abstract class ViewFactoryBase<T extends ViewInstance> extends DisposableBase {
-    private _currentViewModels: Array<ViewInstance>;
-    private _metadata: ViewFactoryMetadata;
+export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState extends ViewState> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
+    private readonly _currentViewModels: Array<ViewInstance>;
+    private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {
         super();
         this._currentViewModels = [];
         this._metadata = getViewFactoryMetadata(this);
+    }
+
+    public getDefaultViewState(): TViewState[]  {
+        return [];
     }
 
     public get viewKey(): string {
@@ -37,14 +44,14 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
      * This must return the model that manages the view.
      *
      * @param childContainer: The esp-js-di child container for the view
-     * @param state: Any state that should be loaded by the view
+     * @param persistedViewState: The state that should be loaded by the view
      * @private
      */
-    protected abstract _createView(childContainer: Container, state?: any): T;
+    protected abstract _createView(childContainer: Container, persistedViewState?: PersistedViewState<TViewState>): TModel;
 
-    public createView(state = null): T {
+    public createView(persistedViewState: PersistedViewState<TViewState> = null): TModel {
         let childContainer = this._container.createChildContainer();
-        let model: T = this._createView(childContainer, state);
+        let model: TModel = this._createView(childContainer, persistedViewState);
         model.addDisposable(childContainer);
         model.addDisposable(() => {
             let index = this._currentViewModels.indexOf(model);

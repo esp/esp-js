@@ -13,7 +13,7 @@ export interface ViewMetadata {
 
 export interface ViewFactoryEntry {
     viewFactoryKey: string;
-    factory: ViewFactoryBase<ModelBase>;
+    factory: ViewFactoryBase<ModelBase, any>;
     shortName: string;
     customMetadata?: any;
     moduleName: string;
@@ -49,7 +49,7 @@ export class ViewRegistryModel extends ModelBase {
         this.viewsMetadata = [...this._getViewsMetaData()];
     }
 
-    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase>): void {
+    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase, any>): void {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(viewFactory, 'viewFactory must be defined');
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);

@@ -7,7 +7,7 @@ import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
 import {ShellModule} from './module';
 import {espModule} from './moduleDecorator';
-import {RegionItemState, RegionManager} from '../regions/models';
+import {RegionItemState, RegionManager, RegionState} from '../regions/models';
 
 const _log: Logger = Logger.create('ShellModule');
 
@@ -131,13 +131,11 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (!this._hasLoaded) {
             return;
         }
-
-        let appState: ViewFactoryState[] = [];
-        let viewFactoryEntries: ViewFactoryEntry[] = this._viewRegistryModel.getViewFactoryEntries();
+        let appState: RegionState[] = [];
         this._regionManager.getRegions().forEach(region => {
-            let viewFactoryState: ViewFactoryState = region.factory.getAllViewsState();
-            if (viewFactoryState && viewFactoryState.state.length > 0) {
-                appState.push(viewFactoryState);
+            let regionState: RegionState = region.getRegionState();
+            if (regionState) {
+                appState.push(regionState);
             }
         });
         if (appState.length > 0) {

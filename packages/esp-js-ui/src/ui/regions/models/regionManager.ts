@@ -4,7 +4,7 @@ import {RegionItem} from './regionItem';
 import {ModelBase} from '../../modelBase';
 import {EspUiEventNames} from '../../espUiEventNames';
 import {EspUiEvents} from '../../espUiEvents';
-import {ViewState} from '../../modules';
+import {ViewState} from '../../viewFactory';
 
 const _log = Logger.create('RegionManager');
 

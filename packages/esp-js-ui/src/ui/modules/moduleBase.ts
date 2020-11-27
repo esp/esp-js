@@ -5,7 +5,7 @@ import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
 import {ModelBase} from '../modelBase';
 import {ModuleMetadata} from './moduleDecorator';
-import {DefaultStateProvider} from './defaultStateProvider';
+import {DefaultStateProvider} from '../viewFactory/defaultStateProvider';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Logger} from '../../core';
 
@@ -21,10 +21,6 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
         this._moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleInstance(this);
-    }
-
-    public getDefaultStateProvider(): DefaultStateProvider {
-        return null;
     }
 
     abstract configureContainer();

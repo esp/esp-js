@@ -13,12 +13,10 @@ export interface ViewInstance extends Disposable {
 }
 
 export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState extends ViewState> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
-    private readonly _currentViewModels: Array<ViewInstance>;
     private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {
         super();
-        this._currentViewModels = [];
         this._metadata = getViewFactoryMetadata(this);
     }
 
@@ -53,27 +51,9 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState ex
         let childContainer = this._container.createChildContainer();
         let model: TModel = this._createView(childContainer, persistedViewState);
         model.addDisposable(childContainer);
-        model.addDisposable(() => {
-            let index = this._currentViewModels.indexOf(model);
-            if (index > -1) {
-                this._currentViewModels.splice(index, 1);
-            } else {
-                throw new Error('Could not find a model in our set');
-            }
-        });
         // Attach the metadata of this view factory to any model created by it.
         // This wil help with other functionality such as state saving.
         setViewFactoryMetadataOnModelInstance(model, this._metadata);
-        this._currentViewModels.push(model);
         return model;
-    }
-
-    public shutdownAllViews(): void {
-        // copy the array as we have some disposal code that remove items on disposed
-        let models = this._currentViewModels.slice();
-        models.forEach(model => {
-            model.dispose();
-        });
-        this._currentViewModels.length = 0;
     }
 }

@@ -1,8 +1,8 @@
-import {Region, RegionState} from './regionManager';
+import {RegionState} from './regionManager';
 import {RegionModelBase} from './regionModelBase';
 import {ViewState} from '../../viewFactory';
 
-export class DefaultRegionModel  extends RegionModelBase<RegionState> implements Region {
+export class RegionModel extends RegionModelBase<RegionState> {
     public getRegionState(): RegionState {
         const viewStates =  Array
             .from(this.state.regionRecords.values())

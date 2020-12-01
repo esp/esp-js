@@ -3,6 +3,7 @@ import {defaultRequestForQuoteStateFactory, RequestForQuoteState} from './rfq/re
 import {defaultInputsStateFactory, InputsState} from './inputs/inputsState';
 import {defaultReferenceDataStateFactory, ReferenceDataState} from './refData/referenceDataState';
 import {DateSelectorState, defaultDateSelectorStateFactory} from './dateSelector/dateSelectorState';
+import {CashTileState} from '../state/stateModel';
 
 export interface CashTileModel  {
     modelId: string;
@@ -13,13 +14,15 @@ export interface CashTileModel  {
     dateSelector: DateSelectorState;
 }
 
-export const defaultModelFactory = (modelId: string, ccyPair: string): CashTileModel => {
-    return {
-        modelId: `cash-tile${modelId}`,
-        rootState: defaultRootStateFactory(),
-        inputs: defaultInputsStateFactory(ccyPair),
-        requestForQuote: defaultRequestForQuoteStateFactory(),
-        referenceData: defaultReferenceDataStateFactory(),
-        dateSelector: defaultDateSelectorStateFactory()
+export namespace CashTileStateUtils {
+    export const createDefaultState = (modelId: string, state: CashTileState): CashTileModel => {
+        return {
+            modelId: `cash-tile-${modelId}`,
+            rootState: defaultRootStateFactory(),
+            inputs: defaultInputsStateFactory(state ? state.currencyPair : 'EURUSD'),
+            requestForQuote: defaultRequestForQuoteStateFactory(),
+            referenceData: defaultReferenceDataStateFactory(),
+            dateSelector: defaultDateSelectorStateFactory()
+        };
     };
-};
+}

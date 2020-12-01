@@ -66,7 +66,7 @@ export class ViewRegistryModel extends ModelBase {
         });
     }
 
-    public unregisterViewFactory(viewFactory: ViewFactoryBase<ModelBase>): void {
+    public unregisterViewFactory(viewFactory: ViewFactoryBase<ModelBase, any>): void {
         this.ensureOnDispatchLoop(() => {
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);
             Guard.isDefined(viewFactory, 'viewFactory must be defined');

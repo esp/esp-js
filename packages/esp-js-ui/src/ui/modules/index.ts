@@ -1,5 +1,6 @@
 // Auto-generated 
 export * from './prerequisites';
+export * from './appState';
 export * from './module';
 export * from './moduleBase';
 export * from './moduleDecorator';

@@ -3,7 +3,7 @@ import {EspDecoratorUtil, Guard, observeEvent, Router, utils} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';
 import {RegionItem} from './regionItem';
-import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, StateSaveProviderMetadata, ViewFactoryMetadata, ViewState} from '../../viewFactory';
+import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, StateSaveProviderMetadata, ViewFactoryEntry, ViewFactoryMetadata, ViewRegistryModel, ViewState} from '../../viewFactory';
 import {EspUiEventNames} from '../../espUiEventNames';
 import {RegionItemRecord} from './regionItemRecord';
 import {SelectedItemChangedEvent} from './events';
@@ -21,6 +21,7 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
         _regionRecords: new Map<string, RegionItemRecord>(),
         _regionItems: [] as RegionItem[],
         _selectedItem: null as RegionItem,
+        _isUnloading: false,
         get selectedItem(): RegionItem {
             return this._selectedItem;
         },
@@ -55,6 +56,16 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
             this._regionRecords = new Map();
             this._setItemsArrayAndSelectedItem();
         },
+        unload() {
+            Guard.isFalsey(this._isUnloading, 'Already unloading');
+            this._isUnloading = true;
+            this._regionRecords.forEach((regionItemRecord: RegionItemRecord) => {
+                regionItemRecord.model.dispose();
+            });
+            this._regionRecords = new Map();
+            this._setItemsArrayAndSelectedItem();
+            this._isUnloading = false;
+        },
         _setItemsArrayAndSelectedItem() {
             this._regionItems = Array.from(this._regionRecords.values()).map(r => (<RegionItemRecord>r).regionItem);
             if (this._selectedItem && !this._regionRecords.has(this._selectedItem.modelId)) {
@@ -77,7 +88,8 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
     protected constructor(
         protected _regionName : string,
         router: Router,
-        protected _regionManager: RegionManager
+        protected _regionManager: RegionManager,
+        protected _viewRegistry: ViewRegistryModel,
     ) {
         super(IdFactory.createId(`region#${++_modelIdSeed}`), router);
     }
@@ -144,8 +156,8 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
         );
         this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
             this._router.runAction(this.modelId, () => {
-                let viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
-                let regionItemRecord = this._state.get(regionItem.modelId);
+                const viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
+                const regionItemRecord = this._state.get(regionItem.modelId);
                 // We code a bit defensively here as the model could be added later, perhaps code removed it from a region by this point.
                 if (regionItemRecord) {
                     regionItemRecord.model = model;
@@ -167,32 +179,52 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
     public abstract getRegionState(): TRegionState;
 
     protected getViewState(regionItemRecord: RegionItemRecord): ViewState {
-        let model = regionItemRecord.model;
+        const model = regionItemRecord.model;
         // try see if there was a @stateProvider decorator on the views model,
         // if so invoke the function it was declared on to get the state.
         if (EspDecoratorUtil.hasMetadata(regionItemRecord)) {
-            let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
+            const metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
             if (metadata) {
+                const viewState = model[metadata.functionName]();
                 return {
                     viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
                     stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
-                    state: model[metadata.functionName]()
+                    state: viewState
                 };
             }
         }
         // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-        let stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
+        const stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
         if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
+            const viewState = stateProviderFunction.call(model);
             return {
                 viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
                 stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
-                state: stateProviderFunction.call(model)
+                state: viewState
             };
         }
         return null;
     }
 
-    public loadFromState(state: TRegionState) {
-        // TODO
+    public load(regionState: TRegionState) {
+        if (regionState) {
+            regionState.viewState.forEach((viewState: ViewState) => {
+                if (this._viewRegistry.hasViewFactory(viewState.viewFactoryKey)) {
+                    const viewFactoryEntry: ViewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewState.viewFactoryKey);
+                    viewState.state.forEach((state: any) => {
+                        const viewModel = viewFactoryEntry.factory.createView(state);
+                        const regionItem = new RegionItem(viewModel.modelId);
+                        this.addRegionItem(regionItem);
+                    });
+                } else {
+                    // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
+                    _log.warn(`Skipping load for view as it's factory of type [${viewState.viewFactoryKey}] is not registered`);
+                }
+            });
+        }
+    }
+
+    public unload() {
+        this._state.unload();
     }
 }

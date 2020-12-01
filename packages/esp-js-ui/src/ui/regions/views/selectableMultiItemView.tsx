@@ -4,17 +4,17 @@ import * as classnames from 'classnames';
 import {Logger} from '../../../core';
 import {ViewBase, ViewBaseProps} from '../../viewBase';
 import {ItemView} from './itemView';
-import {RegionModel} from '../models';
+import {Region} from '../models';
 import {RegionItem, SelectedItemChangedEvent} from '../models';
 import {EspUiEventNames} from '../../espUiEventNames';
 
 const _log = Logger.create('MultiItemRegionView');
 
-export interface SelectableMultiItemViewProps extends ViewBaseProps<RegionModel> {
+export interface SelectableMultiItemViewProps extends ViewBaseProps<Region> {
     className?: string;
 }
 
-export class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, RegionModel, SelectableMultiItemViewProps> {
+export class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, Region, SelectableMultiItemViewProps> {
     private _onItemClicked(item: RegionItem) : void {
         let ev : SelectedItemChangedEvent = { selectedItem: item };
         this.props.router.publishEvent(this.props.model.modelId, EspUiEventNames.regions_multiItemRegion_selectedItemChanged, ev);
@@ -23,7 +23,7 @@ export class SelectableMultiItemView extends ViewBase<SelectableMultiItemView, R
     render() {
         _log.verbose('Rendering');
         
-        let model : RegionModel = this.props.model;
+        let model : Region = this.props.model;
         
         if(!model) {
             return null;

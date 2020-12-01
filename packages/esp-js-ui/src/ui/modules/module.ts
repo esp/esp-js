@@ -3,7 +3,6 @@ import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {StateService} from '../state';
-import {ViewFactoryState} from './viewFactoryState';
 
 export interface ModuleConstructor {
     new (container: Container) : Module;
@@ -14,7 +13,7 @@ export interface ShellModuleConstructor {
 }
 
 export interface ShellModule extends Module {
-    loadViews(defaultViewFactoryStates?: ViewFactoryState[]);
+    loadViews();
     unloadViews();
 }
 
@@ -24,4 +23,5 @@ export interface Module extends DisposableBase {
     registerViewFactories(viewRegistryModel:ViewRegistryModel);
     getViewFactories();
     registerPrerequisites(register: PrerequisiteRegister): void;
+    onAppReady();
 }

@@ -4,19 +4,19 @@ import * as classnames from 'classnames';
 import {Logger} from '../../../core';
 import {ItemView} from './itemView';
 import {ViewBase} from '../../viewBase';
-import {RegionItem, RegionModel} from '../models';
+import {Region, RegionItem} from '../models';
 import {ViewBaseProps} from '../../viewBase';
 
 const _log = Logger.create('MultiItemRegionView');
 
-export interface MultiItemRegionViewProps extends ViewBaseProps<RegionModel> {
+export interface MultiItemRegionViewProps extends ViewBaseProps<Region> {
     className?: string;
 }
 
-export class MultiItemRegionView extends ViewBase<MultiItemRegionView, RegionModel, MultiItemRegionViewProps> {
+export class MultiItemRegionView extends ViewBase<MultiItemRegionView, Region, MultiItemRegionViewProps> {
     render() {
         _log.verbose('Rendering');
-        let model: RegionModel = this.props.model;
+        let model: Region = this.props.model;
         if (!model) {
             return null;
         }

@@ -2,20 +2,20 @@ import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import {ViewBase, ViewBaseProps} from '../../viewBase';
-import {RegionModel} from '../models';
+import {Region} from '../models';
 import {Logger} from '../../../core';
 
 const _log = Logger.create('SingleItemRegionView');
 
-export interface SingleItemRegionViewProps extends ViewBaseProps<RegionModel> {
+export interface SingleItemRegionViewProps extends ViewBaseProps<Region> {
     className?: string;
 }
 
-export class SingleItemRegionView extends ViewBase<SingleItemRegionView, RegionModel, SingleItemRegionViewProps> {
+export class SingleItemRegionView extends ViewBase<SingleItemRegionView, Region, SingleItemRegionViewProps> {
     render() {
         _log.verbose('Rendering');
 
-        let model : RegionModel = this.props.model;
+        let model : Region = this.props.model;
 
         if(!model) {
             return null;

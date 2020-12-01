@@ -5,11 +5,10 @@ import {StateService} from '../state/stateService';
 import {ModuleLoadResult} from './moduleLoadResult';
 import {SingleModuleLoader} from './singleModuleLoader';
 import {ModuleConstructor, ShellModuleConstructor} from './module';
-import {EspModuleDecoratorUtils, ModuleMetadata} from './moduleDecorator';
+import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Router} from 'esp-js';
 import {IdFactory} from '../idFactory';
 import {Logger} from '../../core';
-import {ViewFactoryState} from './viewFactoryState';
 import {ModuleBase} from './moduleBase';
 import {ShellModuleLoader} from './shellModuleLoader';
 
@@ -89,40 +88,9 @@ export class ModuleLoader {
     }
 
     public loadViews() {
-        let viewFactoryStates: ViewFactoryState[] = this._moduleLoaders
-            .filter(ml =>  !!ml.module.getDefaultStateProvider())
-            .flatMap(ml => {
-                return ml.module.getDefaultStateProvider().getViewFactoriesState();
-            });
-        this._shellModuleLoader.module.loadViews(viewFactoryStates);
-    }
-
-    // public loadViews(viewStates: ViewFactoryState[]): void;
-    // public loadViews(moduleKey: string, viewStates: ViewFactoryState[]): void;
-    // public loadViews(...args: any[]): void {
-    //     this._router.runAction(this._modalLoaderModelId, () => {
-    //         let viewStates: ViewFactoryState[], moduleKey: string = null;
-    //         if (args.length === 1) {
-    //             viewStates = args[0];
-    //         } else {
-    //             moduleKey = args[0];
-    //             viewStates = args[1];
-    //         }
-    //         if (moduleKey) {
-    //             const moduleLoader = this._findModuleLoader(moduleKey);
-    //             _log.debug(`Loading layout for single module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-    //             moduleLoader.loadViews(viewStates);
-    //         } else {
-    //             _log.debug(`Loading layout for all modules`);
-    //             this._moduleLoaders.forEach(moduleLoader => {
-    //                 _log.debug(`Loading layout for ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
-    //                 moduleLoader.loadViews(viewStates);
-    //             });
-    //         }
-    //     });
-    // }
-
-    private _findModuleLoader(moduleKey: string) {
-        return this._moduleLoaders.find(m => m.moduleMetadata.moduleKey === moduleKey);
+        this._router.runAction(this._modalLoaderModelId, () => {
+            this._shellModuleLoader.module.loadViews();
+            this._moduleLoaders.forEach(ml => ml.module.onAppReady());
+        });
     }
 }

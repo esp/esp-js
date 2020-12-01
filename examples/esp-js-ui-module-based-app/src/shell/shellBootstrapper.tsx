@@ -37,7 +37,8 @@ export class ShellBootstrapper {
             .inject(
                 {resolver: LiteralResolver.resolverName, value: RegionNames.workspaceRegion},
                 SystemContainerConst.router,
-                SystemContainerConst.region_manager
+                SystemContainerConst.region_manager,
+                SystemContainerConst.views_registry_model,
             )
             .singleton();
         this._container
@@ -45,7 +46,8 @@ export class ShellBootstrapper {
             .inject(
                 {resolver: LiteralResolver.resolverName, value: RegionNames.blotterRegion},
                 SystemContainerConst.router,
-                SystemContainerConst.region_manager
+                SystemContainerConst.region_manager,
+                SystemContainerConst.views_registry_model,
             )
             .singleton();
         this._container

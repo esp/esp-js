@@ -25,9 +25,14 @@ export interface RegionState {
 }
 
 export interface Region {
+    modelId: string;
+    items: RegionItem[];
+    selectedItem: RegionItem;
     addRegionItem: ViewCallBack;
     removeRegionItem: ViewCallBack;
     getRegionState(): RegionState;
+    load(regionState: RegionState): void;
+    unload(): void;
 }
 
 // exists to decouple all the region and their models from the rest of the app
@@ -64,6 +69,13 @@ export class RegionManager extends ModelBase {
     public unregisterRegion(regionName: string): void {
         _log.debug('Unregistering region {0}', regionName);
         delete this._regions[regionName];
+    }
+
+    public loadRegion(regionState: RegionState): void {
+        Guard.isObject(regionState, 'regionState must be an object');
+        _log.debug(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.viewState.length}`);
+        let region = this._regions[regionState.regionName];
+        region.load(regionState);
     }
 
     @observeEvent(EspUiEventNames.regions_regionManager_addToRegion)

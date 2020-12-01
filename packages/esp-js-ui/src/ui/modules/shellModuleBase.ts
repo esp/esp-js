@@ -7,7 +7,8 @@ import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
 import {ShellModule} from './module';
 import {espModule} from './moduleDecorator';
-import {RegionItemState, RegionManager, RegionState} from '../regions/models';
+import {Region, RegionManager, RegionState} from '../regions/models';
+import {AppDefaultStateProvider, AppState} from './appState';
 
 const _log: Logger = Logger.create('ShellModule');
 
@@ -56,6 +57,13 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         return this.container.resolve<RegionManager>(SystemContainerConst.region_manager);
     }
 
+    private _getDefaultAppState(): AppState {
+        if (this.container.isRegistered(SystemContainerConst.app_default_state_provider)) {
+            return this.container.resolve<AppDefaultStateProvider>(SystemContainerConst.app_default_state_provider).getDefaultAppState();
+        }
+        return null;
+    }
+
     configureContainer() {
 
     }
@@ -70,47 +78,20 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         }
     }
 
-    loadViews(defaultViewFactoryStates?: RegionItemState[]) {
+    loadViews() {
         _log.debug(`Loading views`);
         if (this._hasLoaded) {
             _log.debug(`First unloading existing views`);
             this.unloadViews();
         }
         this._hasLoaded = true;
-        let applicationState = this._stateService.getState<ViewFactoryState[]>(this._stateKey);
-
-        // At this point we need to decide how much of defaultViewFactoryStates we should use.
-        // If we've seen the users before it's possible we use non of it as what ever is in viewFactoryStates will take precedence
-        // However there may be new modules in defaultViewFactoryStates which were not seen before.
-        // If so we should merge that state into applicationState.
-
-        if (defaultViewFactoryStates) {
-            if (applicationState) {
-                _log.debug(`Found applicationState via state service.`);
-                let viewsPreviouslySeen = applicationState.map(vfs => vfs.viewFactoryKey);
-                defaultViewFactoryStates.forEach(viewFactoryState => {
-                    let firstTimeSeen = !viewsPreviouslySeen.includes(viewFactoryState.viewFactoryKey);
-                    if (firstTimeSeen) {
-                        applicationState.push(viewFactoryState);
-                    }
-                });
-            } else {
-                _log.debug(`No state in state service, will default state.`);
-                applicationState = defaultViewFactoryStates;
-            }
+        let applicationState: AppState = this._stateService.getState<AppState>(this._stateKey);
+        if (!applicationState) {
+            applicationState = this._getDefaultAppState();
         }
-
-        if (applicationState) {
-            applicationState.forEach((viewFactoryState: ViewFactoryState) => {
-                if (this._viewRegistryModel.hasViewFactory(viewFactoryState.viewFactoryKey)) {
-                    let viewFactoryEntry: ViewFactoryEntry = this._viewRegistryModel.getViewFactoryEntry(viewFactoryState.viewFactoryKey);
-                    viewFactoryState.state.forEach((state: any) => {
-                        viewFactoryEntry.factory.createView(state);
-                    });
-                } else {
-                    // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
-                    _log.warn(`Skipping load for component as it's factory of type [${viewFactoryState.viewFactoryKey}] is not registered`);
-                }
+        if (applicationState && applicationState.regionState.length > 0) {
+            applicationState.regionState.forEach(regionState => {
+                this._regionManager.loadRegion(regionState);
             });
         }
     }
@@ -122,8 +103,8 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (this.stateSavingEnabled) {
             this._saveAllComponentState();
         }
-        this._viewRegistryModel.getViewFactoryEntries().forEach((entry: ViewFactoryEntry) => {
-            entry.factory.shutdownAllViews();
+        this._regionManager.getRegions().forEach((region: Region) => {
+            region.unload();
         });
     }
 
@@ -131,14 +112,14 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (!this._hasLoaded) {
             return;
         }
-        let appState: RegionState[] = [];
+        let appState: AppState = { regionState: [] };
         this._regionManager.getRegions().forEach(region => {
             let regionState: RegionState = region.getRegionState();
             if (regionState) {
-                appState.push(regionState);
+                appState.regionState.push(regionState);
             }
         });
-        if (appState.length > 0) {
+        if (appState.regionState.length > 0) {
             this._stateService.saveState(this._stateKey, appState);
         } else {
             this._stateService.clearState(this._stateKey);

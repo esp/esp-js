@@ -3,16 +3,15 @@ import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance} from './v
 import {DisposableBase} from 'esp-js';
 import {ViewFactoryMetadata} from './viewFactoryDecorator';
 import {Disposable} from 'esp-js';
-import {ViewState} from './viewState';
 import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
-import {PersistedViewState} from './persistedViewState';
+import {PersistedViewState} from './state';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
     addDisposable(disposable: Disposable);
 }
 
-export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState extends ViewState> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
+export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
     private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {

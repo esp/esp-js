@@ -7,3 +7,11 @@ export interface AppState {
 export interface AppDefaultStateProvider {
     getDefaultAppState(): AppState;
 }
+
+export const NoopAppDefaultStateProvider: AppDefaultStateProvider = {
+    getDefaultAppState(): AppState {
+        return {
+            regionState: []
+        };
+    }
+};

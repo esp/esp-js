@@ -20,8 +20,14 @@ export interface DisplayOptions {
 
 export interface RegionState {
     regionName: string;
-    stateVersion?: number;
-    viewState: ViewState[];
+    /**
+     * Provides a version for the regions state.
+     * You can set this to 1 until you need to change.
+     * At some future point, you may modify the regions state model and need to migrate state from an older version to a newer one.
+     * You'd typically do this by overriding the call to `region.getRegionState(regionState)`
+     */
+    stateVersion: number;
+    viewState: ViewState<any>[];
 }
 
 export interface Region {
@@ -37,7 +43,7 @@ export interface Region {
 
 // exists to decouple all the region and their models from the rest of the app
 export class RegionManager extends ModelBase {
-    private _regions: { [regionName: string]: Region };
+    private _regions: { [regionName: string]: Region } = { };
 
     public static ModelId = 'region-manager';
 

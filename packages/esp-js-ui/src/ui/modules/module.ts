@@ -3,6 +3,7 @@ import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {StateService} from '../state';
+import {AppDefaultStateProvider} from './appState';
 
 export interface ModuleConstructor {
     new (container: Container) : Module;
@@ -13,8 +14,12 @@ export interface ShellModuleConstructor {
 }
 
 export interface ShellModule extends Module {
+    appKey: string;
+    stateSavingEnabled: boolean;
+    stateSaveIntervalMs: number;
     loadViews();
     unloadViews();
+    getDefaultStateProvider(): AppDefaultStateProvider;
 }
 
 export interface Module extends DisposableBase {

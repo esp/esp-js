@@ -1,14 +1,14 @@
 import {ModuleBase} from './moduleBase';
 import {StateSaveMonitor, StateService} from '../state';
 import {Container} from 'esp-js-di';
-import {ViewFactoryEntry, ViewRegistryModel} from '../viewFactory';
+import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
 import {ShellModule} from './module';
 import {espModule} from './moduleDecorator';
 import {Region, RegionManager, RegionState} from '../regions/models';
-import {AppDefaultStateProvider, AppState} from './appState';
+import {AppDefaultStateProvider, AppState, NoopAppDefaultStateProvider} from './appState';
 
 const _log: Logger = Logger.create('ShellModule');
 
@@ -29,21 +29,25 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
     /**
      * if true automatic state saving for all the modules models using the provided StateService will apply
      */
-    protected get stateSavingEnabled(): boolean {
+    get stateSavingEnabled(): boolean {
         return false;
     }
 
     /**
      * The interval of which this module will save state
      */
-    protected get stateSaveIntervalMs(): number {
+    get stateSaveIntervalMs(): number {
         return 60_000;
     }
 
     /**
      * A unique key to identify the app, this may end up prefixed to items keyed in localStorage
      */
-    protected abstract get appKey(): string;
+    abstract get appKey(): string;
+
+    getDefaultStateProvider(): AppDefaultStateProvider {
+        return NoopAppDefaultStateProvider;
+    }
 
     private get _stateKey(): string {
         return `${this.appKey}-state`;
@@ -55,13 +59,6 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
 
     private get _regionManager(): RegionManager {
         return this.container.resolve<RegionManager>(SystemContainerConst.region_manager);
-    }
-
-    private _getDefaultAppState(): AppState {
-        if (this.container.isRegistered(SystemContainerConst.app_default_state_provider)) {
-            return this.container.resolve<AppDefaultStateProvider>(SystemContainerConst.app_default_state_provider).getDefaultAppState();
-        }
-        return null;
     }
 
     configureContainer() {
@@ -87,7 +84,7 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         this._hasLoaded = true;
         let applicationState: AppState = this._stateService.getState<AppState>(this._stateKey);
         if (!applicationState) {
-            applicationState = this._getDefaultAppState();
+            applicationState = this.getDefaultStateProvider().getDefaultAppState();
         }
         if (applicationState && applicationState.regionState.length > 0) {
             applicationState.regionState.forEach(regionState => {

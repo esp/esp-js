@@ -1,5 +1,3 @@
-import {ViewState} from 'esp-js-ui';
-
-export interface CashTileState extends ViewState {
+export interface CashTilePersistedState {
     currencyPair: string;
 }

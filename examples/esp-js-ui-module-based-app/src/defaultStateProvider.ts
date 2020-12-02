@@ -1,35 +1,32 @@
 import {AppDefaultStateProvider, AppState, RegionState, ViewState} from 'esp-js-ui';
 import {TradingModuleContainerConst} from './trading-module/tradingModuleContainerConst';
-import {CashTileStateUtils} from './trading-module/cash-tile/model/cashTileModel';
-import * as uuid from 'uuid';
 import {RegionNames} from './shell/regionNames';
+import {CashTilePersistedState} from './trading-module/cash-tile/state/stateModel';
 import {BlotterState} from './trading-module/blotter/models/blotterState';
-import {CashTileState} from './trading-module/cash-tile/state/stateModel';
-import {PersistedViewState} from 'esp-js-ui/src';
 
-export const DemoAppDefaultStateProvider: AppDefaultStateProvider = {
+export const DefaultStateProvider: AppDefaultStateProvider = {
     getDefaultAppState(): AppState {
         return {
             regionState: [
                 {
                     regionName: RegionNames.workspaceRegion,
+                    stateVersion: 1,
                     viewState: [
-                        {
+                        ...['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'].map(symbol => ({
                             viewFactoryKey: TradingModuleContainerConst.cashTileViewFactory,
-                            state: ['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'].map(
-                                symbol => ({currencyPair: symbol} as PersistedViewState<CashTileState>)
-                            )
-                        }
-                    ] as ViewState[]
+                            state: {currencyPair: symbol}
+                        } as ViewState<CashTilePersistedState> ))
+                    ]
                 } as RegionState,
                 {
                     regionName: RegionNames.blotterRegion,
+                    stateVersion: 1,
                     viewState: [
                         {
                             viewFactoryKey: TradingModuleContainerConst.blotterViewFactory,
-                            state: [BlotterState.create(RegionNames.blotterRegion)]
-                        }
-                    ] as ViewState[]
+                            state: { }
+                        } as ViewState<BlotterState>
+                    ]
                 } as RegionState
             ]
         };

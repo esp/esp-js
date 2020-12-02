@@ -47,5 +47,4 @@ export class RequestForQuoteEventStreams {
     private _logQuoteDebug({rfqId, ccyPair, notional}, message) {
         _log.debug(`[${rfqId} ${ccyPair} ${notional}] - ${message}`);
     }
-    // TODO other events in RfqEvents
 }

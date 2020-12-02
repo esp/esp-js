@@ -6,8 +6,8 @@ import {BlotterModel} from './models/blotterModel';
 
 const _log = Logger.create('BlotterViewFactory');
 
-@viewFactory(TradingModuleContainerConst.blotterViewFactory, 'Blotter')
-export class BlotterViewFactory extends ViewFactoryBase<BlotterModel> {
+@viewFactory(TradingModuleContainerConst.blotterViewFactory, 'Blotter', 1)
+export class BlotterViewFactory extends ViewFactoryBase<BlotterModel, BlotterState> {
     private _router : Router;
 
     constructor(container, router:Router) {
@@ -22,7 +22,7 @@ export class BlotterViewFactory extends ViewFactoryBase<BlotterModel> {
     // override
     _createView(childContainer, state:BlotterState):BlotterModel {
         _log.verbose('Creating blotter model');
-        state = state || BlotterState.create();
+        state = state || { };
         let model:BlotterModel = childContainer.resolve(TradingModuleContainerConst.blotterModel, state);
         model.observeEvents();
         return model;

@@ -3,7 +3,6 @@ import {PolimerModel} from 'esp-js-polimer';
 import {ViewFactoryBase, Logger,  viewFactory, IdFactory} from 'esp-js-ui';
 import {CashTileModel, CashTileStateUtils} from './model/cashTileModel';
 import {CashTileView} from './views/cashTileView';
-import {RootStateEventStreams} from './model/root/rootEventStreams';
 import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
 import {RequestForQuoteEventStreams} from './model/rfq/requestForQuoteEventStreams';
@@ -12,46 +11,41 @@ import {RootEvents} from './events';
 import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
 import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
-import {RootStateHandlers} from './model/root/rootState';
 import * as uuid from 'uuid';
-import {CashTileState} from './state/stateModel';
+import {CashTilePersistedState} from './state/stateModel';
+import {PersistedViewState} from 'esp-js-ui/src';
 
 const _log = Logger.create('CashTileViewFactory');
 
-@viewFactory(TradingModuleContainerConst.cashTileViewFactory, 'Cash Tile')
-export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileModel>, CashTileState> {
+@viewFactory(TradingModuleContainerConst.cashTileViewFactory, 'Cash Tile', 1)
+export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileModel>, CashTilePersistedState> {
     private _router : Router;
     constructor(container, router:Router) {
         super(container);
         this._router = router;
     }
-    _createView(childContainer, state: CashTileState): PolimerModel<CashTileModel> {
+    _createView(childContainer, persistedViewState?: PersistedViewState<CashTilePersistedState>): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
         const modelId = IdFactory.createId('cashTileModel');
 
-        const initialModel = CashTileStateUtils.createDefaultState(uuid.v4(), state);
+        const model = CashTileStateUtils.createDefaultState(uuid.v4(), persistedViewState.state);
 
-        this._router.publishEvent(model.modelId, RootEvents.bootstrap, {});
-
-        let model = this._router
+        let polimerModel = this._router
             // ***************************
             // Create a model and setup some initial state
-            .modelBuilder<CashTileModel>()
-            .withInitialModel(initialModel)
+            .modelBuilder<CashTileModel, CashTilePersistedState>()
+            .withInitialModel(model)
 
             // ***************************
             // Wire up state handlers.
-            .withStateHandlerObject('rootState', new RootStateHandlers())
             .withStateHandlerObject('referenceData', new ReferenceDataStateHandlers())
             .withStateHandlerObject('inputs', new InputStateHandlers())
             .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
 
             // ***************************
             // Wire up state event streams (i.e. async operations)
-            .withEventStreamsOn(new RootStateEventStreams())
             .withEventStreamsOn(new RequestForQuoteEventStreams(new RfqService()))
-
 
             // ***************************
             // Wire up legacy OO model interactions (unlikely you'll need this):
@@ -71,10 +65,21 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             // Used by ConnectableComponent to render a view for the model
             .withViewBindings(CashTileView)
 
+            .withStateSaveHandler((m: any) => this._saveState(m))
+
             // ***************************
             // finally create and register it with the model (the ordering of hte above isn't important, however this method must be called last)
             .registerWithRouter();
 
-        return model;
+        this._router.publishEvent(model.modelId, RootEvents.bootstrap, {});
+
+        return polimerModel;
+    }
+
+    private _saveState(model: CashTileModel): CashTilePersistedState {
+        _log.debug(`Creating cash tile persistent state`);
+        return {
+            currencyPair: model.inputs.ccyPair
+        };
     }
 }

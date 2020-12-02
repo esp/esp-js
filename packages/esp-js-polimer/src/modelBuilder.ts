@@ -8,11 +8,11 @@ import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors
 
 declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
-        modelBuilder?<TModel extends ImmutableModel>(): PolimerModelBuilder<TModel>;
+        modelBuilder?<TModel extends ImmutableModel, TPersistedModelState = {}>(): PolimerModelBuilder<TModel, TPersistedModelState>;
     }
 }
 
-export class PolimerModelBuilder<TModel extends ImmutableModel> {
+export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelState = {}> {
     private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TModel>> = new Map();
     private _stateHandlerObjects: Map<string, any[]> = new Map();
     private _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
@@ -90,7 +90,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel> {
         return this;
     }
 
-    withStateSaveHandler(handler: (model: TModel) => any) {
+    withStateSaveHandler(handler: (model: TModel) => TPersistedModelState) {
         this._stateSaveHandler = handler;
         return this;
     }

@@ -178,7 +178,7 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
 
     public abstract getRegionState(): TRegionState;
 
-    protected getViewState(regionItemRecord: RegionItemRecord): ViewState {
+    protected getViewState(regionItemRecord: RegionItemRecord): ViewState<any> {
         const model = regionItemRecord.model;
         // try see if there was a @stateProvider decorator on the views model,
         // if so invoke the function it was declared on to get the state.
@@ -208,14 +208,12 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
 
     public load(regionState: TRegionState) {
         if (regionState) {
-            regionState.viewState.forEach((viewState: ViewState) => {
+            regionState.viewState.forEach((viewState: ViewState<any>) => {
                 if (this._viewRegistry.hasViewFactory(viewState.viewFactoryKey)) {
                     const viewFactoryEntry: ViewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewState.viewFactoryKey);
-                    viewState.state.forEach((state: any) => {
-                        const viewModel = viewFactoryEntry.factory.createView(state);
-                        const regionItem = new RegionItem(viewModel.modelId);
-                        this.addRegionItem(regionItem);
-                    });
+                    const viewModel = viewFactoryEntry.factory.createView(viewState.state);
+                    const regionItem = new RegionItem(viewModel.modelId);
+                    this.addRegionItem(regionItem);
                 } else {
                     // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
                     _log.warn(`Skipping load for view as it's factory of type [${viewState.viewFactoryKey}] is not registered`);

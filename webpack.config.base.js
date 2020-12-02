@@ -33,7 +33,7 @@ const mode = isProduction ? 'production' : 'development';
 logger.info('Running for env:' + process.env.NODE_ENV);
 
 const config = {
-    mode,
+    mode: mode,
     output: {
         libraryTarget: 'umd',
         sourcePrefix: '    ',
@@ -41,15 +41,20 @@ const config = {
         // webpack 4 incorrectly has `window` in the UMD definition
         // This is a workaround to enable node to consume esp's umc, see
         // https://github.com/webpack/webpack/issues/6522
-        globalObject: "typeof self !== 'undefined' ? self : this",
+        globalObject: `typeof self !== 'undefined' ? self : this`,
         filename: '[name].js',
+        devtoolNamespace: path.basename(process.cwd()),
         devtoolModuleFilenameTemplate: info => {
-            // in a mono repo setup we need to override the source map file locations otherwise everything get'd dumped under a '.' folder in chrome
-            return path.resolve(info.absoluteResourcePath).replace(/\\/g, "/");
-        },
+            const relativeFilePath = path.relative(process.cwd(), info.absoluteResourcePath).replace(/\\/g, '/');
+            console.log(relativeFilePath)
+            return `webpack:///${relativeFilePath}`;
+        }
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
+        // Stops source maps appearing in an odd location with the examples
+        // With this disabled they'll appear under node_modules
+        symlinks: false
     },
     optimization: {
        // minimize: false, // we only min specific bundles below

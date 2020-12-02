@@ -28,6 +28,6 @@
     "test": "nps test",
     "test-ci": "nps test-ci",
     "dev": "nps dev",
-    "start": "cross-env NODE_ENV=dev && webpack-dev-server -d --inline --watch --progress --colors"
+    "start": "cross-env NODE_ENV=dev && webpack-dev-server --debug --inline --watch --progress --colors"
   }
 }

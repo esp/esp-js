@@ -45,9 +45,13 @@ const config = {
         filename: '[name].js',
         devtoolNamespace: path.basename(process.cwd()),
         devtoolModuleFilenameTemplate: info => {
+            // as this is a mono repo we need to do some dancing to get source maps to appear in a sane place.
+            // Note, that this works in conjunction with `resolve.symlinks = false`, at least it does when running examples as it keeps paths appearing as if they are under node_modules
+            // Above we've set `devtoolNamespace` to be the package directory name, i.e. esp-js, that will get set as `info.namespace`
+            // We then create a relative path from the packages directory (process.cwd() maps to that as lerna will set that working directory)
+            // This should remove any full paths and also group esp packages under their own packages when viewing source maps.
             const relativeFilePath = path.relative(process.cwd(), info.absoluteResourcePath).replace(/\\/g, '/');
-            console.log(relativeFilePath)
-            return `webpack:///${relativeFilePath}`;
+            return `webpack:///${info.namespace}/${relativeFilePath}`;
         }
     },
     resolve: {
@@ -67,6 +71,11 @@ const config = {
     devtool: 'source-map',
     module: {
         rules: [
+            {
+                test: /\.js$/,
+                enforce: 'pre',
+                use: ['source-map-loader'],
+            },
             {
                 test: /\.tsx?$/,
                 exclude: /node_modules/,

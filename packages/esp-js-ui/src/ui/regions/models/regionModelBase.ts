@@ -211,7 +211,7 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
             regionState.viewState.forEach((viewState: ViewState<any>) => {
                 if (this._viewRegistry.hasViewFactory(viewState.viewFactoryKey)) {
                     const viewFactoryEntry: ViewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewState.viewFactoryKey);
-                    const viewModel = viewFactoryEntry.factory.createView(viewState.state);
+                    const viewModel = viewFactoryEntry.factory.createView(viewState);
                     const regionItem = new RegionItem(viewModel.modelId);
                     this.addRegionItem(regionItem);
                 } else {

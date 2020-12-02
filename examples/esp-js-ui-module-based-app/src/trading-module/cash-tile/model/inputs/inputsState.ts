@@ -1,23 +1,11 @@
-import {PolimerHandlerMap} from 'esp-js-polimer';
 import {
     Logger
 } from 'esp-js-ui';
 import {InputEvents} from '../../events';
 import {observeEvent} from 'esp-js';
+import {InputsState} from '../cashTileModel';
 
 const _log = Logger.create('CashTile-InputsState');
-
-export interface InputsState {
-    ccyPair: string;
-    notional: number;
-}
-
-export const defaultInputsStateFactory = (ccyPair?: string): InputsState => {
-    return {
-        ccyPair: ccyPair || 'EURUSD',
-        notional: 1000000
-    };
-};
 
 export class InputStateHandlers  {
     @observeEvent(InputEvents.changeCurrencyPair)

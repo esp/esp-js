@@ -1,5 +1,5 @@
 import * as Rx from 'rx';
-import {InputEvent, OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
+import {OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
 import {CashTileModel} from '../cashTileModel';
 import {InputEvents, RfqEvents} from '../../events';
 import {RfqRequest, RfqService} from '../../services/rfqService';

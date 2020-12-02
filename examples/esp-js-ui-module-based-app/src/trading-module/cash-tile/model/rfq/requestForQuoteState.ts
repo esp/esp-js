@@ -3,26 +3,11 @@ import {
 } from 'esp-js-ui';
 import {InputEvents, RfqEvents} from '../../events';
 import * as uuid from 'uuid';
-import {CashTileModel} from '../cashTileModel';
-import {Quote, RfqStatus} from '../../services/rfqService';
+import {CashTileModel, RequestForQuoteState} from '../cashTileModel';
+import {RfqStatus} from '../../services/rfqService';
 import {observeEvent} from 'esp-js';
 
 const _log = Logger.create('CashTile-RequestForQuoteState');
-
-export interface RequestForQuoteState {
-    rfqId: string;
-    currentQuoteId?: string;
-    status: RfqStatus;
-    quote?: Quote;
-}
-
-export const defaultRequestForQuoteStateFactory = (): RequestForQuoteState => {
-    return {
-        rfqId: null,
-        currentQuoteId: null,
-        status: RfqStatus.Idle
-    };
-};
 
 export class RequestForQuoteStateHandlers {
 

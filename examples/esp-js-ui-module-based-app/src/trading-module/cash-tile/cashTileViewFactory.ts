@@ -1,7 +1,6 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
 import {ViewFactoryBase, Logger,  viewFactory, IdFactory} from 'esp-js-ui';
-import {CashTileModel, CashTileStateUtils} from './model/cashTileModel';
 import {CashTileView} from './views/cashTileView';
 import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
@@ -14,6 +13,7 @@ import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
 import * as uuid from 'uuid';
 import {CashTilePersistedState} from './state/stateModel';
 import {PersistedViewState} from 'esp-js-ui/src';
+import {CashTileModel, CashTileModelBuilder} from './model/cashTileModel';
 
 const _log = Logger.create('CashTileViewFactory');
 
@@ -29,7 +29,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
 
         const modelId = IdFactory.createId('cashTileModel');
 
-        const model = CashTileStateUtils.createDefaultState(uuid.v4(), persistedViewState.state);
+        const model = CashTileModelBuilder.createDefault(uuid.v4(), persistedViewState.state);
 
         let polimerModel = this._router
             // ***************************
@@ -58,7 +58,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             //   e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
             //        if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
             //        In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileModel> created by this builder
-            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router), true)
+            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router, persistedViewState.state ? persistedViewState.state.tenor : null), true)
 
             // ***************************
             // Add some view bindings for this model.
@@ -77,9 +77,12 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
     }
 
     private _saveState(model: CashTileModel): CashTilePersistedState {
-        _log.debug(`Creating cash tile persistent state`);
-        return {
-            currencyPair: model.inputs.ccyPair
+        let persistedState = {
+            currencyPair: model.inputs.ccyPair,
+            notional: model.inputs.notional,
+            tenor: model.dateSelector.dateInput,
         };
+        _log.debug(`Creating cash tile persistent state ${JSON.stringify(persistedState)}`);
+        return persistedState;
     }
 }

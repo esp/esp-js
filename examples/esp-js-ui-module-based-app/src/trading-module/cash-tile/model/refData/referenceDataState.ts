@@ -3,18 +3,9 @@ import {
 } from 'esp-js-ui';
 import {ReferenceDataEvents} from '../../events';
 import {observeEvent} from 'esp-js';
+import {ReferenceDataState} from '../cashTileModel';
 
 const _log = Logger.create('CashTile-ReferenceDataState');
-
-export interface ReferenceDataState {
-    currencyPairs: string[];
-}
-
-export const defaultReferenceDataStateFactory = (): ReferenceDataState => {
-    return {
-        currencyPairs: ['EURUSD', 'USDJPY', 'EURGBP']
-    };
-};
 
 export class ReferenceDataStateHandlers {
     @observeEvent(ReferenceDataEvents.currencyPairsUpdated)

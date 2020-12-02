@@ -1,9 +1,6 @@
-import {defaultRootStateFactory, RootState} from './root/rootState';
-import {defaultRequestForQuoteStateFactory, RequestForQuoteState} from './rfq/requestForQuoteState';
-import {defaultInputsStateFactory, InputsState} from './inputs/inputsState';
-import {defaultReferenceDataStateFactory, ReferenceDataState} from './refData/referenceDataState';
-import {DateSelectorState, defaultDateSelectorStateFactory} from './dateSelector/dateSelectorState';
 import {CashTilePersistedState} from '../state/stateModel';
+import {Quote, RfqStatus} from '../services/rfqService';
+import {DateSelectorInitialState} from './dateSelector/dateSelectorModel';
 
 export interface CashTileModel  {
     modelId: string;
@@ -14,15 +11,52 @@ export interface CashTileModel  {
     dateSelector: DateSelectorState;
 }
 
-export namespace CashTileStateUtils {
-    export const createDefaultState = (modelId: string, state: CashTilePersistedState): CashTileModel => {
+export interface RootState {
+    title: string;
+}
+
+export interface InputsState {
+    ccyPair: string;
+    notional: number;
+}
+
+export interface ReferenceDataState {
+    currencyPairs: string[];
+}
+
+export interface RequestForQuoteState {
+    rfqId: string;
+    currentQuoteId?: string;
+    status: RfqStatus;
+    quote?: Quote;
+}
+
+export interface DateSelectorState {
+    dateInput: string;
+    resolvedDate: Date;
+    resolvedDateString: string;
+}
+
+export namespace CashTileModelBuilder {
+    export const createDefault = (modelId: string, state: CashTilePersistedState): CashTileModel => {
         return {
             modelId: `cash-tile-${modelId}`,
-            rootState: defaultRootStateFactory(),
-            inputs: defaultInputsStateFactory(state ? state.currencyPair : 'EURUSD'),
-            requestForQuote: defaultRequestForQuoteStateFactory(),
-            referenceData: defaultReferenceDataStateFactory(),
-            dateSelector: defaultDateSelectorStateFactory()
+            rootState: {
+                title: 'Cash Tile',
+            },
+            inputs: {
+                ccyPair: state.currencyPair || 'EURUSD',
+                notional: state.notional || 10_000
+            },
+            requestForQuote: {
+                rfqId: null,
+                currentQuoteId: null,
+                status: RfqStatus.Idle
+            },
+            referenceData: {
+                currencyPairs: ['EURUSD', 'USDJPY', 'EURGBP']
+            },
+            dateSelector: DateSelectorInitialState
         };
     };
 }

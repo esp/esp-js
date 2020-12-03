@@ -82,7 +82,6 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             notional: model.inputs.notional,
             tenor: model.dateSelector.dateInput,
         };
-        _log.debug(`Creating cash tile persistent state ${JSON.stringify(persistedState)}`);
         return persistedState;
     }
 }

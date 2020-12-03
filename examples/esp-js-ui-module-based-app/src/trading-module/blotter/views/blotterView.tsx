@@ -1,14 +1,26 @@
 import * as React from 'react';
-import {Router} from 'esp-js';
 import {BlotterModel} from '../models/blotterModel';
+import {BlotterEvents} from '../events';
+import {PublishModelEventDelegate, PublishModelEventContext} from 'esp-js-react';
 
-export class BlotterView extends React.Component<{model:BlotterModel, router:Router}, any> {
-    render() {
-        let model : BlotterModel = this.props.model;
-        return (
-            <div>
-                <h4>Blotter</h4>
-            </div>
-        );
-    }
+export interface BlotterViewProps {
+    model:BlotterModel;
 }
+
+export const BlotterView = ({model}: BlotterViewProps) => {
+    let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
+    const toggleIdSort: () => void = React.useCallback(() => {
+        publishEvent(BlotterEvents.toggleIdSort, {});
+    }, []);
+    return (
+        <div>
+            <h4>Blotter</h4>
+            <button onClick={toggleIdSort}>ID Sort ({model.sortType})</button>
+            <table>
+                <tbody>
+                    {model.trades.map(t => (<tr key={t.id}><td>{t.id}</td><td>{t.account}</td></tr>))}
+                </tbody>
+            </table>
+        </div>
+    );
+};

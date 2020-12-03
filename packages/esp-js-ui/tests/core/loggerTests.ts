@@ -18,17 +18,27 @@ describe('Logger', () => {
     describe('log', () => {
         it('sets LogEvent.message', () => {
             _logger.debug('foo');
-            assertLogEvent({}, 'foo', []);
+            assertLogEvent({}, ['foo'], null);
         });
 
         it('sets LogEvent.markers', () => {
             _logger.debug({foo: 'bar'}, 'foo');
-            assertLogEvent({foo: 'bar'}, 'foo', []);
+            assertLogEvent({foo: 'bar'}, ['foo'], null);
         });
 
-        it('sets LogEvent.additionalDetails', () => {
+        it('sets LogEvent.message', () => {
             _logger.debug({foo: 'bar'}, 'foo', {a: 'check1'});
-            assertLogEvent({foo: 'bar'}, 'foo', [{a: 'check1'}]);
+            assertLogEvent({foo: 'bar'}, ['foo', {a: 'check1'}], null);
+        });
+
+        it('log.error sets LogEvent.error', () => {
+            _logger.error({foo: 'bar'}, 'foo');
+            assertLogEvent({foo: 'bar'}, ['foo'], null);
+        });
+
+        it('log.error sets LogEvent.error', () => {
+            _logger.error({foo: 'bar'}, 'foo', {a: 'check1'});
+            assertLogEvent({foo: 'bar'}, ['foo'], {a: 'check1'});
         });
 
         it('should take level at construction time', () => {
@@ -62,10 +72,10 @@ describe('Logger', () => {
             expect(l3Config.level).toEqual(Level.none);
         });
 
-        function assertLogEvent(expectedMarkers: any, expectedMessage: any, expectedAdditionalDetails: any) {
+        function assertLogEvent(expectedMarkers: any, expectedMessage: any, expectedError: any) {
             expect(_logEvent.markers).toEqual(expectedMarkers);
             expect(_logEvent.message).toEqual(expectedMessage);
-            expect(_logEvent.additionalDetails).toEqual(expectedAdditionalDetails);
+            expect(_logEvent.error).toEqual(expectedError);
         }
     });
 });

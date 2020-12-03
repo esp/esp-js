@@ -20,7 +20,7 @@
 // import for side effects
 import './polimer/polimerExtentsions';
 
-export {RouterProvider} from './routerProvider';
+export {RouterProvider, HooksRouterProvider, RouterContext} from './routerProvider';
 export {SmartComponent} from './smartComponent';
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';

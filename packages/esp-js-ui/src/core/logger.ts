@@ -35,54 +35,102 @@ export type LogEvent = {
     timestamp: Date,
     logger: string,
     level: Level,
-    color: string,
-    message: string;
-    additionalDetails: any[];
+    // if an array, the first items always considered to be the log
+    message: string | any[],
     dumpAdditionalDetailsToConsole: boolean;
     markers: Markers;
+    error: any;
 };
 
 export interface Sink {
     log(logEvent:LogEvent): void;
 }
 
+const consoleInfo = window.console.log.bind(window.console);
+const consoleWarn = window.console.warn.bind(window.console);
+const consoleError = window.console.error.bind(window.console);
+
 export class ConsoleSink implements Sink {
     public log(logEvent: LogEvent) : void {
         let dateTime = new Date();
-        let message = `[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logEvent.message}`;
+        let logText: string;
+        let additionalArgs = null;
+        if (messageIsString(logEvent.message)) {
+            logText = logEvent.message;
+        } else {
+            logText = logEvent.message[0];
+            // copy the incoming array
+            additionalArgs = logEvent.message.slice();
+            // now remove the message since we just captured it above as logText
+            additionalArgs.splice(0, 1);
+        }
+        let logLine = `[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logText}`;
         // The below could be simplified by pushing markers into a new array along with additionalDetails.
         // However given the amount of times logs are written the below doesn't allocate anything extra
         const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;
         if (logEvent.level === Level.error) {
             // for errors we always dump additionalDetails as these are the actual errors
             if (logEvent.dumpAdditionalDetailsToConsole && hasMarkers) {
-                console.error(message, logEvent.markers, ...logEvent.additionalDetails);
+                consoleError(logLine, logEvent.markers, ...additionalArgs);
             } else {
-                console.error(message, ...logEvent.additionalDetails);
+                consoleError(logLine, ...additionalArgs);
             }
         } else if (logEvent.level === Level.warn) {
             if (logEvent.dumpAdditionalDetailsToConsole) {
                 if (hasMarkers) {
-                    console.warn(message, logEvent.markers, ...logEvent.additionalDetails);
+                    consoleWarn(logLine, logEvent.markers, ...additionalArgs);
                 } else {
-                    console.warn(message, ...logEvent.additionalDetails);
+                    consoleWarn(logLine, ...additionalArgs);
                 }
             } else {
-                console.warn(message);
+                consoleWarn(logLine);
             }
         } else {
             if (logEvent.dumpAdditionalDetailsToConsole) {
                 if (hasMarkers) {
-                    console.log(message, logEvent.markers, ...logEvent.additionalDetails);
+                    consoleInfo(logLine, logEvent.markers, ...additionalArgs);
                 } else {
-                    console.log(message, ...logEvent.additionalDetails);
+                    consoleInfo(logLine, ...additionalArgs);
                 }
             } else {
-                console.log(message);
+                consoleInfo(logLine);
             }
         }
     }
 }
+
+/**
+ * Replaces window.console's log, info, warn and error functions with a variants that sends logs to the _sink.
+ * Note that the sink is a Composite sink so logs will still appear in the console via ConsoleSink.
+ */
+const captureConsoleLogsViaLoggingSink = () => {
+    const _log = (level: Level, ...args: any[]) => {
+        _sink.log({
+            timestamp: new Date(),
+            logger: 'Console',
+            level: level,
+            message: args,
+            dumpAdditionalDetailsToConsole: true, // always dump these for console logs
+            markers: null,
+            error: null // we don't support this for raw console logs
+        });
+    };
+
+    window.console.log = (...args: any[]) => {
+        _log(Level.debug, ...args);
+    };
+
+    window.console.info = (...args: any[]) => {
+        _log(Level.info, ...args);
+    };
+
+    window.console.warn = (...args: any[]) => {
+        _log(Level.warn, ...args);
+    };
+    window.console.error = (...args: any[]) => {
+        _log(Level.error, ...args);
+    };
+};
 
 export class CompositeSink implements Sink {
     private _sinks: Array<Sink>;
@@ -95,9 +143,6 @@ export class CompositeSink implements Sink {
     }
     public addSinks(...sinks:Array<Sink>) {
         this._sinks.push(...sinks);
-    }
-    public clearSinks() {
-        this._sinks.length = 0;
     }
 }
 
@@ -150,10 +195,10 @@ export class LoggingConfig {
     }
 
     /**
-     * Clears all logging sinks (all logs will be dropped).
+     * Redirects any console logs so they go via configured sinks.
      */
-    static clearSinks(): void {
-        _sink.clearSinks();
+    static captureConsoleLogs(): void {
+        captureConsoleLogsViaLoggingSink();
     }
 
     static get defaultLoggerConfig()  : LoggerConfig {
@@ -190,14 +235,23 @@ export class Logger {
         return new Logger(name, getOrCreateLoggerConfig(name, loggerConfig));
     }
 
+    /**
+     * @deprecated The method should not be used
+     */
     group(...args: any[]) {
         console.group(...args);
     }
 
+    /**
+     * @deprecated The method should not be used
+     */
     groupCollapsed(...args: any[]) {
         console.groupCollapsed(...args);
     }
 
+    /**
+     * @deprecated The method should not be used
+     */
     groupEnd() {
         console.groupEnd();
     }
@@ -209,7 +263,7 @@ export class Logger {
     verbose(markers:Markers, message: string, additionalDetails?: any): void;
     verbose(...args: any[]) : void {
         if (this._isLevelEnabled(Level.verbose)) {
-            this._log(Level.verbose, null, args);
+            this._log(Level.verbose, args);
         }
     }
 
@@ -224,7 +278,7 @@ export class Logger {
     debug(markers:Markers, message: string, additionalDetails?: any): void;
     debug(...args: any[]) : void {
         if (this._isLevelEnabled(Level.debug)) {
-            this._log(Level.debug, null, args);
+            this._log(Level.debug, args);
         }
     }
 
@@ -235,7 +289,7 @@ export class Logger {
     info(markers:Markers, message: string, additionalDetails?: any): void;
     info(...args: any[]) : void {
         if (this._isLevelEnabled(Level.info)) {
-            this._log(Level.info, 'blue', args);
+            this._log(Level.info, args);
         }
     }
 
@@ -246,45 +300,51 @@ export class Logger {
     warn(markers:Markers, message: string, additionalDetails?: any): void;
     warn(...args: any[]) : void {
         if (this._isLevelEnabled(Level.warn)) {
-            this._log(Level.warn, 'orange', args);
+            this._log(Level.warn, args);
         }
     }
 
     /**
      * error(message [, ...args]): expects a string log message and optional object to dump to console
      */
-    error(message: string, additionalDetails?: any): void;
-    error(markers:Markers, message: string, additionalDetails?: any): void;
+    error(message: string, error?: any): void;
+    error(markers:Markers, message: string, error?: any): void;
     error(...args: any[]) : void {
         if (this._isLevelEnabled(Level.error)) {
-            this._log(Level.error, 'red', args);
+            this._log(Level.error, args);
         }
     }
 
-    private _log(level: Level, color: string | null, args: any[]): void {
-
+    private _log(level: Level, args: any[]): void {
         let markers : Markers = {};
-        let message : string;
-        let additionalDetails : any[];
-
-        if(!Utils.isString(args[0])) {
+        let error = null;
+        let firstItemIsMarker = Utils.isObject(args[0]);
+        if (firstItemIsMarker) {
             markers = args[0];
-            message = args[1];
-            additionalDetails = args.splice(2, args.length - 2);
-        } else {
-            message = args[0];
-            additionalDetails = args.splice(1, args.length - 1);
+            // remove the marker as we've just captured it above
+            args.splice( 0, 1);
         }
-
+        if (level === Level.error) {
+            // At this point, any marker will be gone.
+            // We can assume args has a message, and/or a message an error
+            // We want to capture the error separately.
+            if (args.length === 2) {
+                // pop the error out of args
+                error = args.splice(1, 1)[0];
+            }
+        }
         _sink.log({
             timestamp: new Date(),
             logger: this._name,
             level: level,
-            color: color || 'black',
-            message: message,
-            additionalDetails: additionalDetails,
+            message: args,
             dumpAdditionalDetailsToConsole: this._loggerConfig.dumpAdditionalDetailsToConsole,
-            markers: markers
+            markers: markers,
+            error
          });
     }
+}
+
+function messageIsString(message: string | any[]): message is string {
+    return Utils.isString(message);
 }

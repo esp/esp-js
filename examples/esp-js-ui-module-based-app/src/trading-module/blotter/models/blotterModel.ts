@@ -26,6 +26,10 @@ export class BlotterModel extends ModelBase {
         return 'Blotter';
     }
 
+    getEspUiModelState() {
+        return {} as BlotterState;
+    }
+
     observeEvents(): void {
         super.observeEvents();
     }

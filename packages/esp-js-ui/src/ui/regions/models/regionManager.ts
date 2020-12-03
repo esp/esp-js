@@ -4,11 +4,10 @@ import {RegionItem} from './regionItem';
 import {ModelBase} from '../../modelBase';
 import {EspUiEventNames} from '../../espUiEventNames';
 import {EspUiEvents} from '../../espUiEvents';
-import {ViewState} from '../../viewFactory';
+import {Region, RegionState} from './regionModelBase';
+import {RegionItemRecord} from './regionItemRecord';
 
 const _log = Logger.create('RegionManager');
-
-export type ViewCallBack = (regionItem: RegionItem) => void;
 
 export interface DisplayOptions {
     title?:string;
@@ -16,29 +15,6 @@ export interface DisplayOptions {
      * If provided, will be used to select the @viewBinding on the model with the matching displayContext
      */
     displayContext?:string;
-}
-
-export interface RegionState {
-    regionName: string;
-    /**
-     * Provides a version for the regions state.
-     * You can set this to 1 until you need to change.
-     * At some future point, you may modify the regions state model and need to migrate state from an older version to a newer one.
-     * You'd typically do this by overriding the call to `region.getRegionState(regionState)`
-     */
-    stateVersion: number;
-    viewState: ViewState<any>[];
-}
-
-export interface Region {
-    modelId: string;
-    items: RegionItem[];
-    selectedItem: RegionItem;
-    addRegionItem: ViewCallBack;
-    removeRegionItem: ViewCallBack;
-    getRegionState(): RegionState;
-    load(regionState: RegionState): void;
-    unload(): void;
 }
 
 // exists to decouple all the region and their models from the rest of the app
@@ -70,6 +46,10 @@ export class RegionManager extends ModelBase {
 
     public getRegions() {
         return Object.values(this._regions);
+    }
+
+    public getRegion(regionName: string): Region {
+        return this._regions[regionName];
     }
 
     public unregisterRegion(regionName: string): void {
@@ -135,5 +115,12 @@ export class RegionManager extends ModelBase {
             throw new Error(message);
         }
         this._regions[regionName].removeRegionItem(regionItem);
+    }
+
+    public existsInRegion(regionName: string, modelId: string): boolean;
+    public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
+    public existsInRegion(...args: any[]): boolean {
+        let region = this._regions[args[0]];
+        return region.existsInRegion(args[1]);
     }
 }

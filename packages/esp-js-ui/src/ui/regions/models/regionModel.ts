@@ -1,5 +1,4 @@
-import {RegionState} from './regionManager';
-import {RegionModelBase} from './regionModelBase';
+import {RegionModelBase, RegionState} from './regionModelBase';
 import {ViewState} from '../../viewFactory';
 
 export class RegionModel extends RegionModelBase<RegionState> {

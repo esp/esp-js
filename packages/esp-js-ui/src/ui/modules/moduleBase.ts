@@ -7,6 +7,8 @@ import {ModelBase} from '../modelBase';
 import {ModuleMetadata} from './moduleDecorator';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Logger} from '../../core';
+import {RegionManager} from '../regions/models';
+import {SystemContainerConst} from '../dependencyInjection';
 
 const _log: Logger = Logger.create('ModuleBase');
 
@@ -25,6 +27,15 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     abstract configureContainer();
 
     abstract registerPrerequisites(register: PrerequisiteRegister): void;
+
+    /**
+     * The application's RegionManager
+     *
+     * This is provides as a convenience as many modules will likely use this to add views to regions.
+     */
+    protected get regionManager(): RegionManager {
+        return this.container.resolve<RegionManager>(SystemContainerConst.region_manager);
+    }
 
     initialise(): void { }
 

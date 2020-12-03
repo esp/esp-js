@@ -384,6 +384,7 @@ export class Router extends DisposableBase {
                         this._state.clearEventDispatchQueue();
                     }
                 }
+                modelRecord.eventQueuePurged();
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
@@ -465,13 +466,21 @@ export class Router extends DisposableBase {
         }
     }
 
+    /**
+     * Tries to find the a ModelRecord with pending events.
+     * ModelRecord's with older enqueued events are returned first.
+     * @private
+     */
     private _getNextModelRecordWithQueuedEvents(): ModelRecord {
+        let candidate: ModelRecord = null;
+        let dirtyEpochMs: number = Date.now();
         for (let [key, value] of this._models) {
-            if (value.eventQueue.length > 0) {
-                return value;
+            if (value.eventQueue.length > 0 && value.eventQueueDirtyEpochMs <= dirtyEpochMs) {
+                candidate = value;
+                dirtyEpochMs = value.eventQueueDirtyEpochMs;
             }
         }
-        return null;
+        return candidate;
     }
 
     private _observeEventsUsingDirectives(modelId: string, object: any) {

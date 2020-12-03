@@ -18,6 +18,7 @@ export class ModuleLoader {
     private _shellModuleLoader: ShellModuleLoader;
     private _moduleLoaders: SingleModuleLoader<ModuleBase>[] = [];
     private _modalLoaderModelId = IdFactory.createId('module-loader');
+    private _appStartModelId = IdFactory.createId('app-start');
 
     constructor(
         private _container: Container,
@@ -31,6 +32,7 @@ export class ModuleLoader {
         // The proper fix for this is to make the ModuleLoader a true esp model, however I don't want to do that in the 2.0 code base as it's using the older version of rx.
         // I think this is a likely refactor for esp 4.
         this._router.addModel(this._modalLoaderModelId, {});
+        this._router.addModel(this._appStartModelId, {});
     }
 
     /**
@@ -90,7 +92,9 @@ export class ModuleLoader {
     public loadViews() {
         this._router.runAction(this._modalLoaderModelId, () => {
             this._shellModuleLoader.module.loadViews();
-            this._moduleLoaders.forEach(ml => ml.module.onAppReady());
+            this._router.runAction(this._appStartModelId, () => {
+                this._moduleLoaders.forEach(ml => ml.module.onAppReady());
+            });
         });
     }
 }

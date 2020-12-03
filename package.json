@@ -20,7 +20,8 @@
     "release-patch": "yarn build-prod && lerna publish patch",
     "pre-release-major": "yarn build-prod && lerna publish premajor --preid next --dist-tag next",
     "pre-release-minor": "yarn build-prod && lerna publish preminor --preid next --dist-tag next",
-    "pre-release-patch": "yarn build-prod && lerna publish prepatch --preid next --dist-tag next"
+    "pre-release-patch": "yarn build-prod && lerna publish prepatch --preid next --dist-tag next",
+    "start-sample": "lerna run start --scope esp-js-ui-module-based-app --stream"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",

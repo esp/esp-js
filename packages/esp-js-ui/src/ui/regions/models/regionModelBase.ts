@@ -1,4 +1,4 @@
-import { Logger } from '../../../core';
+import {isString, Logger} from '../../../core';
 import {EspDecoratorUtil, Guard, observeEvent, Router, utils} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';
@@ -7,10 +7,35 @@ import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, StateS
 import {EspUiEventNames} from '../../espUiEventNames';
 import {RegionItemRecord} from './regionItemRecord';
 import {SelectedItemChangedEvent} from './events';
-import {Region, RegionManager, RegionState} from './regionManager';
+import {RegionManager} from './regionManager';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
+
+export interface RegionState {
+    regionName: string;
+    /**
+     * Provides a version for the regions state.
+     * You can set this to 1 until you need to change.
+     * At some future point, you may modify the regions state model and need to migrate state from an older version to a newer one.
+     * You'd typically do this by overriding the call to `region.getRegionState(regionState)`
+     */
+    stateVersion: number;
+    viewState: ViewState<any>[];
+}
+
+export interface Region {
+    modelId: string;
+    items: RegionItem[];
+    selectedItem: RegionItem;
+    addRegionItem(regionItem: RegionItem);
+    removeRegionItem(regionItem: RegionItem);
+    existsInRegion(modelId: string): boolean;
+    existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
+    getRegionState(): RegionState;
+    load(regionState: RegionState): void;
+    unload(): void;
+}
 
 export abstract class RegionModelBase<TRegionState extends RegionState> extends ModelBase implements Region {
     // Helper to kep our underlying state collections immutable.
@@ -174,6 +199,23 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
         }
         _log.debug(`Removing from region ${this._regionName}. ${regionItem.toString()}`);
         this._state.removeRecord(regionItem.modelId);
+    }
+
+    public existsInRegion(modelId: string): boolean;
+    public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
+    public existsInRegion(...args: any[]): boolean {
+        if (isString(args[0])) {
+            return this._state.regionRecords.has(args[0]);
+        }  else {
+            let predicate: (regionItemRecord: RegionItemRecord) => boolean = args[0];
+            for (let x of this._state.regionRecords.values()) {
+                const match = predicate(x);
+                if (match) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public abstract getRegionState(): TRegionState;

@@ -21,7 +21,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-js-ui': './index.ts',
-        'esp-js-ui.min': './index.ts',
+        'esp-js-ui': './src/index.ts',
+        'esp-js-ui.min': './src/index.ts',
     }
 };

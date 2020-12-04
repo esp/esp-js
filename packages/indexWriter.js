@@ -100,8 +100,16 @@ const writeAllIndexFiles = (packagesDirectory) => {
         if (!fs.statSync(fullDirectoryPath).isDirectory()) {
             return;
         }
-        logger(`Writing all index files under directory ${directory}`);
-        tryRecursivelyWriteIndexFiles(fullDirectoryPath, true);
+        if (directoryExclusions.includes(path.basename(directory))) {
+            return;
+        }
+        let fullSrcDirectoryPath = `${packagesDirectory}/${directory}/src`;
+        if (!fs.statSync(fullSrcDirectoryPath).isDirectory()) {
+            return;
+        }
+        // we jump in one extra level and only write index files for anything under a package-name/src directory
+        logger(`Writing all index files under directory ${fullSrcDirectoryPath}`);
+        tryRecursivelyWriteIndexFiles(fullSrcDirectoryPath, true);
     });
 };
 

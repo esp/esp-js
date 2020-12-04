@@ -1,4 +1,4 @@
-var isWindows = require('is-os').isWindows();
+let isWindows = require('is-os').isWindows();
 module.exports = {
     scripts: {
         // Scripts shared by each package under examples & packages
@@ -10,7 +10,7 @@ module.exports = {
         testCi: 'jest --verbose --color --no-cache -c ./jest.config.js --rootDir .',
         clean: isWindows
             ? 'rmdir -r ./.dist && rmdir -r ./.tsbuild && del /s /q esp*.tgz'
-            : 'rm -rf ./.dist && rm -rf ./.tsbuild && find . -name esp*.tgz -delete',
+            : `rm -rf ./.dist && rm -rf ./.tsbuild && find . -name 'esp*.tgz' -delete`,
         // Scrips only called from the root package.json
         trash: isWindows
             ? 'echo \'Trash script not supported on windows\''

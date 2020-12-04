@@ -1,5 +1,5 @@
 import * as Rx from 'rx';
-import {InputEvent, OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
+import {OutputEvent, eventTransformFor, InputEventStream, OutputEventStream} from 'esp-js-polimer';
 import {CashTileModel} from '../cashTileModel';
 import {InputEvents, RfqEvents} from '../../events';
 import {RfqRequest, RfqService} from '../../services/rfqService';
@@ -47,5 +47,4 @@ export class RequestForQuoteEventStreams {
     private _logQuoteDebug({rfqId, ccyPair, notional}, message) {
         _log.debug(`[${rfqId} ${ccyPair} ${notional}] - ${message}`);
     }
-    // TODO other events in RfqEvents
 }

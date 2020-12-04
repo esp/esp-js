@@ -12,14 +12,14 @@ export const parseBool = (input: string): boolean => {
     }
 };
 
-export const isString = (value: any) => {
+export const isString = (value: any): value is string => {
     return typeof value === 'string' || value instanceof String;
 };
 
-export const isInt = (n: number|string) => {
+export const isInt = (n: number|string): n is number => {
     return Number(n) % 1 === 0;
 };
 
-export const isObject = (value: any) => {
+export const isObject = (value: any): value is object => {
     return typeof value === 'object' && value !== null;
 };

@@ -4,14 +4,14 @@ import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
 import {
     Logger,
     ModelBase,
-    MultiItemRegionModel,
-    SingleItemRegionModel,
+    RegionModel,
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
     ModuleChangeType
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
+import {AppShellModule} from '../appShellModule';
 
 const _log = Logger.create('ShellModel');
 
@@ -21,8 +21,8 @@ export class ShellModel extends ModelBase {
 
     constructor(router,
                 private _moduleLoader: ModuleLoader,
-                private _workspaceRegion: MultiItemRegionModel,
-                private _blotterRegion: SingleItemRegionModel
+                private _workspaceRegion: RegionModel,
+                private _blotterRegion: RegionModel
     ) {
         super(IdFactory.createId('shellModelId'), router);
         this.splashScreen = {
@@ -37,7 +37,7 @@ export class ShellModel extends ModelBase {
                 message: `Loading Modules`
             };
 
-            let moduleLoadStream = this._moduleLoader.loadModules(TradingModule);
+            let moduleLoadStream = this._moduleLoader.loadModules(AppShellModule, TradingModule);
             this.addDisposable(moduleLoadStream.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
                     _log.debug(`Load Change detected`, change);
 
@@ -51,7 +51,7 @@ export class ShellModel extends ModelBase {
                     }
                 },
                 e => {
-                    _log.error(`Error in the module load stream.`, e);
+                    _log.error(`Error in the module load stream ${e}.`, e);
                     this.splashScreen = {
                         state: SplashScreenState.Error,
                         message: `There has been an error loading the modules.  Please refresh`
@@ -59,7 +59,7 @@ export class ShellModel extends ModelBase {
                 },
                 () => {
                     _log.info(`Modules loaded, loading layout`);
-                    this._moduleLoader.loadLayout('default-layout-mode');
+                    this._moduleLoader.loadViews();
                     this.splashScreen = {
                         state: SplashScreenState.Idle
                     };

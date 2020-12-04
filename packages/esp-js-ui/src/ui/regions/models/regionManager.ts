@@ -1,23 +1,13 @@
-import {Guard, observeEvent} from 'esp-js';
-import { Logger } from '../../core';
+import {Guard, observeEvent, Router} from 'esp-js';
+import {Logger} from '../../../core';
 import {RegionItem} from './regionItem';
-import {Router} from '../../../../esp-js/.dist/typings';
-import {ModelBase} from '../modelBase';
-import {EspUiEventNames} from '../espUiEventNames';
-import * as EspUiEvents from '../espUiEvents';
+import {ModelBase} from '../../modelBase';
+import {EspUiEventNames} from '../../espUiEventNames';
+import {EspUiEvents} from '../../espUiEvents';
+import {Region, RegionState} from './regionModelBase';
+import {RegionItemRecord} from './regionItemRecord';
 
 const _log = Logger.create('RegionManager');
-
-export type ViewCallBack = (regionItem: RegionItem) => void;
-
-interface CallbackItem {
-    onAdding: ViewCallBack;
-    onRemoving: ViewCallBack;
-}
-
-interface RegionKeyToCallbackMap {
-    [key: string]: CallbackItem;
-}
 
 export interface DisplayOptions {
     title?:string;
@@ -29,7 +19,7 @@ export interface DisplayOptions {
 
 // exists to decouple all the region and their models from the rest of the app
 export class RegionManager extends ModelBase {
-    private _regions: RegionKeyToCallbackMap = {};
+    private _regions: { [regionName: string]: Region } = { };
 
     public static ModelId = 'region-manager';
 
@@ -40,26 +30,38 @@ export class RegionManager extends ModelBase {
     }
 
     // adds a region to the region manager
-    public registerRegion(regionName: string, onAddingViewToRegionCallback: ViewCallBack, onRemovingFromRegionCallback: ViewCallBack) {
+    public registerRegion(regionName: string, regionRecord: Region) {
         Guard.stringIsNotEmpty(regionName, 'region name required');
-        Guard.isFunction(onAddingViewToRegionCallback, 'onAddingViewToRegionCallback must be a function');
-        Guard.isFunction(onRemovingFromRegionCallback, 'onRemovingFromRegionCallback must be a function');
-
-        _log.debug('registering region {0}', regionName);
+        Guard.isObject(regionRecord, 'regionRecord must be an object');
+        Guard.isFunction(regionRecord.addRegionItem, 'regionRecord.onAdding must be a function');
+        Guard.isFunction(regionRecord.removeRegionItem, 'regionRecord.onRemoving must be a function');
+        _log.debug(`registering region ${regionName}`);
         if (this._regions[regionName]) {
             let message = `Cannot register region ${regionName} as it is already registered`;
             _log.error(message);
             throw new Error(message);
         }
-        this._regions[regionName] = {
-            onAdding: onAddingViewToRegionCallback,
-            onRemoving: onRemovingFromRegionCallback
-        };
+        this._regions[regionName] = regionRecord;
+    }
+
+    public getRegions() {
+        return Object.values(this._regions);
+    }
+
+    public getRegion(regionName: string): Region {
+        return this._regions[regionName];
     }
 
     public unregisterRegion(regionName: string): void {
         _log.debug('Unregistering region {0}', regionName);
         delete this._regions[regionName];
+    }
+
+    public loadRegion(regionState: RegionState): void {
+        Guard.isObject(regionState, 'regionState must be an object');
+        _log.debug(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.viewState.length}`);
+        let region = this._regions[regionState.regionName];
+        region.load(regionState);
     }
 
     @observeEvent(EspUiEventNames.regions_regionManager_addToRegion)
@@ -99,7 +101,7 @@ export class RegionManager extends ModelBase {
             throw new Error(message);
         }
         _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}.`);
-        this._regions[regionName].onAdding(regionItem);
+        this._regions[regionName].addRegionItem(regionItem);
         return regionItem;
     }
 
@@ -112,6 +114,13 @@ export class RegionManager extends ModelBase {
             _log.error(message);
             throw new Error(message);
         }
-        this._regions[regionName].onRemoving(regionItem);
+        this._regions[regionName].removeRegionItem(regionItem);
+    }
+
+    public existsInRegion(regionName: string, modelId: string): boolean;
+    public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
+    public existsInRegion(...args: any[]): boolean {
+        let region = this._regions[args[0]];
+        return region.existsInRegion(args[1]);
     }
 }

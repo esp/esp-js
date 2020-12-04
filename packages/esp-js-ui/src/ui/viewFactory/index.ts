@@ -1,4 +1,7 @@
-export { ViewRegistryModel, ViewMetadata, FactoryEntry} from './viewRegistryModel';
-export { ViewFactoryBase, ViewStateSet, ViewInstance } from './viewFactoryBase';
-export { viewFactory, getViewFactoryMetadata, ViewFactoryMetadata } from './viewFactoryDecorator';
-export { stateProvider } from './stateProvider';
+// Auto-generated 
+export * from './state';
+export * from './stateProvider';
+export * from './viewFactoryBase';
+export * from './viewFactoryDecorator';
+export * from './viewFactoryDefaultStateProvider';
+export * from './viewRegistryModel';

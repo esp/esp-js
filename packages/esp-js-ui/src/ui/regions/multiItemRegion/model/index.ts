@@ -1,1 +1,0 @@
-export { MultiItemRegionModel, SelectedItemChangedEvent } from './multiItemRegionModel';

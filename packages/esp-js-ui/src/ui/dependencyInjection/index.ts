@@ -1,3 +1,4 @@
-export {LiteralResolver } from './literalResolver';
-export {SystemContainerConfiguration } from './systemContainerConfiguration';
-export {SystemContainerConst } from './systemContainerConst';
+// Auto-generated 
+export * from './literalResolver';
+export * from './systemContainerConfiguration';
+export * from './systemContainerConst';

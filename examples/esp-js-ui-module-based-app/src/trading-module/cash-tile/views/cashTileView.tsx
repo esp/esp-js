@@ -1,9 +1,7 @@
 import * as React from 'react';
 import {Router} from 'esp-js';
-import {CashTileModel} from '../model/cashTileModel';
+import {CashTileModel, InputsState, RequestForQuoteState} from '../model/cashTileModel';
 import {DateSelectorEvents, InputEvents, RfqEvents} from '../events';
-import {InputsState} from '../model/inputs/inputsState';
-import {RequestForQuoteState} from '../model/rfq/requestForQuoteState';
 
 export class CashTileView extends React.Component<{model:CashTileModel, router:Router}, any> {
     constructor(props) {

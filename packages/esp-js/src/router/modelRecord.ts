@@ -48,6 +48,7 @@ export class ModelRecord {
     private _eventDispatchedProcessor: EventDispatchProcessor;
     private _postEventProcessor: PostEventProcessor;
     private _eventStreams: Map<string, InternalEventStreamsRegistration>;
+    private _eventQueueDirtyEpochMs: number;
 
     constructor(modelId: string, model: any, modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>, options?: EventProcessors) {
         this._modelId = modelId;
@@ -56,6 +57,8 @@ export class ModelRecord {
         this._wasRemoved = false;
         this._eventStreams = new Map();
         this._modelObservationStream = modelObservationStream;
+        this._eventQueueDirtyEpochMs = null;
+
         if (model) {
             this.setModel(model, options);
         }
@@ -71,6 +74,9 @@ export class ModelRecord {
     }
     public get eventQueue() {
         return this._eventQueue;
+    }
+    public get eventQueueDirtyEpochMs() {
+        return this._eventQueueDirtyEpochMs;
     }
     public get hasReceivedEvent() {
         return this._hasReceivedEvent;
@@ -130,7 +136,13 @@ export class ModelRecord {
         return eventStreamsRegistration.streams;
     }
     public enqueueEvent(eventType: string, event: any): void {
+        if (!this._eventQueueDirtyEpochMs) {
+            this._eventQueueDirtyEpochMs = Date.now();
+        }
         this.eventQueue.push({eventType: eventType, event: event});
+    }
+    public eventQueuePurged() {
+        this._eventQueueDirtyEpochMs = null;
     }
     public get modelObservationStream(): Observable<any>  {
         return this._modelObservationStream;

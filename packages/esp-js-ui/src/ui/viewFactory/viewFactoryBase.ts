@@ -1,28 +1,26 @@
 import {Container} from 'esp-js-di';
-import {getViewFactoryMetadata} from './viewFactoryDecorator';
-import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
+import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance} from './viewFactoryDecorator';
+import {DisposableBase} from 'esp-js';
 import {ViewFactoryMetadata} from './viewFactoryDecorator';
 import {Disposable} from 'esp-js';
-import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
-
-export interface ViewStateSet {
-    viewFactoryKey: string;
-    state: Array<any>;
-}
+import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
+import {PersistedViewState} from './state';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
     addDisposable(disposable: Disposable);
 }
 
-export abstract class ViewFactoryBase<T extends ViewInstance> extends DisposableBase {
-    private _currentViewModels: Array<ViewInstance>;
-    private _metadata: ViewFactoryMetadata;
+export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
+    private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {
         super();
-        this._currentViewModels = [];
         this._metadata = getViewFactoryMetadata(this);
+    }
+
+    public getDefaultViewState(): TViewState[]  {
+        return [];
     }
 
     public get viewKey(): string {
@@ -43,62 +41,18 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
      * This must return the model that manages the view.
      *
      * @param childContainer: The esp-js-di child container for the view
-     * @param state: Any state that should be loaded by the view
+     * @param persistedViewState: The state that should be loaded by the view
      * @private
      */
-    protected abstract _createView(childContainer: Container, state?: any): T;
+    protected abstract _createView(childContainer: Container, persistedViewState?: PersistedViewState<TViewState>): TModel;
 
-    public createView(state = null): T {
+    public createView(persistedViewState: PersistedViewState<TViewState> = null): TModel {
         let childContainer = this._container.createChildContainer();
-        let model: T = this._createView(childContainer, state);
+        let model: TModel = this._createView(childContainer, persistedViewState);
         model.addDisposable(childContainer);
-        model.addDisposable(() => {
-            let index = this._currentViewModels.indexOf(model);
-            if (index > -1) {
-                this._currentViewModels.splice(index, 1);
-            } else {
-                throw new Error('Could not find a model in our set');
-            }
-        });
-        this._currentViewModels.push(model);
+        // Attach the metadata of this view factory to any model created by it.
+        // This wil help with other functionality such as state saving.
+        setViewFactoryMetadataOnModelInstance(model, this._metadata);
         return model;
-    }
-
-    public getAllViewsState(): ViewStateSet {
-        let state = this._currentViewModels
-            .map(c => {
-                // try see if there was a @stateProvider decorator on the views model,
-                // if so invoke the function it was declared on to get the state.
-                if (EspDecoratorUtil.hasMetadata(c)) {
-                    let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(c, StateSaveProviderConsts.CustomDataKey);
-                    if (metadata) {
-                        return c[metadata.functionName]();
-                    }
-                }
-                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-                let stateProviderFunction = c[StateSaveProviderConsts.HandlerFunctionName];
-                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-                    return stateProviderFunction.call(c);
-                }
-                return null;
-            })
-            .filter(c => c != null);
-        if (state.length === 0) {
-            return null;
-        } else {
-            return {
-                viewFactoryKey: this.viewKey,
-                state: state
-            };
-        }
-    }
-
-    public shutdownAllViews(): void {
-        // copy the array as we have some disposal code that remove items on disposed
-        let models = this._currentViewModels.slice();
-        models.forEach(model => {
-            model.dispose();
-        });
-        this._currentViewModels.length = 0;
     }
 }

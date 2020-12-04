@@ -42,7 +42,6 @@ describe('Router', () => {
                 postProcess: (eventsProcessed: string[])=> void;
             },
             _model6: {},
-            _testPassed = false,
             _modelsSentForPreProcessing = [],
             _eventsSentToDispatch = [],
             _eventsSentToDispatched = [],
@@ -87,7 +86,6 @@ describe('Router', () => {
                 }
             };
              _model6 = { };
-             _testPassed = false;
             _modelsSentForPreProcessing = [];
             _eventsSentToDispatch = [];
             _eventsSentToDispatched = [];
@@ -174,45 +172,54 @@ describe('Router', () => {
 
         it('calls a models pre event processor even if the model is not observing the published event', () => {
             _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
-            _testPassed = _modelsSentForPreProcessing.length === 1
-            expect(_testPassed).toBe(true);
+            const passed = _modelsSentForPreProcessing.length === 1;
+            expect(passed).toBe(true);
         });
 
         it('calls a models post event processor even if the model is not observing the published event', () => {
             _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
-            _testPassed = _modelsSentForPostProcessing.length === 1;
-            expect(_testPassed).toBe(true);
+            const passed = _modelsSentForPostProcessing.length === 1;
+            expect(passed).toBe(true);
         });
 
-        it('calls a models post processors before processing the next models events', () => {
+        it('calls a models post processors in order before processing the next models events', () => {
+            /**
+             * This test also assets that models get processed in the order they had events published to them.
+             */
+
+            let passed = true, callbackCount = 0;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                /* noop */
+                callbackCount++;
             });
             _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
-                _testPassed = _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].model === _model1;
+                callbackCount++;
+                passed = passed && _modelsSentForPostProcessing.length === 2 && _modelsSentForPostProcessing[1].model === _model3;
             });
             _router.getEventObservable('modelId3', 'Event1').subscribe(() => {
-                _testPassed = _testPassed && _modelsSentForPostProcessing.length === 2 && _modelsSentForPostProcessing[1].model === _model2;
+                callbackCount++;
+                passed = passed && _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].model === _model1;
             });
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
-            _testPassed = _testPassed && _modelsSentForPostProcessing.length === 3 && _modelsSentForPostProcessing[2].model === _model3;
-            expect(_testPassed).toBe(true);
+            passed = passed && _modelsSentForPostProcessing.length === 3 && _modelsSentForPostProcessing[2].model === _model2;
+            expect(passed).toBe(true);
+            expect(callbackCount).toBe(3);
         });
 
         it('calls a models pre processors before dispatching to processors', () => {
+            let passed = false;
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                _testPassed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
+                passed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
-            expect(_testPassed).toBe(true);
+            expect(passed).toBe(true);
         });
 
         it('only calls the pre event processor for the model the event was targeted at', () => {
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
             });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
-            _testPassed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
-            expect(_testPassed).toBe(true);
+            const passed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
+            expect(passed).toBe(true);
         });
 
         it('should allow a preEventProcessor to publish an event', () => {

@@ -1,5 +1,5 @@
-import {DisplayOptions} from './regionManager';
 import * as uuid from 'uuid';
+import {DisplayOptions} from './regionManager';
 
 export class RegionItem {
     public readonly id: string;

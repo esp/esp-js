@@ -1,10 +1,5 @@
-import {RegionNames} from '../../../shell/regionNames';
-export class BlotterState {
-    public regionName:string;
+import {SortType} from './blotterModel';
 
-    static create(regionName = RegionNames.blotterRegion) {
-        const state = new BlotterState();
-        state.regionName = regionName;
-        return state;
-    }
+export interface BlotterState {
+    idSortType: SortType;
 }

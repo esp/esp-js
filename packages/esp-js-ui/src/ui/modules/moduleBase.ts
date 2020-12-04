@@ -15,6 +15,10 @@ const _log: Logger = Logger.create('ModuleBase');
 export abstract class ModuleBase extends DisposableBase implements Module {
     private readonly _moduleMetadata: ModuleMetadata;
 
+    /**
+     * Creates the module.
+     * @param container A child container of the applications root container.
+     */
     protected constructor(protected readonly container: Container) {
         super();
         Guard.isDefined(container, 'container must be defined');
@@ -23,10 +27,6 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         this.addDisposable(container);
         this._moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleInstance(this);
     }
-
-    abstract configureContainer();
-
-    abstract registerPrerequisites(register: PrerequisiteRegister): void;
 
     /**
      * The application's RegionManager
@@ -39,6 +39,10 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
     initialise(): void { }
 
+    abstract configureContainer();
+
+    abstract registerPrerequisites(register: PrerequisiteRegister): void;
+
     registerViewFactories(viewRegistryModel: ViewRegistryModel) {
         _log.debug('Registering views');
         let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
@@ -50,13 +54,10 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         });
     }
 
-    // override if required
     getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {
         return [];
     }
 
-    // Hook to add any views that were not provided via default state.
-    // For example new views for existing users.
-    onAppReady() {
+    onViewsLoaded() {
     }
 }

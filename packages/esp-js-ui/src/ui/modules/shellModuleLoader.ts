@@ -2,8 +2,8 @@ import {SingleModuleLoaderBase} from './singleModuleLoaderBase';
 import {Container} from 'esp-js-di';
 import {ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state';
-import {ShellModule, ShellModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
+import {ShellModule, ShellModuleConstructor} from './shellModule';
 
 export class ShellModuleLoader extends SingleModuleLoaderBase<ShellModule> {
     constructor(

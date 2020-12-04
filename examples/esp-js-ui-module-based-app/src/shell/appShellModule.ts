@@ -4,12 +4,14 @@ import {DefaultStateProvider} from '../defaultStateProvider';
 
 export class AppShellModule extends ShellModuleBase {
 
+    public static readonly APP_STATE_KEY = 'esp-js-ui-module-based-app-state';
+
     constructor(container: Container, stateService: StateService) {
         super(container, stateService);
     }
 
-    get appKey(): string {
-        return 'esp-js-ui-module-based-app-state';
+    get appStateKey(): string {
+        return AppShellModule.APP_STATE_KEY;
     }
 
     get stateSavingEnabled(): boolean {
@@ -17,7 +19,7 @@ export class AppShellModule extends ShellModuleBase {
     }
 
     get stateSaveIntervalMs(): number {
-        return 10_000;
+        return 5_000; // for the demo make this frequent
     }
 
     getDefaultStateProvider(): AppDefaultStateProvider {

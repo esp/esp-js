@@ -16,6 +16,7 @@ import {CashTileViewFactory} from './cash-tile/cashTileViewFactory';
 import {BlotterViewFactory} from './blotter/blotterViewFactory';
 import {BlotterModel} from './blotter/models/blotterModel';
 import {RegionNames} from '../shell/regionNames';
+import {RefDataService} from './cash-tile/services/refDataService';
 
 let _log = Logger.create('TradingModule');
 
@@ -30,11 +31,19 @@ export class TradingModule extends ModuleBase {
 
     configureContainer() {
         _log.debug(`Registering ${TradingModuleContainerConst.cashTileViewFactory}`);
+
+        // Services
+        this.container
+            .register(TradingModuleContainerConst.refDataService, RefDataService)
+            .singletonPerContainer();
+
+        // Cash Tile
         this.container
             .register(TradingModuleContainerConst.cashTileViewFactory, CashTileViewFactory)
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
             .inGroup(this._viewFactoryGroupId);
+
         _log.debug(`Registering ${TradingModuleContainerConst.blotterViewFactory}`);
         this.container
             .register(TradingModuleContainerConst.blotterViewFactory, BlotterViewFactory)
@@ -46,6 +55,7 @@ export class TradingModule extends ModuleBase {
             .register(TradingModuleContainerConst.blotterModel, BlotterModel)
             .inject(SystemContainerConst.router, SystemContainerConst.region_manager)
             .singletonPerContainer();
+
     }
 
     getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {
@@ -53,16 +63,11 @@ export class TradingModule extends ModuleBase {
     }
 
     registerPrerequisites(register: PrerequisiteRegister): void {
-        _log.debug(`Registering 1`);
-        register.registerStream(
-            Rx.Observable.timer(2000).take(1).concat(Rx.Observable.throw(new Error('Load error'))),
-            'Loading Module That Fails'
-        );
-        _log.debug(`Registering 2`);
-        register.registerStream(Rx.Observable.timer(2000).take(1), 'Loading Referential Data');
+        const refDataService = this.container.resolve<RefDataService>(TradingModuleContainerConst.refDataService);
+        register.registerStream(refDataService.loadCurrencyPairs(), 'Loading currency pairs');
     }
 
-    onAppReady() {
+    onViewsLoaded() {
         this._ensureBlotterLoaded();
     }
 

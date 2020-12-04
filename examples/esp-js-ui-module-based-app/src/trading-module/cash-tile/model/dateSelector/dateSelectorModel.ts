@@ -2,7 +2,7 @@
 import {Logger} from 'esp-js-ui';
 import {DisposableBase, observeEvent, Router} from 'esp-js';
 import {StateHandlerModel} from 'esp-js-polimer';
-import {DateSelectorEvents, RootEvents} from '../../events';
+import {DateSelectorEvents, TileEvents} from '../../events';
 import {DateSelectorState} from '../cashTileModel';
 
 const _log = Logger.create('CashTile-DateSelectorModel');
@@ -25,7 +25,7 @@ export class DateSelectorModel extends DisposableBase implements StateHandlerMod
         this._initialTenor = initialTenor;
     }
 
-    @observeEvent(RootEvents.bootstrap)
+    @observeEvent(TileEvents.bootstrap)
     _bootstrap() {
         this._resolveDate(this._initialTenor);
     }

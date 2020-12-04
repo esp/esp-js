@@ -12,7 +12,7 @@ export const DefaultStateProvider: AppDefaultStateProvider = {
                     regionName: RegionNames.workspaceRegion,
                     stateVersion: 1,
                     viewState: [
-                        ...['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'].map(symbol => ({
+                        ...['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY', 'EURCAD', 'USDBRL'].map(symbol => ({
                             viewFactoryKey: TradingModuleContainerConst.cashTileViewFactory,
                             state: {currencyPair: symbol}
                         } as ViewState<CashTilePersistedState> ))
@@ -24,7 +24,9 @@ export const DefaultStateProvider: AppDefaultStateProvider = {
                     viewState: [
                         {
                             viewFactoryKey: TradingModuleContainerConst.blotterViewFactory,
-                            state: { }
+                            state: {
+                                idSortType: 'Ascending'
+                            }
                         } as ViewState<BlotterState>
                     ]
                 } as RegionState

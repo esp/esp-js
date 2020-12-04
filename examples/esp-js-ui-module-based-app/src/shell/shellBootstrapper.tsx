@@ -1,17 +1,13 @@
 import * as React from 'react';
-import {RouterProvider, ConnectableComponent} from 'esp-js-react';
+import {ConnectableComponent, RouterProvider} from 'esp-js-react';
 import {Container} from 'esp-js-di';
-import {
-    Logger,
-    RegionModel,
-    LiteralResolver,
-    SystemContainerConfiguration,
-    SystemContainerConst
-} from 'esp-js-ui';
+import {Level, LiteralResolver, Logger, LoggingConfig, RegionModel, SystemContainerConfiguration, SystemContainerConst} from 'esp-js-ui';
 import {ShellModel} from './models/shellModel';
 import {ShellModuleContainerConst} from './shellModuleContainerConst';
 import {RegionNames} from './regionNames';
 import {Router} from 'esp-js';
+
+LoggingConfig.defaultLoggerConfig.level = Level.verbose;
 
 const _log = Logger.create('ShellBootstrapper');
 
@@ -56,7 +52,8 @@ export class ShellBootstrapper {
                 SystemContainerConst.router,
                 SystemContainerConst.module_loader,
                 ShellModuleContainerConst.workspace_region,
-                ShellModuleContainerConst.blotter_region
+                ShellModuleContainerConst.blotter_region,
+                SystemContainerConst.state_service,
             );
     }
 

@@ -6,6 +6,7 @@ export * from './moduleBase';
 export * from './moduleDecorator';
 export * from './moduleLoader';
 export * from './moduleLoadResult';
+export * from './shellModule';
 export * from './shellModuleBase';
 export * from './shellModuleLoader';
 export * from './singleModuleLoader';

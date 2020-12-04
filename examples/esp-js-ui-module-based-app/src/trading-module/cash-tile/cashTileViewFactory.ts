@@ -1,25 +1,27 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
-import {ViewFactoryBase, Logger,  viewFactory, IdFactory} from 'esp-js-ui';
+import {ViewFactoryBase, Logger,  viewFactory} from 'esp-js-ui';
 import {CashTileView} from './views/cashTileView';
 import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
 import {RequestForQuoteEventStreams} from './model/rfq/requestForQuoteEventStreams';
 import {RfqService} from './services/rfqService';
-import {RootEvents} from './events';
+import {TileEvents} from './events';
 import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
 import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
-import * as uuid from 'uuid';
 import {CashTilePersistedState} from './state/stateModel';
-import {PersistedViewState} from 'esp-js-ui/src';
+import {PersistedViewState} from 'esp-js-ui';
 import {CashTileModel, CashTileModelBuilder} from './model/cashTileModel';
+import {RefDataService} from './services/refDataService';
 
 const _log = Logger.create('CashTileViewFactory');
 
 @viewFactory(TradingModuleContainerConst.cashTileViewFactory, 'Cash Tile', 1)
 export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileModel>, CashTilePersistedState> {
     private _router : Router;
+    private _cashTileIdSeed = 1;
+
     constructor(container, router:Router) {
         super(container);
         this._router = router;
@@ -27,9 +29,12 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
     _createView(childContainer, persistedViewState?: PersistedViewState<CashTilePersistedState>): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
-        const modelId = IdFactory.createId('cashTileModel');
+        const model = CashTileModelBuilder.createDefault(`cash-tile-${this._cashTileIdSeed++}`, persistedViewState.state);
 
-        const model = CashTileModelBuilder.createDefault(uuid.v4(), persistedViewState.state);
+        // Get the ref data service from the container.
+        // Note in non demo apps, typically all the handlers and objects below would be registered in the container.
+        // This keeps dependency/object creation concerns in one place (also makes testing easier).
+        let refDataService = this._container.resolve<RefDataService>(TradingModuleContainerConst.refDataService);
 
         let polimerModel = this._router
             // ***************************
@@ -39,7 +44,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
 
             // ***************************
             // Wire up state handlers.
-            .withStateHandlerObject('referenceData', new ReferenceDataStateHandlers())
+            .withStateHandlerObject('referenceData', new ReferenceDataStateHandlers(refDataService, model.modelId))
             .withStateHandlerObject('inputs', new InputStateHandlers())
             .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
 
@@ -58,7 +63,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             //   e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
             //        if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
             //        In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileModel> created by this builder
-            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router, persistedViewState.state ? persistedViewState.state.tenor : null), true)
+            .withStateHandlerModel('dateSelector', new DateSelectorModel(model.modelId, this._router, persistedViewState.state ? persistedViewState.state.tenor : null), true)
 
             // ***************************
             // Add some view bindings for this model.
@@ -67,21 +72,25 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
 
             .withStateSaveHandler((m: any) => this._saveState(m))
 
+            // Runs after even dispatch loop for the model (i.e. when all events for the model in question are purged)
+            .withPostEventProcessor(m => {
+                _log.verbose(`Post event processing ${m.modelId}`);
+            })
+
             // ***************************
             // finally create and register it with the model (the ordering of hte above isn't important, however this method must be called last)
             .registerWithRouter();
 
-        this._router.publishEvent(model.modelId, RootEvents.bootstrap, {});
+        this._router.publishEvent(model.modelId, TileEvents.bootstrap, {});
 
         return polimerModel;
     }
 
     private _saveState(model: CashTileModel): CashTilePersistedState {
-        let persistedState = {
+        return {
             currencyPair: model.inputs.ccyPair,
             notional: model.inputs.notional,
             tenor: model.dateSelector.dateInput,
         };
-        return persistedState;
     }
 }

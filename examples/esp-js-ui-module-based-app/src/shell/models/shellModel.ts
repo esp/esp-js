@@ -8,10 +8,12 @@ import {
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
-    ModuleChangeType
+    ModuleChangeType, StateService
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
 import {AppShellModule} from '../appShellModule';
+import {observeEvent} from 'esp-js';
+import {ShellEvents} from '../events';
 
 const _log = Logger.create('ShellModel');
 
@@ -22,7 +24,8 @@ export class ShellModel extends ModelBase {
     constructor(router,
                 private _moduleLoader: ModuleLoader,
                 private _workspaceRegion: RegionModel,
-                private _blotterRegion: RegionModel
+                private _blotterRegion: RegionModel,
+                private _stateService: StateService
     ) {
         super(IdFactory.createId('shellModelId'), router);
         this.splashScreen = {
@@ -83,5 +86,12 @@ export class ShellModel extends ModelBase {
 
     get blotterRegion() {
         return this._blotterRegion;
+    }
+
+    @observeEvent(ShellEvents.clearStateAndReload)
+    private _clearStateAndReload() {
+        _log.info(`Clearing state and reloading`);
+        this._stateService.clearState(AppShellModule.APP_STATE_KEY);
+        window.location.reload();
     }
 }

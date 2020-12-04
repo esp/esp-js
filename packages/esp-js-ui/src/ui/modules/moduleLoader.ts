@@ -4,13 +4,14 @@ import {ViewRegistryModel} from '../viewFactory';
 import {StateService} from '../state/stateService';
 import {ModuleLoadResult} from './moduleLoadResult';
 import {SingleModuleLoader} from './singleModuleLoader';
-import {ModuleConstructor, ShellModuleConstructor} from './module';
+import {ModuleConstructor} from './module';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Router} from 'esp-js';
 import {IdFactory} from '../idFactory';
 import {Logger} from '../../core';
 import {ModuleBase} from './moduleBase';
 import {ShellModuleLoader} from './shellModuleLoader';
+import {ShellModuleConstructor} from './shellModule';
 
 const _log = Logger.create('ModuleLoader');
 
@@ -93,7 +94,7 @@ export class ModuleLoader {
         this._router.runAction(this._modalLoaderModelId, () => {
             this._shellModuleLoader.module.loadViews();
             this._router.runAction(this._appStartModelId, () => {
-                this._moduleLoaders.forEach(ml => ml.module.onAppReady());
+                this._moduleLoaders.forEach(ml => ml.module.onViewsLoaded());
             });
         });
     }

@@ -1,7 +1,6 @@
 import {Quote, RfqStatus} from './services/rfqService';
 
-export namespace RootEvents {
-    export interface BootstrapEvent { }
+export namespace TileEvents {
     export const bootstrap = 'bootstrap';
 }
 
@@ -34,13 +33,6 @@ export namespace InputEvents {
         notional: number;
     }
     export const notionalChanged = 'notionalChanged';
-}
-
-export namespace ReferenceDataEvents {
-    export interface CurrencyPairsUpdated {
-        newPairs: string[];
-    }
-    export const currencyPairsUpdated = 'currencyPairsUpdated';
 }
 
 export namespace DateSelectorEvents {

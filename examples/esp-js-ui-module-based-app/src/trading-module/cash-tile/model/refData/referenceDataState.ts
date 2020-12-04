@@ -1,16 +1,21 @@
 import {
     Logger
 } from 'esp-js-ui';
-import {ReferenceDataEvents} from '../../events';
+import {TileEvents} from '../../events';
 import {observeEvent} from 'esp-js';
 import {ReferenceDataState} from '../cashTileModel';
+import {RefDataService} from '../../services/refDataService';
 
-const _log = Logger.create('CashTile-ReferenceDataState');
+const _log: Logger = Logger.create('CashTile-ReferenceDataStateHandlers');
 
 export class ReferenceDataStateHandlers {
-    @observeEvent(ReferenceDataEvents.currencyPairsUpdated)
-    onCurrencyPairsUpdated(draft: ReferenceDataState, event: ReferenceDataEvents.CurrencyPairsUpdated) {
-        _log.info(`Adding new currency pairs ${event.newPairs}`, event.newPairs);
-        draft.currencyPairs = event.newPairs;
+
+    constructor(private _refDataService: RefDataService, private _modelId: string) {
+    }
+
+    @observeEvent(TileEvents.bootstrap)
+    onCurrencyPairsUpdated(draft: ReferenceDataState) {
+        _log.info(`[${this._modelId}] Setting currency pairs`);
+        draft.currencyPairs = this._refDataService.currencyPairs;
     }
 }

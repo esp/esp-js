@@ -5,6 +5,9 @@ export enum ModuleChangeType {
     Error = 'Error'
 }
 
+/**
+ * An interface which provides information about the load progress of a module.
+ */
 export interface ModuleLoadResult {
     type: ModuleChangeType;
     moduleKey: string;

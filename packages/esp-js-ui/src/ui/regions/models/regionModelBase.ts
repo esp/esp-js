@@ -116,7 +116,7 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
         protected _regionManager: RegionManager,
         protected _viewRegistry: ViewRegistryModel,
     ) {
-        super(IdFactory.createId(`region#${++_modelIdSeed}`), router);
+        super(IdFactory.createId(`region-${_regionName}-${++_modelIdSeed}`), router);
     }
 
     /**
@@ -140,10 +140,6 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
         return this._state.regionRecords;
     }
 
-    public getTitle(): string {
-        return '';
-    }
-
     public reset() {
         this._state.reset();
     }
@@ -155,10 +151,7 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
     }
 
     private _registerWithRegionManager(regionName) {
-        this._regionManager.registerRegion(
-            regionName,
-            this,
-        );
+        this._regionManager.registerRegion(regionName, this,);
         this.addDisposable(() => {
             this._regionManager.unregisterRegion(regionName);
         });
@@ -179,7 +172,10 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
         this._state.addRecord(
             { viewFactoryMetadata: null, model: null, regionItem}
         );
-        this._router.getModelObservable<any>(regionItem.modelId).subscribe(model => {
+        // we get the initial model and store a reference to it.
+        // In esp the top level model instance never changes.
+        // This is try even for immmutable models, they always have a parent that doesn't change, the store that hangs off that parent will change.
+        this._router.getModelObservable<any>(regionItem.modelId).take(1).subscribe(model => {
             this._router.runAction(this.modelId, () => {
                 const viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
                 const regionItemRecord = this._state.get(regionItem.modelId);
@@ -204,6 +200,7 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
     public existsInRegion(modelId: string): boolean;
     public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
     public existsInRegion(...args: any[]): boolean {
+        // This is read only hence can perform the call on any dispatch loop
         if (isString(args[0])) {
             return this._state.regionRecords.has(args[0]);
         }  else {
@@ -251,16 +248,20 @@ export abstract class RegionModelBase<TRegionState extends RegionState> extends 
     public load(regionState: TRegionState) {
         if (regionState) {
             regionState.viewState.forEach((viewState: ViewState<any>) => {
-                if (this._viewRegistry.hasViewFactory(viewState.viewFactoryKey)) {
-                    const viewFactoryEntry: ViewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewState.viewFactoryKey);
-                    const viewModel = viewFactoryEntry.factory.createView(viewState);
-                    const regionItem = new RegionItem(viewModel.modelId);
-                    this.addRegionItem(regionItem);
-                } else {
-                    // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
-                    _log.warn(`Skipping load for view as it's factory of type [${viewState.viewFactoryKey}] is not registered`);
-                }
+                this.loadView(viewState);
             });
+        }
+    }
+
+    protected loadView(viewState: ViewState<any>) {
+        if (this._viewRegistry.hasViewFactory(viewState.viewFactoryKey)) {
+            const viewFactoryEntry: ViewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewState.viewFactoryKey);
+            const viewModel = viewFactoryEntry.factory.createView(viewState);
+            const regionItem = new RegionItem(viewModel.modelId);
+            this.addRegionItem(regionItem);
+        } else {
+            // It's possible the component factory isn't loaded, perhaps old state had a component which the users currently isn't entitled to see ATM.
+            _log.warn(`Skipping load for view as it's factory of type [${viewState.viewFactoryKey}] is not registered`);
         }
     }
 

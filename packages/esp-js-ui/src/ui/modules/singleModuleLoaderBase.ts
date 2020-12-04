@@ -87,20 +87,6 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
         });
     }
 
-    // public loadViews(viewStates: ViewFactoryState[]): void {
-    //     if (!this.module) {
-    //         return;
-    //     }
-    //     this.module.loadViews(this._viewRegistryModel, viewStates);
-    // }
-    //
-    // public unloadModuleLayout(): void {
-    //     if (!this.module) {
-    //         return;
-    //     }
-    //     this.module.unloadViews();
-    // }
-
     public disposeModule(): void {
         if (!this.module) {
             return;

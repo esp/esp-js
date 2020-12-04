@@ -1,14 +1,13 @@
 import {ModuleBase} from './moduleBase';
 import {StateSaveMonitor, StateService} from '../state';
 import {Container} from 'esp-js-di';
-import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
-import {ShellModule} from './module';
 import {espModule} from './moduleDecorator';
 import {Region, RegionManager, RegionState} from '../regions/models';
 import {AppDefaultStateProvider, AppState, NoopAppDefaultStateProvider} from './appState';
+import {ShellModule} from './shellModule';
 
 const _log: Logger = Logger.create('ShellModule');
 
@@ -21,7 +20,7 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         super(container);
 
         if (this.stateSavingEnabled && this.stateSaveIntervalMs > 0) {
-            this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this._saveAllComponentState);
+            this._stateSaveMonitor = new StateSaveMonitor(this.stateSaveIntervalMs, this.saveAllComponentState);
             this.addDisposable(this._stateSaveMonitor);
         }
     }
@@ -34,7 +33,7 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
     }
 
     /**
-     * The interval of which this module will save state
+     * The interval at which state will be saved
      */
     get stateSaveIntervalMs(): number {
         return 60_000;
@@ -43,18 +42,14 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
     /**
      * A unique key to identify the app, this may end up prefixed to items keyed in localStorage
      */
-    abstract get appKey(): string;
+    abstract get appStateKey(): string;
 
     getDefaultStateProvider(): AppDefaultStateProvider {
         return NoopAppDefaultStateProvider;
     }
 
     private get _stateKey(): string {
-        return `${this.appKey}-state`;
-    }
-
-    private get _viewRegistryModel(): ViewRegistryModel {
-        return this.container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
+        return `${this.appStateKey}`;
     }
 
     private get _regionManager(): RegionManager {
@@ -98,14 +93,14 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
             return;
         }
         if (this.stateSavingEnabled) {
-            this._saveAllComponentState();
+            this.saveAllComponentState();
         }
         this._regionManager.getRegions().forEach((region: Region) => {
             region.unload();
         });
     }
 
-    _saveAllComponentState = () => {
+    saveAllComponentState = () => {
         if (!this._hasLoaded) {
             return;
         }

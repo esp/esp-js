@@ -3,7 +3,7 @@ import {ViewFactoryBase, Logger, viewFactory } from 'esp-js-ui';
 import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
 import {BlotterState} from './models/blotterState';
 import {BlotterModel} from './models/blotterModel';
-import {PersistedViewState} from 'esp-js-ui/src';
+import {PersistedViewState} from 'esp-js-ui';
 
 const _log = Logger.create('BlotterViewFactory');
 

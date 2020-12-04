@@ -6,6 +6,12 @@ export interface ModuleMetadata {
     customMetadata?: any;
 }
 
+/**
+ * Decorates an object as a module
+ * @param moduleKey A unique key for the module
+ * @param moduleName A friendly name
+ * @param customMetadata Any custom metadata you wish to attached, typically used for entitlements or non esp data which may be required at module load time.
+ */
 export function espModule(moduleKey: string, moduleName: string, customMetadata?: any) {
     return function (target) {
         Guard.stringIsNotEmpty(moduleKey, 'moduleKey passed to an espModule decorator must not be \'\'');

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import  { Disposable, Router, EspDecoratorUtil, utils } from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
-import {RouterContext} from './routerProvider';
+import {ClassType, ComponentClass, FunctionComponent} from 'react';
 
 export type PublishEvent = (eventType: string, event: any) => void;
 
@@ -11,10 +11,12 @@ export type CreatePublishEventProps<TPublishEventProps> = (publishEvent: Publish
 
 export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
+export type ViewComponentTypes = React.FunctionComponent | React.ClassType<any, any, any> | React.ComponentClass;
+
 export interface ConnectableComponentProps<TModel ={}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     modelId?: string;
     viewContext?: string;
-    view?: React.ComponentClass | React.SFC;
+    view?: ViewComponentTypes;
     /**
      * Provides a means to create a serious of 'publish event' callbacks which will be passed as props to the child view.
      */

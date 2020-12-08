@@ -5,6 +5,14 @@ export enum ModuleChangeType {
     Error = 'Error'
 }
 
+export enum ModuleLoadStage {
+    Loading = 1,
+    Registered = 2,
+    Prerequisites = 3,
+    Initialising = 4,
+    Loaded = 5,
+}
+
 /**
  * An interface which provides information about the load progress of a module.
  */
@@ -16,4 +24,5 @@ export interface ModuleLoadResult {
     prerequisiteResult?: LoadResult;
     errorMessage?: string;
     hasCompletedLoaded?: boolean;
+    stage: ModuleLoadStage;
 }

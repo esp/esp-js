@@ -5,7 +5,7 @@ import {PrerequisiteRegister} from './prerequisites';
 import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
 import {espModule} from './moduleDecorator';
-import {Region, RegionManager, RegionState} from '../regions/models';
+import {RegionBase, RegionManager, RegionState} from '../regions/models';
 import {AppDefaultStateProvider, AppState, NoopAppDefaultStateProvider} from './appState';
 import {ShellModule} from './shellModule';
 
@@ -95,7 +95,7 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
         if (this.stateSavingEnabled) {
             this.saveAllComponentState();
         }
-        this._regionManager.getRegions().forEach((region: Region) => {
+        this._regionManager.getRegions().forEach((region: RegionBase) => {
             region.unload();
         });
     }
@@ -105,7 +105,10 @@ export abstract class ShellModuleBase extends ModuleBase implements ShellModule 
             return;
         }
         let appState: AppState = { regionState: [] };
-        this._regionManager.getRegions().forEach(region => {
+        this._regionManager.getRegions().forEach((region: RegionBase) => {
+            if (!region.stateSavingEnabled) {
+                return;
+            }
             let regionState: RegionState = region.getRegionState();
             if (regionState) {
                 appState.regionState.push(regionState);

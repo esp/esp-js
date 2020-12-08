@@ -97,6 +97,23 @@ export class Router extends DisposableBase {
         return this._models.has(modelId);
     }
 
+    /**
+     * Exists for read only access to a model.
+     * Typically used by framework code.
+     * @param modelId
+     */
+    public getModel(modelId: string): any {
+        Guard.isString(modelId, 'The modelId argument should be a string');
+        if (this._models.get(modelId)) {
+            let modelRecord = this._models.get(modelId);
+            if (!modelRecord.hasModel) {
+                throw new Error(`Model with id ${modelId} is registered, however it's model has not yet been set. Can not retrieve`);
+            }
+            return modelRecord.model;
+        }
+        return null;
+    }
+
     public publishEvent(modelId: string, eventType: string, event: any) {
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isString(eventType, 'The eventType argument should be a string');

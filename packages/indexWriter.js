@@ -23,7 +23,6 @@ const directoryExclusions = [
     'dist',
     '.dist',
     'node_modules',
-    'observableExt',
     'esp-js',
     'esp-js-di',
     'esp-js-polimer',

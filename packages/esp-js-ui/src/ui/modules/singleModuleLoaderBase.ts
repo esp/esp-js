@@ -1,12 +1,11 @@
 import * as Rx from 'rx';
-import {DefaultPrerequisiteRegister} from './prerequisites';
-import {LoadResult, ResultStage} from './prerequisites';
+import {DefaultPrerequisiteRegister, LoadResult, ResultStage} from './prerequisites';
 import {Container} from 'esp-js-di';
-import {ModuleChangeType, ModuleLoadResult} from './moduleLoadResult';
+import {ModuleChangeType, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
 import {ViewRegistryModel} from '../viewFactory';
 import {Module} from './module';
 import {ModuleMetadata} from './moduleDecorator';
-import { Logger } from '../../core';
+import {Logger} from '../../core';
 
 export abstract class SingleModuleLoaderBase<TModule extends Module> {
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
@@ -42,7 +41,8 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                 moduleName: moduleName,
                 moduleKey,
                 description: `Module loading`,
-                hasCompletedLoaded: false
+                hasCompletedLoaded: false,
+                stage: ModuleLoadStage.Loading
             });
 
             try {
@@ -70,12 +70,22 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                         name: `Module bootstrapping`,
                         errorMessage: `Failed to load module ${moduleName}`
                     },
-                    hasCompletedLoaded: false
+                    hasCompletedLoaded: false,
+                    stage: ModuleLoadStage.Loading
                 });
                 obs.onCompleted();
                 return () => {
                 };
             }
+
+            obs.onNext(<ModuleLoadResult>{
+                type: ModuleChangeType.Change,
+                moduleName: moduleName,
+                moduleKey,
+                description: `Module Configurations Registered`,
+                hasCompletedLoaded: false,
+                stage: ModuleLoadStage.Registered
+            });
 
             let initStream = this._buildInitStream(this.module);
 
@@ -105,17 +115,10 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                     moduleName: this._moduleMetadata.moduleName,
                     moduleKey: this._moduleMetadata.moduleKey,
                     description: `Module initialising`,
-                    hasCompletedLoaded: false
+                    hasCompletedLoaded: false,
+                    stage: ModuleLoadStage.Initialising
                 });
                 module.initialise();
-                obs.onNext({
-                    type: ModuleChangeType.Change,
-                    moduleName: this._moduleMetadata.moduleName,
-                    moduleKey: this._moduleMetadata.moduleKey,
-                    description: `Module initialised`,
-                    hasCompletedLoaded: true
-                });
-                obs.onCompleted();
             } catch (e) {
                 this._log.error(`Failed to initialise module ${this._moduleMetadata.moduleName}`, e);
                 obs.onNext({
@@ -123,12 +126,22 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                     moduleName: this._moduleMetadata.moduleName,
                     moduleKey: this._moduleMetadata.moduleKey,
                     errorMessage: `Module initialisation failed`,
-                    hasCompletedLoaded: false
+                    hasCompletedLoaded: false,
+                    stage: ModuleLoadStage.Initialising
                 });
                 obs.onCompleted();
                 return () => {
                 };
             }
+            obs.onNext({
+                type: ModuleChangeType.Change,
+                moduleName: this._moduleMetadata.moduleName,
+                moduleKey: this._moduleMetadata.moduleKey,
+                description: `Module initialised`,
+                hasCompletedLoaded: true,
+                stage: ModuleLoadStage.Loaded
+            });
+            obs.onCompleted();
         });
     }
 
@@ -141,7 +154,8 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                     moduleKey: this._moduleMetadata.moduleKey,
                     description: `${result.name} Starting`,
                     prerequisiteResult: result,
-                    hasCompletedLoaded: false
+                    hasCompletedLoaded: false,
+                    stage: ModuleLoadStage.Prerequisites
                 };
             case ResultStage.Completed:
                 return {
@@ -150,7 +164,8 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                     moduleKey: this._moduleMetadata.moduleKey,
                     description: `${result.name} Finished`,
                     prerequisiteResult: result,
-                    hasCompletedLoaded: false
+                    hasCompletedLoaded: false,
+                    stage: ModuleLoadStage.Prerequisites
                 };
             case ResultStage.Error:
                 return {
@@ -159,7 +174,8 @@ export abstract class SingleModuleLoaderBase<TModule extends Module> {
                     moduleKey: this._moduleMetadata.moduleKey,
                     errorMessage: result.errorMessage,
                     prerequisiteResult: result,
-                    hasCompletedLoaded: false
+                    hasCompletedLoaded: false,
+                    stage: ModuleLoadStage.Prerequisites
                 };
             default:
                 let errorMessage = `Unknown stage from the pre-req loader for ${this._moduleMetadata.moduleName} key ${this._moduleMetadata.moduleKey}.`;

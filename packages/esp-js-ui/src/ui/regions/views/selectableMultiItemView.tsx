@@ -18,7 +18,7 @@ export const SelectableMultiItemView =  ({model, className}: SelectableMultiItem
     _log.verbose('Rendering');
 
     let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
-    const onItemClicked = (item: RegionItem) =>  publishEvent(EspUiEventNames.regions_multiItemRegion_selectedItemChanged, { selectedItem: item });
+    const onItemClicked = (item: RegionItem) =>  publishEvent(EspUiEventNames.regions_selectedItemChanged, { selectedItem: item });
 
     if(!model) {
         return null;

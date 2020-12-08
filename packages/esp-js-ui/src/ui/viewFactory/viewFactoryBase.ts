@@ -11,7 +11,7 @@ export interface ViewInstance extends Disposable {
     addDisposable(disposable: Disposable);
 }
 
-export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
+export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = object> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
     private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {

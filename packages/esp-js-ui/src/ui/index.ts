@@ -8,3 +8,4 @@ export * from './espUiEventNames';
 export * from './espUiEvents';
 export * from './idFactory';
 export * from './modelBase';
+export * from './viewBase';

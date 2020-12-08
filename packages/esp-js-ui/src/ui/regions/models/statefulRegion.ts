@@ -1,7 +1,12 @@
-import {RegionModelBase, RegionState} from './regionModelBase';
 import {ViewState} from '../../viewFactory';
+import {RegionBase} from './regionBase';
+import {RegionState} from './regionState';
 
-export class RegionModel extends RegionModelBase<RegionState> {
+export class StatefulRegion<TRegionState extends RegionState = RegionState> extends RegionBase<TRegionState> {
+    public get stateSavingEnabled(): boolean {
+        return true;
+    }
+
     public getRegionState(): RegionState {
         const viewStates =  Array
             .from(this.state.regionRecords.values())

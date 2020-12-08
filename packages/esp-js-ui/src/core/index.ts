@@ -1,4 +1,5 @@
 // Auto-generated 
+export * from './observableExt';
 export * from './decimal';
 export * from './decimalFormat';
 export * from './environment';

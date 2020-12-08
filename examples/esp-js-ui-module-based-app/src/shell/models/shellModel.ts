@@ -4,16 +4,17 @@ import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
 import {
     Logger,
     ModelBase,
-    RegionModel,
     ModuleLoader,
     IdFactory,
     ModuleLoadResult,
-    ModuleChangeType, StateService
+    ModuleChangeType,
+    StateService
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
 import {AppShellModule} from '../appShellModule';
 import {observeEvent} from 'esp-js';
 import {ShellEvents} from '../events';
+import {StatefulRegion} from 'esp-js-ui';
 
 const _log = Logger.create('ShellModel');
 
@@ -23,8 +24,8 @@ export class ShellModel extends ModelBase {
 
     constructor(router,
                 private _moduleLoader: ModuleLoader,
-                private _workspaceRegion: RegionModel,
-                private _blotterRegion: RegionModel,
+                private _workspaceRegion: StatefulRegion,
+                private _blotterRegion: StatefulRegion,
                 private _stateService: StateService
     ) {
         super(IdFactory.createId('shellModelId'), router);

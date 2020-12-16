@@ -1,5 +1,5 @@
-import {RegionItem} from './regionItem';
+import {RegionItemRecord} from './regionItemRecord';
 
 export interface SelectedItemChangedEvent {
-    selectedItem: RegionItem;
+    regionItemRecord: RegionItemRecord;
 }

@@ -2,7 +2,8 @@ import {AppDefaultStateProvider, AppState, RegionState, ViewState} from 'esp-js-
 import {TradingModuleContainerConst} from './trading-module/tradingModuleContainerConst';
 import {RegionNames} from './shell/regionNames';
 import {CashTilePersistedState} from './trading-module/cash-tile/state/stateModel';
-import {BlotterState} from './trading-module/blotter/models/blotterState';
+import {BlotterModuleContainerConst} from './blotter-module/blotterModuleContainerConst';
+import {BlotterState} from './blotter-module/blotter/models/blotterState';
 
 export const DefaultStateProvider: AppDefaultStateProvider = {
     getDefaultAppState(): AppState {
@@ -23,7 +24,7 @@ export const DefaultStateProvider: AppDefaultStateProvider = {
                     stateVersion: 1,
                     viewState: [
                         {
-                            viewFactoryKey: TradingModuleContainerConst.blotterViewFactory,
+                            viewFactoryKey: BlotterModuleContainerConst.blotterViewFactory,
                             state: {
                                 idSortType: 'Ascending'
                             }

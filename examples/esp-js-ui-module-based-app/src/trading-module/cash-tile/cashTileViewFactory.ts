@@ -13,7 +13,7 @@ import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
 import {CashTilePersistedState} from './state/stateModel';
 import {PersistedViewState} from 'esp-js-ui';
 import {CashTileModel, CashTileModelBuilder} from './model/cashTileModel';
-import {RefDataService} from './services/refDataService';
+import {CurrencyPairRefDataService} from './services/currencyPairRefDataService';
 
 const _log = Logger.create('CashTileViewFactory');
 
@@ -34,7 +34,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
         // Get the ref data service from the container.
         // Note in non demo apps, typically all the handlers and objects below would be registered in the container.
         // This keeps dependency/object creation concerns in one place (also makes testing easier).
-        let refDataService = this._container.resolve<RefDataService>(TradingModuleContainerConst.refDataService);
+        let refDataService = this._container.resolve<CurrencyPairRefDataService>(TradingModuleContainerConst.ccyPairRefDataService);
 
         let polimerModel = this._router
             // ***************************

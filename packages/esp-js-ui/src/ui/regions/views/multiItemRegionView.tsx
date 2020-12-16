@@ -3,28 +3,40 @@ import * as React from 'react';
 import * as classnames from 'classnames';
 import {Logger} from '../../../core';
 import {ItemView} from './itemView';
-import {Region, RegionItem} from '../models';
+import {Region, RegionItemRecord} from '../models';
 
 const _log = Logger.create('MultiItemRegionView');
 
 export interface MultiItemRegionViewProps {
     model: Region;
     className?: string;
+    showLoadingUi?: boolean;
+    loadingMessage?: string;
 }
 
-export const MultiItemRegionView = ({model, className}: MultiItemRegionViewProps) => {
+/**
+ * Basic region view which displays multiple regions.
+ *
+ * Typically you'll implement a custom one of these depending on the app.
+ * @constructor
+ */
+export const MultiItemRegionView = ({model, className, showLoadingUi, loadingMessage}: MultiItemRegionViewProps) => {
     _log.verbose('Rendering');
     if (!model) {
         return null;
     }
-    if (model.items.length === 0) {
+    if (model.regionRecords.length === 0) {
         // if there are no items we don't want to spit out any html which may affect layout
         return null;
     }
-    let items = model.items.map((regionItem: RegionItem) => {
-        _log.verbose(`Adding view for region item: [${regionItem.toString()}]`);
-        return (<ItemView key={regionItem.id}>
-            <ConnectableComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext}/>
+    let items = model.regionRecords.map((regionItemRecord: RegionItemRecord) => {
+        _log.verbose(`Adding view for region item record: [${regionItemRecord.toString()}]`);
+        let loadingComponent = showLoadingUi ? (<div>{loadingMessage ? loadingMessage : 'Waiting For View To Load'}</div>) : null;
+        return (<ItemView key={regionItemRecord.id}>
+            {regionItemRecord.modelCreated
+                ? <ConnectableComponent modelId={regionItemRecord.regionItem.modelId} viewContext={regionItemRecord.regionItem.displayContext}/>
+                : loadingComponent
+            }
         </ItemView>);
     });
     let classNames = classnames(className, 'multi-item-container');

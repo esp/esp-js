@@ -2,9 +2,9 @@ import * as Rx from 'rx';
 import {Logger} from 'esp-js-ui';
 import {Unit} from 'esp-js-ui';
 
-const _log = Logger.create('RefDataService');
+const _log = Logger.create('CurrencyPairRefDataService');
 
-export class RefDataService {
+export class CurrencyPairRefDataService {
     private _currencyPairs = [];
     public get currencyPairs() {
         return this._currencyPairs;

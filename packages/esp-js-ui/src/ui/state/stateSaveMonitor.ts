@@ -1,4 +1,7 @@
 import {DisposableBase} from 'esp-js';
+import {Logger} from '../../core';
+
+const _log: Logger = Logger.create('StateSaveMonitor');
 
 export class StateSaveMonitor extends DisposableBase {
     private _isStarted = false;
@@ -12,6 +15,7 @@ export class StateSaveMonitor extends DisposableBase {
             return;
         }
         this._isStarted = true;
+        _log.info(`Starting state save monitor, will save every ${this._saveAfterMs}ms`);
         let setIntervalSubscription = setInterval(
             () => {
                 this._onStateSaveElapsed();
@@ -19,6 +23,7 @@ export class StateSaveMonitor extends DisposableBase {
             this._saveAfterMs
         );
         this.addDisposable(() => {
+            _log.info(`Stopping state save monitor`);
             clearInterval(setIntervalSubscription);
         });
     }

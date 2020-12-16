@@ -1,9 +1,16 @@
 import {Guard} from 'esp-js';
 import {Logger} from '../../core';
+
 const _log = Logger.create('StateService');
 
-export class StateService {
-    public saveState<T>(key:string, state:T): void {
+export interface StateService {
+    saveState<T>(key: string, state: T): void;
+    getState<T>(key: string): T;
+    clearState<T>(key: string): void;
+}
+
+export class LocalStorageStateService implements StateService {
+    saveState<T>(key: string, state: T): void {
         Guard.isString(key, 'appKey must be a string');
         Guard.isDefined(state, 'state must be a defined');
         let stateJson = JSON.stringify(state);
@@ -11,13 +18,13 @@ export class StateService {
         localStorage.setItem(key, stateJson);
     }
 
-    public getState<T>(key:string): T {
+    getState<T>(key: string): T {
         Guard.isString(key, 'key must be a string');
         let state = localStorage.getItem(key);
         return state ? JSON.parse(state) : null;
     }
 
-    public clearState<T>(key:string): void {
+    clearState<T>(key: string): void {
         Guard.isString(key, 'key must be a string');
         localStorage.removeItem(key);
     }

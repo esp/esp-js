@@ -1,8 +1,6 @@
 import {Container} from 'esp-js-di';
-import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance} from './viewFactoryDecorator';
-import {DisposableBase} from 'esp-js';
-import {ViewFactoryMetadata} from './viewFactoryDecorator';
-import {Disposable} from 'esp-js';
+import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance, ViewFactoryMetadata} from './viewFactoryDecorator';
+import {Disposable, DisposableBase} from 'esp-js';
 import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
 import {PersistedViewState} from './state';
 
@@ -29,6 +27,10 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
 
     public get shortName(): string {
         return this._metadata.shortName;
+    }
+
+    public get metadata(): ViewFactoryMetadata {
+        return this._metadata;
     }
 
     public get customMetadata(): any {

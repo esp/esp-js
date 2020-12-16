@@ -9,6 +9,7 @@ import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {Logger} from '../../core';
 import {RegionManager} from '../regions/models';
 import {SystemContainerConst} from '../dependencyInjection';
+import {ModuleLoadStage} from './moduleLoadResult';
 
 const _log: Logger = Logger.create('ModuleBase');
 
@@ -47,7 +48,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         _log.debug('Registering views');
         let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
         viewFactories.forEach(viewFactory => {
-            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleKey, this._moduleMetadata.moduleName, viewFactory);
+            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleKey, this._moduleMetadata.moduleName, viewFactory, this.container);
             this.addDisposable(() => {
                 viewRegistryModel.unregisterViewFactory(viewFactory);
             });
@@ -58,6 +59,6 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         return [];
     }
 
-    onViewsLoaded() {
+    onLoadStageChanged(stage: ModuleLoadStage) {
     }
 }

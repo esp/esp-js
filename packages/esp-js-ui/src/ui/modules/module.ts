@@ -2,6 +2,7 @@ import {DisposableBase} from 'esp-js';
 import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Container} from 'esp-js-di';
+import {ModuleLoadStage} from './moduleLoadResult';
 
 /**
  * Constructor delegate for a module.
@@ -49,7 +50,7 @@ export interface Module extends DisposableBase {
     registerPrerequisites(register: PrerequisiteRegister): void;
 
     /**
-     * Called after the module infrastructure has finished loading any views via default or persisted state
+     * Hook called by the module loader as this module's load stage changes.
      */
-    onViewsLoaded();
+    onLoadStageChanged(stage: ModuleLoadStage);
 }

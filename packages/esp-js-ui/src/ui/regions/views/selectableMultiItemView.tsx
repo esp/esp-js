@@ -3,7 +3,7 @@ import {ConnectableComponent, PublishModelEventContext, PublishModelEventDelegat
 import * as classnames from 'classnames';
 import {Logger} from '../../../core';
 import {ItemView} from './itemView';
-import {Region} from '../models';
+import {Region, RegionItemRecord, SelectedItemChangedEvent} from '../models';
 import {RegionItem} from '../models';
 import {EspUiEventNames} from '../../espUiEventNames';
 
@@ -18,41 +18,42 @@ export const SelectableMultiItemView =  ({model, className}: SelectableMultiItem
     _log.verbose('Rendering');
 
     let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
-    const onItemClicked = (item: RegionItem) =>  publishEvent(EspUiEventNames.regions_selectedItemChanged, { selectedItem: item });
+    const onItemClicked = (record: RegionItemRecord) =>  publishEvent(EspUiEventNames.regions_selectedItemChanged, { regionItemRecord: record } as SelectedItemChangedEvent );
 
     if(!model) {
         return null;
     }
-    if(model.items.length === 0) {
+    if(model.regionRecords.length === 0) {
         // if there are no items we don't want to spit out any html which may affect layout
         return null;
     }
 
-    let selectedItem : RegionItem = model.selectedItem;
+    let selectedItem : RegionItemRecord = model.selectedRecord;
     if(!selectedItem) {
-        selectedItem = model.items[0];
+        selectedItem = model.regionRecords[0];
     }
 
     let header = null;
-    if(model.items.length > 1) {
-        let headerButtons = model.items.map((item: RegionItem) => {
-            let buttonClassNames = classnames(className, {
+    if(model.regionRecords.length > 1) {
+        let headerButtons = model.regionRecords.map((record: RegionItemRecord) => {
+            const buttonClassNames = classnames(className, {
                 'item-header': true,
-                'is-selected': item === model.selectedItem
+                'is-selected': record === model.selectedRecord
             });
-
+            const regionItem = record.regionItem;
             return (<div
-                onClick={() => onItemClicked(item)}
-                key={item.id}
-                className={buttonClassNames}>{item.displayOptions && item.displayOptions.title || 'Item'}
+                onClick={() => onItemClicked(record)}
+                key={record.regionItem.id}
+                className={buttonClassNames}>{regionItem.displayOptions && regionItem.displayOptions.title || 'Item'}
             </div>);
         });
         header = (<div className='item-header-container'>{headerButtons}</div>);
     }
-    let grids = model.items.map((item: RegionItem) => {
-        if(item === selectedItem) {
-            return (<ItemView key={item.id} className='single-item-view-container'>
-                <ConnectableComponent modelId={item.modelId} viewContext={item.displayContext} />
+    let grids = model.regionRecords.map((record: RegionItemRecord) => {
+        if(record === selectedItem) {
+            const regionItem = record.regionItem;
+            return (<ItemView key={regionItem.id} className='single-item-view-container'>
+                <ConnectableComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext} />
             </ItemView>);
         } else {
             return null;

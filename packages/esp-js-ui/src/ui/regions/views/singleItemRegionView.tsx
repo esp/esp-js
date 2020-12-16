@@ -2,27 +2,32 @@ import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import {Region} from '../models';
-import {Logger} from '../../../core';
-
-const _log = Logger.create('SingleItemRegionView');
 
 export interface SingleItemRegionViewProps {
     model: Region;
     className?: string;
+    showLoadingUi?: boolean;
+    loadingMessage?: string;
 }
 
-export const SingleItemRegionView = ({model, className}: SingleItemRegionViewProps) => {
-    _log.verbose('Rendering');
-    if (!model || !model.selectedItem) {
+/**
+ * Basic region view which displays a single region item.
+ *
+ * Typically you'll implement a custom one of these depending on the app.
+ * @constructor
+ */
+export const SingleItemRegionView = ({model, className, showLoadingUi, loadingMessage}: SingleItemRegionViewProps) => {
+    if (!model || !model.selectedRecord) {
         return null;
     }
     let classNames = classnames(className, 'single-item-container');
+    let loadingComponent = showLoadingUi ? (<div>{loadingMessage ? loadingMessage : 'Waiting For View To Load'}</div>) : null;
     return (
         <div className={classNames}>
-            <ConnectableComponent
-                modelId={model.selectedItem.modelId}
-                viewContext={model.selectedItem.displayContext}
-            />
+            {model.selectedRecord.modelCreated
+                ? <ConnectableComponent modelId={model.selectedRecord.regionItem.modelId} viewContext={model.selectedRecord.regionItem.displayContext}/>
+                : loadingComponent
+            }
         </div>
     );
 };

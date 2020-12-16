@@ -1,34 +1,42 @@
 import * as React from 'react';
 import {ConnectableComponent, RouterProvider} from 'esp-js-react';
-import {Container} from 'esp-js-di';
-import {Level, LiteralResolver, Logger, LoggingConfig, StatefulRegion, SystemContainerConfiguration, SystemContainerConst} from 'esp-js-ui';
+import {AppDefaultStateProvider, Level, LiteralResolver, Logger, LoggingConfig, StatefulRegion, SystemContainerConst} from 'esp-js-ui';
 import {ShellModel} from './models/shellModel';
 import {ShellModuleContainerConst} from './shellModuleContainerConst';
 import {RegionNames} from './regionNames';
 import {Router} from 'esp-js';
+import {Shell} from 'esp-js-ui';
+import {DefaultStateProvider} from '../defaultStateProvider';
 
 LoggingConfig.defaultLoggerConfig.level = Level.verbose;
 
-const _log = Logger.create('ShellBootstrapper');
+const _log = Logger.create('AppShell');
 
-export class ShellBootstrapper {
-    private readonly _container: Container;
-    private readonly _rootElement: any;
-
-    constructor() {
-        this._container = new Container();
-        SystemContainerConfiguration.configureContainer(this._container);
-        this._configureContainer();
-        this._container.resolve<Router>(SystemContainerConst.router).enableDiagnosticLogging = true;
-        this._rootElement = this._createRootElement();
-    }
+export class AppShell extends Shell {
+    private _rootElement: any;
 
     get rootElement() {
         return this._rootElement;
     }
 
-    _configureContainer() {
-        this._container
+    get stateSavingEnabled(): boolean {
+        return true;
+    }
+
+    get stateSaveIntervalMs(): number {
+        return 10_000;
+    }
+
+    getDefaultStateProvider(): AppDefaultStateProvider {
+        return DefaultStateProvider;
+    }
+
+    get appStateKey() {
+        return 'esp-demo-app-state';
+    }
+
+    configureContainer() {
+        this.container
             .register(ShellModuleContainerConst.workspace_region, StatefulRegion)
             .inject(
                 {resolver: LiteralResolver.resolverName, value: RegionNames.workspaceRegion},
@@ -37,7 +45,7 @@ export class ShellBootstrapper {
                 SystemContainerConst.views_registry_model,
             )
             .singleton();
-        this._container
+        this.container
             .register(ShellModuleContainerConst.blotter_region, StatefulRegion)
             .inject(
                 {resolver: LiteralResolver.resolverName, value: RegionNames.blotterRegion},
@@ -46,22 +54,28 @@ export class ShellBootstrapper {
                 SystemContainerConst.views_registry_model,
             )
             .singleton();
-        this._container
+        this.container
             .register(ShellModuleContainerConst.shell_model, ShellModel)
             .inject(
                 SystemContainerConst.router,
-                SystemContainerConst.module_loader,
                 ShellModuleContainerConst.workspace_region,
                 ShellModuleContainerConst.blotter_region,
                 SystemContainerConst.state_service,
             );
     }
 
+    start() {
+        super.start();
+        this.container.resolve<Router>(SystemContainerConst.router).enableDiagnosticLogging = true;
+        this._rootElement = this._createRootElement();
+    }
+
     _createRootElement(): any {
-        let shellModel = this._container.resolve<ShellModel>(ShellModuleContainerConst.shell_model);
-        let router = this._container.resolve<Router>(SystemContainerConst.router);
+        // note we inject the Shell itself into the ShellModel so it can carry out
+        // loading based on business logic
+        let shellModel = this.container.resolve<ShellModel>(ShellModuleContainerConst.shell_model, this);
+        let router = this.container.resolve<Router>(SystemContainerConst.router);
         shellModel.observeEvents();
-        shellModel.init();
         _log.verbose('Displaying UI');
         return (
             <RouterProvider router={router}>

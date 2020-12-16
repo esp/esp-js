@@ -9,7 +9,7 @@ export class StatefulRegion<TRegionState extends RegionState = RegionState> exte
 
     public getRegionState(): RegionState {
         const viewStates =  Array
-            .from(this.state.regionRecords.values())
+            .from(this.state.regionRecordsById.values())
             .map<ViewState<any>>(regionItemRecord => this.getViewState(regionItemRecord) )
             .filter(c => c != null);
         if (viewStates.length === 0) {

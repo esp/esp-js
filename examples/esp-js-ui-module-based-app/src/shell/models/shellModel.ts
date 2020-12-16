@@ -1,20 +1,11 @@
 import {viewBinding} from 'esp-js-react';
 import {ShellView} from '../views/shellView';
 import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
-import {
-    Logger,
-    ModelBase,
-    ModuleLoader,
-    IdFactory,
-    ModuleLoadResult,
-    ModuleChangeType,
-    StateService
-} from 'esp-js-ui';
+import {AggregateModuleLoadResult, IdFactory, Logger, ModelBase, ModuleChangeType, Shell, StatefulRegion, StateService, ModuleLoadStage} from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
-import {AppShellModule} from '../appShellModule';
 import {observeEvent} from 'esp-js';
 import {ShellEvents} from '../events';
-import {StatefulRegion} from 'esp-js-ui';
+import {BlotterModule} from '../../blotter-module/blotterModule';
 
 const _log = Logger.create('ShellModel');
 
@@ -22,11 +13,12 @@ const _log = Logger.create('ShellModel');
 export class ShellModel extends ModelBase {
     public splashScreen: SplashScreenModel;
 
-    constructor(router,
-                private _moduleLoader: ModuleLoader,
-                private _workspaceRegion: StatefulRegion,
-                private _blotterRegion: StatefulRegion,
-                private _stateService: StateService
+    constructor(
+        router,
+        private _workspaceRegion: StatefulRegion,
+        private _blotterRegion: StatefulRegion,
+        private _stateService: StateService,
+        private _shell: Shell
     ) {
         super(IdFactory.createId('shellModelId'), router);
         this.splashScreen = {
@@ -34,51 +26,35 @@ export class ShellModel extends ModelBase {
         };
     }
 
-    public init() {
-        this.ensureOnDispatchLoop(() => {
-            this.splashScreen = {
-                state: SplashScreenState.Loading,
-                message: `Loading Modules`
-            };
-
-            let moduleLoadStream = this._moduleLoader.loadModules(AppShellModule, TradingModule);
-            this.addDisposable(moduleLoadStream.subscribeWithRouter(this.router, this.modelId, (change: ModuleLoadResult) => {
-                    _log.debug(`Load Change detected`, change);
-
-                    if (change.type === ModuleChangeType.Error) {
-                        _log.error(`Pre-requisite failed. Pre Req Name: ${change.prerequisiteResult.name}, Error Message: ${change.errorMessage}`);
-                    } else {
-                        this.splashScreen = {
-                            state: SplashScreenState.Loading,
-                            message: change.description
-                        };
-                    }
-                },
-                e => {
-                    _log.error(`Error in the module load stream ${e}.`, e);
-                    this.splashScreen = {
-                        state: SplashScreenState.Error,
-                        message: `There has been an error loading the modules.  Please refresh`
-                    };
-                },
-                () => {
-                    _log.info(`Modules loaded, loading layout`);
-                    this._moduleLoader.loadViews();
-                    this.splashScreen = {
-                        state: SplashScreenState.Idle
-                    };
-                }));
-        });
-    }
-
     observeEvents() {
         super.observeEvents();
         this._blotterRegion.observeEvents();
         this._workspaceRegion.observeEvents();
-    }
-
-    getTitle(): string {
-        return 'Shell';
+        // schedule a call on the routes dispatch loop for this model.
+        // This ensure's any observers will get notified of state changes
+        this.ensureOnDispatchLoop(() => {
+            this.addDisposable(this._shell.moduleLoadResults.subscribe((aggregateModuleLoadResult: AggregateModuleLoadResult) => {
+                    let currentModuleLoadResult = aggregateModuleLoadResult.currentModuleLoadResult;
+                    _log.debug(`Load Change detected for ${currentModuleLoadResult.moduleKey}, stage: ${ModuleLoadStage[currentModuleLoadResult.stage]}`);
+                    if (currentModuleLoadResult.type === ModuleChangeType.Error) {
+                        _log.error(`Pre-requisite failed. Module ${currentModuleLoadResult.moduleKey}, Pre-requisite: ${currentModuleLoadResult.prerequisiteResult.name}, Error: ${currentModuleLoadResult.errorMessage}`);
+                    }
+                },
+                e => {
+                    _log.error(`Error in the module load stream ${e}.`, e);
+                    this.ensureOnDispatchLoop(() => {
+                        this.splashScreen = {
+                            state: SplashScreenState.Error,
+                            message: `There has been an error loading the modules.  Please refresh`
+                        };
+                    });
+                },
+                () => {
+                    _log.info(`Modules loaded`);
+                }));
+        });
+        // Typically this might happen after login
+        this._shell.load(TradingModule, BlotterModule);
     }
 
     get workspaceRegion() {
@@ -92,7 +68,7 @@ export class ShellModel extends ModelBase {
     @observeEvent(ShellEvents.clearStateAndReload)
     private _clearStateAndReload() {
         _log.info(`Clearing state and reloading`);
-        this._stateService.clearState(AppShellModule.APP_STATE_KEY);
+        this._stateService.clearState(this._shell.appStateKey);
         window.location.reload();
     }
 }

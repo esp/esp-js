@@ -8,6 +8,7 @@ import {
 import {BlotterState} from './blotterState';
 import {observeEvent} from 'esp-js';
 import {BlotterEvents} from '../events';
+import {AccountsRefDataService} from '../services/accountsRefDataService';
 
 interface Trade {
     id: string;
@@ -16,6 +17,11 @@ interface Trade {
 
 export type SortType = 'Ascending' | 'Descending';
 
+/**
+ * An example OO model, all the OO benefits but none of the immutability benefits which work well with react.
+ *
+ * i.e. this would need to internally consider exposed state immutability and it's effect on how react renders.
+ */
 @viewBinding(BlotterView)
 export class BlotterModel extends ModelBase {
     private _regionManager: RegionManager;
@@ -25,18 +31,13 @@ export class BlotterModel extends ModelBase {
     constructor(
         router,
         regionManager: RegionManager,
+        accountsRefDataService: AccountsRefDataService,
         initialState: BlotterState // needs to be last due to how it's resolved via the container
     ) {
         super(IdFactory.createId('blotterModel'), router);
         this._regionManager = regionManager;
         this._idSortType = initialState.idSortType;
-        this._trades = [
-            { id: 'trade1', account: 'account_foo'},
-            { id: 'trade2', account: 'account_foo'},
-            { id: 'trade3', account: 'account_foo'},
-            { id: 'trade4', account: 'account_bar'},
-            { id: 'trade5', account: 'account_bar'},
-        ];
+        this._trades = accountsRefDataService.accounts.map((account, index) => ({ id: `trade${index}`, account: account}));
         this._sortTrades();
     }
 

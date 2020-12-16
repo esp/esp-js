@@ -4,10 +4,19 @@ import {MultiItemRegionView, SingleItemRegionView} from 'esp-js-ui';
 import {ShellModel} from '../models/shellModel';
 import {SplashScreenState} from '../models/splashScreenModel';
 import {ShellEvents} from '../events';
+import {Region} from 'esp-js-ui';
 
 export interface ShellViewProps {
     model: ShellModel;
 }
+
+const MultiItemRegionViewWrapped = ({model, }: { model: Region} ) => {
+    return (<MultiItemRegionView model={model} showLoadingUi={true} />);
+};
+
+const SingleItemRegionViewWrapped = ({model, }: { model: Region} ) => {
+    return (<SingleItemRegionView model={model} showLoadingUi={true} />);
+};
 
 export const ShellView = ({model}: ShellViewProps) => {
     let mainContent;
@@ -15,25 +24,23 @@ export const ShellView = ({model}: ShellViewProps) => {
     const clearStateAndReload: () => void = React.useCallback(() => {
         publishEvent(ShellEvents.clearStateAndReload, {});
     }, []);
-    if (model.splashScreen.state === SplashScreenState.Idle) {
+    if (model.splashScreen.state === SplashScreenState.Default) {
         mainContent = (<div className='main-content'>
             <div className='workspace'>
                 <ConnectableComponent
-                    view={MultiItemRegionView}
+                    view={MultiItemRegionViewWrapped}
                     modelId={model.workspaceRegion.modelId}
                 />
             </div>
             <div className='blotter'>
                 <ConnectableComponent
-                    view={SingleItemRegionView}
+                    view={SingleItemRegionViewWrapped}
                     className='blotter-container'
                     modelId={model.blotterRegion.modelId}
                 />
             </div>
         </div>);
-    } else if (model.splashScreen.state === SplashScreenState.Default) {
-        mainContent = null;
-    } else {
+    } else if (model.splashScreen.state === SplashScreenState.Error) {
         mainContent = (
             <div>
                 {model.splashScreen.message}

@@ -3,6 +3,7 @@ import {Logger} from '../../core';
 import {ModelBase} from '../modelBase';
 import {getViewFactoryMetadata, ViewFactoryMetadata} from './index';
 import {ViewFactoryBase} from './viewFactoryBase';
+import {Container} from 'esp-js-di';
 
 const _log = Logger.create('ViewRegistryModel');
 
@@ -18,6 +19,7 @@ export interface ViewFactoryEntry {
     customMetadata?: any;
     moduleName: string;
     moduleKey: string;
+    container: Container;
 }
 
 interface KeyToFactoryEntryMap {
@@ -49,7 +51,7 @@ export class ViewRegistryModel extends ModelBase {
         this.viewsMetadata = [...this._getViewsMetaData()];
     }
 
-    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase, any>): void {
+    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase, any>, factoriesContainer: Container): void {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(viewFactory, 'viewFactory must be defined');
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);
@@ -61,7 +63,8 @@ export class ViewRegistryModel extends ModelBase {
                 shortName: metadata.shortName,
                 customMetadata: metadata.customMetadata,
                 moduleName: moduleName,
-                moduleKey: moduleKey
+                moduleKey: moduleKey,
+                container: factoriesContainer
             });
         });
     }

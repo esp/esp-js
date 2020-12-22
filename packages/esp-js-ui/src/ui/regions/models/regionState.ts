@@ -1,6 +1,6 @@
 import {ViewState} from '../../viewFactory';
 
-export interface RegionState {
+export interface RegionState<TViewState extends ViewState<object>> {
     regionName: string;
     /**
      * Provides a version for the regions state.
@@ -9,5 +9,5 @@ export interface RegionState {
      * You'd typically do this by overriding the call to `region.getRegionState(regionState)`
      */
     stateVersion: number;
-    viewState: ViewState<any>[];
+    viewState: TViewState[];
 }

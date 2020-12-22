@@ -6,7 +6,7 @@ import {RegionState} from '../regions/models';
  * Given all views are displayed in Regions, the state is therefore modeled around the regions.
  */
 export interface AppState {
-    regionState: RegionState[];
+    regionState: RegionState<any>[];
 }
 
 /**

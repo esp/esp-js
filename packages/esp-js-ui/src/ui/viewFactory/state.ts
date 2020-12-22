@@ -15,6 +15,6 @@ export interface PersistedViewState<TViewState> {
 /**
  * An internal interfaces used by the state functionality which adds some additional metadata so a view can be tied to it's ViewFactory
  */
-export interface ViewState<TState> extends PersistedViewState<TState> {
+export interface ViewState<TState extends object> extends PersistedViewState<TState> {
     viewFactoryKey: string;
 }

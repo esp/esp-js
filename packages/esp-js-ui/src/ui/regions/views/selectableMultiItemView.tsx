@@ -4,7 +4,6 @@ import * as classnames from 'classnames';
 import {Logger} from '../../../core';
 import {ItemView} from './itemView';
 import {Region, RegionItemRecord, SelectedItemChangedEvent} from '../models';
-import {RegionItem} from '../models';
 import {EspUiEventNames} from '../../espUiEventNames';
 
 const _log = Logger.create('MultiItemRegionView');

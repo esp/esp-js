@@ -1,5 +1,5 @@
 import {RegionItem} from './regionItem';
-import {ViewFactoryEntry, ViewFactoryMetadata, ViewState} from '../../viewFactory';
+import {ViewFactoryEntry, ViewFactoryMetadata} from '../../viewFactory';
 import {DisposableBase, Guard} from 'esp-js';
 import * as uuid from 'uuid';
 
@@ -9,11 +9,9 @@ export class RegionItemRecord extends DisposableBase {
     private readonly _viewFactoryMetadata: ViewFactoryMetadata;
     private readonly _model: any;
     private readonly _viewFactoryEntry: ViewFactoryEntry;
-    private readonly _viewState: ViewState<object>;
 
     constructor(
         viewFactoryEntry: ViewFactoryEntry,
-        viewState: ViewState<object>,
     );
     constructor(
         regionItem: RegionItem,
@@ -23,11 +21,9 @@ export class RegionItemRecord extends DisposableBase {
     constructor(...args: any[]) {
         super();
         this._id = uuid.v4();
-        if (args.length === 2) {
+        if (args.length === 1) {
             Guard.isDefined(args[0], `viewFactoryEntry required`);
-            Guard.isDefined(args[1], `viewState required`);
             this._viewFactoryEntry = args[0];
-            this._viewState = args[1];
         } else {
             this._regionItem = args[0];
             this._viewFactoryMetadata = args[1];
@@ -39,10 +35,6 @@ export class RegionItemRecord extends DisposableBase {
         return this._id;
     }
 
-    public get regionItem(): RegionItem {
-        return this._regionItem;
-    }
-
     public get viewFactoryMetadata(): ViewFactoryMetadata {
         return this._viewFactoryMetadata;
     }
@@ -51,16 +43,28 @@ export class RegionItemRecord extends DisposableBase {
         return this._viewFactoryEntry;
     }
 
-    public get viewState(): ViewState<object> {
-        return this._viewState;
-    }
-
     public get model(): any {
         return this._model;
     }
 
+    public get modelId(): string {
+        return this.modelCreated ? this._regionItem.modelId : null;
+    }
+
+    public get title(): string {
+        return this.modelCreated ? this._regionItem.title : null;
+    }
+
+    public get displayContext(): string {
+        return this.modelCreated ? this._regionItem.displayContext : null;
+    }
+
     public get modelCreated(): boolean {
         return !!this._regionItem && !!this._model && !!this._viewFactoryMetadata;
+    }
+
+    public get regionItem(): RegionItem {
+        return this._regionItem;
     }
 
     public update(regionItem: RegionItem, viewFactoryMetadata: ViewFactoryMetadata, model: any): RegionItemRecord {

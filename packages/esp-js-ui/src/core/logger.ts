@@ -69,12 +69,10 @@ export class ConsoleSink implements Sink {
         // However given the amount of times logs are written the below doesn't allocate anything extra
         const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;
         if (logEvent.level === Level.error) {
-            // for errors we always dump additionalDetails as these are the actual errors
-            const additionalArgsWithError = logEvent.error ? [logEvent.error, ...additionalArgs] : additionalArgs;
-            if (logEvent.dumpAdditionalDetailsToConsole && hasMarkers) {
-                consoleError(logLine, logEvent.markers, [logEvent.error, ...additionalArgsWithError]);
+            if (hasMarkers) {
+                consoleError(logLine, logEvent.markers, logEvent.error);
             } else {
-                consoleError(logLine,  [logEvent.error, ...additionalArgsWithError]);
+                consoleError(logLine, logEvent.error);
             }
         } else if (logEvent.level === Level.warn) {
             if (logEvent.dumpAdditionalDetailsToConsole) {

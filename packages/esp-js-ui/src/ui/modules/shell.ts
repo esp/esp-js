@@ -155,11 +155,11 @@ export abstract class Shell extends DisposableBase {
             return;
         }
         let appState: AppState = { regionState: [] };
-        this._regionManager.getRegions().forEach((region: RegionBase) => {
+        this._regionManager.getRegions().forEach((region: RegionBase<any, any>) => {
             if (!region.stateSavingEnabled) {
                 return;
             }
-            let regionState: RegionState = region.getRegionState();
+            let regionState: RegionState<any> = region.getRegionState();
             if (regionState) {
                 appState.regionState.push(regionState);
             }
@@ -191,7 +191,7 @@ export abstract class Shell extends DisposableBase {
     }
 
     private _unloadRegions() {
-        this._regionManager.getRegions().forEach((region: RegionBase) => {
+        this._regionManager.getRegions().forEach((region: RegionBase<any, any>) => {
             region.unload();
         });
     }

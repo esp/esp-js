@@ -18,7 +18,7 @@ export const DefaultStateProvider: AppDefaultStateProvider = {
                             state: {currencyPair: symbol}
                         } as ViewState<CashTilePersistedState> ))
                     ]
-                } as RegionState,
+                } as RegionState<ViewState<CashTilePersistedState>>,
                 {
                     regionName: RegionNames.blotterRegion,
                     stateVersion: 1,
@@ -30,7 +30,7 @@ export const DefaultStateProvider: AppDefaultStateProvider = {
                             }
                         } as ViewState<BlotterState>
                     ]
-                } as RegionState
+                } as RegionState<ViewState<BlotterState>>
             ]
         };
     }

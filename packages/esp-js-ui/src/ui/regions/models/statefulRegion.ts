@@ -1,13 +1,14 @@
 import {ViewState} from '../../viewFactory';
 import {RegionBase} from './regionBase';
 import {RegionState} from './regionState';
+import {RegionItemRecord} from './regionItemRecord';
 
-export class StatefulRegion<TRegionState extends RegionState = RegionState> extends RegionBase<TRegionState> {
+export class StatefulRegion extends RegionBase<ViewState<object>, RegionState<ViewState<object>>> {
     public get stateSavingEnabled(): boolean {
         return true;
     }
 
-    public getRegionState(): RegionState {
+    public getRegionState(): RegionState<ViewState<object>> {
         const viewStates =  Array
             .from(this.state.regionRecordsById.values())
             .map<ViewState<any>>(regionItemRecord => this.getViewState(regionItemRecord) )
@@ -21,5 +22,13 @@ export class StatefulRegion<TRegionState extends RegionState = RegionState> exte
                 viewState: viewStates,
             };
         }
+    }
+
+    protected createViewState(regionItemRecord: RegionItemRecord, modelState): ViewState<object> {
+        return {
+            viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
+            stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
+            state: modelState
+        };
     }
 }

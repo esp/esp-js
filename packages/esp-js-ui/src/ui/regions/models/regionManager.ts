@@ -7,6 +7,7 @@ import {EspUiEvents} from '../../espUiEvents';
 import {RegionItemRecord} from './regionItemRecord';
 import {RegionBase} from './regionBase';
 import {RegionState} from './regionState';
+import {ViewState} from '../../viewFactory';
 
 const _log = Logger.create('RegionManager');
 
@@ -20,7 +21,7 @@ export interface DisplayOptions {
 
 // exists to decouple all the region and their models from the rest of the app
 export class RegionManager extends ModelBase {
-    private _regions: { [regionName: string]: RegionBase } = { };
+    private _regions: { [regionName: string]: RegionBase<any, any> } = { };
 
     public static ModelId = 'region-manager';
 
@@ -31,7 +32,7 @@ export class RegionManager extends ModelBase {
     }
 
     // adds a region to the region manager
-    public registerRegion(regionName: string, regionRecord: RegionBase) {
+    public registerRegion(regionName: string, regionRecord: RegionBase<any, any>) {
         Guard.stringIsNotEmpty(regionName, 'region name required');
         Guard.isObject(regionRecord, 'regionRecord must be an object');
         Guard.isFunction(regionRecord.addRegionItem, 'regionRecord.onAdding must be a function');
@@ -45,11 +46,11 @@ export class RegionManager extends ModelBase {
         this._regions[regionName] = regionRecord;
     }
 
-    public getRegions(): RegionBase[] {
+    public getRegions(): RegionBase<any, any>[] {
         return Object.values(this._regions);
     }
 
-    public getRegion(regionName: string): RegionBase {
+    public getRegion<TViewState extends ViewState<object>, TRegionState extends RegionState<TViewState>>(regionName: string): RegionBase<TViewState, TRegionState> {
         return this._regions[regionName];
     }
 
@@ -58,7 +59,7 @@ export class RegionManager extends ModelBase {
         delete this._regions[regionName];
     }
 
-    public loadRegion(regionState: RegionState): void {
+    public loadRegion(regionState: RegionState<any>): void {
         Guard.isObject(regionState, 'regionState must be an object');
         _log.debug(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.viewState ? regionState.viewState.length : 0}`);
         let region = this._regions[regionState.regionName];

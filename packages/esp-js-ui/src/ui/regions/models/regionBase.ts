@@ -15,6 +15,31 @@ import {SystemContainerConst} from '../../dependencyInjection';
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
 
+export enum RegionChangeType {
+    RecordAdded,
+    RecordRemoved,
+    RecordUpdated,
+    RecordSelected,
+}
+
+export interface RegionChangedState<TViewState extends ViewState<object>> {
+    added?: RegionItemRecordWithState<TViewState> | RegionItemRecord;
+    removed?: RegionItemRecord;
+    updated?: RegionItemRecord;
+    selected: RegionItemRecord;
+}
+
+export interface RegionItemRecordWithState<TViewState extends ViewState<object>> {
+    record: RegionItemRecord;
+    viewState: TViewState;
+}
+
+export namespace RegionItemRecordWithState {
+    export const isRegionItemRecordWithState = <TViewState extends ViewState<object>>(obj: RegionItemRecordWithState<TViewState> | RegionItemRecord): obj is RegionItemRecordWithState<TViewState> => {
+        return 'viewState' in obj && 'record' in obj;
+    };
+}
+
 export abstract class RegionBase<TViewState extends ViewState<object>, TRegionState extends RegionState<TViewState>> extends ModelBase {
     // Helper to kep our underlying state collections immutable.
     // This is really best effort, if a caller modifies this then not much we can do.
@@ -76,19 +101,19 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
             this._setItemsArrayAndSelectedItem();
             return record;
         },
-        reset() {
-            this._regionRecordsByRecordId = new Map();
-            this._setItemsArrayAndSelectedItem();
-        },
-        unload() {
+        unload(): RegionItemRecord[] {
             Guard.isFalsey(this._isUnloading, 'Already unloading');
             this._isUnloading = true;
+            const removedItems = [];
             this._regionRecordsByRecordId.forEach((regionItemRecord: RegionItemRecord) => {
                 regionItemRecord.model.dispose();
                 regionItemRecord.dispose();
+                removedItems.push(regionItemRecord);
             });
-            this.reset();
+            this._regionRecordsByRecordId = new Map();
+            this._setItemsArrayAndSelectedItem();
             this._isUnloading = false;
+            return removedItems;
         },
         _setItemsArrayAndSelectedItem() {
             this._regionItems = Array.from<RegionItemRecord>(this._regionRecordsByRecordId.values())
@@ -168,8 +193,8 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
 
     public abstract getRegionState(): TRegionState;
 
-    public reset() {
-        this._state.reset();
+    protected onStateChanged(type: RegionChangeType, change: RegionChangedState<TViewState>) {
+
     }
 
     public existsInRegion(modelId: string): boolean;
@@ -196,10 +221,15 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
     }
 
     public setSelected(item: RegionItemRecord | RegionItem) {
+        if (!this.isOnDispatchLoop()) {
+            this.setSelected(item);
+            return;
+        }
         this._state.setSelected(item);
+        this.onStateChanged(RegionChangeType.RecordSelected, { selected: this._state.selectedRecord });
     }
 
-    public addRegionItem(regionItem: RegionItem): RegionItemRecord {
+    public addRegionItem(regionItem: RegionItem): void {
         if (!this.isOnDispatchLoop()) {
             this.ensureOnDispatchLoop(() => this.addRegionItem(regionItem));
             return;
@@ -213,22 +243,20 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
         const viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
         let regionItemRecord = new RegionItemRecord(regionItem, viewFactoryMetadata, model);
         this._addRegionRecord(regionItemRecord);
-        return regionItemRecord;
     }
 
-    public removeRegionItem(regionItem: RegionItem): RegionItemRecord {
+    public removeRegionItem(regionItem: RegionItem): void {
         if (!this.isOnDispatchLoop()) {
             this.ensureOnDispatchLoop(() => this.removeRegionItem(regionItem));
             return;
         }
         let regionItemRecord = this._state.findByRecordRegionItemId(regionItem.id);
-        this._removeRegionItemRecord(regionItemRecord);
-        return regionItemRecord;
+        this._removeRegionRecord(regionItemRecord);
     }
 
     private _addRegionRecord(regionItemRecord: RegionItemRecord, state?: TViewState): RegionItemRecord {
-        Guard.isTruthy(this._router.isOnDispatchLoopFor(this.modelId), `Protected methods should be called on correct dispatch loop`);
         if (!regionItemRecord.modelCreated) {
+            _log.debug(`Region ${this._regionName}. Adding record [${regionItemRecord.toString()}]. Model not created so will wait for it's module to load.`);
             const singleModuleLoader = regionItemRecord.viewFactoryEntry.container.resolve<SingleModuleLoader>(SystemContainerConst.single_module_loader);
             if (singleModuleLoader.hasLoaded) {
                 const model = regionItemRecord.viewFactoryEntry.factory.createView(state);
@@ -242,31 +270,35 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
                         this.router,
                         this.modelId,
                         () => {
+                            _log.debug(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
                             const model = regionItemRecord.viewFactoryEntry.factory.createView(state);
                             const regionItem = new RegionItem(model.modelId);
                             regionItemRecord = regionItemRecord.update(regionItem, regionItemRecord.viewFactoryEntry.factory.metadata, model);
-                            this._updateRegionItemRecord(regionItemRecord);
+                            this._state.updateRecord(regionItemRecord);
+                            this.onStateChanged(RegionChangeType.RecordUpdated, {updated: regionItemRecord, selected: this._state.selectedRecord});
                         },
                         (err: any) => {
-                            _log.error(`Error waiting for module to load inorder to create view from factory ${state.viewFactoryKey}`, err);
+                            _log.error(`Region [${this._regionName}]. Error waiting for module to load inorder to create view from factory ${state.viewFactoryKey}, record [${regionItemRecord.toString()}].`, err);
                             // flag view as error
                         }
                     )
                 );
             }
+        } else {
+            _log.debug(`Region ${this._regionName}. Adding record [${regionItemRecord.toString()}].`);
         }
         this._state.addRecord(regionItemRecord);
+        const added: RegionItemRecordWithState<TViewState> | RegionItemRecord = state
+            ? { record: regionItemRecord, viewState: state }
+            : regionItemRecord;
+        this.onStateChanged(RegionChangeType.RecordAdded, {added: added, selected: this._state.selectedRecord});
         return regionItemRecord;
     }
 
-    private _updateRegionItemRecord(regionItemRecord: RegionItemRecord) {
-        this._state.updateRecord(regionItemRecord);
-    }
-
-    private _removeRegionItemRecord(regionItemRecord: RegionItemRecord): RegionItemRecord {
-        Guard.isTruthy(this._router.isOnDispatchLoopFor(this.modelId), `Protected methods should be called on correct dispatch loop`);
-        _log.debug(`Removing from region ${this._regionName}. ${regionItemRecord.toString()}`);
-        return this._state.removeByRecordId(regionItemRecord.id);
+    private _removeRegionRecord(regionItemRecord: RegionItemRecord): void {
+        _log.debug(`Region ${this._regionName}. Removing record [${regionItemRecord.toString()}].`);
+        this._state.removeByRecordId(regionItemRecord.id);
+        this.onStateChanged(RegionChangeType.RecordRemoved, {removed: regionItemRecord, selected: this._state.selectedRecord});
     }
 
     protected getViewState(regionItemRecord: RegionItemRecord): TViewState {
@@ -296,20 +328,30 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
     protected abstract createViewState(regionItemRecord: RegionItemRecord, modelState): TViewState;
 
     public load(regionState: TRegionState)  {
+        Guard.isDefined(regionState, `regionState not defined`);
+        Guard.isArray(regionState.viewState, `regionState.viewState is not an array`);
         this.ensureOnDispatchLoop(() => {
-            if (regionState) {
-                regionState.viewState.forEach((viewState: TViewState) => {
-                    this.loadView(viewState);
-                });
-            }
+            _log.debug(`Region ${this._regionName}. Loading state. View count: ${regionState.viewState.length}.`);
+            const addedRecords = [];
+            regionState.viewState.forEach((viewState: TViewState) => {
+                addedRecords.push(this._loadView(viewState));
+            });
         });
     }
 
     public unload() {
-        this._state.unload();
+        if (!this.isOnDispatchLoop()) {
+            this.ensureOnDispatchLoop(() => this.unload());
+            return;
+        }
+        _log.debug(`Region ${this._regionName}. Unloading.`);
+        const unloadedItems = this._state.unload();
+        unloadedItems.forEach(record => {
+            this.onStateChanged(RegionChangeType.RecordRemoved, {removed: record, selected: this._state.selectedRecord});
+        });
     }
 
-    protected loadView(viewState: TViewState): RegionItemRecord {
+    private _loadView(viewState: TViewState): RegionItemRecord {
         Guard.isTruthy(this._router.isOnDispatchLoopFor(this.modelId), `Protected methods should be called on correct dispatch loop`);
         // At this point the view factories should have been loaded, however each module may not have finished loading.
         // ViewFactories assume the module is loaded, it would be complicated to push this concern to them, really that's a higher level concern.

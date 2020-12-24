@@ -80,6 +80,12 @@ export class Guard {
             doThrow(message);
         }
     }
+
+    public static isArray(value: any, message: string): void {
+        if (!Array.isArray(value)) {
+            doThrow(message);
+        }
+    }
 }
 
 function doThrow(message: string) {

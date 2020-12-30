@@ -39,20 +39,18 @@ export const SelectableMultiItemView =  ({model, className}: SelectableMultiItem
                 'item-header': true,
                 'is-selected': record === model.selectedRecord
             });
-            const regionItem = record.regionItem;
             return (<div
                 onClick={() => onItemClicked(record)}
-                key={record.regionItem.id}
-                className={buttonClassNames}>{regionItem.displayOptions && regionItem.displayOptions.title || 'Item'}
+                key={record.id}
+                className={buttonClassNames}>{record.title || 'Item'}
             </div>);
         });
         header = (<div className='item-header-container'>{headerButtons}</div>);
     }
     let grids = model.regionRecords.map((record: RegionItemRecord) => {
         if(record === selectedItem) {
-            const regionItem = record.regionItem;
-            return (<ItemView key={regionItem.id} className='single-item-view-container'>
-                <ConnectableComponent modelId={regionItem.modelId} viewContext={regionItem.displayContext} />
+            return (<ItemView key={record.id} className='single-item-view-container'>
+                <ConnectableComponent modelId={record.modelId} viewContext={record.displayContext} />
             </ItemView>);
         } else {
             return null;

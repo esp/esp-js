@@ -26,6 +26,7 @@ export class StatefulRegion extends RegionBase<ViewState<object>, RegionState<Vi
 
     protected createViewState(regionItemRecord: RegionItemRecord, modelState): ViewState<object> {
         return {
+            regionRecordId: regionItemRecord.id,
             viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
             stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
             state: modelState

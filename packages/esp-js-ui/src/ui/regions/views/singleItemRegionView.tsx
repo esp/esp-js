@@ -25,7 +25,7 @@ export const SingleItemRegionView = ({model, className, showLoadingUi, loadingMe
     return (
         <div className={classNames}>
             {model.selectedRecord.modelCreated
-                ? <ConnectableComponent modelId={model.selectedRecord.regionItem.modelId} viewContext={model.selectedRecord.regionItem.displayContext}/>
+                ? <ConnectableComponent modelId={model.selectedRecord.modelId} viewContext={model.selectedRecord.displayContext}/>
                 : loadingComponent
             }
         </div>

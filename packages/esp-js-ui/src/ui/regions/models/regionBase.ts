@@ -11,6 +11,7 @@ import {RegionManager} from './regionManager';
 import {RegionState} from './regionState';
 import {SingleModuleLoader} from '../../modules';
 import {SystemContainerConst} from '../../dependencyInjection';
+import * as uuid from 'uuid';
 
 const _log = Logger.create('RegionsModelBase');
 let _modelIdSeed = 1;
@@ -59,8 +60,8 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
         get regionRecords(): RegionItemRecord[] {
             return this._regionRecords;
         },
-        has(item: RegionItem): boolean {
-            const regionItemRecord: RegionItemRecord = this.findByRecordRegionItemId(item.id);
+        has(regionRecordId: string): boolean {
+            const regionItemRecord: RegionItemRecord = this.findRecordById(regionRecordId);
             return !!regionItemRecord;
         },
         getByRecordId(id): RegionItemRecord {
@@ -68,10 +69,10 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
         },
         setSelected(item: RegionItemRecord | RegionItem) {
             let record: RegionItemRecord;
-            if ('regionItem' in item) {
-                record = item;
+            if ('regionRecordId' in item) {
+                record = this.findRecordById(item.regionRecordId);
             } else {
-                record = this.findByRecordRegionItemId(item.id);
+                record = item;
             }
             Guard.isTruthy(this._regionRecordsByRecordId.has(record.id), `record not found`);
             this._selectedRecord = record;
@@ -80,25 +81,19 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
             Guard.isDefined(record, `record must be defined`);
             Guard.isFalsey(this._regionRecordsByRecordId.has(record.id), `record not found`);
             this._regionRecordsByRecordId = new Map<string, RegionItemRecord>(this._regionRecordsByRecordId.set(record.id, record));
-            this._setItemsArrayAndSelectedItem();
+            this._setRecordsArrayAndSelectedItem();
         },
         updateRecord(record: RegionItemRecord) {
             Guard.isDefined(record, `record must be defined`);
             this._deleteByRecordId(record.id);
             this.addRecord(record);
         },
-        removeByRegionItemId(id: string): RegionItemRecord {
-            Guard.isString(id, `id must be defined and be a string`);
-            const regionItemRecord: RegionItemRecord = this.findByRecordRegionItemId(id);
-            Guard.isDefined(regionItemRecord, `record not found`);
-            return this.removeByRecordId(regionItemRecord.id);
-        },
         removeByRecordId(id: string): RegionItemRecord {
             Guard.isString(id, `id must be defined and be a string`);
             Guard.isTruthy(this._regionRecordsByRecordId.has(id), `record not found`);
             const record = this._regionRecordsByRecordId.get(id);
             this._deleteByRecordId(record.id);
-            this._setItemsArrayAndSelectedItem();
+            this._setRecordsArrayAndSelectedItem();
             return record;
         },
         unload(): RegionItemRecord[] {
@@ -111,14 +106,11 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
                 removedItems.push(regionItemRecord);
             });
             this._regionRecordsByRecordId = new Map();
-            this._setItemsArrayAndSelectedItem();
+            this._setRecordsArrayAndSelectedItem();
             this._isUnloading = false;
             return removedItems;
         },
-        _setItemsArrayAndSelectedItem() {
-            this._regionItems = Array.from<RegionItemRecord>(this._regionRecordsByRecordId.values())
-                .filter(r => r.modelCreated)
-                .map(r => (<RegionItemRecord>r).regionItem);
+        _setRecordsArrayAndSelectedItem() {
             this._regionRecords = Array.from<RegionItemRecord>(this._regionRecordsByRecordId.values());
             if (this._regionRecords.length === 0) {
                 this._selectedRecord = null;
@@ -138,10 +130,10 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
             this._regionRecordsByRecordId.delete(id);
             this._regionRecordsByRecordId = new Map<string, RegionItemRecord>(this._regionRecordsByRecordId);
         },
-        findByRecordRegionItemId(regionItemId: string) {
+        findRecordById(recordId: string) {
             return Array
                 .from<RegionItemRecord>(this._regionRecordsByRecordId.values())
-                .find(r => r.modelCreated && r.regionItem.id === regionItemId);
+                .find(r => r.modelCreated && r.id === recordId);
         }
     };
 
@@ -220,10 +212,17 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
         this.setSelected(ev.regionItemRecord);
     }
 
-    public setSelected(item: RegionItemRecord | RegionItem) {
+    /**
+     * Set the selected item
+     * @param item: a RegionItemRecord, RegionItem or a string representing the RegionItemRecord.id
+     */
+    public setSelected(item: RegionItemRecord | RegionItem | string) {
         if (!this.isOnDispatchLoop()) {
             this.setSelected(item);
             return;
+        }
+        if (isString(item)) {
+            item = this._state.findRecordById(item);
         }
         this._state.setSelected(item);
         this.onStateChanged(RegionChangeType.RecordSelected, { selected: this._state.selectedRecord });
@@ -235,7 +234,7 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
             return;
         }
         _log.debug(`Adding to region ${this._regionName}. ${regionItem.toString()}`);
-        Guard.isFalsey(this._state.has(regionItem), `Model ${regionItem.modelId} already in region`);
+        Guard.isFalsey(this._state.has(regionItem.regionRecordId), `Model ${regionItem.modelId} already in region against region record ${regionItem.regionRecordId}`);
         // We get the initial model and store a reference to it.
         // In esp the top level model instance never changes.
         // This is true even for immutable models, they always have a parent that doesn't change, the store that hangs off that parent will change.
@@ -250,7 +249,7 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
             this.ensureOnDispatchLoop(() => this.removeRegionItem(regionItem));
             return;
         }
-        let regionItemRecord = this._state.findByRecordRegionItemId(regionItem.id);
+        let regionItemRecord = this._state.findRecordById(regionItem.regionRecordId);
         this._removeRegionRecord(regionItemRecord);
     }
 
@@ -260,8 +259,7 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
             const singleModuleLoader = regionItemRecord.viewFactoryEntry.container.resolve<SingleModuleLoader>(SystemContainerConst.single_module_loader);
             if (singleModuleLoader.hasLoaded) {
                 const model = regionItemRecord.viewFactoryEntry.factory.createView(state);
-                const regionItem = new RegionItem(model.modelId);
-                regionItemRecord = regionItemRecord.update(regionItem, regionItemRecord.viewFactoryEntry.factory.metadata, model);
+                regionItemRecord = regionItemRecord.update(regionItemRecord.viewFactoryEntry.factory.metadata, model);
             } else {
                 regionItemRecord.addDisposable(singleModuleLoader.loadResults
                     .filter(lr => lr.hasCompletedLoaded)
@@ -272,8 +270,7 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
                         () => {
                             _log.debug(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
                             const model = regionItemRecord.viewFactoryEntry.factory.createView(state);
-                            const regionItem = new RegionItem(model.modelId);
-                            regionItemRecord = regionItemRecord.update(regionItem, regionItemRecord.viewFactoryEntry.factory.metadata, model);
+                            regionItemRecord = regionItemRecord.update(regionItemRecord.viewFactoryEntry.factory.metadata, model);
                             this._state.updateRecord(regionItemRecord);
                             this.onStateChanged(RegionChangeType.RecordUpdated, {updated: regionItemRecord, selected: this._state.selectedRecord});
                         },
@@ -305,26 +302,52 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
         if (!regionItemRecord.modelCreated) {
             return null;
         }
-
         const model = regionItemRecord.model;
+        let viewState: TViewState = null;
         // try see if there was a @stateProvider decorator on the views model,
         // if so invoke the function it was declared on to get the state.
         if (EspDecoratorUtil.hasMetadata(regionItemRecord)) {
             const metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
             if (metadata) {
                 const modelState = model[metadata.functionName]();
-                return this.createViewState(regionItemRecord, modelState);
+                viewState = this.createViewState(regionItemRecord, modelState);
+                this._ensureViewStateBasePropertiesSet(viewState);
+            }
+        } else {
+            // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
+            const stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
+            if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
+                const modelState = stateProviderFunction.call(model);
+                viewState = this.createViewState(regionItemRecord, modelState);
             }
         }
-        // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-        const stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
-        if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-            const modelState = stateProviderFunction.call(model);
-            return this.createViewState(regionItemRecord, modelState);
+        if (viewState) {
+            this._ensureViewStateBasePropertiesSet(viewState);
         }
-        return null;
+        return viewState;
     }
 
+    private _ensureViewStateBasePropertiesSet(viewState: TViewState) {
+        Guard.isString(viewState.viewFactoryKey, `Region [${this._regionName}] createViewState() override did not set ViewState.viewFactoryKey`);
+        Guard.isString(viewState.regionRecordId, `Region [${this._regionName}] createViewState() override did not set ViewState.regionRecordId`);
+        Guard.isNumber(viewState.stateVersion, `Region [${this._regionName}] createViewState() override did not set ViewState.stateVersion`);
+    }
+    /**
+     * Creates a specialised ViewState object,
+     *
+     * Note you can pull may of the required items from the given regionItem Record:
+     *
+     * ```
+     * return {
+     *     ...viewState, // custom parts
+     *     stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
+     *     viewFactoryKey: regionItemRecord.viewFactoryEntry.viewFactoryKey,
+     *     regionRecordId: regionItemRecord.id,
+     * };
+     * ```
+     * @param regionItemRecord
+     * @param modelState
+     */
     protected abstract createViewState(regionItemRecord: RegionItemRecord, modelState): TViewState;
 
     public load(regionState: TRegionState)  {
@@ -359,7 +382,8 @@ export abstract class RegionBase<TViewState extends ViewState<object>, TRegionSt
         // We have to do that here and model it via RegionItem.
         if (this._viewRegistry.hasViewFactory(viewState.viewFactoryKey)) {
             const viewFactoryEntry: ViewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewState.viewFactoryKey);
-            const regionItemRecord = new RegionItemRecord(viewFactoryEntry);
+            let regionRecordId = viewState.regionRecordId || uuid.v4();
+            const regionItemRecord = new RegionItemRecord(regionRecordId, viewFactoryEntry);
             this._addRegionRecord(regionItemRecord, viewState);
             return regionItemRecord;
         } else {

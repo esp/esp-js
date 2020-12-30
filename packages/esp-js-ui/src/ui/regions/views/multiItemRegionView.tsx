@@ -34,7 +34,7 @@ export const MultiItemRegionView = ({model, className, showLoadingUi, loadingMes
         let loadingComponent = showLoadingUi ? (<div>{loadingMessage ? loadingMessage : 'Waiting For View To Load'}</div>) : null;
         return (<ItemView key={regionItemRecord.id}>
             {regionItemRecord.modelCreated
-                ? <ConnectableComponent modelId={regionItemRecord.regionItem.modelId} viewContext={regionItemRecord.regionItem.displayContext}/>
+                ? <ConnectableComponent modelId={regionItemRecord.modelId} viewContext={regionItemRecord.displayContext}/>
                 : loadingComponent
             }
         </ItemView>);

@@ -9,6 +9,16 @@ export interface PersistedViewState<TViewState> {
      * You'd typically do this by overriding the call to `region.getRegionState(regionState)`
      */
     stateVersion: number;
+    /**
+     * The regions id associated with this piece of state.
+     * This ID is ultimately the same id as RegionItemRecord.id
+     *
+     * If it's not provided it will be defaulted
+     */
+    regionRecordId?: string;
+    /**
+     * The state for the view
+     */
     state: TViewState;
 }
 

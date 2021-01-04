@@ -1,9 +1,9 @@
 import {DisposableBase} from 'esp-js';
-import {ViewFactoryBase, stateProvider, viewFactory, ViewInstance, ViewState} from '../../../src';
+import {ViewFactoryBase, stateProvider, viewFactory, ViewInstance, RegionRecordState} from '../../../src';
 import {Container} from 'esp-js-di';
 
 // @viewFactory('key', 'shortName')
-// class TestViewFactory<T extends ViewInstance, TViewState extends ViewState> extends ViewFactoryBase<T, TViewState> {
+// class TestViewFactory<T extends ViewInstance, TViewState extends RegionRecordState> extends ViewFactoryBase<T, TViewState> {
 //     constructor(private _stubViewFactory: (state) => T) {
 //         super(new Container());
 //     }

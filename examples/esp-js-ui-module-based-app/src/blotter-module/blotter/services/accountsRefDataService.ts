@@ -15,7 +15,7 @@ export class AccountsRefDataService {
         return Rx.Observable.create(o => {
             _log.debug(`Getting accounts pairs`);
             return Rx.Observable
-                .timer(10_000) // simulate long latency
+                .timer(15_000) // simulate long latency
                 .take(1)
                 .subscribe(_ => {
                     _log.debug(`Accounts received`);

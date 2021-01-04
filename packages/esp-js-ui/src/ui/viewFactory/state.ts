@@ -1,7 +1,7 @@
 /**
- * An interface given to a ViewFactory when restoring a view from persisted state
+ * An internal interfaces used by the state functionality which adds some additional metadata so a view can be tied to it's ViewFactory
  */
-export interface PersistedViewState<TViewState> {
+export interface RegionRecordState<TViewState = any> {
     /**
      * Provides a version for the regions state.
      * You can set this to 1 until you need to change.
@@ -17,14 +17,15 @@ export interface PersistedViewState<TViewState> {
      */
     regionRecordId?: string;
     /**
+     * The key of the view factory which can create a view from the given state
+     */
+    viewFactoryKey: string;
+    /**
      * The state for the view
      */
-    state: TViewState;
-}
-
-/**
- * An internal interfaces used by the state functionality which adds some additional metadata so a view can be tied to it's ViewFactory
- */
-export interface ViewState<TState extends object> extends PersistedViewState<TState> {
-    viewFactoryKey: string;
+    viewState: TViewState;
+    /**
+     * True if this item is selected in the region
+     */
+    isSelected: boolean;
 }

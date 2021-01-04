@@ -2,13 +2,11 @@ import {Router} from 'esp-js';
 import {RegionManager} from './regionManager';
 import {RegionBase} from './regionBase';
 import {RegionState} from './regionState';
-import {ViewState} from '../../viewFactory';
-import {RegionItemRecord} from './regionItemRecord';
 
 /**
- * @deprecated Please use Region
+ * @deprecated Please use Region and/or RegionBase
  */
-export class RegionModelBase extends RegionBase<ViewState<object>, RegionState<ViewState<object>>> {
+export class RegionModelBase extends RegionBase {
     constructor(
         protected _regionName : string,
         router: Router,
@@ -21,15 +19,11 @@ export class RegionModelBase extends RegionBase<ViewState<object>, RegionState<V
         return false;
     }
 
-    load(regionState: RegionState<ViewState<object>>) {
+    load(regionState: RegionState) {
         throw new Error(`Not supported, use StatefulRegion`);
     }
 
-    protected createViewState(regionItemRecord: RegionItemRecord, modelState): ViewState<object> {
-        throw new Error(`Not supported, use StatefulRegion`);
-    }
-
-    public getRegionState(): RegionState<ViewState<object>> {
+    public getRegionState(): RegionState {
         throw new Error(`Not supported, use StatefulRegion`);
     }
 }

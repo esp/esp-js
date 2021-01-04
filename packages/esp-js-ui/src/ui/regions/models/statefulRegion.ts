@@ -1,35 +1,13 @@
-import {ViewState} from '../../viewFactory';
 import {RegionBase} from './regionBase';
-import {RegionState} from './regionState';
 import {RegionItemRecord} from './regionItemRecord';
 
-export class StatefulRegion extends RegionBase<ViewState<object>, RegionState<ViewState<object>>> {
+export class StatefulRegion extends RegionBase<object> {
     public get stateSavingEnabled(): boolean {
         return true;
     }
 
-    public getRegionState(): RegionState<ViewState<object>> {
-        const viewStates =  Array
-            .from(this.state.regionRecordsById.values())
-            .map<ViewState<any>>(regionItemRecord => this.getViewState(regionItemRecord) )
-            .filter(c => c != null);
-        if (viewStates.length === 0) {
-            return null;
-        } else {
-            return {
-                regionName: this._regionName,
-                stateVersion: this.stateVersion,
-                viewState: viewStates,
-            };
-        }
-    }
-
-    protected createViewState(regionItemRecord: RegionItemRecord, modelState): ViewState<object> {
-        return {
-            regionRecordId: regionItemRecord.id,
-            viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
-            stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
-            state: modelState
-        };
+    protected createViewState(regionItemRecord: RegionItemRecord, modelState: object): object {
+        // in this case, we're not wrapping anything around modelState, this region has no additional state it needs to store for the views it displays.
+        return modelState;
     }
 }

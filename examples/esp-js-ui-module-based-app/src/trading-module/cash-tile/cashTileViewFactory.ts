@@ -1,6 +1,6 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
-import {ViewFactoryBase, Logger,  viewFactory} from 'esp-js-ui';
+import {ViewFactoryBase, Logger, viewFactory, RegionRecordState} from 'esp-js-ui';
 import {CashTileView} from './views/cashTileView';
 import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
@@ -11,7 +11,6 @@ import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
 import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
 import {CashTilePersistedState} from './state/stateModel';
-import {PersistedViewState} from 'esp-js-ui';
 import {CashTileModel, CashTileModelBuilder} from './model/cashTileModel';
 import {CurrencyPairRefDataService} from './services/currencyPairRefDataService';
 
@@ -26,10 +25,10 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
         super(container);
         this._router = router;
     }
-    _createView(childContainer, persistedViewState?: PersistedViewState<CashTilePersistedState>): PolimerModel<CashTileModel> {
+    _createView(childContainer, regionRecordState?: RegionRecordState<CashTilePersistedState>): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
-        const model = CashTileModelBuilder.createDefault(`cash-tile-${this._cashTileIdSeed++}`, persistedViewState.state);
+        const model = CashTileModelBuilder.createDefault(`cash-tile-${this._cashTileIdSeed++}`, regionRecordState.viewState);
 
         // Get the ref data service from the container.
         // Note in non demo apps, typically all the handlers and objects below would be registered in the container.
@@ -63,7 +62,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             //   e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
             //        if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
             //        In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileModel> created by this builder
-            .withStateHandlerModel('dateSelector', new DateSelectorModel(model.modelId, this._router, persistedViewState.state ? persistedViewState.state.tenor : null), true)
+            .withStateHandlerModel('dateSelector', new DateSelectorModel(model.modelId, this._router, regionRecordState.viewState ? regionRecordState.viewState.tenor : null), true)
 
             // ***************************
             // Add some view bindings for this model.

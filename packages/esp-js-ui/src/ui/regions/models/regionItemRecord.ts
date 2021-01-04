@@ -1,5 +1,4 @@
-import {RegionItem} from './regionItem';
-import {ViewFactoryEntry, ViewFactoryMetadata} from '../../viewFactory';
+import {RegionRecordState, ViewFactoryEntry, ViewFactoryMetadata} from '../../viewFactory';
 import {DisposableBase, Guard} from 'esp-js';
 import {DisplayOptions} from './regionManager';
 
@@ -12,64 +11,55 @@ export class RegionItemRecord extends DisposableBase {
     private readonly _model: any;
     private readonly _modelId: string;
     private readonly _viewFactoryEntry: ViewFactoryEntry;
-    private readonly _displayOptions?: DisplayOptions;
+    private readonly _displayOptions: DisplayOptions;
+    private readonly _initialRecordState: RegionRecordState;
 
-    constructor(
+    public static createForStateLoadedItem(id: string, viewFactoryEntry: ViewFactoryEntry, recordState: RegionRecordState) {
+        Guard.isString(id, `id required`);
+        Guard.isDefined(viewFactoryEntry, `viewFactoryMetadata required`);
+        Guard.isDefined(recordState, `recordState required`);
+        return new RegionItemRecord(id, viewFactoryEntry, viewFactoryEntry.factory.metadata, null, null, recordState);
+    }
+
+    public static createForExistingItem(id: string, viewFactoryMetadata: ViewFactoryMetadata, model: any, displayOptions?: DisplayOptions) {
+        Guard.isString(id, `id required`);
+        Guard.isDefined(viewFactoryMetadata, `viewFactoryMetadata required`);
+        Guard.isDefined(model, `model required`);
+        Guard.isString(model.modelId, `model.modelId required`);
+        if (displayOptions) {
+            Guard.isObject(displayOptions, `displayOptions should be an object`);
+        }
+        return new RegionItemRecord(id, null, viewFactoryMetadata, model, displayOptions, null);
+    }
+
+    private constructor(
         id: string,
         viewFactoryEntry: ViewFactoryEntry,
-    );
-    constructor(
-        regionItem: RegionItem,
-        viewFactoryMetadata: ViewFactoryMetadata,
-        model: any,
-    );
-    constructor(
-        id: string,
         viewFactoryMetadata: ViewFactoryMetadata,
         model: any,
         displayOptions: DisplayOptions,
-    );
-    constructor(...args: any[]) {
+        recordState: RegionRecordState
+    ) {
         super();
-        if (args.length === 2) {
-            Guard.isString(args[0], `id required`);
-            Guard.isDefined(args[1], `viewFactoryEntry required`);
-            this._id = args[0];
-            this._viewFactoryEntry = args[1];
-        } else if (args.length === 3) {
-            Guard.isDefined(args[0], `regionItem required`);
-            Guard.isDefined(args[1], `viewFactoryMetadata required`);
-            Guard.isDefined(args[2], `model required`);
-            Guard.isString(args[2].modelId, `model.modelId required`);
-            let regionItem = <RegionItem>args[0];
-            this._id = regionItem.regionRecordId;
-            this._modelId = regionItem.modelId;
-            this._displayOptions = regionItem.displayOptions;
-            this._viewFactoryMetadata = args[1];
-            this._model = args[2];
-        } else {
-            Guard.isString(args[0], `id required`);
-            Guard.isDefined(args[1], `viewFactoryMetadata required`);
-            Guard.isDefined(args[2], `model required`);
-            Guard.isString(args[2].modelId, `model.modelId required`);
-            this._id = args[0];
-            this._viewFactoryMetadata = args[1];
-            this._model = args[2];
-            this._modelId = this._model.modelId;
-            this._displayOptions = args.length === 4 ? args[3] : null;
-        }
+        this._id = id;
+        this._viewFactoryEntry = viewFactoryEntry;
+        this._viewFactoryMetadata = viewFactoryMetadata;
+        this._model = model;
+        this._modelId = model ? model.modelId : null;
+        this._displayOptions = displayOptions;
+        this._initialRecordState = recordState;
     }
 
     public get id(): string {
         return this._id;
     }
 
-    public get viewFactoryMetadata(): ViewFactoryMetadata {
-        return this._viewFactoryMetadata;
-    }
-
     public get viewFactoryEntry(): ViewFactoryEntry {
         return this._viewFactoryEntry;
+    }
+
+    public get viewFactoryMetadata(): ViewFactoryMetadata {
+        return this._viewFactoryMetadata;
     }
 
     public get model(): any {
@@ -92,10 +82,17 @@ export class RegionItemRecord extends DisposableBase {
         return !!this._model && !!this._viewFactoryMetadata;
     }
 
-    public update(viewFactoryMetadata: ViewFactoryMetadata, model: any): RegionItemRecord {
-        Guard.isDefined(viewFactoryMetadata, `viewFactoryMetadata required`);
+    public get initialRecordState(): RegionRecordState {
+        return this._initialRecordState;
+    }
+
+    public get wasCreatedFromState(): boolean {
+        return !!this._initialRecordState;
+    }
+
+    public update(model: any): RegionItemRecord {
         Guard.isDefined(model, `model required`);
-        return new RegionItemRecord(this.id, viewFactoryMetadata, model, this._displayOptions);
+        return new RegionItemRecord(this._id, this._viewFactoryEntry, this._viewFactoryMetadata, model, this._displayOptions, this._initialRecordState);
     }
 
     public toString() {

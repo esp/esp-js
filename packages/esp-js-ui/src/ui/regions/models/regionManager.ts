@@ -7,7 +7,6 @@ import {EspUiEvents} from '../../espUiEvents';
 import {RegionItemRecord} from './regionItemRecord';
 import {RegionBase} from './regionBase';
 import {RegionState} from './regionState';
-import {ViewState} from '../../viewFactory';
 
 const _log = Logger.create('RegionManager');
 
@@ -21,7 +20,7 @@ export interface DisplayOptions {
 
 // exists to decouple all the region and their models from the rest of the app
 export class RegionManager extends ModelBase {
-    private _regions: { [regionName: string]: RegionBase<any, any> } = { };
+    private _regions: { [regionName: string]: RegionBase<any> } = { };
 
     public static ModelId = 'region-manager';
 
@@ -32,7 +31,7 @@ export class RegionManager extends ModelBase {
     }
 
     // adds a region to the region manager
-    public registerRegion(regionName: string, regionRecord: RegionBase<any, any>) {
+    public registerRegion(regionName: string, regionRecord: RegionBase<any>) {
         Guard.stringIsNotEmpty(regionName, 'region name required');
         Guard.isObject(regionRecord, 'regionRecord must be an object');
         Guard.isFunction(regionRecord.addRegionItem, 'regionRecord.onAdding must be a function');
@@ -46,11 +45,11 @@ export class RegionManager extends ModelBase {
         this._regions[regionName] = regionRecord;
     }
 
-    public getRegions(): RegionBase<any, any>[] {
+    public getRegions(): RegionBase<any>[] {
         return Object.values(this._regions);
     }
 
-    public getRegion<TViewState extends ViewState<object>, TRegionState extends RegionState<TViewState>>(regionName: string): RegionBase<TViewState, TRegionState> {
+    public getRegion<TRegionState, TViewState>(regionName: string): RegionBase<TRegionState> {
         return this._regions[regionName];
     }
 
@@ -59,9 +58,9 @@ export class RegionManager extends ModelBase {
         delete this._regions[regionName];
     }
 
-    public loadRegion(regionState: RegionState<any>): void {
+    public loadRegion(regionState: RegionState): void {
         Guard.isObject(regionState, 'regionState must be an object');
-        _log.debug(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.viewState ? regionState.viewState.length : 0}`);
+        _log.debug(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.regionRecordStates ? regionState.regionRecordStates.length : 0}`);
         let region = this._regions[regionState.regionName];
         region.load(regionState);
     }
@@ -85,13 +84,24 @@ export class RegionManager extends ModelBase {
     }
 
     // adds a model to be displayed in a region, uses annotations to find view
-    public addToRegion(regionName: string, modelId:string, displayOptions?: DisplayOptions): RegionItem {
+    public addToRegion(regionName: string, regionItem: RegionItem): RegionItem;
+    public addToRegion(regionName: string, modelId:string): RegionItem;
+    public addToRegion(regionName: string, modelId:string, displayOptions: DisplayOptions): RegionItem;
+    public addToRegion(...args: (string|DisplayOptions|RegionItem)[]): RegionItem {
         // I'm not dispatching this call onto the router as by design this model doesn't really have any true observers.
         // It does listen to events, but nothing should render it's state, thus this call is synchronous
-
-        Guard.stringIsNotEmpty(regionName, 'region name required');
-        Guard.stringIsNotEmpty(modelId, 'modelId must be defined');
-        let regionItem = new RegionItem(modelId, displayOptions);
+        let regionName = <string>args[0];
+        let regionItem: RegionItem;
+        if (args.length === 2) {
+            if (typeof args[1] === 'string') {
+                regionItem = RegionItem.create(args[1]);
+            } else {
+                Guard.isDefined(args[1], 'Second parameter (modelId or regionItem) required but was undefined or null');
+                regionItem = <RegionItem>args[1];
+            }
+        } else {
+            regionItem = RegionItem.create(<string>args[1], <DisplayOptions>args[2]);
+        }
         this._addToRegion(regionName, regionItem);
         return regionItem;
     }
@@ -103,7 +113,7 @@ export class RegionManager extends ModelBase {
             throw new Error(message);
         }
         _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}.`);
-        this._regions[regionName].addRegionItem(regionItem);
+        this._regions[regionName].addToRegion(regionItem);
         return regionItem;
     }
 
@@ -116,7 +126,7 @@ export class RegionManager extends ModelBase {
             _log.error(message);
             throw new Error(message);
         }
-        this._regions[regionName].removeRegionItem(regionItem);
+        this._regions[regionName].removeFromRegion(regionItem);
     }
 
     public existsInRegion(regionName: string, modelId: string): boolean;

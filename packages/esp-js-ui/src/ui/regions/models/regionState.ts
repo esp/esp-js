@@ -1,6 +1,9 @@
-import {ViewState} from '../../viewFactory';
+import {RegionRecordState} from '../../viewFactory';
 
-export interface RegionState<TViewState extends ViewState<object>> {
+export interface RegionState<TCustomState = any> {
+    /**
+     * The region name as registered with the RegionManager
+     */
     regionName: string;
     /**
      * Provides a version for the regions state.
@@ -9,5 +12,12 @@ export interface RegionState<TViewState extends ViewState<object>> {
      * You'd typically do this by overriding the call to `region.getRegionState(regionState)`
      */
     stateVersion: number;
-    viewState: TViewState[];
+    /**
+     * Any additional region state which should be persisted
+     */
+    customState: TCustomState;
+    /**
+     * The state for the regions Views
+     */
+    regionRecordStates: RegionRecordState[];
 }

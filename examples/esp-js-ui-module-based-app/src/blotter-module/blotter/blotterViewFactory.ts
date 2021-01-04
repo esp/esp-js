@@ -1,8 +1,7 @@
 import {Router} from 'esp-js';
-import {ViewFactoryBase, Logger, viewFactory } from 'esp-js-ui';
+import {ViewFactoryBase, Logger, viewFactory, RegionRecordState } from 'esp-js-ui';
 import {BlotterState} from './models/blotterState';
 import {BlotterModel} from './models/blotterModel';
-import {PersistedViewState} from 'esp-js-ui';
 import {BlotterModuleContainerConst} from '../blotterModuleContainerConst';
 
 const _log = Logger.create('BlotterViewFactory');
@@ -21,9 +20,9 @@ export class BlotterViewFactory extends ViewFactoryBase<BlotterModel, BlotterSta
     }
 
     // override
-    _createView(childContainer, persistedViewState?: PersistedViewState<BlotterState>):BlotterModel {
+    _createView(childContainer, regionRecordState?: RegionRecordState<BlotterState>):BlotterModel {
         _log.verbose('Creating blotter model');
-        const blotterState = persistedViewState ? persistedViewState.state : {  };
+        const blotterState = regionRecordState ? regionRecordState.viewState : {  };
         let model:BlotterModel = childContainer.resolve(BlotterModuleContainerConst.blotterModel, blotterState);
         model.observeEvents();
         return model;

@@ -6,4 +6,5 @@ export class SystemContainerConst {
     static get region_manager() { return 'region_manager'; }
     static get scheduler_service() { return 'scheduler_service'; }
     static get single_module_loader() { return 'single_module_loader'; }
+    static get module_provider() { return 'module_provider'; }
 }

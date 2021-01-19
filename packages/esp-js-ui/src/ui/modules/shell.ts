@@ -9,13 +9,14 @@ import {IdFactory} from '../idFactory';
 import * as Rx from 'rx';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
 import {DisposableBase, Guard, Router} from 'esp-js';
-import {ModuleConstructor} from './module';
+import {Module, ModuleConstructor} from './module';
 import {ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
+import {ModuleProvider} from './moduleProvider';
 
 const _log: Logger = Logger.create('Shell');
 
-export abstract class Shell extends DisposableBase {
+export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _container: Container;
     private _stateSaveMonitor: StateSaveMonitor;
     private _moduleLoaders: DefaultSingleModuleLoader[] = [];
@@ -76,9 +77,15 @@ export abstract class Shell extends DisposableBase {
 
     }
 
+    public getModule(moduleKey: string): Module {
+        const moduleLoader = this._moduleLoaders.find(ml => ml.moduleMetadata.moduleKey === moduleKey);
+        return moduleLoader ? moduleLoader.module : null;
+    }
+
     public start() {
         SystemContainerConfiguration.configureContainer(this._container);
         this._container.registerInstance(SystemContainerConst.app_shell, this);
+        this._container.registerInstance(SystemContainerConst.module_provider, this);
         this._router = this._container.resolve<Router>(SystemContainerConst.router);
         this._router.addModel(this._shellLoaderModelId, {});
         this._regionManager = this._container.resolve<RegionManager>(SystemContainerConst.region_manager);

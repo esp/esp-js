@@ -20,6 +20,8 @@ export interface ViewFactoryEntry {
     moduleName: string;
     moduleKey: string;
     container: Container;
+    // Internal property used for backwards compatibility
+    isLegacyViewFactory: boolean;
 }
 
 interface KeyToFactoryEntryMap {
@@ -51,12 +53,12 @@ export class ViewRegistryModel extends ModelBase {
         this.viewsMetadata = [...this._getViewsMetaData()];
     }
 
-    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase, any>, factoriesContainer: Container): void {
+    public registerViewFactory(moduleKey: string, moduleName: string, viewFactory: ViewFactoryBase<ModelBase, any>, factoriesContainer: Container, isLegacyViewFactory: boolean): void {
         this.ensureOnDispatchLoop(() => {
             Guard.isDefined(viewFactory, 'viewFactory must be defined');
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);
             Guard.isFalsey(this._viewFactoriesEntries.hasOwnProperty(metadata.viewKey), `view factory with id [${metadata.viewKey}] already added`);
-            _log.debug(`registering view factory with key [${metadata.viewKey}], short name [${metadata.shortName}]`);
+            _log.debug(`registering view factory with key [${metadata.viewKey}], short name [${metadata.shortName}]. Is legacy: ${isLegacyViewFactory}`);
             this._viewFactoriesEntries[metadata.viewKey] = Object.freeze({
                 viewFactoryKey: metadata.viewKey,
                 factory: viewFactory,
@@ -64,7 +66,8 @@ export class ViewRegistryModel extends ModelBase {
                 customMetadata: metadata.customMetadata,
                 moduleName: moduleName,
                 moduleKey: moduleKey,
-                container: factoriesContainer
+                container: factoriesContainer,
+                isLegacyViewFactory
             });
         });
     }

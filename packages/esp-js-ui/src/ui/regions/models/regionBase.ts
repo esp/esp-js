@@ -264,7 +264,8 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
         // This is true even for immutable models, they always have a parent that doesn't change, the store that hangs off that parent will change.
         let model = this._router.getModel(regionItem.modelId);
         const viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
-        let regionItemRecord = RegionItemRecord.createForExistingItem(regionItem.regionRecordId, viewFactoryMetadata, model, regionItem.displayOptions);
+        const viewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewFactoryMetadata.viewKey);
+        let regionItemRecord = RegionItemRecord.createForExistingItem(regionItem.regionRecordId, viewFactoryEntry, model, regionItem.displayOptions);
         this._addRegionRecord(regionItemRecord);
     }
 
@@ -348,6 +349,13 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
             // If the model isn't created yet for some reason, we just return any initial associated with the item as that's effectively the current state.
             return regionItemRecord.initialRecordState; // might be null, that's ok
         }
+
+        if (regionItemRecord.viewFactoryEntry.isLegacyViewFactory) {
+            // If the view was created by an older version of esp it won't support state being saved in regions.
+            // The old state code relied on the modules saved state for views.
+            return null;
+        }
+
         const model = regionItemRecord.model;
         let viewState: any = null;
         // try see if there was a @stateProvider decorator on the views model,

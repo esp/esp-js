@@ -45,10 +45,12 @@ export abstract class ModuleBase extends DisposableBase implements Module {
     abstract registerPrerequisites(register: PrerequisiteRegister): void;
 
     registerViewFactories(viewRegistryModel: ViewRegistryModel) {
+        // If a legacy module is loaded dynamically using this base class, we can detect so by seeing if an old/deleted property exists.
+        const isLegacyModule = typeof (<any>this).stateSavingEnabled !== 'undefined';
         _log.debug('Registering views');
         let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
         viewFactories.forEach(viewFactory => {
-            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleKey, this._moduleMetadata.moduleName, viewFactory, this.container);
+            viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleKey, this._moduleMetadata.moduleName, viewFactory, this.container, isLegacyModule);
             this.addDisposable(() => {
                 viewRegistryModel.unregisterViewFactory(viewFactory);
             });

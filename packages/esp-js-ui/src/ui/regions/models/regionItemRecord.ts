@@ -21,15 +21,15 @@ export class RegionItemRecord extends DisposableBase {
         return new RegionItemRecord(id, viewFactoryEntry, viewFactoryEntry.factory.metadata, null, null, recordState);
     }
 
-    public static createForExistingItem(id: string, viewFactoryMetadata: ViewFactoryMetadata, model: any, displayOptions?: DisplayOptions) {
+    public static createForExistingItem(id: string, viewFactoryEntry: ViewFactoryEntry, model: any, displayOptions?: DisplayOptions) {
         Guard.isString(id, `id required`);
-        Guard.isDefined(viewFactoryMetadata, `viewFactoryMetadata required`);
+        Guard.isDefined(viewFactoryEntry, `viewFactoryEntry required`);
         Guard.isDefined(model, `model required`);
         Guard.isString(model.modelId, `model.modelId required`);
         if (displayOptions) {
             Guard.isObject(displayOptions, `displayOptions should be an object`);
         }
-        return new RegionItemRecord(id, null, viewFactoryMetadata, model, displayOptions, null);
+        return new RegionItemRecord(id, viewFactoryEntry, viewFactoryEntry.factory.metadata, model, displayOptions, null);
     }
 
     private constructor(

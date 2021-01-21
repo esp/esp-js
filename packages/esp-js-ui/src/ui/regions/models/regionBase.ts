@@ -206,19 +206,26 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
 
     }
 
-    public existsInRegion(modelId: string): boolean;
-    public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
-    public existsInRegion(...args: any[]): boolean {
+    public existsInRegionByModelId(modelId: string): boolean {
+        return this._state.regionRecords
+            .filter(r => r.modelCreated)
+            .some(r => r.modelId === modelId);
+    }
+
+    public existsInRegionByRecordId(regionRecordId: string): boolean {
+        return this._state.regionRecordsById.has(regionRecordId);
+    }
+
+    public existsInRegionByRegionItem(regionItem: RegionItem): boolean {
+        return this._state.regionRecordsById.has(regionItem.regionRecordId);
+    }
+
+    public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean {
         // This is read only hence can perform the call on any dispatch loop
-        if (isString(args[0])) {
-            return this._state.regionRecordsById.has(args[0]);
-        }  else {
-            let predicate: (regionItemRecord: RegionItemRecord) => boolean = args[0];
-            for (let x of this._state.regionRecordsById.values()) {
-                const match = predicate(x);
-                if (match) {
-                    return true;
-                }
+        for (let x of this._state.regionRecordsById.values()) {
+            const match = predicate(x);
+            if (match) {
+                return true;
             }
         }
         return false;

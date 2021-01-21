@@ -157,10 +157,19 @@ export class RegionManager extends ModelBase {
         }
     }
 
-    public existsInRegion(regionName: string, modelId: string): boolean;
-    public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
-    public existsInRegion(...args: any[]): boolean {
-        let region = this._regions[args[0]];
-        return region.existsInRegion(args[1]);
+    public existsInRegionByModelId(regionName: string, modelId: string): boolean {
+        return this._regions[regionName].existsInRegionByModelId(modelId);
+    }
+
+    public existsInRegionByRecordId(regionName: string, regionRecordId: string): boolean {
+        return this._regions[regionName].existsInRegionByRecordId(regionRecordId);
+    }
+
+    public existsInRegionByRegionItem(regionName: string, regionItem: RegionItem): boolean {
+        return this._regions[regionName].existsInRegionByRegionItem(regionItem);
+    }
+
+    public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean {
+        return this._regions[regionName].existsInRegion(predicate);
     }
 }

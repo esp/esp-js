@@ -117,16 +117,44 @@ export class RegionManager extends ModelBase {
         return regionItem;
     }
 
-    public removeFromRegion(regionName: string, regionItem: RegionItem): void {
-        Guard.stringIsNotEmpty(regionName, 'region name required');
-        Guard.isDefined(regionItem, 'regionItem must be defined');
-        _log.debug(`Removing from region ${regionName}. ${regionItem.toString()}.`);
-        if (!(regionName in this._regions)) {
-            let message = `Cannot remove from region ${regionName} as the region is not registered. ${regionItem}`;
-            _log.error(message);
-            throw new Error(message);
+    /**
+     * Removes all views in this region for the  given model ID
+     */
+    public removeFromRegion(regionName: string, modelId: string): void;
+    /**
+     * Removes the record identified by the given RegionItem (using regionItem.regionRecordId)
+     */
+    public removeFromRegion(regionName: string, regionItem: RegionItem): void;
+    public removeFromRegion(...args: (string|RegionItem)[]): void {
+        let regionName = <string>args[0];
+        let modelId: string;
+        let recordsToRemove: string[];
+        Guard.stringIsNotEmpty(regionName, 'regionName required');
+        if (typeof args[1] === 'string') {
+            modelId = args[1];
+            Guard.stringIsNotEmpty(modelId, 'modelId required');
+            recordsToRemove = this._regions[regionName].regionRecords
+                .filter(r => r.modelCreated)
+                .filter(r => r.modelId === modelId)
+                .map(r => r.id);
+
+        } else {
+            Guard.isDefined(args[1], 'Second parameter (modelId or regionItem) required but was undefined or null');
+            let regionItem = <RegionItem>args[1];
+            recordsToRemove = [regionItem.regionRecordId];
         }
-        this._regions[regionName].removeFromRegion(regionItem);
+        // It's possible there are no records found, in this case we silently ignore
+        if (recordsToRemove.length > 0) {
+            _log.debug(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
+            if (!(regionName in this._regions)) {
+                let message = `Cannot remove the following records from region ${regionName} as the region is not registered: ${recordsToRemove}`;
+                _log.error(message);
+                throw new Error(message);
+            }
+            recordsToRemove.forEach(recordId => {
+                this._regions[regionName].removeFromRegion(recordId);
+            });
+        }
     }
 
     public existsInRegion(regionName: string, modelId: string): boolean;

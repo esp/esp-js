@@ -10,13 +10,15 @@ import * as Rx from 'rx';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
 import {DisposableBase, Guard, Router} from 'esp-js';
 import {Module, ModuleConstructor} from './module';
-import {ViewRegistryModel} from '../viewFactory';
+import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
 import {ModuleProvider} from './moduleProvider';
+import {ModelBase} from '../modelBase';
 
 const _log: Logger = Logger.create('Shell');
 
 export abstract class Shell extends DisposableBase implements ModuleProvider {
+    public static readonly ShellModuleKey = 'shell-module';
     private _container: Container;
     private _stateSaveMonitor: StateSaveMonitor;
     private _moduleLoaders: DefaultSingleModuleLoader[] = [];
@@ -92,6 +94,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         this._viewRegistryModel = this._container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
         this.configureContainer();
         this._stateService = this._container.resolve<StateService>(SystemContainerConst.state_service);
+        this._registerShellViewFactories();
     }
 
     /**
@@ -121,6 +124,21 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
                 }
             ));
         }
+    }
+
+    private _registerShellViewFactories() {
+        _log.debug('Registering Shell ViewFactories');
+        let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
+        viewFactories.forEach(viewFactory => {
+            this._viewRegistryModel.registerViewFactory(Shell.ShellModuleKey, 'Shell', viewFactory, this.container, false);
+            this.addDisposable(() => {
+                this._viewRegistryModel.unregisterViewFactory(viewFactory);
+            });
+        });
+    }
+
+    getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {
+        return [];
     }
 
     private _onModuleLoadComplete() {

@@ -83,9 +83,22 @@ export class RegionManager extends ModelBase {
         }
     }
 
-    // adds a model to be displayed in a region, uses annotations to find view
-    public addToRegion(regionName: string, regionItem: RegionItem): RegionItem;
+    /**
+     * Adds a model to the region.
+     * It's view will be discovered based on model metadata.
+     */
     public addToRegion(regionName: string, modelId:string): RegionItem;
+    /**
+     * Adds a model to the region.
+     * It's view will be discovered based on model metadata.
+     */
+    public addToRegion(regionName: string, regionItem: RegionItem): RegionItem;
+    /**
+     * Adds a model to the region.
+     * It's view will be discovered based on model metadata.
+     *
+     * @deprecated use the overload that takes a RegionItem
+     */
     public addToRegion(regionName: string, modelId:string, displayOptions: DisplayOptions): RegionItem;
     public addToRegion(...args: (string|DisplayOptions|RegionItem)[]): RegionItem {
         // I'm not dispatching this call onto the router as by design this model doesn't really have any true observers.
@@ -118,7 +131,7 @@ export class RegionManager extends ModelBase {
     }
 
     /**
-     * Removes all views in this region for the  given model ID
+     * Removes all views in this region for the given model ID
      */
     public removeFromRegion(regionName: string, modelId: string): void;
     /**
@@ -157,18 +170,34 @@ export class RegionManager extends ModelBase {
         }
     }
 
+    /**
+     * Returns true if any view for the give model ID exists in the region.
+     */
     public existsInRegionByModelId(regionName: string, modelId: string): boolean {
         return this._regions[regionName].existsInRegionByModelId(modelId);
     }
 
-    public existsInRegionByRecordId(regionName: string, regionRecordId: string): boolean {
-        return this._regions[regionName].existsInRegionByRecordId(regionRecordId);
-    }
-
+    /**
+     * Returns true if a view for the give regionItem exists in the region.
+     *
+     * Used regionItem.regionRecordId for the search
+     */
     public existsInRegionByRegionItem(regionName: string, regionItem: RegionItem): boolean {
         return this._regions[regionName].existsInRegionByRegionItem(regionItem);
     }
 
+    /**
+     * Returns true if a view for the give regionRecordId exists in the region.
+     */
+    public existsInRegionByRecordId(regionName: string, regionRecordId: string): boolean {
+        return this._regions[regionName].existsInRegionByRecordId(regionRecordId);
+    }
+
+    /**
+     * Returns true based on the provided predicate.
+     *
+     * Will stop on first match.
+     */
     public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean {
         return this._regions[regionName].existsInRegion(predicate);
     }

@@ -212,12 +212,12 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
             .some(r => r.modelId === modelId);
     }
 
-    public existsInRegionByRecordId(regionRecordId: string): boolean {
-        return this._state.regionRecordsById.has(regionRecordId);
-    }
-
     public existsInRegionByRegionItem(regionItem: RegionItem): boolean {
         return this._state.regionRecordsById.has(regionItem.regionRecordId);
+    }
+
+    public existsInRegionByRecordId(regionRecordId: string): boolean {
+        return this._state.regionRecordsById.has(regionRecordId);
     }
 
     public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean {

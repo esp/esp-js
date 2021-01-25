@@ -1,8 +1,9 @@
 import {Container} from 'esp-js-di';
 import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance, ViewFactoryMetadata} from './viewFactoryDecorator';
-import {Disposable, DisposableBase} from 'esp-js';
+import {Disposable, DisposableBase, EspDecoratorUtil, utils} from 'esp-js';
 import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
 import {RegionRecordState} from './state';
+import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
@@ -19,6 +20,10 @@ export interface ViewCreationState<TViewState> extends Partial<Pick<RegionRecord
 }
 
 export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = any> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
+    /*
+    @deprecated
+     */
+    private _currentViewModels: Array<ViewInstance> = [];
     private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {
@@ -61,9 +66,61 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
         let childContainer = this._container.createChildContainer();
         let model: TModel = this._createView(childContainer, viewCreationState);
         model.addDisposable(childContainer);
+        this._storeModel(model);
         // Attach the metadata of this view factory to any model created by it.
         // This wil help with other functionality such as state saving.
         setViewFactoryMetadataOnModelInstance(model, this._metadata);
         return model;
+    }
+
+    /**
+     * @deprecated stores the model locally.
+     * This has been kept for backwards compatibility.
+     * It will soon be removed.
+     */
+    private _storeModel(model: TModel) {
+        model.addDisposable(() => {
+            let index = this._currentViewModels.indexOf(model);
+            if (index > -1) {
+                this._currentViewModels.splice(index, 1);
+            } else {
+                throw new Error('Could not find a model in our set');
+            }
+        });
+        this._currentViewModels.push(model);
+    }
+
+    /**
+     * @deprecated view is now stored via regions.
+     * This has been kept for backwards compatibility.
+     * This function will soon be removed
+     */
+    public getAllViewsState(): any {
+        let state = this._currentViewModels
+            .map(c => {
+                // try see if there was a @stateProvider decorator on the views model,
+                // if so invoke the function it was declared on to get the state.
+                if (EspDecoratorUtil.hasMetadata(c)) {
+                    let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(c, StateSaveProviderConsts.CustomDataKey);
+                    if (metadata) {
+                        return c[metadata.functionName]();
+                    }
+                }
+                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
+                let stateProviderFunction = c[StateSaveProviderConsts.HandlerFunctionName];
+                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
+                    return stateProviderFunction.call(c);
+                }
+                return null;
+            })
+            .filter(c => c != null);
+        if (state.length === 0) {
+            return null;
+        } else {
+            return {
+                viewFactoryKey: this.viewKey,
+                state: state
+            };
+        }
     }
 }

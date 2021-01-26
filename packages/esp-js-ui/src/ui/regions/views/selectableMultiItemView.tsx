@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {ConnectableComponent, PublishModelEventContext, PublishModelEventDelegate} from 'esp-js-react';
+import {PublishModelEventContext, PublishModelEventDelegate} from 'esp-js-react';
 import * as classnames from 'classnames';
 import {Logger} from '../../../core';
-import {ItemView} from './itemView';
+import {RegionItemRecordView} from './regionItemRecordView';
 import {Region, RegionItemRecord, SelectedItemChangedEvent} from '../models';
 import {EspUiEventNames} from '../../espUiEventNames';
 
@@ -13,6 +13,12 @@ export interface SelectableMultiItemViewProps {
     className?: string;
 }
 
+/**
+ * Basic region view which displays a collection of items and allows one to be selected.
+ *
+ * Typically you'll implement a custom one of these depending on the app.
+ * @constructor
+ */
 export const SelectableMultiItemView =  ({model, className}: SelectableMultiItemViewProps) => {
     _log.verbose('Rendering');
 
@@ -49,9 +55,7 @@ export const SelectableMultiItemView =  ({model, className}: SelectableMultiItem
     }
     let grids = model.regionRecords.map((record: RegionItemRecord) => {
         if(record === selectedItem) {
-            return (<ItemView key={record.id} className='single-item-view-container'>
-                <ConnectableComponent modelId={record.modelId} viewContext={record.displayContext} />
-            </ItemView>);
+            return (<RegionItemRecordView key={record.id} regionItemRecord={record} className='single-item-view-container' />);
         } else {
             return null;
         }

@@ -16,6 +16,6 @@ export class InputStateHandlers  {
     @observeEvent(InputEvents.notionalChanged)
     _onNotionalChanged(draft: InputsState, event: InputEvents.NotionalChanged) {
         _log.info(`Changing notional to ${event.notional}`, event);
-        draft.notional = event.notional;
+        draft.notional = isNaN(event.notional) ? null : Number(event.notional);
     }
 }

@@ -1,7 +1,7 @@
-import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import {Region} from '../models';
+import {RegionItemRecordView} from './regionItemRecordView';
 
 export interface SingleItemRegionViewProps {
     model: Region;
@@ -21,13 +21,11 @@ export const SingleItemRegionView = ({model, className, showLoadingUi, loadingMe
         return null;
     }
     let classNames = classnames(className, 'single-item-container');
-    let loadingComponent = showLoadingUi ? (<div>{loadingMessage ? loadingMessage : 'Waiting For View To Load'}</div>) : null;
-    return (
-        <div className={classNames}>
-            {model.selectedRecord.modelCreated
-                ? <ConnectableComponent modelId={model.selectedRecord.modelId} viewContext={model.selectedRecord.displayContext}/>
-                : loadingComponent
-            }
-        </div>
-    );
+    return (<RegionItemRecordView
+        key={model.selectedRecord.id}
+        regionItemRecord={model.selectedRecord}
+        className={classNames}
+        showLoadingUi={showLoadingUi}
+        loadingMessage={loadingMessage}
+    />);
 };

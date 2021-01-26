@@ -39,6 +39,9 @@ export interface DateSelectorState {
 
 export namespace CashTileModelBuilder {
     export const createDefault = (modelId: string, state: CashTilePersistedState): CashTileModel => {
+        if (state.notional === 12345) {
+            throw new Error(`Fake Error Thrown`);
+        }
         return {
             modelId: `cash-tile-${modelId}`,
             rootState: {

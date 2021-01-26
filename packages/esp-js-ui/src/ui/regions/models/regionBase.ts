@@ -311,7 +311,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
             const singleModuleLoader = regionItemRecord.viewFactoryEntry.container.resolve<SingleModuleLoader>(SystemContainerConst.single_module_loader);
             if (singleModuleLoader.hasLoaded) {
                 const model = regionItemRecord.viewFactoryEntry.factory.createView(recordState);
-                regionItemRecord = regionItemRecord.update(model);
+                regionItemRecord = regionItemRecord.updateWithModel(model);
             } else {
                 regionItemRecord.addDisposable(singleModuleLoader.loadResults
                     .filter(lr => lr.hasCompletedLoaded)
@@ -321,8 +321,13 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
                         this.modelId,
                         () => {
                             _log.debug(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
-                            const model = regionItemRecord.viewFactoryEntry.factory.createView(recordState);
-                            regionItemRecord = regionItemRecord.update(model);
+                            try {
+                                const model = regionItemRecord.viewFactoryEntry.factory.createView(recordState);
+                                regionItemRecord = regionItemRecord.updateWithModel(model);
+                            } catch (err) {
+                                _log.error(`Region [${this._regionName}]. Error calling ViewFactory (${regionItemRecord.viewFactoryEntry.viewFactoryKey}) to create view, Record [${regionItemRecord.toString()}].`, err);
+                                regionItemRecord = regionItemRecord.updateWithError(err);
+                            }
                             this._state.updateRecord(regionItemRecord);
                             this.onStateChanged(RegionChangeType.RecordUpdated, regionItemRecord);
                         },
@@ -365,29 +370,33 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
 
         const model = regionItemRecord.model;
         let viewState: any = null;
-        // try see if there was a @stateProvider decorator on the views model,
-        // if so invoke the function it was declared on to get the state.
-        if (EspDecoratorUtil.hasMetadata(model)) {
-            const metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
-            if (metadata) {
-                viewState = model[metadata.functionName]();
+        try {
+            // try see if there was a @stateProvider decorator on the views model,
+            // if so invoke the function it was declared on to get the state.
+            if (EspDecoratorUtil.hasMetadata(model)) {
+                const metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
+                if (metadata) {
+                    viewState = model[metadata.functionName]();
+                }
             }
-        }
-        if (!viewState) {
-            // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-            const stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
-            if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-                viewState= stateProviderFunction.call(model);
+            if (!viewState) {
+                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
+                const stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
+                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
+                    viewState = stateProviderFunction.call(model);
+                }
             }
-        }
-        if (viewState) {
-            return {
-                viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
-                stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
-                regionRecordId: regionItemRecord.id,
-                viewState: viewState,
-                isSelected: this.selectedRecord.id === regionItemRecord.id
-            };
+            if (viewState) {
+                return {
+                    viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,
+                    stateVersion: regionItemRecord.viewFactoryMetadata.stateVersion,
+                    regionRecordId: regionItemRecord.id,
+                    viewState: viewState,
+                    isSelected: this.selectedRecord.id === regionItemRecord.id
+                };
+            }
+        } catch (err) {
+            _log.error(`Region [${this._regionName}]. Error getting state for model with id ${regionItemRecord.modelId}`, err);
         }
         return null;
     }

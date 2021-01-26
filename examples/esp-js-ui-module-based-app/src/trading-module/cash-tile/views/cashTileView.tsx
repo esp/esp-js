@@ -47,7 +47,7 @@ export const CashTileView = ({model}: CashTileViewProps) => {
             <input
                 type='text'
                 onChange={onNotionalChanged}
-                value={inputs.notional}/>
+                value={inputs.notional || ''}/>
             <div className='modelId'>tenor date (enter 1m)</div>
             <input
                 type='text'

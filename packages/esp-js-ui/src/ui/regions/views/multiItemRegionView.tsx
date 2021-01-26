@@ -1,8 +1,7 @@
-import {ConnectableComponent} from 'esp-js-react';
 import * as React from 'react';
 import * as classnames from 'classnames';
 import {Logger} from '../../../core';
-import {ItemView} from './itemView';
+import {RegionItemRecordView} from './regionItemRecordView';
 import {Region, RegionItemRecord} from '../models';
 
 const _log = Logger.create('MultiItemRegionView');
@@ -15,7 +14,7 @@ export interface MultiItemRegionViewProps {
 }
 
 /**
- * Basic region view which displays multiple regions.
+ * Basic region view which displays multiple items.
  *
  * Typically you'll implement a custom one of these depending on the app.
  * @constructor
@@ -31,13 +30,12 @@ export const MultiItemRegionView = ({model, className, showLoadingUi, loadingMes
     }
     let items = model.regionRecords.map((regionItemRecord: RegionItemRecord) => {
         _log.verbose(`Adding view for region item record: [${regionItemRecord.toString()}]`);
-        let loadingComponent = showLoadingUi ? (<div>{loadingMessage ? loadingMessage : 'Waiting For View To Load'}</div>) : null;
-        return (<ItemView key={regionItemRecord.id}>
-            {regionItemRecord.modelCreated
-                ? <ConnectableComponent modelId={regionItemRecord.modelId} viewContext={regionItemRecord.displayContext}/>
-                : loadingComponent
-            }
-        </ItemView>);
+        return (<RegionItemRecordView
+            key={regionItemRecord.id}
+            regionItemRecord={regionItemRecord}
+            showLoadingUi={showLoadingUi}
+            loadingMessage={loadingMessage}
+        />);
     });
     let classNames = classnames(className, 'multi-item-container');
     return (

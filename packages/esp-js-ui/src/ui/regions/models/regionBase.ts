@@ -302,7 +302,9 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
             regionRecordId = (<RegionItem>args[0]).regionRecordId;
         }
         let regionItemRecord = this._state.findRecordById(regionRecordId);
-        this._removeRegionRecord(regionItemRecord);
+        if (regionItemRecord) {
+            this._removeRegionRecord(regionItemRecord);
+        }
     }
 
     private _addRegionRecord(regionItemRecord: RegionItemRecord, recordState?: RegionRecordState): RegionItemRecord {

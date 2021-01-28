@@ -12,7 +12,7 @@
     "esp-js-ui": "^3.2.3-next.0",
     "react": "16.11.0",
     "react-dom": "16.11.0",
-    "uuid": "3.3.3"
+    "uuid": "8.3.2"
   },
   "devDependencies": {
     "jest": "24.9.0",

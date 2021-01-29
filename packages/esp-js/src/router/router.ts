@@ -99,7 +99,10 @@ export class Router extends DisposableBase {
 
     /**
      * Exists for read only access to a model.
-     * Typically used by framework code.
+     *
+     * Note: given this is JavaScript, it's up to the caller to not write against the model.
+     * If you want to modify the model, publish an event to it.
+     *
      * @param modelId
      */
     public getModel(modelId: string): any {
@@ -110,6 +113,28 @@ export class Router extends DisposableBase {
                 throw new Error(`Model with id ${modelId} is registered, however it's model has not yet been set. Can not retrieve`);
             }
             return modelRecord.model;
+        }
+        return null;
+    }
+
+    /**
+     * Exists to find a model for read only access.
+     *
+     * Note: given this is JavaScript, it's up to the caller to not write against the model.
+     * If you want to modify the model, publish an event to it.
+     *
+     * Returns the found model else null.
+     *
+     * @param predicate = a predicate which is used as a test against each model. Will stop on first match
+     */
+    public findModel(predicate: (model: any) => boolean) {
+        Guard.isFunction(predicate, 'predicate should be a function');
+        for (let [key, value] of this._models) {
+            if (value.hasModel) {
+                if (predicate(value.model)) {
+                    return value.model;
+                }
+            }
         }
         return null;
     }

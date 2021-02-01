@@ -1,13 +1,13 @@
 {
   "name": "esp-js-react-agile-board",
-  "version": "3.2.5-next.0",
+  "version": "3.2.6-next.0",
   "description": "ESP JS React Components Sample.",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^3.2.5-next.0",
-    "esp-js-react": "^3.2.5-next.0",
+    "esp-js": "^3.2.6-next.0",
+    "esp-js-react": "^3.2.6-next.0",
     "immutable": "^4.0.0-rc.12",
     "react": "16.11.0",
     "react-dom": "16.11.0"

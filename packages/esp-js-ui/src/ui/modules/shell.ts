@@ -34,14 +34,9 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _router: Router;
     private _stateService: StateService;
 
-    public constructor() {
+    public constructor(container: Container = new Container()) {
         super();
-        // This is somewhat of a hack to avoid a race condition whereby modules that load very quickly don't allow the view registry model to process the new view factories before the modules loadLayout is called.
-        // Effectively loadLayout is called right away and it can't find any of the 'enqueued to be registered' view factories.
-        // The below 'ghost model' is used to pop the load layout call onto the back of the dispatch loop which will allow the router to train all other models and thus populate the view factories.
-        // The proper fix for this is to make the ModuleLoader a true esp model, however I don't want to do that in the 2.0 code base as it's using the older version of rx.
-        // I think this is a likely refactor for esp 4.
-        this._container = new Container();
+        this._container = container;
         this.addDisposable(this._stateSaveMonitorDisposable);
     }
 

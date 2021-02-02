@@ -71,7 +71,9 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     protected configureContainer() {
-
+        SystemContainerConfiguration.configureContainer(this._container);
+        this._container.registerInstance(SystemContainerConst.app_shell, this);
+        this._container.registerInstance(SystemContainerConst.module_provider, this);
     }
 
     public getModule(moduleKey: string): Module {
@@ -80,14 +82,11 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     public start() {
-        SystemContainerConfiguration.configureContainer(this._container);
-        this._container.registerInstance(SystemContainerConst.app_shell, this);
-        this._container.registerInstance(SystemContainerConst.module_provider, this);
+        this.configureContainer();
         this._router = this._container.resolve<Router>(SystemContainerConst.router);
         this._router.addModel(this._shellLoaderModelId, {});
         this._regionManager = this._container.resolve<RegionManager>(SystemContainerConst.region_manager);
         this._viewRegistryModel = this._container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
-        this.configureContainer();
         this._stateService = this._container.resolve<StateService>(SystemContainerConst.state_service);
         this._registerShellViewFactories();
     }

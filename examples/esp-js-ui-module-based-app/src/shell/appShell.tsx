@@ -36,6 +36,7 @@ export class AppShell extends Shell {
     }
 
     configureContainer() {
+        super.configureContainer();
         this.container
             .register(ShellModuleContainerConst.workspace_region, StatefulRegion)
             .inject(

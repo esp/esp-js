@@ -9,6 +9,7 @@ export function getViewFactoryMetadata(target): ViewFactoryMetadata {
     throw new Error(`No view factory metadata found on '${target && target.name}'`);
 }
 
+// TODO tests
 export function viewFactory(viewKey: string, shortName: string);
 export function viewFactory(viewKey: string, shortName: string, customMetadata?: object);
 export function viewFactory(viewKey: string, shortName: string, stateVersion: number, customMetadata?: object);
@@ -21,7 +22,7 @@ export function viewFactory(...args: any[]) {
             stateVersion = args[2];
         }
         if (args.length === 4) {
-            customMetadata = args[4];
+            customMetadata = args[3];
         }
     }
     return (target) => {

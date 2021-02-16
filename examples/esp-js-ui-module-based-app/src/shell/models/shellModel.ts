@@ -68,7 +68,17 @@ export class ShellModel extends ModelBase {
     @observeEvent(ShellEvents.clearStateAndReload)
     private _clearStateAndReload() {
         _log.info(`Clearing state and reloading`);
-        this._stateService.clearState(this._shell.appStateKey);
-        window.location.reload();
+        let canUnload = false;
+        try {
+            this._workspaceRegion.unload();
+            this._blotterRegion.unload();
+            this._stateService.clearState(this._shell.appStateKey);
+            canUnload = true;
+        } catch (e) {
+            _log.error(`Error unloading`, e);
+        }
+        if (canUnload) {
+            window.location.reload();
+        }
     }
 }

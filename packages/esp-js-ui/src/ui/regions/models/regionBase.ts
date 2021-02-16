@@ -89,7 +89,9 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
             this._isUnloading = true;
             const removedItems = [];
             this._regionRecordsByRecordId.forEach((regionItemRecord: RegionItemRecord) => {
-                regionItemRecord.model.dispose();
+                if (regionItemRecord.modelCreated && utils.isFunction(regionItemRecord.model.dispose)) {
+                    regionItemRecord.model.dispose();
+                }
                 regionItemRecord.dispose();
                 removedItems.push(regionItemRecord);
             });

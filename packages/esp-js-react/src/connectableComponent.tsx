@@ -50,7 +50,8 @@ export const PublishModelEventContext = React.createContext<PublishModelEventDel
 export const HooksPublishModelEventProvider = PublishModelEventContext.Provider;
 
 export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedToProps = {}> extends React.Component<ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, State> {
-    private _observationSubscription: Disposable = new DisposableBase();
+    private _isMounted = false;
+    private _observationSubscription: Disposable;
     context: ConnectableComponentContext;
 
     static contextTypes = {
@@ -79,10 +80,12 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
     }
 
     componentDidMount() {
+        this._isMounted = true;
         this._tryObserveModel(this._getModelId());
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
         this._tryDisposeModelSubscription();
     }
 
@@ -120,7 +123,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
             this._observationSubscription = this.context.router
                 .getModelObservable(modelId)
                 .subscribe(model => {
-                    if (!this._observationSubscription.isDisposed) {
+                    if (this._isMounted) {
                         this.setState({model});
                     }
                 });

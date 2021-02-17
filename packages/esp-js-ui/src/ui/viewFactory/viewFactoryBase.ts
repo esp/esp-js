@@ -123,4 +123,18 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
             };
         }
     }
+
+    /**
+     * @deprecated view is now stored via regions.
+     * This has been kept for backwards compatibility.
+     * This function will soon be removed
+     */
+    public shutdownAllViews(): void {
+        // copy the array as we have some disposal code that remove items on disposed
+        let models = this._currentViewModels.slice();
+        models.forEach(model => {
+            model.dispose();
+        });
+        this._currentViewModels.length = 0;
+    }
 }

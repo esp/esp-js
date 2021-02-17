@@ -51,6 +51,10 @@ export class RegionItem {
         return this._displayOptions;
     }
 
+    public get title(): string {
+        return this._displayOptions ? this._displayOptions.title : '';
+    }
+
     /**
      * True if this RegionItem was created with an existing regionRecordId, typically the case when the item in question was loaded from state by a region already
      */

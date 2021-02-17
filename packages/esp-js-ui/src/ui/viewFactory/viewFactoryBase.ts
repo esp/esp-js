@@ -29,6 +29,10 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
     protected constructor(protected _container: Container) {
         super();
         this._metadata = getViewFactoryMetadata(this);
+
+        this.addDisposable(() => {
+            this.shutdownAllViews();
+        });
     }
 
     public getDefaultViewState(): TViewState[]  {
@@ -133,7 +137,9 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
         // copy the array as we have some disposal code that remove items on disposed
         let models = this._currentViewModels.slice();
         models.forEach(model => {
-            model.dispose();
+            if (!model.isDisposed) {
+                model.dispose();
+            }
         });
         this._currentViewModels.length = 0;
     }

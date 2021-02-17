@@ -4,6 +4,7 @@ import {Disposable, DisposableBase, EspDecoratorUtil, utils} from 'esp-js';
 import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
 import {RegionRecordState} from './state';
 import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
+import * as uuid from 'uuid';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
@@ -61,9 +62,7 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
      * If this is there it's 3.0 or later code, if not it's 2,0 code.
      * It will be removed before the pre-release tag is removed.
      */
-    public get supportsNewStateApi() {
-        return true;
-    }
+    public abstract get supportsNewStateApi(): boolean;
 
     /**
      * Creates a view.
@@ -79,7 +78,10 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
     public createView(viewCreationState: ViewCreationState<TViewState> = null): TModel {
         let childContainer = this._container.createChildContainer();
         let model: TModel = this._createView(childContainer, viewCreationState);
+        // add the child container to the model so if the model is disposed anything in it's container is also disposed
         model.addDisposable(childContainer);
+        // conversely, add the model to the childContainer so if the moduel or container is disposed, then the model will be too.
+        childContainer.registerInstance(uuid.v4(), model, false);
         this._storeModel(model);
         // Attach the metadata of this view factory to any model created by it.
         // This wil help with other functionality such as state saving.

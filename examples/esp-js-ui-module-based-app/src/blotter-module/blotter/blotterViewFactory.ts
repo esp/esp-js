@@ -19,6 +19,10 @@ export class BlotterViewFactory extends ViewFactoryBase<BlotterModel, BlotterSta
         return 1;
     }
 
+    public get supportsNewStateApi(): boolean {
+        return true;
+    }
+
     // override
     _createView(childContainer, regionRecordState?: RegionRecordState<BlotterState>):BlotterModel {
         _log.verbose('Creating blotter model');

@@ -6,7 +6,7 @@ import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
 import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel} from '../src';
 import {Router} from 'esp-js';
 import {observeEvent} from 'esp-js/src/decorators/observeEvent';
-import {ConnectableComponentChildProps, PublishEvent} from '../src/connectableComponent';
+import {ConnectableComponentChildProps, PublishEvent, PublishModelEventContext, PublishModelEventDelegate} from '../src/connectableComponent';
 
 configure({adapter: new ReactSixteenAdapter()});
 
@@ -95,6 +95,7 @@ interface TestOptions {
 describe('ConnectableComponent', () => {
     let router,
         testModel: TestModel,
+        testModel2: TestModel,
         connectableComponentWrapper: ReactWrapper<ConnectableComponentProps<TestModel>, {}, ConnectableComponent<TestModel>>,
         connectableComponentProps: ConnectableComponentProps<TestModel>,
         mapModelToProps,
@@ -118,6 +119,9 @@ describe('ConnectableComponent', () => {
         testModel = createModel(options);
         router.addModel('model-id', testModel);
         router.observeEventsOn('model-id', testModel);
+        testModel2 = new TestModel();
+        router.addModel('model-id2', testModel2);
+        router.observeEventsOn('model-id2', testModel2);
         connectableComponentProps = {
             modelId: 'model-id'
         };
@@ -163,9 +167,15 @@ describe('ConnectableComponent', () => {
         }
     }
 
-    function publishAnEvent() {
+    function publishAnEventToModel1() {
         router.publishEvent('model-id', 'test-event', 'the-event-value');
         expect(testModel.value).toEqual('the-event-value');
+        connectableComponentWrapper.update();
+    }
+
+    function publishAnEventToModel2() {
+        router.publishEvent('model-id2', 'test-event','the-event-value2');
+        expect(testModel2.value).toEqual('the-event-value2');
         connectableComponentWrapper.update();
     }
 
@@ -254,9 +264,68 @@ describe('ConnectableComponent', () => {
             });
 
             it('Re-renders when model updates', () => {
-                publishAnEvent();
+                publishAnEventToModel1();
+                let props = getChidViewProps();
+                expect(props.model.value).toBe('the-event-value');
+            });
+        });
+
+        describe('Model Subscription', () => {
+            beforeEach(() => {
+                setup({useConnectFunction: false});
+            });
+
+            it('Re-subscribes to new model when modelId changes', () => {
+                const newProps = {
+                    ...connectableComponentWrapper.props(),
+                    modelId: 'model-id2',
+                };
+                connectableComponentWrapper.setProps(newProps);
+                connectableComponentWrapper.update();
+                publishAnEventToModel2();
+                let props = getChidViewProps();
+                expect(props.foo).toBe('the-event-value2');
+            });
+        });
+
+        describe('Publish Event Context', () => {
+            beforeEach(() => {
+                setup({useConnectFunction: false});
+            });
+
+            // Cant test hooks yet, will test using state below
+            // https://github.com/enzymejs/enzyme/issues/2011
+            xit('Can publish event via context', () => {
+                const childViewContext = connectableComponentWrapper.context();
+                let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
+                publishEvent('test-event', 'the-event-value');
+                connectableComponentWrapper.update();
                 let props = getChidViewProps();
                 expect(props.foo).toBe('the-event-value');
+            });
+
+            // Note this is a a best effort to test the context hook created via state
+            it('publishEvent set', () => {
+                const state = connectableComponentWrapper.state();
+                state.publishEvent('test-event', 'the-event-value');
+                connectableComponentWrapper.update();
+                let props = getChidViewProps();
+                expect(props.model.value).toBe('the-event-value');
+            });
+
+            it('publishEvent recreated on modle change', () => {
+                const newProps = {
+                    ...connectableComponentWrapper.props(),
+                    modelId: 'model-id2',
+                };
+                connectableComponentWrapper.setProps(newProps);
+                connectableComponentWrapper.update();
+                const state = connectableComponentWrapper.state();
+                state.publishEvent('test-event', 'the-event-value');
+                connectableComponentWrapper.update();
+                let props = getChidViewProps();
+                expect(props.model.value).toBe('the-event-value');
+                expect(testModel2.value).toBe('the-event-value');
             });
         });
 
@@ -278,7 +347,7 @@ describe('ConnectableComponent', () => {
                 let mappedModel = props.model as any as MappedModel;
                 expect(mappedModel.value2).toBe('initial-value');
                 expect(mappedModel.value3).toBe(expectedValue3);
-                publishAnEvent();
+                publishAnEventToModel1();
                 props = getChidViewProps();
                 mappedModel = props.model as any as MappedModel;
                 expect(mappedModel.value2).toBe('the-event-value');
@@ -288,7 +357,7 @@ describe('ConnectableComponent', () => {
                 let props = getChidViewProps();
                 expect(props.value2).toBe('initial-value');
                 expect(props.value3).toBe(expectedValue3);
-                publishAnEvent();
+                publishAnEventToModel1();
                 props = getChidViewProps();
                 expect(props.value2).toBe('the-event-value');
             }

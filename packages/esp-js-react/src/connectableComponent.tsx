@@ -1,9 +1,8 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import  { Disposable, Router, EspDecoratorUtil, utils } from 'esp-js';
+import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
-import {ClassType, ComponentClass, FunctionComponent} from 'react';
 
 export type PublishEvent = (eventType: string, event: any) => void;
 
@@ -34,6 +33,7 @@ export interface ConnectableComponentChildProps<TModel> {
 
 export interface State {
     model?: any;
+    currentModelId?: string;
     publishProps?: any;
     publishEvent?: PublishModelEventDelegate;
 }
@@ -50,7 +50,7 @@ export const PublishModelEventContext = React.createContext<PublishModelEventDel
 export const HooksPublishModelEventProvider = PublishModelEventContext.Provider;
 
 export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedToProps = {}> extends React.Component<ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, State> {
-    private _observationSubscription: Disposable = null;
+    private _observationSubscription: Disposable = new DisposableBase();
     context: ConnectableComponentContext;
 
     static contextTypes = {
@@ -60,7 +60,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 
     constructor(props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, context: ConnectableComponentContext) {
         super(props, context);
-        this.state = {model: null};
+        this.state = {model: null, currentModelId: null};
     }
 
     componentWillReceiveProps(nextProps: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, nextContext: ConnectableComponentContext) {
@@ -98,37 +98,40 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
             return;
         }
 
-        let stateChanged = false;
+        let stateChanged = modelId !== this.state.currentModelId;
 
         let publishEvent = this.state.publishEvent;
-        if (!publishEvent) {
+        if (stateChanged) {
             publishEvent = this._publishEvent(this.context.router, modelId);
-            stateChanged = true;
         }
 
         let publishProps = this.state.publishProps;
         // We only map the publish props once, as for well behaving components these callbacks should never change
-        if (!publishProps && this.props.createPublishEventProps) {
+        if (stateChanged && this.props.createPublishEventProps) {
             publishProps = this.props.createPublishEventProps(publishEvent);
-            stateChanged = true;
         }
 
         if (stateChanged) {
             this.setState({
+                currentModelId: modelId,
                 publishEvent,
                 publishProps
             });
+            this._observationSubscription = this.context.router
+                .getModelObservable(modelId)
+                .subscribe(model => {
+                    if (!this._observationSubscription.isDisposed) {
+                        this.setState({model});
+                    }
+                });
         }
-
-        this._observationSubscription = this.context.router
-            .getModelObservable(modelId)
-            .subscribe(model => this.setState({model}));
     }
 
     private _tryDisposeModelSubscription() {
         if(this._observationSubscription) {
-            this.setState({model: null});
             this._observationSubscription.dispose();
+            this._observationSubscription = new DisposableBase();
+            this.setState({model: null, currentModelId: null, publishProps: null, publishEvent: null});
         }
     }
 

@@ -92,8 +92,4 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             tenor: model.dateSelector.dateInput,
         };
     }
-
-    public get supportsNewStateApi(): boolean {
-        return true;
-    }
 }

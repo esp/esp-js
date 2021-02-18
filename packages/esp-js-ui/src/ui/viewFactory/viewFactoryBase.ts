@@ -57,14 +57,6 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
     }
 
     /**
-     * HACK:
-     * This is a backwards compilable features so framework code can inspect older modules view factories,
-     * If this is there it's 3.0 or later code, if not it's 2,0 code.
-     * It will be removed before the pre-release tag is removed.
-     */
-    public abstract get supportsNewStateApi(): boolean;
-
-    /**
      * Creates a view.
      *
      * This must return the model that manages the view.

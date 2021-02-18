@@ -71,4 +71,9 @@ export class BlotterModule extends ModuleBase {
     //         this.regionManager.addToRegion(RegionNames.blotterRegion, blotterModel.modelId);
     //     }
     // }
+
+    protected get isOnNewStateApi(): boolean {
+        return true;
+    }
+
 }

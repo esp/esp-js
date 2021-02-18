@@ -44,9 +44,12 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
     abstract registerPrerequisites(register: PrerequisiteRegister): void;
 
+    protected abstract get isOnNewStateApi(): boolean;
+
     registerViewFactories(viewRegistryModel: ViewRegistryModel) {
-        // If a legacy module is loaded dynamically using this base class, we can detect so by seeing if an old/deleted property exists.
-        const isLegacyModule = typeof (<any>this).stateSavingEnabled !== 'undefined';
+        // If an old derived type of this class is loaded, it won't have overrode isOnNewStateApi, thus we can infer that module is legacy
+        const isOnNewStateApi = !!this.isOnNewStateApi;
+        const isLegacyModule = !isOnNewStateApi;
         _log.debug('Registering ViewFactories');
         let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
         viewFactories.forEach(viewFactory => {

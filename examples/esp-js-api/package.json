@@ -1,6 +1,6 @@
 {
   "name": "esp-js-api",
-  "version": "3.2.14-next.0",
+  "version": "3.2.15-next.0",
   "private": true,
   "scripts": {
     "clean": "nps clean",
@@ -11,7 +11,7 @@
     "start": "./node_modules/.bin/ts-node src/index.ts"
   },
   "dependencies": {
-    "esp-js": "^3.2.14-next.0",
+    "esp-js": "^3.2.15-next.0",
     "prompt": "1.0.0"
   },
   "devDependencies": {

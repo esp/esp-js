@@ -47,8 +47,4 @@ export class TradingModule extends ModuleBase {
         const ccyPairRefDataService = this.container.resolve<CurrencyPairRefDataService>(TradingModuleContainerConst.ccyPairRefDataService);
         register.registerStream(ccyPairRefDataService.loadCurrencyPairs(), 'Loading Currency Pairs');
     }
-
-    public get supportsNewStateApi(): boolean {
-        return true;
-    }
 }

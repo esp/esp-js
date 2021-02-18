@@ -63,12 +63,4 @@ export abstract class ModuleBase extends DisposableBase implements Module {
 
     onLoadStageChanged(stage: ModuleLoadStage) {
     }
-
-    /**
-     * HACK:
-     * This is a backwards compilable features so framework code can inspect older modules
-     * If this is there it's 3.0 or later code, if not it's 2,0 code.
-     * It will be removed before the pre-release tag is removed.
-     */
-    public abstract get supportsNewStateApi(): boolean;
 }

@@ -7,4 +7,5 @@ export class SystemContainerConst {
     static get scheduler_service() { return 'scheduler_service'; }
     static get single_module_loader() { return 'single_module_loader'; }
     static get module_provider() { return 'module_provider'; }
+    static get module_metadata() { return 'module_metadata'; }
 }

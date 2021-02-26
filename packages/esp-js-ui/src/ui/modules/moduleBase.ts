@@ -27,6 +27,11 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         // disposing the module will dispose it's container and thus all it's child components.
         this.addDisposable(container);
         this._moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleInstance(this);
+        container.registerInstance(SystemContainerConst.module_metadata, this._moduleMetadata);
+    }
+
+    protected get moduleMetadata(): ModuleMetadata {
+        return this._moduleMetadata;
     }
 
     /**

@@ -20,7 +20,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
      * Creates the module.
      * @param container A child container of the applications root container.
      */
-    protected constructor(protected readonly container: Container) {
+    protected constructor(public readonly container: Container) {
         super();
         Guard.isDefined(container, 'container must be defined');
         // seems to make sense for the module to own it's container,

@@ -1,9 +1,9 @@
 import {Container} from 'esp-js-di';
 import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance, ViewFactoryMetadata} from './viewFactoryDecorator';
-import {Disposable, DisposableBase, EspDecoratorUtil, utils} from 'esp-js';
+import {Disposable, DisposableBase} from 'esp-js';
 import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
 import {RegionRecordState} from './state';
-import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
+import {StateUtils} from './stateProvider';
 import * as uuid from 'uuid';
 
 export interface ViewInstance extends Disposable {
@@ -106,20 +106,7 @@ export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = 
     public getAllViewsState(): any {
         let state = this._currentViewModels
             .map(c => {
-                // try see if there was a @stateProvider decorator on the views model,
-                // if so invoke the function it was declared on to get the state.
-                if (EspDecoratorUtil.hasMetadata(c)) {
-                    let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(c, StateSaveProviderConsts.CustomDataKey);
-                    if (metadata) {
-                        return c[metadata.functionName]();
-                    }
-                }
-                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-                let stateProviderFunction = c[StateSaveProviderConsts.HandlerFunctionName];
-                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-                    return stateProviderFunction.call(c);
-                }
-                return null;
+                return StateUtils.tryGetState(c);
             })
             .filter(c => c != null);
         if (state.length === 0) {

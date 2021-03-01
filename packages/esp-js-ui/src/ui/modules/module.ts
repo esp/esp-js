@@ -26,6 +26,11 @@ export interface ModuleConstructor {
  */
 export interface Module extends DisposableBase {
     /**
+     * The modules child container.
+     */
+    container: Container;
+
+    /**
      * Hook to signal the module is about to be used
      */
     initialise(): void;

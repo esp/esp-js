@@ -1,9 +1,9 @@
 import {isString, Logger} from '../../../core';
-import {EspDecoratorUtil, Guard, observeEvent, Router, utils} from 'esp-js';
+import {Guard, observeEvent, Router, utils} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';
 import {RegionItem} from './regionItem';
-import {getViewFactoryMetadataFromModelInstance, StateSaveProviderConsts, StateSaveProviderMetadata, ViewFactoryEntry, ViewFactoryMetadata, ViewRegistryModel, RegionRecordState} from '../../viewFactory';
+import {getViewFactoryMetadataFromModelInstance, ViewFactoryEntry, ViewFactoryMetadata, ViewRegistryModel, RegionRecordState, StateUtils} from '../../viewFactory';
 import {EspUiEventNames} from '../../espUiEventNames';
 import {RegionItemRecord} from './regionItemRecord';
 import {SelectedItemChangedEvent} from './events';
@@ -375,21 +375,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
         const model = regionItemRecord.model;
         let viewState: any = null;
         try {
-            // try see if there was a @stateProvider decorator on the views model,
-            // if so invoke the function it was declared on to get the state.
-            if (EspDecoratorUtil.hasMetadata(model)) {
-                const metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(model, StateSaveProviderConsts.CustomDataKey);
-                if (metadata) {
-                    viewState = model[metadata.functionName]();
-                }
-            }
-            if (!viewState) {
-                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-                const stateProviderFunction = model[StateSaveProviderConsts.HandlerFunctionName];
-                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-                    viewState = stateProviderFunction.call(model);
-                }
-            }
+            viewState = StateUtils.tryGetState(model);
             if (viewState) {
                 return {
                     viewFactoryKey: regionItemRecord.viewFactoryMetadata.viewKey,

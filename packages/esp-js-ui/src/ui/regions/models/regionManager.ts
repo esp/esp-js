@@ -170,6 +170,20 @@ export class RegionManager extends ModelBase {
         }
     }
 
+    public removeFromAllRegions(modelId: string) {
+        Object.keys(this._regions).forEach(regionName => {
+            let recordsToRemove: string[];
+            recordsToRemove = this._regions[regionName].regionRecords
+                .filter(r => r.modelCreated)
+                .filter(r => r.modelId === modelId)
+                .map(r => r.id);
+            _log.debug(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
+            recordsToRemove.forEach(recordId => {
+                this._regions[regionName].removeFromRegion(recordId);
+            });
+        });
+    }
+
     /**
      * Returns true if any view for the give model ID exists in the region.
      */

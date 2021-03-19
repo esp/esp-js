@@ -11,6 +11,10 @@ export class SerialDisposable extends DisposableBase {
         });
     }
 
+    public get current() {
+        return this._disposableItem;
+    }
+
     public setDisposable(disposable: DisposableItem) {
         this._disposeItem();
         this._disposableItem = new DisposableWrapper(disposable);
@@ -19,6 +23,7 @@ export class SerialDisposable extends DisposableBase {
     private _disposeItem = () => {
         if (this._disposableItem) {
             this._disposableItem.dispose();
+            this._disposableItem = null;
         }
     }
 }

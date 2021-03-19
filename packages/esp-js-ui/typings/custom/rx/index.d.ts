@@ -20,9 +20,6 @@ declare module 'rxjs/Observable' {
 
         retryWithPolicy<T>(policy, onError?:(err:Error) => void, scheduler? : Scheduler) : Rx.Observable<T>;
 
-        // this is valid rx but not on rx.all.d.ts
-        timeout<TOther>(dueTime: number, other?: Observable<TOther>, scheduler?: Scheduler): Observable<T>;
-
         takeUntilInclusive<T>(predicate: (item: T) => boolean) : Rx.Observable<T>;
     }
 

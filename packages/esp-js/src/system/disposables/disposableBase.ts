@@ -39,4 +39,9 @@ export class DisposableBase implements Disposable {
     public dispose(): void {
         this._disposables.dispose();
     }
+
+    // for compatibility with rx
+    public unsubscribe() {
+        this.dispose();
+    }
 }

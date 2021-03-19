@@ -6,7 +6,7 @@ import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {RegionBase, RegionManager, RegionState} from '../regions/models';
 import {AppDefaultStateProvider, AppState, NoopAppDefaultStateProvider} from './appState';
 import {IdFactory} from '../idFactory';
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
 import {DisposableBase, Guard, Router} from 'esp-js';
 import {Module, ModuleConstructor} from './module';
@@ -14,6 +14,7 @@ import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
 import {ModuleProvider} from './moduleProvider';
 import {ModelBase} from '../modelBase';
+import {SerialDisposable} from '../../core/serialDisposable';
 
 const _log: Logger = Logger.create('Shell');
 
@@ -25,10 +26,10 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _shellLoaderModelId = IdFactory.createId('module-loader');
     private _connected = false;
     private _regionsLoaded = false;
-    private _loadStreamSubscription = new Rx.SerialDisposable();
-    private _moduleLoadResultsSubject = new Rx.ReplaySubject(1);
+    private _loadStreamSubscription = new SerialDisposable();
+    private _moduleLoadResultsSubject = new Rx.ReplaySubject<AggregateModuleLoadResult>(1);
     private _aggregateModuleLoadResult = AggregateModuleLoadResult.EMPTY;
-    private _stateSaveMonitorDisposable = new Rx.SerialDisposable();
+    private _stateSaveMonitorDisposable = new SerialDisposable();
     private _regionManager: RegionManager;
     private _viewRegistryModel: ViewRegistryModel;
     private _router: Router;
@@ -100,7 +101,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
             this._connected = true;
             this._aggregateModuleLoadResult = new AggregateModuleLoadResult(moduleConstructors.length);
             if (moduleConstructors.length === 0) {
-                this._moduleLoadResultsSubject.onNext(this._aggregateModuleLoadResult);
+                this._moduleLoadResultsSubject.next(this._aggregateModuleLoadResult);
                 this._onModuleLoadComplete();
                 return;
             }
@@ -111,7 +112,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
                     if (!this._regionsLoaded && this._aggregateModuleLoadResult.allModulesAtOrLaterThanStage(ModuleLoadStage.Registered)) {
                         this._onModuleLoadComplete();
                     }
-                    this._moduleLoadResultsSubject.onNext(this._aggregateModuleLoadResult);
+                    this._moduleLoadResultsSubject.next(this._aggregateModuleLoadResult);
                 },
                 exception => {
                     _log.error(`Error on module load stream`, exception);
@@ -160,7 +161,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         this._connected = false;
         this._regionsLoaded = false;
         this._aggregateModuleLoadResult = AggregateModuleLoadResult.EMPTY;
-        this._moduleLoadResultsSubject.onNext(this._aggregateModuleLoadResult);
+        this._moduleLoadResultsSubject.next(this._aggregateModuleLoadResult);
     }
 
     /**
@@ -216,16 +217,16 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     private _createLoadStream(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             _log.debug(`Loading shell and ${moduleConstructors.length} additional modules`);
             return Rx.Observable
-                .merge([...moduleConstructors.map(moduleCtor => this._loadModule(moduleCtor))])
+                .merge(...moduleConstructors.map(moduleCtor => this._loadModule(moduleCtor)))
                 .subscribe(obs);
         });
     }
 
     private _loadModule(moduleConstructor: ModuleConstructor): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleClass(moduleConstructor);
             _log.debug(`Creating module loader for ${moduleMetadata.moduleKey}`);
             let moduleLoader = new DefaultSingleModuleLoader(

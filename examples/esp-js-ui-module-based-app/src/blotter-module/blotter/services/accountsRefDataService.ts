@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {Logger} from 'esp-js-ui';
 import {Unit} from 'esp-js-ui';
 
@@ -20,8 +20,8 @@ export class AccountsRefDataService {
                 .subscribe(_ => {
                     _log.debug(`Accounts received`);
                     this._accounts = ['Barclays', 'HSBC', 'Lloyds Banking Group', 'NatWest Group', 'Standard Chartered'];
-                    o.onNext(Unit.default);
-                    o.onCompleted();
+                    o.next(Unit.default);
+                    o.complete();
                 });
         });
     }

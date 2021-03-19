@@ -31,7 +31,7 @@
     "query-string": "6.11.1",
     "react": "16.13.0",
     "rxjs": "5.5.12",
-    "uuid": "8.3.2",
+    "uuid": "8.3.2"
   },
   "peerDependencies": {
     "classnames": "2.2.6",

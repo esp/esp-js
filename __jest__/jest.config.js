@@ -22,5 +22,5 @@ module.exports = {
         "<rootDir>"
     ],
     "testURL": "http://localhost/",
-    "setupFilesAfterEnv": ["<rootDir>/../../__jest__/mocks/cryptoMock.js"]
+    "setupFilesAfterEnv": ["<rootDir>/../../__jest__/mocks/cryptoMock.ts"]
 };

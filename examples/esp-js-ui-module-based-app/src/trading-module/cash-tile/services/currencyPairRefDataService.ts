@@ -1,4 +1,4 @@
-import * as Rx from 'rx';
+import * as Rx from 'rxjs';
 import {Logger} from 'esp-js-ui';
 import {Unit} from 'esp-js-ui';
 
@@ -20,8 +20,8 @@ export class CurrencyPairRefDataService {
                 .subscribe(_ => {
                     _log.debug(`Currency pairs received`);
                     this._currencyPairs = ['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY', 'EURCAD', 'USDBRL'];
-                    o.onNext(Unit.default);
-                    o.onCompleted();
+                    o.next(Unit.default);
+                    o.complete();
                 });
         });
     }

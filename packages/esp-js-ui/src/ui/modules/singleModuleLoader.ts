@@ -40,7 +40,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         super();
         this._log = Logger.create(`SingleModuleLoader-${this._moduleMetadata.moduleKey}`);
         this._preReqsLoader = new DefaultPrerequisiteRegister();
-        this._loadStream = this._createLoadStream().publish(new Rx.ReplaySubject(1));
+        this._loadStream = this._createLoadStream().multicast(new Rx.ReplaySubject<ModuleLoadResult>(1));
     }
 
     public get module(): Module {
@@ -59,7 +59,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
      * A publish stream of ModuleLoadResults
      */
     public get loadResults(): Rx.Observable<ModuleLoadResult> {
-        return this._loadStream.asObservable() ;
+        return this._loadStream;
     }
 
     public get hasLoaded() {
@@ -77,7 +77,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     }
 
     private _createLoadStream(): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>((obs: Rx.Subscriber<ModuleLoadResult>) => {
+        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
@@ -162,7 +162,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     }
 
     private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>((obs: Rx.Subscriber<ModuleLoadResult>) => {
+        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module

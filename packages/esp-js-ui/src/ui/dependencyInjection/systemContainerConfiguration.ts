@@ -1,13 +1,12 @@
-import {Container, EspDiConsts} from 'esp-js-di';
+import {Container} from 'esp-js-di';
 import {Logger} from '../../core/logger';
 import {SystemContainerConst} from './systemContainerConst';
-import {StateService} from '../state/stateService';
+import {LocalStorageStateService} from '../state/stateService';
 import {Router} from 'esp-js';
-import {RegionManager} from '../regions/regionManager';
-import {SchedulerService} from '../../core';
 import {ViewRegistryModel} from '../viewFactory';
 import {LiteralResolver} from './literalResolver';
-import {ModuleLoader} from '../modules/moduleLoader';
+import {SchedulerService} from '../../core';
+import {RegionManager} from '../regions/models';
 
 const _log = Logger.create('SystemContainerConfiguration');
 
@@ -21,9 +20,8 @@ export class SystemContainerConfiguration {
             .register(SystemContainerConst.router, Router)
             .singleton();
 
-        // state service
         rootContainer
-            .register(SystemContainerConst.state_service, StateService)
+            .register(SystemContainerConst.state_service, LocalStorageStateService)
             .singleton();
 
         rootContainer
@@ -34,17 +32,6 @@ export class SystemContainerConfiguration {
             .register(SystemContainerConst.scheduler_service, SchedulerService)
             .singleton();
 
-        // module loader
-        rootContainer.register(SystemContainerConst.module_loader, ModuleLoader)
-            .inject(
-                EspDiConsts.owningContainer,
-                SystemContainerConst.views_registry_model,
-                SystemContainerConst.state_service,
-                SystemContainerConst.router
-            )
-            .singleton();
-
-        // component registry
         rootContainer
             .register(SystemContainerConst.views_registry_model, ViewRegistryModel)
             .inject(SystemContainerConst.router)

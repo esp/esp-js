@@ -1,28 +1,43 @@
 import {Container} from 'esp-js-di';
-import {getViewFactoryMetadata} from './viewFactoryDecorator';
-import {DisposableBase, utils, EspDecoratorUtil} from 'esp-js';
-import {ViewFactoryMetadata} from './viewFactoryDecorator';
-import {Disposable} from 'esp-js';
-import {StateSaveProviderConsts, StateSaveProviderMetadata} from './stateProvider';
-
-export interface ViewStateSet {
-    viewFactoryKey: string;
-    state: Array<any>;
-}
+import {getViewFactoryMetadata, setViewFactoryMetadataOnModelInstance, ViewFactoryMetadata} from './viewFactoryDecorator';
+import {Disposable, DisposableBase} from 'esp-js';
+import {ViewFactoryDefaultStateProvider} from './viewFactoryDefaultStateProvider';
+import {RegionRecordState} from './state';
+import {StateUtils} from './stateProvider';
+import * as uuid from 'uuid';
 
 export interface ViewInstance extends Disposable {
     addDisposable(disposable: () => void);
     addDisposable(disposable: Disposable);
 }
 
-export abstract class ViewFactoryBase<T extends ViewInstance> extends DisposableBase {
-    private _currentViewModels: Array<ViewInstance>;
-    private _metadata: ViewFactoryMetadata;
+/**
+ * Contains data to create a view.
+ *
+ * Note this is effectively a view on RegionRecordState with all properties being optional.
+ */
+export interface ViewCreationState<TViewState> extends Partial<Pick<RegionRecordState<TViewState>, 'stateVersion' | 'regionRecordId' | 'viewState'>> {
+
+}
+
+export abstract class ViewFactoryBase<TModel extends ViewInstance, TViewState = any> extends DisposableBase implements ViewFactoryDefaultStateProvider<TViewState> {
+    /*
+    @deprecated
+     */
+    private _currentViewModels: Array<ViewInstance> = [];
+    private readonly _metadata: ViewFactoryMetadata;
 
     protected constructor(protected _container: Container) {
         super();
-        this._currentViewModels = [];
         this._metadata = getViewFactoryMetadata(this);
+
+        this.addDisposable(() => {
+            this.shutdownAllViews();
+        });
+    }
+
+    public getDefaultViewState(): TViewState[]  {
+        return [];
     }
 
     public get viewKey(): string {
@@ -31,6 +46,10 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
 
     public get shortName(): string {
         return this._metadata.shortName;
+    }
+
+    public get metadata(): ViewFactoryMetadata {
+        return this._metadata;
     }
 
     public get customMetadata(): any {
@@ -43,15 +62,31 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
      * This must return the model that manages the view.
      *
      * @param childContainer: The esp-js-di child container for the view
-     * @param state: Any state that should be loaded by the view
+     * @param viewCreationState:
      * @private
      */
-    protected abstract _createView(childContainer: Container, state?: any): T;
+    protected abstract _createView(childContainer: Container, viewCreationState?: ViewCreationState<TViewState>): TModel;
 
-    public createView(state = null): T {
+    public createView(viewCreationState: ViewCreationState<TViewState> = null): TModel {
         let childContainer = this._container.createChildContainer();
-        let model: T = this._createView(childContainer, state);
+        let model: TModel = this._createView(childContainer, viewCreationState);
+        // add the child container to the model so if the model is disposed anything in it's container is also disposed
         model.addDisposable(childContainer);
+        // conversely, add the model to the childContainer so if the moduel or container is disposed, then the model will be too.
+        childContainer.registerInstance(uuid.v4(), model, false);
+        this._storeModel(model);
+        // Attach the metadata of this view factory to any model created by it.
+        // This wil help with other functionality such as state saving.
+        setViewFactoryMetadataOnModelInstance(model, this._metadata);
+        return model;
+    }
+
+    /**
+     * @deprecated stores the model locally.
+     * This has been kept for backwards compatibility.
+     * It will soon be removed.
+     */
+    private _storeModel(model: TModel) {
         model.addDisposable(() => {
             let index = this._currentViewModels.indexOf(model);
             if (index > -1) {
@@ -61,26 +96,17 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
             }
         });
         this._currentViewModels.push(model);
-        return model;
     }
 
-    public getAllViewsState(): ViewStateSet {
+    /**
+     * @deprecated view is now stored via regions.
+     * This has been kept for backwards compatibility.
+     * This function will soon be removed
+     */
+    public getAllViewsState(): any {
         let state = this._currentViewModels
             .map(c => {
-                // try see if there was a @stateProvider decorator on the views model,
-                // if so invoke the function it was declared on to get the state.
-                if (EspDecoratorUtil.hasMetadata(c)) {
-                    let metadata: StateSaveProviderMetadata = EspDecoratorUtil.getCustomData(c, StateSaveProviderConsts.CustomDataKey);
-                    if (metadata) {
-                        return c[metadata.functionName]();
-                    }
-                }
-                // else see if there is a function with name StateSaveProviderConsts.HandlerFunctionName
-                let stateProviderFunction = c[StateSaveProviderConsts.HandlerFunctionName];
-                if (stateProviderFunction && utils.isFunction(stateProviderFunction)) {
-                    return stateProviderFunction.call(c);
-                }
-                return null;
+                return StateUtils.tryGetState(c);
             })
             .filter(c => c != null);
         if (state.length === 0) {
@@ -93,11 +119,18 @@ export abstract class ViewFactoryBase<T extends ViewInstance> extends Disposable
         }
     }
 
+    /**
+     * @deprecated view is now stored via regions.
+     * This has been kept for backwards compatibility.
+     * This function will soon be removed
+     */
     public shutdownAllViews(): void {
         // copy the array as we have some disposal code that remove items on disposed
         let models = this._currentViewModels.slice();
         models.forEach(model => {
-            model.dispose();
+            if (!model.isDisposed) {
+                model.dispose();
+            }
         });
         this._currentViewModels.length = 0;
     }

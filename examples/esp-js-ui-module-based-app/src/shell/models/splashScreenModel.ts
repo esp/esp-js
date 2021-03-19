@@ -1,7 +1,5 @@
 export enum SplashScreenState {
     Default,
-    Idle,
-    Loading,
     Error
 }
 

@@ -97,6 +97,48 @@ export class Router extends DisposableBase {
         return this._models.has(modelId);
     }
 
+    /**
+     * Exists for read only access to a model.
+     *
+     * Note: given this is JavaScript, it's up to the caller to not write against the model.
+     * If you want to modify the model, publish an event to it.
+     *
+     * @param modelId
+     */
+    public getModel(modelId: string): any {
+        Guard.isString(modelId, 'The modelId argument should be a string');
+        if (this._models.get(modelId)) {
+            let modelRecord = this._models.get(modelId);
+            if (!modelRecord.hasModel) {
+                throw new Error(`Model with id ${modelId} is registered, however it's model has not yet been set. Can not retrieve`);
+            }
+            return modelRecord.model;
+        }
+        return null;
+    }
+
+    /**
+     * Exists to find a model for read only access.
+     *
+     * Note: given this is JavaScript, it's up to the caller to not write against the model.
+     * If you want to modify the model, publish an event to it.
+     *
+     * Returns the found model else null.
+     *
+     * @param predicate = a predicate which is used as a test against each model. Will stop on first match
+     */
+    public findModel(predicate: (model: any) => boolean) {
+        Guard.isFunction(predicate, 'predicate should be a function');
+        for (let [key, value] of this._models) {
+            if (value.hasModel) {
+                if (predicate(value.model)) {
+                    return value.model;
+                }
+            }
+        }
+        return null;
+    }
+
     public publishEvent(modelId: string, eventType: string, event: any) {
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isString(eventType, 'The eventType argument should be a string');
@@ -384,6 +426,7 @@ export class Router extends DisposableBase {
                         this._state.clearEventDispatchQueue();
                     }
                 }
+                modelRecord.eventQueuePurged();
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
                 this._dispatchModelUpdates();
@@ -465,13 +508,21 @@ export class Router extends DisposableBase {
         }
     }
 
+    /**
+     * Tries to find the a ModelRecord with pending events.
+     * ModelRecord's with older enqueued events are returned first.
+     * @private
+     */
     private _getNextModelRecordWithQueuedEvents(): ModelRecord {
+        let candidate: ModelRecord = null;
+        let dirtyEpochMs: number = Date.now();
         for (let [key, value] of this._models) {
-            if (value.eventQueue.length > 0) {
-                return value;
+            if (value.eventQueue.length > 0 && value.eventQueueDirtyEpochMs <= dirtyEpochMs) {
+                candidate = value;
+                dirtyEpochMs = value.eventQueueDirtyEpochMs;
             }
         }
-        return null;
+        return candidate;
     }
 
     private _observeEventsUsingDirectives(modelId: string, object: any) {

@@ -394,3 +394,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this._immutableModel = value;
     };
 }
+
+export namespace PolimerModel {
+    export const isPolimerModel = (obj: any): obj is PolimerModel<any> => {
+        return 'getImmutableModel' in obj;
+    };
+}

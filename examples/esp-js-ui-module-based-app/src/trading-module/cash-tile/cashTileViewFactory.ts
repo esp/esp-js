@@ -1,84 +1,95 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
-import {ViewFactoryBase, Logger,  viewFactory, IdFactory} from 'esp-js-ui';
-import {CashTileModel, defaultModelFactory} from './model/cashTileModel';
+import {ViewFactoryBase, Logger, viewFactory, RegionRecordState} from 'esp-js-ui';
 import {CashTileView} from './views/cashTileView';
-import {rootStateHandlerMap} from './model/root/rootState';
-import {referenceDataStateHandlerMap} from './model/refData/referenceDataState';
-import {rootStateObservable} from './model/root/rootEventStreams';
-import {inputStateHandlerMap} from './model/inputs/inputsState';
+import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
 import {RequestForQuoteEventStreams} from './model/rfq/requestForQuoteEventStreams';
 import {RfqService} from './services/rfqService';
-import {RootEvents} from './events';
+import {TileEvents} from './events';
 import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../tradingModuleContainerConst';
+import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
+import {CashTilePersistedState} from './state/stateModel';
+import {CashTileModel, CashTileModelBuilder} from './model/cashTileModel';
+import {CurrencyPairRefDataService} from './services/currencyPairRefDataService';
 
 const _log = Logger.create('CashTileViewFactory');
 
-@viewFactory(TradingModuleContainerConst.cashTileViewFactory, 'Cash Tile')
-export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileModel>> {
+@viewFactory(TradingModuleContainerConst.cashTileViewFactory, 'Cash Tile', 1)
+export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileModel>, CashTilePersistedState> {
     private _router : Router;
+    private _cashTileIdSeed = 1;
+
     constructor(container, router:Router) {
         super(container);
         this._router = router;
     }
-    _createView(childContainer, state: CashTileModel): PolimerModel<CashTileModel> {
+    _createView(childContainer, regionRecordState?: RegionRecordState<CashTilePersistedState>): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
-        const modelId = IdFactory.createId('cashTileModel');
+        const model = CashTileModelBuilder.createDefault(`cash-tile-${this._cashTileIdSeed++}`, regionRecordState.viewState);
 
-        const initialModel = state || defaultModelFactory(modelId, 'EURUSD');
+        // Get the ref data service from the container.
+        // Note in non demo apps, typically all the handlers and objects below would be registered in the container.
+        // This keeps dependency/object creation concerns in one place (also makes testing easier).
+        let refDataService = this._container.resolve<CurrencyPairRefDataService>(TradingModuleContainerConst.ccyPairRefDataService);
 
-        let model = this._router
+        let polimerModel = this._router
             // ***************************
             // Create a model and setup some initial state
-            .modelBuilder<CashTileModel>()
-            .withInitialModel(initialModel)
+            .modelBuilder<CashTileModel, CashTilePersistedState>()
+            .withInitialModel(model)
 
             // ***************************
             // Wire up state handlers.
-            // 2 methods are supported.
-
-            // 1) Simple handler objects
-            .withStateHandlerMap('rootState', rootStateHandlerMap)
-            .withStateHandlerMap('referenceData', referenceDataStateHandlerMap)
-            .withStateHandlerMap('inputs', inputStateHandlerMap)
-            // 2) Handlers within a container
-            //    Useful if you want to use dependency injection, or attribute based stream wire-up
+            .withStateHandlerObject('referenceData', new ReferenceDataStateHandlers(refDataService, model.modelId))
+            .withStateHandlerObject('inputs', new InputStateHandlers())
             .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
-            // 3) Handlers which are objects that have a function named getEspPolimerState()
-            //    These are useful if you have existing plumbing, or OO objects which you want to interop with polimer like immutable models
-            //    There are some caveats here:
-            //    - The public api to the model should be accessed via events.
-            //      If you have methods which get called by some background process there is now way for esp to know the state has changed.
-            //      e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
-            //           if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
-            //           In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileModel> created by this builder
-            .withStateHandlerModel('dateSelector', new DateSelectorModel(modelId, this._router), true)
 
             // ***************************
-            // Wire up our event streams
-            // 2 methods are supported
-
-            // 1) Simple handler objects
-            //    If you need to inject dependencies into the event streams you'd wrap the functions here, i.e. rootStateObservable(myDependency)
-            .withEventStreams(rootStateObservable)
-            // 2) Handlers within a container.
-            //    Useful if you want to use dependency injection, or attribute based stream wire-up
+            // Wire up state event streams (i.e. async operations)
             .withEventStreamsOn(new RequestForQuoteEventStreams(new RfqService()))
+
+            // ***************************
+            // Wire up legacy OO model interactions (unlikely you'll need this):
+            //
+            // Handlers which are objects that have a function named getEspPolimerState()
+            // These are useful if you have existing plumbing, or OO objects which you want to interop with polimer like immutable models
+            // There are some caveats here:
+            // - The public api to the model should be accessed via events.
+            //   If you have methods which get called by some background process there is now way for esp to know the state has changed.
+            //   e.g. Methods such as `myObject.setTheValue('theValue');` happen outside of esp.
+            //        if `setTheValue` has an `@observeEvent` decorator then esp knows when that event was raised and thus the objects state may have changed
+            //        In short, any changes to the models state have to happen on a dispatch loop for the owning model, in this case the PolimerModel<CashTileModel> created by this builder
+            .withStateHandlerModel('dateSelector', new DateSelectorModel(model.modelId, this._router, regionRecordState.viewState ? regionRecordState.viewState.tenor : null), true)
 
             // ***************************
             // Add some view bindings for this model.
             // Used by ConnectableComponent to render a view for the model
             .withViewBindings(CashTileView)
 
+            .withStateSaveHandler((m: any) => this._saveState(m))
+
+            // Runs after even dispatch loop for the model (i.e. when all events for the model in question are purged)
+            .withPostEventProcessor(m => {
+                _log.verbose(`Post event processing ${m.modelId}`);
+            })
+
             // ***************************
             // finally create and register it with the model (the ordering of hte above isn't important, however this method must be called last)
             .registerWithRouter();
 
-        this._router.publishEvent(model.modelId, RootEvents.bootstrap, {});
+        this._router.publishEvent(model.modelId, TileEvents.bootstrap, {});
 
-        return model;
+        return polimerModel;
+    }
+
+    private _saveState(model: CashTileModel): CashTilePersistedState {
+        return {
+            currencyPair: model.inputs.ccyPair,
+            notional: model.inputs.notional,
+            tenor: model.dateSelector.dateInput,
+        };
     }
 }

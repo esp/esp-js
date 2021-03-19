@@ -1,1 +1,0 @@
-export {SingleItemRegionModel} from './singleItemRegionModel';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import  { Disposable, Router, EspDecoratorUtil, utils } from 'esp-js';
+import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
 
@@ -10,10 +10,15 @@ export type CreatePublishEventProps<TPublishEventProps> = (publishEvent: Publish
 
 export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
+export type ViewComponentTypes = React.FunctionComponent | React.ClassType<any, any, any> | React.ComponentClass;
+
 export interface ConnectableComponentProps<TModel ={}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     modelId?: string;
     viewContext?: string;
-    view?: React.ComponentClass | React.SFC;
+    view?: ViewComponentTypes;
+    /**
+     * Provides a means to create a serious of 'publish event' callbacks which will be passed as props to the child view.
+     */
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
     [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
@@ -28,7 +33,9 @@ export interface ConnectableComponentChildProps<TModel> {
 
 export interface State {
     model?: any;
+    currentModelId?: string;
     publishProps?: any;
+    publishEvent?: PublishModelEventDelegate;
 }
 
 interface ConnectableComponentContext {
@@ -36,8 +43,15 @@ interface ConnectableComponentContext {
     modelId: string;
 }
 
+export type PublishModelEventDelegate = (eventType: string, event: any) => void;
+
+export const PublishModelEventContext = React.createContext<PublishModelEventDelegate>(null);
+
+export const HooksPublishModelEventProvider = PublishModelEventContext.Provider;
+
 export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedToProps = {}> extends React.Component<ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, State> {
-    private _observationSubscription: Disposable = null;
+    private _isMounted = false;
+    private _observationSubscription: Disposable;
     context: ConnectableComponentContext;
 
     static contextTypes = {
@@ -47,7 +61,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 
     constructor(props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, context: ConnectableComponentContext) {
         super(props, context);
-        this.state = {model: null};
+        this.state = {model: null, currentModelId: null};
     }
 
     componentWillReceiveProps(nextProps: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, nextContext: ConnectableComponentContext) {
@@ -66,10 +80,12 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
     }
 
     componentDidMount() {
+        this._isMounted = true;
         this._tryObserveModel(this._getModelId());
     }
 
     componentWillUnmount() {
+        this._isMounted = false;
         this._tryDisposeModelSubscription();
     }
 
@@ -85,21 +101,40 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
             return;
         }
 
-        // We only map the publish props once, as for well behaving components these callbacks should never change
-        if(this.props.createPublishEventProps) {
-            const publishProps = this.props.createPublishEventProps(this._publishEvent(this.context.router, modelId));
-            this.setState({publishProps});
+        let stateChanged = modelId !== this.state.currentModelId;
+
+        let publishEvent = this.state.publishEvent;
+        if (stateChanged) {
+            publishEvent = this._publishEvent(this.context.router, modelId);
         }
 
-        this._observationSubscription = this.context.router
-            .getModelObservable(modelId)
-            .subscribe(model => this.setState({model}));
+        let publishProps = this.state.publishProps;
+        // We only map the publish props once, as for well behaving components these callbacks should never change
+        if (stateChanged && this.props.createPublishEventProps) {
+            publishProps = this.props.createPublishEventProps(publishEvent);
+        }
+
+        if (stateChanged) {
+            this.setState({
+                currentModelId: modelId,
+                publishEvent,
+                publishProps
+            });
+            this._observationSubscription = this.context.router
+                .getModelObservable(modelId)
+                .subscribe(model => {
+                    if (this._isMounted) {
+                        this.setState({model});
+                    }
+                });
+        }
     }
 
     private _tryDisposeModelSubscription() {
         if(this._observationSubscription) {
-            this.setState({model: null});
             this._observationSubscription.dispose();
+            this._observationSubscription = new DisposableBase();
+            this.setState({model: null, currentModelId: null, publishProps: null, publishEvent: null});
         }
     }
 
@@ -110,7 +145,8 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
             return null;
         }
         let childProps = this._getChildProps();
-        return createViewForModel(this.state.model, childProps, this.props.viewContext, this.props.view);
+        let view = createViewForModel(this.state.model, childProps, this.props.viewContext, this.props.view);
+        return (<HooksPublishModelEventProvider value={this.state.publishEvent}>{view}</HooksPublishModelEventProvider>);
     }
 
     private _getChildProps(): ConnectableComponentChildProps<TModel> {

@@ -36,7 +36,7 @@ module.exports = {
     ],
     devServer: {
         port: 4000,
-        contentBase: path.join(__dirname, './'),
+        // contentBase: path.join(__dirname, './'),
         stats: {
             colors: true
         },

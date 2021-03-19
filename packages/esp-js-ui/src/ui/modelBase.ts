@@ -42,6 +42,10 @@ export abstract class ModelBase extends DisposableBase implements ViewInstance {
         }
     }
 
+    public isOnDispatchLoop() {
+        return this._router.isOnDispatchLoopFor(this.modelId);
+    }
+
     public get modelId():string {
         return this._modelId;
     }

@@ -1,5 +1,4 @@
 import {Guard} from 'esp-js';
-import {Logger} from '../../core';
 
 export function getViewFactoryMetadata(target): ViewFactoryMetadata {
     let constructorFunction = target.constructor;

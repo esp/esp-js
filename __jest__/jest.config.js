@@ -1,6 +1,6 @@
 module.exports = {
     "transform": {
-        "^.+\\.jsx?$": "babel-jest",
+        "^.+\\.js?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts",
         "^.+\\.tsx?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts"
     },
     "testMatch": [

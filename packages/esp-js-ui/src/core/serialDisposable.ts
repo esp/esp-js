@@ -1,5 +1,5 @@
 import {DisposableBase, DisposableWrapper} from 'esp-js';
-import {DisposableItem} from 'esp-js/src/system/disposables/disposable';
+import {DisposableItem} from 'esp-js';
 
 export class SerialDisposable extends DisposableBase {
     private _disposableItem: DisposableWrapper;

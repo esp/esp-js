@@ -1,5 +1,5 @@
 import * as Rx from 'rxjs';
-import {CompositeDisposable, DisposableBase} from 'esp-js';
+import {DisposableBase} from 'esp-js';
 import {PrerequisiteRegister} from './prerequisiteRegister';
 import {LoadResult, ResultStage} from './loadResult';
 import {Logger, Unit} from '../../../core';

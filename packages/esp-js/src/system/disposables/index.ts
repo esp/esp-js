@@ -20,4 +20,4 @@ export { CompositeDisposable } from './compositeDisposable';
 export { DictionaryDisposable } from './dictionaryDisposable';
 export { DisposableWrapper } from './disposableWrapper';
 export { DisposableBase } from './disposableBase';
-export { Disposable } from './disposable';
+export { Disposable, DisposableItem, DisposableOrFunction, Subscription } from './disposable';

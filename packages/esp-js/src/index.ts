@@ -30,7 +30,7 @@ export {
     PreEventProcessor,
     PostEventProcessor,
 } from './router';
-export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
+export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable, Subscription, DisposableOrFunction, DisposableItem } from './system/disposables';
 export { observeEvent, observeEventEnvelope } from './decorators/observeEvent';
 export { EspDecoratorUtil, DecoratorTypes, EspMetadata, EspDecoratedObject, EventObservationMetadata, isEspDecoratedObject, EventPredicate, PolimerEventPredicate, ObserveEventPredicate} from './decorators/espDecoratorMetadata';
 export { logging, Guard, utils } from './system';

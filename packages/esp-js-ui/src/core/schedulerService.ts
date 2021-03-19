@@ -1,20 +1,20 @@
 import * as Rx from 'rxjs';
-import {Scheduler} from 'rxjs/Scheduler';
+import {IScheduler} from 'rxjs/Scheduler';
 
 export interface ISchedulerService {
-  immediate: Scheduler;
-  async: Scheduler;
+  immediate: IScheduler;
+  async: IScheduler;
 }
 
 export class SchedulerService implements ISchedulerService {
-  private _immediate: Scheduler = Rx.Scheduler.asap;
-  private _async: Scheduler = Rx.Scheduler.async;
+  private _immediate: IScheduler = Rx.Scheduler.asap;
+  private _async: IScheduler = Rx.Scheduler.async;
 
-  get immediate(): Scheduler {
+  get immediate(): IScheduler {
     return this._immediate;
   }
 
-  get async(): Scheduler {
+  get async(): IScheduler {
     return this._async;
   }
 }

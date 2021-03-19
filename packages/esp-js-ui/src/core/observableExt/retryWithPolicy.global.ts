@@ -2,11 +2,11 @@ import * as Rx from 'rxjs';
 import {Logger} from '../logger';
 import {RetryPolicy} from './retryPolicy';
 import {Subscriber} from 'rxjs/src/Subscriber';
-import { Scheduler } from 'rxjs/Scheduler';
+import { IScheduler } from 'rxjs/Scheduler';
 
 const _log = Logger.create('retryWithPolicy');
 
-Rx.Observable.prototype.retryWithPolicy = function<T>(policy: RetryPolicy, error?: (err: Error) => void, scheduler?: Scheduler): Rx.Observable<T>  {
+Rx.Observable.prototype.retryWithPolicy = function<T>(policy: RetryPolicy, error?: (err: Error) => void, scheduler?: IScheduler): Rx.Observable<T>  {
     let _scheduler = scheduler || Rx.Scheduler.async;
     let _source = this;
     return Rx.Observable.create(

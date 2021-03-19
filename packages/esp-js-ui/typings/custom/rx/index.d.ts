@@ -1,6 +1,6 @@
 import * as Rx from 'rxjs';
 import { Router } from 'esp-js';
-import {Scheduler} from 'rxjs/Scheduler';
+import {IScheduler} from 'rxjs/Scheduler';
 
 declare module 'rxjs/Observable' {
 
@@ -18,7 +18,7 @@ declare module 'rxjs/Observable' {
             complete?: (model : TModel) => void
         ) : Rx.Subscription;
 
-        retryWithPolicy<T>(policy, onError?:(err:Error) => void, scheduler? : Scheduler) : Rx.Observable<T>;
+        retryWithPolicy<T>(policy, onError?:(err:Error) => void, scheduler? : IScheduler) : Rx.Observable<T>;
 
         takeUntilInclusive<T>(predicate: (item: T) => boolean) : Rx.Observable<T>;
     }

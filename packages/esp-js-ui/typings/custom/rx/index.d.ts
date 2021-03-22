@@ -5,12 +5,12 @@ import {IScheduler} from 'rxjs/Scheduler';
 declare module 'rxjs/Observable' {
 
     interface Observable<T> {
-        doOnSubscribe<T>(action: () => void) : Rx.Observable<T>;
+        doOnSubscribe(action: () => void) : Rx.Observable<T>;
 
         // I can't find a way of extending ConnectableObservable in TS
-        lazyConnect<T>(onConnect:(subscription: Rx.Subscription) => void) : Rx.Observable<T>;
+        lazyConnect(onConnect:(subscription: Rx.Subscription) => void) : Rx.Observable<T>;
 
-        subscribeWithRouter<T, TModel>(
+        subscribeWithRouter<TModel>(
             router : Router,
             modelId: string,
             next?: (value: T, model : TModel) => void,
@@ -18,9 +18,9 @@ declare module 'rxjs/Observable' {
             complete?: (model : TModel) => void
         ) : Rx.Subscription;
 
-        retryWithPolicy<T>(policy, onError?:(err:Error) => void, scheduler? : IScheduler) : Rx.Observable<T>;
+        retryWithPolicy(policy, onError?:(err:Error) => void, scheduler? : IScheduler) : Rx.Observable<T>;
 
-        takeUntilInclusive<T>(predicate: (item: T) => boolean) : Rx.Observable<T>;
+        takeUntilInclusive(predicate: (item: T) => boolean) : Rx.Observable<T>;
     }
 
     interface ObservableStatic {

@@ -24,7 +24,7 @@ export class DefaultPrerequisiteRegister extends DisposableBase implements Prere
             // But yield it back to the consumer so they know it stopped
             .takeUntilInclusive((result: LoadResult) =>  result.stage === ResultStage.Error)
             .multicast(new Rx.ReplaySubject<LoadResult>(1))
-            .lazyConnect<LoadResult>(sub => this.addDisposable(sub));
+            .lazyConnect(sub => this.addDisposable(sub));
     }
 
     public registerAction(action: () => void, name: string, errorMessage?: (e: Error) => string): void {

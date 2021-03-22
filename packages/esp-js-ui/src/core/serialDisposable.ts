@@ -17,7 +17,9 @@ export class SerialDisposable extends DisposableBase {
 
     public setDisposable(disposable: DisposableItem) {
         this._disposeItem();
-        this._disposableItem = new DisposableWrapper(disposable);
+        if (disposable) {
+            this._disposableItem = new DisposableWrapper(disposable);
+        }
     }
 
     private _disposeItem = () => {

@@ -17,9 +17,9 @@
 // notice_end
 
 import {Guard} from '../guard';
-import {Disposable, DisposableOrFunction, DisposableItem, Subscription} from './disposable';
+import {Disposable, DisposableItem, Subscription} from './disposable';
 
-export class DisposableWrapper implements Disposable {
+export class DisposableWrapper implements Disposable, Subscription {
     private _isDisposed: boolean = false;
     private _disposable: Disposable;
 
@@ -55,10 +55,18 @@ export class DisposableWrapper implements Disposable {
         return this._isDisposed;
     }
 
+    public get closed(): boolean {
+        return this._isDisposed;
+    }
+
     public dispose() {
         if (!this._isDisposed && this._disposable) {
             this._isDisposed = true;
             this._disposable.dispose();
         }
+    }
+
+    public unsubscribe() {
+        this.dispose();
     }
 }

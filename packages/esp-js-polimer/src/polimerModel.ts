@@ -298,7 +298,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
+                const inputEventStream = Rx.Observable.merge(...metadataForFunction.map(m => this._observeEvent(m.functionName, m.eventType, m.observationStage)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
@@ -306,7 +306,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
 
        let subscription: Rx.Subscription = Rx.Observable
             .merge(...observables)
-            .filter(output => output != null)
+            .filter(output => {
+                return output != null;
+            })
             .subscribe(
                 (outputEvent: OutputEvent<any>) => {
                     if (outputEvent.broadcast) {
@@ -326,15 +328,16 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(subscription);
     };
 
-    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
+    private _observeEvent = (functionName: string, eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
         return Rx.Observable.create((obs: Rx.Observer<any>) => {
-                const events = typeof eventType === 'string' ? [eventType] : eventType;
+            logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `);
+            const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
                     .getAllEventsObservable(events, observationStage)
                     .filter(eventEnvelope => eventEnvelope.modelId === this._modelId)
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>) => {
-                            logger.verbose(`Passing event [${eventEnvelope.eventType}] at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}] to event transform stream.`);
+                            logger.verbose(`Event transform: event [${eventEnvelope.eventType}] received at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}].`);
                             let inputEvent: InputEvent<TModel, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
                             // Pass the event off to our polimer observable stream.
                             // In theory, these streams must never error.
@@ -347,7 +350,10 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                                 throw err;
                             }
                         },
-                        () => obs.complete()
+                        () => {
+                            logger.verbose(`Event transform: stream for function [${functionName}] event [${eventType}] stage [${observationStage}] model [${this._modelId}] completed`);
+                            obs.complete();
+                        }
                     );
                 return espEventStreamSubscription;
             }

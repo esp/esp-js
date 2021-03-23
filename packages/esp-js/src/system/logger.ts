@@ -1,5 +1,5 @@
-import {Guard} from 'esp-js';
 import *  as Utils from './utils';
+import {Guard} from './guard';
 
 export enum Level {
     verbose = 'verbose',

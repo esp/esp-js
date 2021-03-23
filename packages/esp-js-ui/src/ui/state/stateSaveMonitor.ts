@@ -1,5 +1,4 @@
-import {DisposableBase, Guard} from 'esp-js';
-import {Logger} from '../../core';
+import {DisposableBase, Guard, Logger} from 'esp-js';
 
 const _log: Logger = Logger.create('StateSaveMonitor');
 

@@ -1,5 +1,5 @@
-import {ObservationStage, Router, logging} from 'esp-js';
-import {defaultModelFactory, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestImmutableModel} from './testModel';
+import {Level, LoggingConfig, ObservationStage, Router} from 'esp-js';
+import {defaultModelFactory, OOModelTestState, ReceivedEvent, TestEvent, TestImmutableModel, TestState} from './testModel';
 import {TestStateHandlerMap, TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
 import {PolimerModel, PolimerModelBuilder} from '../../src';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from '../../src/eventProcessors';
@@ -331,7 +331,7 @@ export class PolimerTestApiBuilder {
 
     public build(): PolimerTestApi {
         // stop esp logging to the console by default (so unhappy path tests to fill up the console with errors).
-        logging.Logger.setSink(() => {});
+        LoggingConfig.setLevel(Level.none);
         let testEventProcessors = new TestEventProcessors();
         let testStateHandlerModel: TestStateHandlerModel;
         let router = new Router();

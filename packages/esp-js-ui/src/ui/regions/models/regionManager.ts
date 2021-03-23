@@ -1,5 +1,4 @@
-import {Guard, observeEvent, Router} from 'esp-js';
-import {Logger} from '../../../core';
+import {Guard, observeEvent, Router, Logger} from 'esp-js';
 import {RegionItem} from './regionItem';
 import {ModelBase} from '../../modelBase';
 import {EspUiEventNames} from '../../espUiEventNames';

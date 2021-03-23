@@ -1,6 +1,5 @@
 import {StateSaveMonitor, StateService} from '../state';
 import {Container} from 'esp-js-di';
-import {Logger} from '../../core';
 import {SystemContainerConfiguration, SystemContainerConst} from '../dependencyInjection';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
 import {RegionBase, RegionManager, RegionState} from '../regions/models';
@@ -8,7 +7,7 @@ import {AppDefaultStateProvider, AppState, NoopAppDefaultStateProvider} from './
 import {IdFactory} from '../idFactory';
 import * as Rx from 'rxjs';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
-import {DisposableBase, Guard, Router} from 'esp-js';
+import {DisposableBase, Guard, Router, Logger} from 'esp-js';
 import {Module, ModuleConstructor} from './module';
 import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';

@@ -1,8 +1,8 @@
 import * as Rx from 'rxjs';
-import {Logger} from '../logger';
 import {RetryPolicy} from './retryPolicy';
 import {Subscriber} from 'rxjs/src/Subscriber';
 import { IScheduler } from 'rxjs/Scheduler';
+import {Logger} from 'esp-js';
 
 const _log = Logger.create('retryWithPolicy');
 

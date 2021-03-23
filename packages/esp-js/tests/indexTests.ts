@@ -12,7 +12,6 @@ import {
     RouterObservable,
     RouterSubject,
     observeEvent,
-    logging,
     DisposableWrapper,
     Guard,
     EspDecoratorUtil,
@@ -88,14 +87,6 @@ describe('index exports', () => {
     it('should export observeEvent', () => {
         expect(esp.observeEvent).toBeDefined();
         expect(observeEvent).toBeDefined();
-    });
-
-    it('should export logging', () => {
-        expect(esp.logging).toBeDefined();
-        expect(esp.logging.Level).toBeDefined();
-        expect(esp.logging.consoleSink).toBeDefined();
-        expect(esp.logging.Logger).toBeDefined();
-        expect(logging).toBeDefined();
     });
 
     it('should export Guard', () => {

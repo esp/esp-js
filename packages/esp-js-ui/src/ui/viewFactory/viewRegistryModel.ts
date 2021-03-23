@@ -1,5 +1,4 @@
-import {Router, observeEvent, Guard} from 'esp-js';
-import {Logger} from '../../core';
+import {Router, observeEvent, Guard, Logger} from 'esp-js';
 import {ModelBase} from '../modelBase';
 import {getViewFactoryMetadata, ViewFactoryMetadata} from './index';
 import {ViewFactoryBase} from './viewFactoryBase';

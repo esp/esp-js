@@ -1,5 +1,5 @@
-import {isString, Logger} from '../../../core';
-import {Guard, observeEvent, Router, utils} from 'esp-js';
+import {isString} from '../../../core';
+import {Guard, observeEvent, Router, utils, Logger} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';
 import {RegionItem} from './regionItem';

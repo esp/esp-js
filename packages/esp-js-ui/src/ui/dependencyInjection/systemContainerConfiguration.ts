@@ -1,8 +1,7 @@
 import {Container} from 'esp-js-di';
-import {Logger} from '../../core/logger';
 import {SystemContainerConst} from './systemContainerConst';
 import {LocalStorageStateService} from '../state/stateService';
-import {Router} from 'esp-js';
+import {Router, Logger} from 'esp-js';
 import {ViewRegistryModel} from '../viewFactory';
 import {LiteralResolver} from './literalResolver';
 import {SchedulerService} from '../../core';

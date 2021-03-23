@@ -1,8 +1,8 @@
 import * as Rx from 'rxjs';
-import {DisposableBase} from 'esp-js';
+import {DisposableBase, Logger} from 'esp-js';
 import {PrerequisiteRegister} from './prerequisiteRegister';
 import {LoadResult, ResultStage} from './loadResult';
-import {Logger, Unit} from '../../../core';
+import {Unit} from '../../../core';
 
 const _log: Logger = Logger.create('PrerequisiteRegister');
 

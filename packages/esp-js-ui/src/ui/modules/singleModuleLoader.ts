@@ -5,9 +5,8 @@ import {ModuleChangeType, ModuleLoadResult, ModuleLoadStage} from './moduleLoadR
 import {ViewRegistryModel} from '../viewFactory';
 import {Module, ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
-import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
-import {DisposableBase} from 'esp-js';
+import {DisposableBase, Logger} from 'esp-js';
 
 export interface SingleModuleLoader {
     readonly moduleMetadata: ModuleMetadata;

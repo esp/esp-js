@@ -1,77 +1,81 @@
-// notice_start
-/*
- * Copyright 2015 Dev Shop Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
- // notice_end
-
-import * as system from '../../src/system';
+import {Level, LogEvent, Logger, LoggingConfig} from '../../src/system/logger';
 
 describe('Logger', () => {
-    let _lastLevel;
-    let _lasMessage;
-    let _lastLoggerName;
-    let _log;
-    let _sinkArgs;
+    let _logger: Logger,
+        _logEvent: LogEvent;
 
-    beforeEach(() =>{
-        _lastLevel = null;
-        _lasMessage = null;
-        _lastLoggerName = null;
-        _sinkArgs = null;
-        system.logging.Logger.setSink(logEvent => {
-            _lastLevel = logEvent.level;
-            _lasMessage = logEvent.message;
-            _lastLoggerName = logEvent.logger;
-            _sinkArgs = logEvent.args;
+    beforeEach(() => {
+        _logger = undefined;
+        _logEvent = undefined;
+        LoggingConfig.addSinks({
+            log(e: LogEvent) {
+                _logEvent = e;
+            }
         });
-        _log = system.logging.Logger.create("TestLogger");
-        system.logging.Logger.setLevel(system.logging.Level.verbose);
+        _logger = Logger.create('testLogger');
     });
 
-    it('should log out the level and message', () => {
-        _log.verbose("1");
-        expect(_lasMessage).toEqual("1");
-        expect(_lastLevel).toEqual("VERBOSE");
-        expect(_lastLoggerName).toEqual("TestLogger");
+    describe('log', () => {
+        it('sets LogEvent.message', () => {
+            _logger.debug('foo');
+            assertLogEvent({}, ['foo'], null);
+        });
 
-        _log.debug("2");
-        expect(_lasMessage).toEqual("2");
-        expect(_lastLevel).toEqual("DEBUG");
-        expect(_lastLoggerName).toEqual("TestLogger");
+        it('sets LogEvent.markers', () => {
+            _logger.debug({foo: 'bar'}, 'foo');
+            assertLogEvent({foo: 'bar'}, ['foo'], null);
+        });
 
-        _log.info("3");
-        expect(_lasMessage).toEqual("3");
-        expect(_lastLevel).toEqual("INFO");
-        expect(_lastLoggerName).toEqual("TestLogger");
+        it('sets LogEvent.message', () => {
+            _logger.debug({foo: 'bar'}, 'foo', {a: 'check1'});
+            assertLogEvent({foo: 'bar'}, ['foo', {a: 'check1'}], null);
+        });
 
-        _log.warn("4");
-        expect(_lasMessage).toEqual("4");
-        expect(_lastLevel).toEqual("WARN");
-        expect(_lastLoggerName).toEqual("TestLogger");
+        it('log.error sets LogEvent.error', () => {
+            _logger.error({foo: 'bar'}, 'foo');
+            assertLogEvent({foo: 'bar'}, ['foo'], null);
+        });
 
-        _log.error("5");
-        expect(_lasMessage).toEqual("5");
-        expect(_lastLevel).toEqual("ERROR");
-        expect(_lastLoggerName).toEqual("TestLogger");
-    });
+        it('log.error sets LogEvent.error', () => {
+            _logger.error({foo: 'bar'}, 'foo', {a: 'check1'});
+            assertLogEvent({foo: 'bar'}, ['foo'], {a: 'check1'});
+        });
 
-    it('should pass arguments to the sink', () => {
-        let error = new Error('boom');
-        _log.error("It's dead jim", error);
-        expect(_lasMessage).toEqual("It's dead jim");
-        expect(_sinkArgs.length).toEqual(1);
-        expect(_sinkArgs[0]).toBe(error);
+        it('should take level at construction time', () => {
+            _logger = Logger.create('testLogger1', {level: Level.info});
+            _logger.debug('Its dead jim');
+            expect(_logEvent).not.toBeDefined();
+            _logger.info('Its dead jim');
+            expect(_logEvent).toBeDefined();
+        });
+
+        it('should take additional details at construction time', () => {
+            _logger = Logger.create('testLogger2', {dumpAdditionalDetailsToConsole: false});
+            _logger.debug('Its dead jim', {'other': ''});
+            expect(_logEvent).toBeDefined();
+            expect(LoggingConfig.getLoggerConfig('testLogger2').dumpAdditionalDetailsToConsole).toEqual(false);
+        });
+
+        it('can set level for all loggers tht haven\'t overrode', () => {
+            const l1 = Logger.create('l1', {level: Level.error}); // override
+            const l2 = Logger.create('l2');
+            const l3 = Logger.create('l3');
+            const l1Config = LoggingConfig.getLoggerConfig('l1');
+            const l2Config = LoggingConfig.getLoggerConfig('l2');
+            const l3Config = LoggingConfig.getLoggerConfig('l3');
+            expect(l1Config.level).toEqual(Level.error);
+            expect(l2Config.level).toEqual(Level.debug); // default
+            expect(l3Config.level).toEqual(Level.debug); // default
+            LoggingConfig.setLevel(Level.none);
+            expect(l1Config.level).toEqual(Level.error);
+            expect(l2Config.level).toEqual(Level.none);
+            expect(l3Config.level).toEqual(Level.none);
+        });
+
+        function assertLogEvent(expectedMarkers: any, expectedMessage: any, expectedError: any) {
+            expect(_logEvent.markers).toEqual(expectedMarkers);
+            expect(_logEvent.message).toEqual(expectedMessage);
+            expect(_logEvent.error).toEqual(expectedError);
+        }
     });
 });

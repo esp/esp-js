@@ -2,3 +2,4 @@
 export * from './core';
 export * from './ui';
 import './observableExtBootstrapper.global';
+export * from './logger';

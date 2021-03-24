@@ -143,6 +143,9 @@ export class CompositeSink implements Sink {
     public addSinks(...sinks:Array<Sink>) {
         this._sinks.push(...sinks);
     }
+    public clearSinks() {
+        this._sinks.length = 0;
+    }
 }
 
 // note: if you want verbose you need to change this explicitly, this is just the initial default
@@ -191,6 +194,10 @@ export class LoggingConfig {
      */
     static addSinks(...sink: Array<Sink>): void {
         _sink.addSinks(...sink);
+    }
+
+    static clearSinks(): void {
+        _sink.clearSinks();
     }
 
     /**

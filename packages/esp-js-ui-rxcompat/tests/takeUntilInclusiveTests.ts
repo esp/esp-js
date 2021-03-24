@@ -1,4 +1,4 @@
-import {Subject} from 'rxjs';
+import {Subject} from 'rxjs-compat';
 
 // need to import the library for side effects
 import '../src';

@@ -3,6 +3,7 @@ import {ignoreElements, multicast, take} from 'rxjs/operators';
 import {DisposableBase, Logger} from 'esp-js';
 import {PrerequisiteRegister} from './prerequisiteRegister';
 import {LoadResult, ResultStage} from './loadResult';
+import {Unit} from '../../../core';
 import {takeUntilInclusive} from '../../../core/observableExt/takeUntilInclusive';
 import {lazyConnect} from '../../../core/observableExt/lazyConnect';
 

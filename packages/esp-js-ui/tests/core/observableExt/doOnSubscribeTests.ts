@@ -1,5 +1,5 @@
 import {of} from 'rxjs';
-import {doOnSubscribe} from '../../../src/core/observableExt';
+import {doOnSubscribe} from '../../../src/core/observableExt/doOnSubscribe';
 
 describe('doOnSubscribeTests', () => {
     it('call provided action once on subscribe', () => {

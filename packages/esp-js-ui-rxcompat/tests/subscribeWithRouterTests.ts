@@ -1,4 +1,4 @@
-import {Subject, Subscription} from 'rxjs';
+import {Subject, Subscription} from 'rxjs-compat';
 import {Router} from 'esp-js';
 
 // need to import the library for side effects

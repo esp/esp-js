@@ -16,7 +16,6 @@ module.exports = {
         "\\.(css|less)$": "<rootDir>/../../__jest__/mocks/styleMock.js"
     },
     "setupFiles": [
-        "<rootDir>/../../__jest__/turnDownEspLogging.js",
         "<rootDir>/../../__jest__/mocks/browserMocks.js"
     ],
     "modulePaths": [

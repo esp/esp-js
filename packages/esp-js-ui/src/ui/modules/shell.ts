@@ -14,6 +14,7 @@ import {DefaultSingleModuleLoader} from './singleModuleLoader';
 import {ModuleProvider} from './moduleProvider';
 import {ModelBase} from '../modelBase';
 import {SerialDisposable} from '../../core/serialDisposable';
+import {merge, Observable} from 'rxjs';
 
 const _log: Logger = Logger.create('Shell');
 
@@ -218,14 +219,12 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _createLoadStream(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
             _log.debug(`Loading shell and ${moduleConstructors.length} additional modules`);
-            return Rx.Observable
-                .merge(...moduleConstructors.map(moduleCtor => this._loadModule(moduleCtor)))
-                .subscribe(obs);
+            return merge(...moduleConstructors.map(moduleCtor => this._loadModule(moduleCtor))).subscribe(obs);
         });
     }
 
     private _loadModule(moduleConstructor: ModuleConstructor): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
+        return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleClass(moduleConstructor);
             _log.debug(`Creating module loader for ${moduleMetadata.moduleKey}`);
             let moduleLoader = new DefaultSingleModuleLoader(

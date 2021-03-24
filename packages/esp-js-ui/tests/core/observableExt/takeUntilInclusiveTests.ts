@@ -1,5 +1,5 @@
 import {Subject} from 'rxjs';
-import {takeUntilInclusive} from '../../../src/core/observableExt';
+import {takeUntilInclusive} from '../../../src/core/observableExt/takeUntilInclusive';
 
 describe('takeUntilInclusiveTests', () => {
     it('takeUntilInclusive includes last item', () => {

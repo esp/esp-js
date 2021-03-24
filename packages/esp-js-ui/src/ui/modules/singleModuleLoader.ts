@@ -1,5 +1,5 @@
-import {concat, Observable, Subscriber} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {concat, ConnectableObservable, Observable, ReplaySubject, Subscriber} from 'rxjs';
+import {map, multicast} from 'rxjs/operators';
 import {DefaultPrerequisiteRegister, LoadResult, ResultStage} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {ModuleChangeType, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
@@ -12,7 +12,7 @@ import {DisposableBase, Logger} from 'esp-js';
 export interface SingleModuleLoader {
     readonly moduleMetadata: ModuleMetadata;
     readonly lastModuleLoadResult: ModuleLoadResult;
-    readonly loadResults: Rx.Observable<ModuleLoadResult>;
+    readonly loadResults: Observable<ModuleLoadResult>;
     readonly hasLoaded: boolean;
 }
 
@@ -27,7 +27,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
     private _log: Logger;
     private _module: Module;
-    private _loadStream: Rx.ConnectableObservable<ModuleLoadResult>;
+    private _loadStream: ConnectableObservable<ModuleLoadResult>;
     private _lastModuleLoadResult: ModuleLoadResult;
     private _connected = false;
 
@@ -40,7 +40,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         super();
         this._log = Logger.create(`SingleModuleLoader-${this._moduleMetadata.moduleKey}`);
         this._preReqsLoader = new DefaultPrerequisiteRegister();
-        this._loadStream = this._createLoadStream().multicast(new Rx.ReplaySubject<ModuleLoadResult>(1));
+        this._loadStream = <ConnectableObservable<ModuleLoadResult>>this._createLoadStream().pipe(multicast(new ReplaySubject<ModuleLoadResult>(1)));
     }
 
     public get module(): Module {
@@ -58,7 +58,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     /**
      * A publish stream of ModuleLoadResults
      */
-    public get loadResults(): Rx.Observable<ModuleLoadResult> {
+    public get loadResults(): Observable<ModuleLoadResult> {
         return this._loadStream;
     }
 
@@ -76,8 +76,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         }
     }
 
-    private _createLoadStream(): Rx.Observable<ModuleLoadResult> {
-        return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
+    private _createLoadStream(): Observable<ModuleLoadResult> {
+        return new Observable((obs: Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
@@ -162,8 +162,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         this.module.dispose();
     }
 
-    private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
+    private _buildInitStream(module: Module): Observable<ModuleLoadResult> {
+        return new Observable((obs: Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module

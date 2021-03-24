@@ -7,6 +7,6 @@ export function takeUntilInclusiveCompat<T>(predicate: (item: T) => boolean): Ob
 (Observable as any).prototype.takeUntilInclusive = takeUntilInclusiveCompat;
 declare module 'rxjs/internal/Observable' {
     interface Observable<T> {
-        takeUntilInclusive: typeof takeUntilInclusiveCompat;
+        takeUntilInclusive?: typeof takeUntilInclusiveCompat;
     }
 }

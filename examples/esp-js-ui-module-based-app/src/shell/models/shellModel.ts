@@ -2,15 +2,15 @@ import {viewBinding} from 'esp-js-react';
 import {ShellView} from '../views/shellView';
 import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
 import {
-	AggregateModuleLoadResult, 
-	IdFactory, 
-	Logger, 
-	ModelBase, 
-	ModuleChangeType, 
-	Shell, 
-	StatefulRegion, 
-	StateService, 
-	ModuleLoadStage
+    AggregateModuleLoadResult,
+    IdFactory,
+    Logger,
+    ModelBase,
+    ModuleChangeType,
+    Shell,
+    StatefulRegion,
+    StateService,
+    ModuleLoadStage,
     liftToEspObservable,
     EspRouterObservable,
     ValueAndModel

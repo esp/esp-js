@@ -9,7 +9,7 @@ import produce from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {merge, Observable, Subscriber, Subscription} from 'rxjs';
-import {filter} from 'rxjs/operators';
+import {filter, mergeAll} from 'rxjs/operators';
 
 export interface PolimerModelSetup<TModel extends ImmutableModel> {
     initialModel: TModel;
@@ -299,7 +299,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
+                const inputEventStream = merge(...metadataForFunction.map(m => this._observeEvent(m.functionName, m.eventType, m.observationStage)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
@@ -307,9 +307,8 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
 
        let subscription: Subscription = merge(...observables)
            .pipe(
-            	filter(output => {
-                	return output != null;
-    		})
+               filter(output => output != null)
+            )
             .subscribe(
                 (outputEvent: OutputEvent<any>) => {
                     if (outputEvent.broadcast) {
@@ -329,7 +328,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(subscription);
     };
 
-    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
+    private _observeEvent = (functionName: string, eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Observable<InputEvent<TModel, any>> => {
         return new Observable((obs: Subscriber<any>) => {
             logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `);
             const events = typeof eventType === 'string' ? [eventType] : eventType;

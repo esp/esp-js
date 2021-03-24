@@ -19,12 +19,23 @@
 import {Guard} from '../guard';
 import {Disposable, DisposableItem, Subscription} from './disposable';
 
+/**
+ * Wraps a disposable, or subscription like object so it can be used inter changable between different APIs that need to ultimatley clean up an object.
+ *
+ * Compatible with ESP, RX4/5/6.
+ */
 export class DisposableWrapper implements Disposable, Subscription {
     private _isDisposed: boolean = false;
     private _disposable: Disposable;
+    private _underlyingDisposable: DisposableItem;
+
+    public static create = (disposable: DisposableItem) => {
+        return new DisposableWrapper(disposable);
+    }
 
     public constructor(disposable: DisposableItem) {
         Guard.isDefined(disposable, 'disposable must be defined');
+        this._underlyingDisposable = disposable;
         let innerDisposable;
         if (typeof disposable === 'function') {
             innerDisposable = {
@@ -57,6 +68,10 @@ export class DisposableWrapper implements Disposable, Subscription {
 
     public get closed(): boolean {
         return this._isDisposed;
+    }
+
+    public get underlyingDisposable(): DisposableItem {
+        return this._underlyingDisposable;
     }
 
     public dispose() {

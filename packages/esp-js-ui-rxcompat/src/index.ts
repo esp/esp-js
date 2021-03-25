@@ -3,4 +3,5 @@ import './doOnSubscribe';
 import './lazyConnect';
 import './retryWithPolicy';
 import './liftToEspObservable';
+import './subscribeWithRouter';
 import './takeUntilInclusive';

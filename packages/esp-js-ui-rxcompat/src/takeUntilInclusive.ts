@@ -1,4 +1,4 @@
-import {Observable} from 'rxjs';
+import {Observable} from 'rxjs-compat';
 import {takeUntilInclusive} from 'esp-js-ui';
 
 export function takeUntilInclusiveCompat<T>(predicate: (item: T) => boolean): Observable<T> {

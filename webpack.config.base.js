@@ -78,6 +78,7 @@ const config = {
                 test: /\.js$/,
                 enforce: 'pre',
                 use: ['source-map-loader'],
+                exclude: [/.*rxjs-compat.*/],
             },
             {
                 test: /\.tsx?$/,

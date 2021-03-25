@@ -1,4 +1,4 @@
-import {Observable} from 'rxjs';
+import {Observable} from 'rxjs-compat';
 import {Router} from 'esp-js';
 import {EspRouterObservable, liftToEspObservable} from 'esp-js-ui';
 

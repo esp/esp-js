@@ -1,4 +1,17 @@
-export class RetryPolicy {
+export interface RetryPolicyLike {
+    readonly description: string;
+    readonly shouldRetry: boolean;
+    readonly errorMessage: string | null;
+    readonly retryAfterElapsedMs: number;
+    readonly retryCount: number;
+    readonly retryLimit: number;
+
+    incrementRetryCount(): void;
+
+    reset(): void;
+}
+
+export class RetryPolicy implements RetryPolicyLike {
     static defaultPolicy(errorMessage: string): RetryPolicy {
         return new RetryPolicy('DefaultRetryPolicy', 3, 5000, errorMessage); // retry after 2 seconds, do the retry upto a max of 3 times
     }
@@ -20,27 +33,35 @@ export class RetryPolicy {
 
         this._retryCount = 0;
     }
+
     get description(): string {
         return this._description;
     }
+
     get shouldRetry(): boolean {
         return this._retryLimit === -1 || this._retryCount < this._retryLimit;
     }
+
     get errorMessage(): string | null {
         return this._errorMessage;
     }
+
     get retryAfterElapsedMs(): number {
         return this._retryAfterElapsedMs;
     }
+
     get retryCount(): number {
         return this._retryCount;
     }
+
     get retryLimit(): number {
         return this._retryLimit;
     }
+
     incrementRetryCount(): void {
         this._retryCount++;
     }
+
     reset(): void {
         this._retryCount = 0;
     }

@@ -1,12 +1,12 @@
 import {NEVER, Observable, SchedulerLike, Subscription} from 'rxjs';
-import {RetryPolicy} from './retryPolicy';
+import {RetryPolicyLike} from './retryPolicy';
 import {Logger} from 'esp-js';
 import {async} from 'rxjs/internal/scheduler/async';
 import {catchError} from 'rxjs/operators';
 
 const _log = Logger.create('retryWithPolicy');
 
-export function retryWithPolicy<T>(policy: RetryPolicy, error?: (err: Error) => void, scheduler?: SchedulerLike) : (source: Observable<T>) => Observable<T> {
+export function retryWithPolicy<T>(policy: RetryPolicyLike, error?: (err: Error) => void, scheduler?: SchedulerLike) : (source: Observable<T>) => Observable<T> {
     let _scheduler = scheduler || async;
     return (source: Observable<T>) => new Observable<T>((subscriber) => {
         let subscription: Subscription,

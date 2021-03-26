@@ -1,7 +1,7 @@
 import {Observable} from 'rxjs-compat';
 import {doOnSubscribe} from 'esp-js-ui';
 
-export function doOnSubscribeCompat<T>(action: () => void): Observable<T> {
+export function doOnSubscribeCompat<T>(this: Observable<T>, action: () => void): Observable<T> {
     return doOnSubscribe<T>(action)(this);
 }
 

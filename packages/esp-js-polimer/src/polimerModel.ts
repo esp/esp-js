@@ -299,7 +299,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = merge(...metadataForFunction.map(m => this._observeEvent(m.functionName, m.eventType, m.observationStage)));
+                const inputEventStream = merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage, m.functionName)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
@@ -328,7 +328,10 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(subscription);
     };
 
-    private _observeEvent = (functionName: string, eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Observable<InputEvent<TModel, any>> => {
+    // NOTE: this is not quite private as it's passed out bt the  the older even stream factory API above
+    // Need to remove that.
+    // Given that, any changes in params need to be on the end, and defaulted.
+    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final, functionName: string = 'NA'): Observable<InputEvent<TModel, any>> => {
         return new Observable((obs: Subscriber<any>) => {
             logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `);
             const events = typeof eventType === 'string' ? [eventType] : eventType;

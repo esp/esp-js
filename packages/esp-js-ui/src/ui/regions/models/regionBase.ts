@@ -123,7 +123,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
         findRecordById(recordId: string) {
             return Array
                 .from<RegionItemRecord>(this._regionRecordsByRecordId.values())
-                .find(r => r.modelCreated && r.id === recordId);
+                .find(r => r.id === recordId);
         }
     };
 
@@ -324,7 +324,13 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
                         this.router,
                         this.modelId,
                         () => {
+                            if (!this.existsInRegionByRecordId(regionItemRecord.id)) {
+                                _log.debug(`Region [${this._regionName}]. Region Item [${regionItemRecord.toString()}] no longer exists in Region. View will not be created.`);
+                                return;
+                            }
+
                             _log.debug(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
+
                             try {
                                 const model = regionItemRecord.viewFactoryEntry.factory.createView(recordState);
                                 regionItemRecord = regionItemRecord.updateWithModel(model);

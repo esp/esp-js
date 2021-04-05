@@ -23,12 +23,3 @@ export {
     Markers,
     Sink
 };
-// export {CompositeSink};
-// export {ConsoleSink};
-// export {Level};
-// export {LogEvent};
-// export {Logger};
-// export {LoggerConfig};
-// export {LoggingConfig};
-// export {Markers};
-// export {Sink};

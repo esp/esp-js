@@ -38,7 +38,7 @@
     "webpack-dev-server": "3.11.0"
   },
   "peerDependencies": {
-    "esp-js": "^3.2.18",
+    "esp-js": "^4.0.0",
     "rxjs": "^6.6.6"
   }
 }

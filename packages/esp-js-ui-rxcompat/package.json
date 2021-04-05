@@ -31,9 +31,9 @@
     "rxjs-compat": "6.6.6"
   },
   "peerDependencies": {
-    "esp-js": "^3.2.18",
-    "esp-js-polimer": "^3.2.18",
-    "esp-js-ui": "^3.2.18",
+    "esp-js": "^4.0.0",
+    "esp-js-polimer": "^4.0.0",
+    "esp-js-ui": "^4.0.0",
     "rxjs": "^6.6.6"
   }
 }

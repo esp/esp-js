@@ -17,17 +17,17 @@
 // notice_end
 
 import {DisposableWrapper}  from './disposableWrapper';
-import {Disposable} from './disposable';
+import {Disposable, DisposableItem, Subscription} from './disposable';
 
-export class CompositeDisposable implements Disposable {
-    private readonly _disposables: Disposable[];
+export class CompositeDisposable implements Disposable, Subscription {
+    private readonly _disposables: DisposableWrapper[];
     private _isDisposed: boolean;
 
-    public constructor(...disposables: Disposable[]) {
+    public constructor(...disposables: DisposableItem[]) {
         this._disposables = [];
         this._isDisposed = false;
         for (let disposable of disposables) {
-            this.add(disposable);
+            this.add(new DisposableWrapper(disposable));
         }
     }
 
@@ -35,15 +35,35 @@ export class CompositeDisposable implements Disposable {
         return this._isDisposed;
     }
 
-    public add(disposable: () => void);
-    public add(disposable: Disposable);
-    public add(disposable: any) {
+    public get closed(): boolean {
+        return this._isDisposed;
+    }
+
+    public add(disposable: () => void): this;
+    public add(disposable: DisposableItem): this;
+    public add(disposable: any): this {
         let disposableWrapper = new DisposableWrapper(disposable);
         if (this._isDisposed) {
             disposableWrapper.dispose();
             return;
         }
         this._disposables.push(disposableWrapper);
+        return this;
+    }
+
+    public remove(disposable: () => void): boolean;
+    public remove(disposable: DisposableItem): boolean;
+    public remove(disposable: any): boolean {
+        let i = this._disposables.findIndex(w => w.underlyingDisposable === disposable);
+        if (1 > -1) {
+            this._disposables.splice(i, 1);
+            return true;
+        }
+        return false;
+    }
+
+    public unsubscribe(): void {
+        this.dispose();
     }
 
     public dispose(): void {

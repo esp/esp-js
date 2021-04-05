@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {PublishModelEventContext, PublishModelEventDelegate} from 'esp-js-react';
 import * as classnames from 'classnames';
-import {Logger} from '../../../core';
 import {RegionItemRecordView} from './regionItemRecordView';
 import {Region, RegionItemRecord, SelectedItemChangedEvent} from '../models';
 import {EspUiEventNames} from '../../espUiEventNames';
+import {Logger} from 'esp-js';
 
 const _log = Logger.create('MultiItemRegionView');
 

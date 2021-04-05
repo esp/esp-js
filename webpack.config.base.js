@@ -20,7 +20,7 @@
 
 const webpack = require('webpack');
 const path  = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
 const logger = require('webpack-log')({ name: 'BaseConfig' });
 const TerserPlugin = require('terser-webpack-plugin');
@@ -30,11 +30,14 @@ const env = process.env.NODE_ENV || 'dev';
 const isProduction = env.trim().toLowerCase() === 'prod';
 const mode = isProduction ? 'production' : 'development';
 
+
+
 logger.info('Running for env:' + process.env.NODE_ENV);
 
 const config = {
     mode: mode,
     output: {
+        library: path.basename(process.cwd()),
         libraryTarget: 'umd',
         sourcePrefix: '    ',
         path: process.cwd() + '/.dist',
@@ -75,6 +78,7 @@ const config = {
                 test: /\.js$/,
                 enforce: 'pre',
                 use: ['source-map-loader'],
+                exclude: [/.*rxjs-compat.*/],
             },
             {
                 test: /\.tsx?$/,
@@ -93,11 +97,6 @@ const config = {
                         failOnHint: true
                     }
                 }]
-            },
-            {
-                test: /\.jsx?$/,
-                exclude: /node_modules/,
-                loader: "babel-loader"
             }
         ]
     },
@@ -119,19 +118,23 @@ const config = {
 
 if (isProduction && path.resolve().includes('packages')) {
     config.plugins.push(
-        new CopyPlugin([{
-            from: '../../README.md',
-            to: '../',
-            transform(content, p) {
-                let token = '# Evented State Processor (ESP)';
-                let contentAsString = content.toString();
-                if (!contentAsString.includes(token)) {
-                    throw new Error('README missing given token');
-                } else {
-                    return contentAsString.replace(token, `# Evented State Processor (ESP) - Package ${path.basename(path.resolve())}`);
+        new CopyPlugin({
+            patterns: [
+                {
+                    from: '../../README.md',
+                    to: '../',
+                    transform(content, p) {
+                        let token = '# Evented State Processor (ESP)';
+                        let contentAsString = content.toString();
+                        if (!contentAsString.includes(token)) {
+                            throw new Error('README missing given token');
+                        } else {
+                            return contentAsString.replace(token, `# Evented State Processor (ESP) - Package ${path.basename(path.resolve())}`);
+                        }
+                    },
                 }
-            },
-        }])
+            ]
+        })
     );
 }
 

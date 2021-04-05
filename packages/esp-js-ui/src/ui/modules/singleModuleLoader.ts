@@ -1,18 +1,18 @@
-import * as Rx from 'rx';
+import {concat, ConnectableObservable, Observable, ReplaySubject, Subscriber} from 'rxjs';
+import {map, multicast} from 'rxjs/operators';
 import {DefaultPrerequisiteRegister, LoadResult, ResultStage} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {ModuleChangeType, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
 import {ViewRegistryModel} from '../viewFactory';
 import {Module, ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
-import {Logger} from '../../core';
 import {SystemContainerConst} from '../dependencyInjection';
-import {DisposableBase} from 'esp-js';
+import {DisposableBase, Logger} from 'esp-js';
 
 export interface SingleModuleLoader {
     readonly moduleMetadata: ModuleMetadata;
     readonly lastModuleLoadResult: ModuleLoadResult;
-    readonly loadResults: Rx.Observable<ModuleLoadResult>;
+    readonly loadResults: Observable<ModuleLoadResult>;
     readonly hasLoaded: boolean;
 }
 
@@ -27,7 +27,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
     private _log: Logger;
     private _module: Module;
-    private _loadStream: Rx.ConnectableObservable<ModuleLoadResult>;
+    private _loadStream: ConnectableObservable<ModuleLoadResult>;
     private _lastModuleLoadResult: ModuleLoadResult;
     private _connected = false;
 
@@ -40,7 +40,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         super();
         this._log = Logger.create(`SingleModuleLoader-${this._moduleMetadata.moduleKey}`);
         this._preReqsLoader = new DefaultPrerequisiteRegister();
-        this._loadStream = this._createLoadStream().publish(new Rx.ReplaySubject(1));
+        this._loadStream = <ConnectableObservable<ModuleLoadResult>>this._createLoadStream().pipe(multicast(new ReplaySubject<ModuleLoadResult>(1)));
     }
 
     public get module(): Module {
@@ -58,8 +58,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
     /**
      * A publish stream of ModuleLoadResults
      */
-    public get loadResults(): Rx.Observable<ModuleLoadResult> {
-        return this._loadStream.asObservable() ;
+    public get loadResults(): Observable<ModuleLoadResult> {
+        return this._loadStream;
     }
 
     public get hasLoaded() {
@@ -76,8 +76,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         }
     }
 
-    private _createLoadStream(): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+    private _createLoadStream(): Observable<ModuleLoadResult> {
+        return new Observable((obs: Subscriber<ModuleLoadResult>) => {
             let moduleName = this._moduleMetadata.moduleName;
             let moduleKey = this._moduleMetadata.moduleKey;
 
@@ -89,7 +89,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: false,
                 stage: ModuleLoadStage.Loading
             });
-            obs.onNext(this._lastModuleLoadResult);
+            obs.next(this._lastModuleLoadResult);
 
             try {
                 this._log.debug(`Creating module ${moduleName}`);
@@ -126,9 +126,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Loading
                 });
-                obs.onNext(this._lastModuleLoadResult);
+                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
-                obs.onCompleted();
+                obs.complete();
                 return () => {
                 };
             }
@@ -141,16 +141,17 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: false,
                 stage: ModuleLoadStage.Registered
             });
-            obs.onNext(this._lastModuleLoadResult);
+            obs.next(this._lastModuleLoadResult);
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
 
             let initStream = this._buildInitStream(this.module);
 
-            return this._preReqsLoader
+            let preReqsStream = this._preReqsLoader
                 .load()
-                .map((result: LoadResult) => this._mapPreReqsLoadResult(result))
-                .concat(initStream)
-                .subscribe(obs);
+                .pipe(
+                    map((result: LoadResult) => this._mapPreReqsLoadResult(result))
+                );
+            return concat(preReqsStream, initStream).subscribe(obs);
         });
     }
 
@@ -161,8 +162,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         this.module.dispose();
     }
 
-    private _buildInitStream(module: Module): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create<ModuleLoadResult>(obs => {
+    private _buildInitStream(module: Module): Observable<ModuleLoadResult> {
+        return new Observable((obs: Subscriber<ModuleLoadResult>) => {
             try {
                 // We yield an "Initialising" change, just in case the .initialise() call 
                 // is blocking and halts the UI for a while. We don't control the module
@@ -175,7 +176,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Initialising
                 });
-                obs.onNext(this._lastModuleLoadResult);
+                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
                 module.initialise();
             } catch (e) {
@@ -188,9 +189,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Initialising
                 });
-                obs.onNext(this._lastModuleLoadResult);
+                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
-                obs.onCompleted();
+                obs.complete();
                 return () => {
                 };
             }
@@ -202,9 +203,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: true,
                 stage: ModuleLoadStage.Loaded
             });
-            obs.onNext(this._lastModuleLoadResult);
+            obs.next(this._lastModuleLoadResult);
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
-            obs.onCompleted();
+            obs.complete();
         });
     }
 

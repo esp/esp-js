@@ -1,8 +1,8 @@
-import * as Rx from 'rx';
-import '../../../../src/core/observableExt';
 import {DefaultPrerequisiteRegister} from '../../../../src/ui/modules/prerequisites';
 import {Unit} from '../../../../src/core';
 import {LoadResult, ResultStage} from '../../../../src/ui/modules/prerequisites';
+import {Observable, of, Subject} from 'rxjs';
+import {doOnSubscribe} from '../../../../src/core/observableExt/doOnSubscribe';
 
 describe('Default Prerequisite Registrar Tests', () => {
     let register: DefaultPrerequisiteRegister;
@@ -13,7 +13,7 @@ describe('Default Prerequisite Registrar Tests', () => {
     
     describe('Error Tests', () => {
         it('Should yield back an error result and not onError', () => {
-           let stream = new Rx.Subject();
+           let stream = new Subject();
            register.registerStream(stream, 'Cohagen');
 
            let actualResult;
@@ -33,7 +33,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                     onCompletedCount++;
                });
 
-           stream.onError(new Error('Spanner in the works'));
+           stream.error(new Error('Spanner in the works'));
 
            expect(errorCount).toEqual(0);
            expect(onCompletedCount).toEqual(1);
@@ -42,13 +42,13 @@ describe('Default Prerequisite Registrar Tests', () => {
         });
 
         it('Should not run subsequent streams after an error', () => {
-            let stream = new Rx.Subject();
+            let stream = new Subject();
             register.registerStream(stream, 'Cohagen');
 
             let subscribed = false;
-            let nonStartedStream = Rx.Observable.defer(() => {
+            let nonStartedStream = new Observable<Unit>((obs) => {
                 subscribed = true;
-                return Rx.Observable.return(Unit.default);
+                return of<Unit>(Unit.default).subscribe(obs);
             });
             register.registerStream(nonStartedStream, 'Barry');
 
@@ -66,7 +66,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                         onCompletedCount++;
                     });
 
-            stream.onError(new Error('Spanner in the works'));
+            stream.error(new Error('Spanner in the works'));
             expect(onCompletedCount).toEqual(1);
             expect(onNextCount).toEqual(2);
             expect(actualResult.stage).toEqual(ResultStage.Error);
@@ -136,7 +136,7 @@ describe('Default Prerequisite Registrar Tests', () => {
     
     describe('Streams tests', () => {
         it('Should yield back completed for a stream', () => {
-            let stream = new Rx.Subject();
+            let stream = new Subject();
             register.registerStream(stream, 'Cohagen');
 
             let completed = false;
@@ -148,7 +148,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                     () => completed = true
                 );
 
-            stream.onNext(1);
+            stream.next(1);
 
             expect(results.length).toEqual(2);
             expect(results[0].stage).toEqual(ResultStage.Starting);
@@ -157,8 +157,8 @@ describe('Default Prerequisite Registrar Tests', () => {
         });
 
         it('Should only complete after all prereqs finish successfully', () => {
-            let stream1 = new Rx.Subject();
-            let stream2 = new Rx.Subject();
+            let stream1 = new Subject();
+            let stream2 = new Subject();
             register.registerStream(stream1, 'stream1');
             register.registerStream(stream2, 'stream2');
 
@@ -171,7 +171,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                     () => completed = true
                 );
 
-            stream1.onNext(1);
+            stream1.next(1);
 
             expect(results.length).toEqual(3);
             expect(results[0].stage).toEqual(ResultStage.Starting);
@@ -183,7 +183,7 @@ describe('Default Prerequisite Registrar Tests', () => {
 
             expect(completed).toEqual(false);
 
-            stream2.onNext(2);
+            stream2.next(2);
             expect(results.length).toEqual(4);
             expect(results[3].stage).toEqual(ResultStage.Completed);
             expect(results[3].name).toEqual('stream2');
@@ -191,15 +191,15 @@ describe('Default Prerequisite Registrar Tests', () => {
         });
 
         it('Should run all prereqs in the order that they were registered and subscribe once the previous has completed', () => {
-            let stream1 = new Rx.Subject();
-            let stream2 = new Rx.Subject();
+            let stream1 = new Subject();
+            let stream2 = new Subject();
 
             let counter = 0;
             let stream1Counter = 0;
             let stream2Counter = 0;
 
-            register.registerStream(stream1.doOnSubscribe(() => stream1Counter = ++counter), 'stream1');
-            register.registerStream(stream2.doOnSubscribe(() => stream2Counter = ++counter), 'stream2');
+            register.registerStream(stream1.pipe(doOnSubscribe(() => stream1Counter = ++counter)), 'stream1');
+            register.registerStream(stream2.pipe(doOnSubscribe(() => stream2Counter = ++counter)), 'stream2');
 
             register.load()
                 .subscribe();
@@ -207,12 +207,12 @@ describe('Default Prerequisite Registrar Tests', () => {
             expect(stream1Counter).toEqual(1);
             expect(stream2Counter).toEqual(0);
 
-            stream1.onNext({});
+            stream1.next({});
             expect(stream2Counter).toEqual(2);
         });
 
         it('Should handle a case where a stream does not yield and just completes', () => {
-            let stream = new Rx.Subject();
+            let stream = new Subject();
 
             let counter = 0;
             register.registerStream(stream, 'stream1');
@@ -223,7 +223,7 @@ describe('Default Prerequisite Registrar Tests', () => {
                 });
 
             expect(counter).toEqual(0);
-            stream.onCompleted();
+            stream.complete();
             expect(counter).toEqual(1);
         });
     });

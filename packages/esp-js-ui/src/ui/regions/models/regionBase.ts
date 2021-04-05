@@ -1,5 +1,5 @@
-import {isString, Logger} from '../../../core';
-import {Guard, observeEvent, Router, utils} from 'esp-js';
+import {isString, liftToEspObservable} from '../../../core';
+import {Guard, observeEvent, Router, utils, Logger} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';
 import {RegionItem} from './regionItem';
@@ -12,6 +12,7 @@ import {RegionState} from './regionState';
 import {SingleModuleLoader} from '../../modules';
 import {SystemContainerConst} from '../../dependencyInjection';
 import * as uuid from 'uuid';
+import {filter, take} from 'rxjs/operators';
 
 const _log = Logger.create('RegionsModelBase');
 
@@ -318,11 +319,12 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
                 regionItemRecord = regionItemRecord.updateWithModel(model);
             } else {
                 regionItemRecord.addDisposable(singleModuleLoader.loadResults
-                    .filter(lr => lr.hasCompletedLoaded)
-                    .take(1)
-                    .subscribeWithRouter(
-                        this.router,
-                        this.modelId,
+                    .pipe(
+                        filter(lr => lr.hasCompletedLoaded),
+                        take(1),
+                        liftToEspObservable(this.router, this.modelId),
+                    )
+                    .subscribe(
                         () => {
                             _log.debug(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
                             try {

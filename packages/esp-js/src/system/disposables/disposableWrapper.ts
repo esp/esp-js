@@ -17,14 +17,25 @@
 // notice_end
 
 import {Guard} from '../guard';
-import {Disposable, DisposableOrFunction} from './disposable';
+import {Disposable, DisposableItem, Subscription} from './disposable';
 
-export class DisposableWrapper implements Disposable {
+/**
+ * Wraps a disposable, or subscription like object so it can be used inter changable between different APIs that need to ultimatley clean up an object.
+ *
+ * Compatible with ESP, RX4/5/6.
+ */
+export class DisposableWrapper implements Disposable, Subscription {
     private _isDisposed: boolean = false;
     private _disposable: Disposable;
+    private _underlyingDisposable: DisposableItem;
 
-    public constructor(disposable: DisposableOrFunction) {
+    public static create = (disposable: DisposableItem) => {
+        return new DisposableWrapper(disposable);
+    }
+
+    public constructor(disposable: DisposableItem) {
         Guard.isDefined(disposable, 'disposable must be defined');
+        this._underlyingDisposable = disposable;
         let innerDisposable;
         if (typeof disposable === 'function') {
             innerDisposable = {
@@ -32,13 +43,16 @@ export class DisposableWrapper implements Disposable {
                     disposable();
                 }
             };
-        } else if (disposable.dispose && typeof disposable.dispose === 'function') {
+        } else if ((disposable as Disposable).dispose) {
             innerDisposable = {
                 dispose: () => {
-                    // at this point if something has deleted the dispose or it's not a function we just ignore it.
-                    if (disposable.dispose && typeof disposable.dispose === 'function') {
-                        disposable.dispose();
-                    }
+                    (disposable as Disposable).dispose();
+                }
+            };
+        } else if ((disposable as Subscription).unsubscribe) {
+            innerDisposable = {
+                dispose: () => {
+                    (disposable as Subscription).unsubscribe();
                 }
             };
         } else {
@@ -52,10 +66,22 @@ export class DisposableWrapper implements Disposable {
         return this._isDisposed;
     }
 
+    public get closed(): boolean {
+        return this._isDisposed;
+    }
+
+    public get underlyingDisposable(): DisposableItem {
+        return this._underlyingDisposable;
+    }
+
     public dispose() {
         if (!this._isDisposed && this._disposable) {
             this._isDisposed = true;
             this._disposable.dispose();
         }
+    }
+
+    public unsubscribe() {
+        this.dispose();
     }
 }

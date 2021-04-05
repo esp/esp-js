@@ -1,3 +1,3 @@
-import { logging } from 'esp-js';
+import { Logger } from 'esp-js';
 
-export const logger = logging.Logger.create('PolimerInternalLogger');
+export const logger = Logger.create('PolimerInternalLogger');

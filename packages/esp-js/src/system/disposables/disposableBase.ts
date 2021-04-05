@@ -17,9 +17,9 @@
 // notice_end
 
 import {CompositeDisposable} from './compositeDisposable';
-import {Disposable} from './disposable';
+import {Disposable, DisposableItem, Subscription} from './disposable';
 
-export class DisposableBase implements Disposable {
+export class DisposableBase implements Disposable, Subscription {
     private _disposables: CompositeDisposable;
 
     constructor() {
@@ -30,13 +30,28 @@ export class DisposableBase implements Disposable {
         return this._disposables.isDisposed;
     }
 
+    public get closed(): boolean {
+        return this._disposables.isDisposed;
+    }
+
     public addDisposable(disposable: () => void);
-    public addDisposable(disposable: Disposable);
+    public addDisposable(disposable: DisposableItem);
     public addDisposable(disposable: any) {
         this._disposables.add(disposable);
     }
 
+    public removeDisposable(disposable: () => void): boolean;
+    public removeDisposable(disposable: DisposableItem): boolean;
+    public removeDisposable(disposable: any): boolean {
+        return this._disposables.remove(disposable);
+    }
+
     public dispose(): void {
         this._disposables.dispose();
+    }
+
+    // for compatibility with rx
+    public unsubscribe() {
+        this.dispose();
     }
 }

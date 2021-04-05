@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
-import {Logger} from '../../../core';
 import {RegionItemRecordView} from './regionItemRecordView';
 import {Region, RegionItemRecord} from '../models';
+import {Logger} from 'esp-js';
 
 const _log = Logger.create('MultiItemRegionView');
 

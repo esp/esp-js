@@ -1,5 +1,5 @@
 {
-  "version": "3.2.18",
+  "version": "4.0.2-next.0",
   "useWorkspaces": true,
   "npmClient": "yarn",
   "command": {
@@ -10,8 +10,6 @@
         "**/*.md"
       ],
       "forcePublish": true,
-      "bump": "patch",
-      "preid": "rc",
       "npmClient": "yarn",
       "message": "chore(release): publish %s"
     },
@@ -19,6 +17,7 @@
   },
   "packages": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "docs/*"
   ]
 }

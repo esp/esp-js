@@ -17,7 +17,7 @@
 // notice_end
 
 import {DisposableWrapper} from './disposableWrapper';
-import {Disposable} from './disposable';
+import {Disposable, DisposableItem} from './disposable';
 
 export class DictionaryDisposable implements Disposable {
     private _disposables: { [key:string]:Disposable; } = {};
@@ -31,7 +31,7 @@ export class DictionaryDisposable implements Disposable {
         return this._isDisposed;
     }
 
-    public add(key: string, disposable: Disposable) {
+    public add(key: string, disposable: DisposableItem) {
         if (this._disposables.hasOwnProperty(key)) {
             throw new Error('Key ' + key + ' already found');
         }

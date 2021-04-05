@@ -42,6 +42,18 @@ describe('DisposableWrapper', () => {
         expect(disposable.isDisposed).toEqual(true);
     });
 
+    it('should accept objects with an unsubscribe method as disposables', () => {
+        let subscriptionLikeThing = {
+            closed: false,
+            unsubscribe: function() {
+                this.closed = true;
+            }
+        };
+        let disposableWrapper = new system.disposables.DisposableWrapper(subscriptionLikeThing);
+        disposableWrapper.dispose();
+        expect(subscriptionLikeThing.closed).toEqual(true);
+    });
+
     it('should only dispose instances once', () => { // bit of a void test
         let disposeCount = 0;
         let disposable = new system.disposables.DisposableWrapper(() => { disposeCount++; });

@@ -30,9 +30,20 @@ export {
     PreEventProcessor,
     PostEventProcessor,
 } from './router';
-export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable } from './system/disposables';
+export {
+  CompositeSink,
+  ConsoleSink,
+  Level,
+  LogEvent,
+  Logger,
+  LoggerConfig,
+  LoggingConfig,
+  Markers,
+  Sink
+} from './system/logger';
+export { CompositeDisposable, DictionaryDisposable, DisposableBase, DisposableWrapper, Disposable, Subscription, DisposableOrFunction, DisposableItem } from './system/disposables';
 export { observeEvent, observeEventEnvelope } from './decorators/observeEvent';
 export { EspDecoratorUtil, DecoratorTypes, EspMetadata, EspDecoratedObject, EventObservationMetadata, isEspDecoratedObject, EventPredicate, PolimerEventPredicate, ObserveEventPredicate} from './decorators/espDecoratorMetadata';
-export { logging, Guard, utils } from './system';
+export { Guard, utils } from './system';
 export { Observable } from './reactive/observable';
 export { RouterObservable, Subject, RouterSubject } from './reactive';

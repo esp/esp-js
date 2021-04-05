@@ -1,9 +1,9 @@
-import * as Rx from 'rx';
+import { Observable } from 'rxjs';
 import {Unit} from '../../../core';
 
 export interface PrerequisiteRegister {
     //Useful when you want late-bound dependencies
-    registerStreamFactory(factory: () => Rx.Observable<Unit>, name: string): void;
-    registerStream(stream: Rx.Observable<Unit>, name: string): void;
+    registerStreamFactory(factory: () => Observable<Unit>, name: string): void;
+    registerStream(stream: Observable<Unit>, name: string): void;
     registerAction(action: () => void, name: string);
 }

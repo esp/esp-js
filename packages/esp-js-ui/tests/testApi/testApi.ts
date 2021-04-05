@@ -1,4 +1,4 @@
-import {Router} from 'esp-js';
+import {Level, LoggingConfig, Router} from 'esp-js';
 
 export interface EspUiTestApi {
     removeModel();
@@ -11,6 +11,7 @@ export interface EspUiTestApi {
 
 export class Actor {
     constructor(private _modelId: string, private _router: Router) {
+        LoggingConfig.setLevel(Level.none);
     }
 
     public publishEvent(eventType: string, event?: TestEvent) {

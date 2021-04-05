@@ -1,5 +1,4 @@
-import {Router, DisposableBase, Guard } from 'esp-js';
-import { Logger } from '../core';
+import {Router, DisposableBase, Guard, Logger } from 'esp-js';
 import {ViewInstance} from './viewFactory/viewFactoryBase';
 
 export abstract class ModelBase extends DisposableBase implements ViewInstance {

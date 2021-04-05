@@ -1,5 +1,6 @@
-import * as Rx from 'rx';
 import {Logger} from 'esp-js-ui';
+import {NEVER, Observable, timer} from 'rxjs';
+import {finalize, map} from 'rxjs/operators';
 
 export enum RfqStatus {
     Idle = 'Idle',
@@ -44,34 +45,34 @@ export interface RfqOperationAck {
 const _log = Logger.create('RfqService');
 
 export class RfqService {
-    public requestQuote(request: RfqRequest): Rx.Observable<RfqUpdate> {
+    public requestQuote(request: RfqRequest): Observable<RfqUpdate> {
         this._logQuoteDebug(request, `Quote request received for`);
-        return Rx.Observable
-            .timer(2000, 2000)
-            .map<RfqUpdate>(i => {
+        return timer(2000, 2000).pipe(
+            map<number, RfqUpdate>((i: number) => {
                 const update = {
                     rfqId: request.rfqId,
                     status: RfqStatus.Quoting,
                     quote: {
                         quoteId: i.toString(),
-                        price: (1.2345 + i / 10000).toFixed(4)
+                        price: Number((1.2345 + i / 10000).toFixed(4))
                     }
                 };
                 this._logQuoteDebug(request, `Yielding new quote. Price: ${update.quote.price}`);
                 return update;
-            })
-            .finally(() => this._logQuoteDebug(request, `Quote stream completed`));
+            }),
+            finalize(() => this._logQuoteDebug(request, `Quote stream completed`))
+        );
     }
 
-    private _logQuoteDebug({rfqId, ccyPair, notional}, message) {
-        _log.debug(`[${rfqId} ${ccyPair} ${notional}] - ${message}`);
+    private _logQuoteDebug({rfqId, ccyPair, notional}  : RfqRequest, message) {
+        _log.debug(`[RFQ ${rfqId} ${ccyPair} ${notional}] - ${message}`);
     }
 
-    public cancelRfq(request: CancelRfqRequest): Rx.Observable<RfqOperationAck> {
-        return Rx.Observable.never();
+    public cancelRfq(request: CancelRfqRequest): Observable<RfqOperationAck> {
+        return NEVER;
     }
 
-    public executeQuote(request: ExecuteOnQuoteRequest): Rx.Observable<RfqOperationAck> {
-        return Rx.Observable.never();
+    public executeQuote(request: ExecuteOnQuoteRequest): Observable<RfqOperationAck> {
+        return NEVER;
     }
 }

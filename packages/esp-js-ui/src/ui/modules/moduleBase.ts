@@ -1,12 +1,11 @@
 import {Container} from 'esp-js-di';
-import {DisposableBase, Guard} from 'esp-js';
+import {DisposableBase, Guard, Logger} from 'esp-js';
 import {ViewRegistryModel, ViewFactoryBase} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
 import {ModelBase} from '../modelBase';
 import {ModuleMetadata} from './moduleDecorator';
 import {EspModuleDecoratorUtils} from './moduleDecorator';
-import {Logger} from '../../core';
 import {RegionManager} from '../regions/models';
 import {SystemContainerConst} from '../dependencyInjection';
 import {ModuleLoadStage} from './moduleLoadResult';

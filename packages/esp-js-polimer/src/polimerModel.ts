@@ -1,14 +1,15 @@
 import {MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './stateEventHandlers';
-import {connect, sendUpdateToDevTools} from './reduxDevToolsConnector';
+import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
 import {logger} from './logger';
-import * as Rx from 'rx';
 import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
 import produce from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
+import {merge, Observable, Subscriber, Subscription} from 'rxjs';
+import {filter, mergeAll} from 'rxjs/operators';
 
 export interface PolimerModelSetup<TModel extends ImmutableModel> {
     initialModel: TModel;
@@ -73,7 +74,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     public initialize = () => {
-        connect(this._router, this._modelId, this, this._modelId);
+        connectDevTools(this._router, this._modelId, this, this._modelId);
         sendUpdateToDevTools('@@INIT', this._immutableModel, this._modelId);
         this._wireUpStateHandlerModels();
         this._wireUpStateHandlerObjects();
@@ -298,58 +299,68 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // When using decorators the function may declare multiple decorators,
                 // they may use a different observation stage. Given that, we subscribe to the router separately
                 // and pump the final observable into our handling function to subscribe to.
-                const inputEventStream = Rx.Observable.merge(metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage)));
+                const inputEventStream = merge(...metadataForFunction.map(m => this._observeEvent(m.eventType, m.observationStage, m.functionName)));
                 const outputEventStream = objectToScanForObservables[functionName](inputEventStream);
                 observables.push(outputEventStream);
             });
         });
 
-        // now we've normalised them as a single observable and we can kick it off
-        this.addDisposable(
-            Rx.Observable.merge(...observables)
-                .filter(output => output != null)
-                .subscribe(
-                    (outputEvent: OutputEvent<any>) => {
-                        if (outputEvent.broadcast) {
-                            logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent);
-                            this._router.broadcastEvent(outputEvent.eventType, outputEvent.event || {});
-                        } else {
-                            const targetModelId = outputEvent.modelId || this._modelId;
-                            logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent);
-                            this._router.publishEvent(targetModelId, outputEvent.eventType, outputEvent.event);
-                        }
-                    },
-                    (err) => {
-                        logger.error(`Error on observable stream for model ${this.modelId}.`, err);
+       let subscription: Subscription = merge(...observables)
+           .pipe(
+               filter(output => output != null)
+            )
+            .subscribe(
+                (outputEvent: OutputEvent<any>) => {
+                    if (outputEvent.broadcast) {
+                        logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent);
+                        this._router.broadcastEvent(outputEvent.eventType, outputEvent.event || {});
+                    } else {
+                        const targetModelId = outputEvent.modelId || this._modelId;
+                        logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent);
+                        this._router.publishEvent(targetModelId, outputEvent.eventType, outputEvent.event);
                     }
-                )
-        );
+                },
+                (err: any) => {
+                    logger.error(`Error on observable stream for model ${this.modelId}.`, err);
+                }
+            );
+        // now we've normalised them as a single observable and we can kick it off
+        this.addDisposable(subscription);
     };
 
-    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final): Rx.Observable<InputEvent<TModel, any>> => {
-        return Rx.Observable.create((obs: Rx.Observer<any>) => {
-                const events = typeof eventType === 'string' ? [eventType] : eventType;
+    // NOTE: this is not quite private as it's passed out bt the  the older even stream factory API above
+    // Need to remove that.
+    // Given that, any changes in params need to be on the end, and defaulted.
+    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final, functionName: string = 'NA'): Observable<InputEvent<TModel, any>> => {
+        return new Observable((obs: Subscriber<any>) => {
+            logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `);
+            const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
                     .getAllEventsObservable(events, observationStage)
                     .filter(eventEnvelope => eventEnvelope.modelId === this._modelId)
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>) => {
-                            logger.verbose(`Passing event [${eventEnvelope.eventType}] at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}] to event transform stream.`);
+                            logger.verbose(`Event transform: event [${eventEnvelope.eventType}] received at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}].`);
                             let inputEvent: InputEvent<TModel, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
                             // Pass the event off to our polimer observable stream.
                             // In theory, these streams must never error.
                             // They need to bake in their own exception handling.
                             // We wrap in a try catch just to stop any exception bubbling to the router
                             try {
-                                obs.onNext(inputEvent);
+                                obs.next(inputEvent);
                             } catch (err) {
                                 logger.error(`Error caught on event observable stream for event ${eventType}.`, err);
                                 throw err;
                             }
                         },
-                        () => obs.onCompleted()
+                        () => {
+                            logger.verbose(`Event transform: stream for function [${functionName}] event [${eventType}] stage [${observationStage}] model [${this._modelId}] completed`);
+                            obs.complete();
+                        }
                     );
-                return espEventStreamSubscription;
+                return () => {
+                    espEventStreamSubscription.dispose();
+                };
             }
         );
     };

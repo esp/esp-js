@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "3.2.18",
+  "version": "4.0.2-next.0",
   "description": "ESP-JS-UI Package",
   "main": ".dist/esp-js-ui.js",
   "types": "esp-js-ui.d.ts",
@@ -17,31 +17,28 @@
     "dev": "nps dev"
   },
   "devDependencies": {
-    "classnames": "2.2.6",
-    "esp-js": "^3.2.18",
-    "esp-js-di": "^3.2.18",
-    "esp-js-react": "^3.2.18",
-    "jest": "24.9.0",
-    "react": "16.11.0",
-    "rx": "4.1.0",
-    "typescript": "3.7.2",
-    "webpack": "4.41.2",
+    "jest": "26.0.1",
+    "typescript": "3.9.5",
+    "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.9.0"
+    "webpack-dev-server": "3.11.0"
   },
   "dependencies": {
-    "query-string": "6.8.3",
+    "classnames": "2.2.6",
+    "esp-js": "^4.0.2-next.0",
+    "esp-js-di": "^4.0.2-next.0",
+    "esp-js-react": "^4.0.2-next.0",
+    "query-string": "6.13.1",
+    "react": "16.13.1",
+    "rxjs": "6.6.6",
     "uuid": "8.3.2"
   },
   "peerDependencies": {
-    "classnames": "2.2.6",
-    "esp-js": "^2.0.1-rc.3",
-    "esp-js-di": "^2.0.1-rc.3",
-    "esp-js-react": "^2.0.1-rc.3",
-    "react": "16.8.6",
-    "rx": "4.1.0"
-  },
-  "publishConfig": {
-    "tag": "latest"
+    "classnames": "^2.2.6",
+    "esp-js": "^4.0.0",
+    "esp-js-di": "^4.0.0",
+    "esp-js-react": "4.0.0",
+    "react": "^16.8.6",
+    "rxjs": "^6.6.6"
   }
 }

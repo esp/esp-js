@@ -1,6 +1,6 @@
 {
   "name": "esp-js-api",
-  "version": "3.2.18",
+  "version": "4.0.2-next.0",
   "private": true,
   "scripts": {
     "clean": "nps clean",
@@ -11,15 +11,15 @@
     "start": "./node_modules/.bin/ts-node src/index.ts"
   },
   "dependencies": {
-    "esp-js": "^3.2.18",
+    "esp-js": "^4.0.2-next.0",
     "prompt": "1.0.0"
   },
   "devDependencies": {
-    "jest": "24.9.0",
+    "jest": "26.0.1",
     "ts-node": "^8.0.3",
-    "typescript": "3.7.2",
-    "webpack": "4.41.2",
+    "typescript": "3.9.5",
+    "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.9.0"
+    "webpack-dev-server": "3.11.0"
   }
 }

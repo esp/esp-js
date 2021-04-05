@@ -1,6 +1,6 @@
 module.exports = {
     "transform": {
-        "^.+\\.jsx?$": "babel-jest",
+        "^.+\\.js?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts",
         "^.+\\.tsx?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts"
     },
     "testMatch": [
@@ -21,5 +21,8 @@ module.exports = {
     "modulePaths": [
         "<rootDir>"
     ],
-    "testURL": "http://localhost/"
+    "testURL": "http://localhost/",
+    "setupFilesAfterEnv": [
+        "<rootDir>/../../__jest__/mocks/cryptoMock.ts"
+    ]
 };

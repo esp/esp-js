@@ -1,7 +1,20 @@
 import {viewBinding} from 'esp-js-react';
 import {ShellView} from '../views/shellView';
 import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
-import {AggregateModuleLoadResult, IdFactory, Logger, ModelBase, ModuleChangeType, Shell, StatefulRegion, StateService, ModuleLoadStage} from 'esp-js-ui';
+import {
+    AggregateModuleLoadResult,
+    IdFactory,
+    Logger,
+    ModelBase,
+    ModuleChangeType,
+    Shell,
+    StatefulRegion,
+    StateService,
+    ModuleLoadStage,
+    liftToEspObservable,
+    EspRouterObservable,
+    ValueAndModel
+} from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
 import {observeEvent} from 'esp-js';
 import {ShellEvents} from '../events';

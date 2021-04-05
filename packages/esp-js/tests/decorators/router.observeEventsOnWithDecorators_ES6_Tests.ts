@@ -16,10 +16,6 @@
  */
 // notice_end
 
-// NOTE these tests are copied into a few files as they need to run via different transpilers.
-// I could have a single file, then source the tests and using eval to run them thus not having to copy and past this file, however debugging tests for each transpiler gets really hard.
-// For now it's easiest to just copy paste from the .ts version, then remove the class level private vars from the babel implementation
-
 import {observeEvent, ObservationStage, DisposableBase, Router} from '../../src';
 
 describe('Decorators', () => {

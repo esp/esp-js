@@ -1,25 +1,26 @@
 {
   "name": "esp-js-ui-module-based-app",
-  "version": "3.2.18",
+  "version": "4.0.2-next.0",
   "license": "MIT",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "esp-js": "^3.2.18",
-    "esp-js-di": "^3.2.18",
-    "esp-js-polimer": "^3.2.18",
-    "esp-js-react": "^3.2.18",
-    "esp-js-ui": "^3.2.18",
-    "react": "16.11.0",
-    "react-dom": "16.11.0",
+    "esp-js": "^4.0.2-next.0",
+    "esp-js-di": "^4.0.2-next.0",
+    "esp-js-polimer": "^4.0.2-next.0",
+    "esp-js-react": "^4.0.2-next.0",
+    "esp-js-ui": "^4.0.2-next.0",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "rxjs": "6.6.6",
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "jest": "24.9.0",
-    "typescript": "3.7.2",
-    "webpack": "4.41.2",
+    "jest": "26.0.1",
+    "typescript": "3.9.5",
+    "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
-    "webpack-dev-server": "3.9.0"
+    "webpack-dev-server": "3.11.0"
   },
   "scripts": {
     "clean": "nps clean",

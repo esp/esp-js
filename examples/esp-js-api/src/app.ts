@@ -91,7 +91,7 @@ export const runBasicExample =  () => {
         _listenForColorModelChangedEvent() {
             this._router
                 .getEventObservable('myModelId', 'colorChangedEvent')
-                .subscribe(({event, eventContext, model}) => {
+                .subscribe(({event, context, model}) => {
                     model.color = event.color;
                 });
         }

@@ -12,6 +12,8 @@ import {
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
 import {CashTileViewFactory} from './cash-tile/cashTileViewFactory';
 import {CurrencyPairRefDataService} from './cash-tile/services/currencyPairRefDataService';
+import {concat, Observable, throwError, timer} from 'rxjs';
+import {take} from 'rxjs/operators';
 
 let _log = Logger.create('TradingModule');
 

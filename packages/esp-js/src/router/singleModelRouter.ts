@@ -59,6 +59,15 @@ export class SingleModelRouter<TModel> {
         return router;
     }
 
+    get underlying(): Router {
+        return this._underlying;
+    }
+
+    get targetModelId(): string {
+        Guard.stringIsNotEmpty(this._targetModelId, 'Model not yet set.');
+        return this._targetModelId;
+    }
+
     setModel(model: TModel) {
         Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');
         this._underlying.addModel(this._targetModelId, model);

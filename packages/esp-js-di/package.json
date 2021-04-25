@@ -1,6 +1,6 @@
 {
   "name": "esp-js-di",
-  "version": "4.0.4-next.0",
+  "version": "4.0.4",
   "description": "A tiny DI container (formally microdi-js)",
   "keywords": [
     "di",

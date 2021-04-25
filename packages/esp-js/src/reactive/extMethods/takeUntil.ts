@@ -27,7 +27,9 @@ Observable.prototype.takeUntil = function<T>(predicate, inclusive) {
     let subscribe: Subscribe<T>  = observer => {
         return source.subscribe(
             (item: T) => {
-                if (done) return;
+                if (done) {
+                    return;
+                }
                 let shouldTake = predicate(item);
                 if (shouldTake || inclusive) {
                     done = true;

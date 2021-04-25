@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import * as utils from './utils';
+import {utils} from './utils';
 
 export class Guard {
     public static isDefined(value: any, message: string): void {

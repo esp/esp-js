@@ -16,10 +16,10 @@
  */
 // notice_end
 
-import {utils} from '../system';
 import {Observable} from './observable';
 import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
+import {utils} from '../system';
 
 export class Subject<T> extends Observable<T> {
     private readonly _cacheLastValue: boolean;

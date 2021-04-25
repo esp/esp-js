@@ -1,5 +1,5 @@
-import *  as Utils from './utils';
 import {Guard} from './guard';
+import {utils} from './utils';
 
 export enum Level {
     verbose = 'verbose',
@@ -324,7 +324,7 @@ export class Logger {
     private _log(level: Level, args: any[]): void {
         let markers : Markers = {};
         let error = null;
-        let firstItemIsMarker = Utils.isObject(args[0]);
+        let firstItemIsMarker = utils.isObject(args[0]);
         if (firstItemIsMarker) {
             markers = args[0];
             // remove the marker as we've just captured it above
@@ -352,5 +352,5 @@ export class Logger {
 }
 
 function messageIsString(message: string | any[]): message is string {
-    return Utils.isString(message);
+    return utils.isString(message);
 }

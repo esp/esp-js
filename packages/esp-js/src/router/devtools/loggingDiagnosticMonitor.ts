@@ -16,11 +16,11 @@
  */
 // notice_end
 
-import {logging} from '../../system';
 import {DiagnosticMonitor} from './diagnosticMonitor';
 import {DisposableBase} from '../../system/disposables';
+import {Logger} from '../../system';
 
-let _log = logging.Logger.create('LoggingDiagnosticMonitor');
+let _log = Logger.create('LoggingDiagnosticMonitor');
 
 /**
  * Handy for debugging if in node or via unit tests, else use esp-js-devtools.

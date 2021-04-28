@@ -1,5 +1,5 @@
 import {Observable, Subscription, ConnectableObservable} from 'rxjs-compat';
-import {lazyConnect} from 'esp-js-ui';
+import {lazyConnect} from 'esp-js-rx';
 
 export function lazyConnectCompat<T>(this: Observable<T>, onConnect: (subscription: Subscription) => void): Observable<T> {
     return lazyConnect<T>(onConnect)(this);

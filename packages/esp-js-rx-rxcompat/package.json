@@ -1,9 +1,9 @@
 {
-  "name": "esp-js-ui-rxcompat",
+  "name": "esp-js-rx-rxcompat",
   "version": "5.0.0-next.0",
-  "description": "esp-js-ui-rxcompat Package",
-  "main": ".dist/esp-js-ui-rxcompat.js",
-  "types": "esp-js-ui-rxcompat.d.ts",
+  "description": "esp-js-rx-rxcompat Package",
+  "main": ".dist/esp-js-rx-rxcompat.js",
+  "types": "esp-js-rx-rxcompat.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
@@ -25,15 +25,14 @@
   },
   "dependencies": {
     "esp-js": "^5.0.0-next.0",
-    "esp-js-polimer": "^5.0.0-next.0",
-    "esp-js-ui": "^5.0.0-next.0",
+    "esp-js-rx": "^5.0.0-next.0",
     "rxjs": "6.6.6",
     "rxjs-compat": "6.6.6"
   },
   "peerDependencies": {
     "esp-js": "^4.0.0",
-    "esp-js-polimer": "^4.0.0",
-    "esp-js-ui": "^4.0.0",
-    "rxjs": "^6.6.6"
+    "esp-js-rx": "^4.0.0",
+    "rxjs": "^6.6.6",
+    "rxjs-compat": "^6.6.6"
   }
 }

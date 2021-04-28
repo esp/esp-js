@@ -1,5 +1,5 @@
 import {Observable } from 'rxjs-compat';
-import {RetryPolicyLike, retryWithPolicy} from 'esp-js-ui';
+import {RetryPolicyLike, retryWithPolicy} from 'esp-js-rx';
 import {SchedulerLike} from 'rxjs';
 
 export function retryWithPolicyCompat<T>(this: Observable<T>, policy: RetryPolicyLike, error?: (err: Error) => void, scheduler?: SchedulerLike): Observable<T> {

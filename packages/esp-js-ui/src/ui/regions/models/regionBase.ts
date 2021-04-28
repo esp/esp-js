@@ -1,4 +1,5 @@
-import {isString, liftToEspObservable} from '../../../core';
+import {isString} from '../../../core';
+import {liftToEspObservable} from 'esp-js-rx';
 import {Guard, observeEvent, Router, utils, Logger} from 'esp-js';
 import {ModelBase} from '../../modelBase';
 import {IdFactory} from '../../idFactory';

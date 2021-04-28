@@ -1,9 +1,6 @@
-import {Subject, Subscription} from 'rxjs-compat';
+import {Subject, Subscription} from 'rxjs';
 import {Router} from 'esp-js';
-
-// need to import the library for side effects
-import '../src';
-import {ValueAndModel} from 'esp-js-ui';
+import {EspRouterObservable, liftToEspObservable, ValueAndModel} from '../../src/operators';
 
 describe('subscribeWithRouterTests', () => {
     let _model: {};
@@ -22,9 +19,10 @@ describe('subscribeWithRouterTests', () => {
         _receivedErrors = [];
         _subject = new Subject();
         _completeCount = 0;
-        _subscription = _subject
-            .liftToEspObservable(_router, 'model-id')
-            .subscribe(
+        let stream = _subject.pipe(
+            liftToEspObservable(_router, 'model-id')
+        ) as EspRouterObservable<number, {}>;
+        _subscription = stream.subscribe(
             (i: ValueAndModel<number, {}>) => {
                 _receivedItems.push({
                     item: i,

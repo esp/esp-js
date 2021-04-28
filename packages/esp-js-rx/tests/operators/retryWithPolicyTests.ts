@@ -1,7 +1,6 @@
 import { TestScheduler } from 'rxjs/testing';
-import { RetryPolicy } from '../../../src/core/observableExt';
 import {Observable, Subject, Subscription} from 'rxjs';
-import {retryWithPolicy} from '../../../src/core/observableExt/retryWithPolicy';
+import {retryWithPolicy, RetryPolicy} from '../../src/operators';
 
 describe('.retryWithPolicy()', () => {
     let _subject:Subject<any>,

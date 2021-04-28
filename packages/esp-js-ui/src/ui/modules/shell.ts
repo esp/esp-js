@@ -13,7 +13,7 @@ import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
 import {ModuleProvider} from './moduleProvider';
 import {ModelBase} from '../modelBase';
-import {SerialDisposable} from '../../core/serialDisposable';
+import {SerialDisposable} from 'esp-js-rx';
 import {merge, Observable} from 'rxjs';
 
 const _log: Logger = Logger.create('Shell');

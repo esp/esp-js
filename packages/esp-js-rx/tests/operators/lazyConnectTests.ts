@@ -1,6 +1,6 @@
 import {Subject, Subscription} from 'rxjs';
 import {publish, tap} from 'rxjs/operators';
-import {lazyConnect} from '../../../src/core/observableExt/lazyConnect';
+import {lazyConnect} from '../../src/operators'
 
 describe('lazyConnectTests', () => {
     // TBH this feels like dodgy functionality due to how it manages the subscription.

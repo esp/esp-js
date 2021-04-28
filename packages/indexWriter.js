@@ -27,7 +27,7 @@ const directoryExclusions = [
     'node_modules',
     'esp-js-polimer',
     'esp-js-react',
-    'esp-js-ui-rxcompat',
+    'esp-js-rx-rxcompat',
 ];
 
 const logger = (message) => {

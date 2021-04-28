@@ -1,0 +1,14 @@
+.git
+.npmignore
+.idea
+node_modules/
+*.log
+esp-js-*.tgz
+src
+tests
+typings
+!.dist/typings
+jest.config.js
+webpack.config.js
+docs
+tsconfig.json

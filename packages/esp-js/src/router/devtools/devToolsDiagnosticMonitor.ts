@@ -18,6 +18,7 @@
 
 import {DisposableBase} from '../../system/disposables';
 import {DiagnosticMonitor} from './diagnosticMonitor';
+import {GlobalState} from '../../system';
 
 /**
  * hooks onto a global exposed by esp-js-devtools and forwards diagnostics to that
@@ -38,37 +39,37 @@ export class DevToolsDiagnosticMonitor extends DisposableBase implements Diagnos
 
     addModel(modelId) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.addModel(modelId);
+            GlobalState.__espAnalyticsMonitor.addModel(modelId);
         }
     }
 
     removeModel(modelId) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.removeModel(modelId);
+            GlobalState.__espAnalyticsMonitor.removeModel(modelId);
         }
     }
 
     publishEvent(modelId, eventType, event) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.publishEvent(modelId, eventType, event);
+            GlobalState.__espAnalyticsMonitor.publishEvent(modelId, eventType, event);
         }
     }
 
     broadcastEvent(eventType) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.broadcastEvent(eventType);
+            GlobalState.__espAnalyticsMonitor.broadcastEvent(eventType);
         }
     }
 
     executingEvent(eventType) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.executingEvent(eventType);
+            GlobalState.__espAnalyticsMonitor.executingEvent(eventType);
         }
     }
 
     runAction(modelId) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.runAction(modelId);
+            GlobalState.__espAnalyticsMonitor.runAction(modelId);
         }
     }
 
@@ -110,7 +111,7 @@ export class DevToolsDiagnosticMonitor extends DisposableBase implements Diagnos
 
     dispatchingModelUpdates(modelId) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.dispatchingModelUpdates(modelId);
+            GlobalState.__espAnalyticsMonitor.dispatchingModelUpdates(modelId);
         }
     }
 
@@ -119,7 +120,7 @@ export class DevToolsDiagnosticMonitor extends DisposableBase implements Diagnos
 
     halted(modelIds, err) {
         if (this._ensureDiagnosticEnabled()) {
-            window.__espAnalyticsMonitor.halted(modelIds, err);
+            GlobalState.__espAnalyticsMonitor.halted(modelIds, err);
         }
     }
 
@@ -127,14 +128,14 @@ export class DevToolsDiagnosticMonitor extends DisposableBase implements Diagnos
      * Checks for a global hook and if found registers this monitor with that hook
      */
     _ensureDiagnosticEnabled() {
-        let checkIsEnabled = () => typeof window !== 'undefined' && (typeof window.__espAnalyticsMonitor !== 'undefined' && window.__espAnalyticsMonitor !== null);
+        let checkIsEnabled = () => typeof window !== 'undefined' && (typeof GlobalState.__espAnalyticsMonitor !== 'undefined' && GlobalState.__espAnalyticsMonitor !== null);
         let isDiagnosticEnabled = checkIsEnabled();
         if (isDiagnosticEnabled && !this._isRegisteredWithDevtools) {
             this._isRegisteredWithDevtools = true;
-            window.__espAnalyticsMonitor.registerMonitor(this);
+            GlobalState.__espAnalyticsMonitor.registerMonitor(this);
             this.addDisposable(() => {
                 if (checkIsEnabled()) {
-                    window.__espAnalyticsMonitor.unregisterMonitor(this);
+                    GlobalState.__espAnalyticsMonitor.unregisterMonitor(this);
                 }
             });
         }

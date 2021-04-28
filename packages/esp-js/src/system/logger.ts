@@ -1,5 +1,6 @@
 import {Guard} from './guard';
 import {utils} from './utils';
+import {GlobalState} from './globalState'; 
 
 export enum Level {
     verbose = 'verbose',
@@ -46,9 +47,9 @@ export interface Sink {
     log(logEvent:LogEvent): void;
 }
 
-const consoleInfo = window.console.log.bind(window.console);
-const consoleWarn = window.console.warn.bind(window.console);
-const consoleError = window.console.error.bind(window.console);
+const consoleInfo = GlobalState.console.log.bind(GlobalState.console);
+const consoleWarn = GlobalState.console.warn.bind(GlobalState.console);
+const consoleError = GlobalState.console.error.bind(GlobalState.console);
 
 export class ConsoleSink implements Sink {
     public log(logEvent: LogEvent) : void {
@@ -115,18 +116,18 @@ const captureConsoleLogsViaLoggingSink = () => {
         });
     };
 
-    window.console.log = (...args: any[]) => {
+    GlobalState.console.log = (...args: any[]) => {
         _log(Level.debug, ...args);
     };
 
-    window.console.info = (...args: any[]) => {
+    GlobalState.console.info = (...args: any[]) => {
         _log(Level.info, ...args);
     };
 
-    window.console.warn = (...args: any[]) => {
+    GlobalState.console.warn = (...args: any[]) => {
         _log(Level.warn, ...args);
     };
-    window.console.error = (...args: any[]) => {
+    GlobalState.console.error = (...args: any[]) => {
         _log(Level.error, ...args);
     };
 };
@@ -220,7 +221,7 @@ declare global {
     interface Window { _esp: { LoggingConfig:LoggingConfig }; }
 }
 
-(<any>window)._esp = {
+(<any>GlobalState)._esp = {
     LoggingConfig : LoggingConfig
 };
 

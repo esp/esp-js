@@ -1,9 +1,9 @@
 {
-  "name": "esp-js-rx-rxcompat",
+  "name": "esp-js-rx-compat",
   "version": "5.0.0-next.0",
-  "description": "esp-js-rx-rxcompat Package",
-  "main": ".dist/esp-js-rx-rxcompat.js",
-  "types": "esp-js-rx-rxcompat.d.ts",
+  "description": "esp-js-rx-compat Package",
+  "main": ".dist/esp-js-rx-compat.js",
+  "types": "esp-js-rx-compat.d.ts",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",

@@ -24,7 +24,6 @@ export class RetryPolicy implements RetryPolicyLike {
 
     private _retryCount: number;
 
-    // TODO a backoff policy, i.e. backoff to a given time then retry at max backoff
     constructor(
         private readonly _description: string,
         private readonly _retryLimit: number,
@@ -48,6 +47,79 @@ export class RetryPolicy implements RetryPolicyLike {
 
     get retryAfterElapsedMs(): number {
         return this._retryAfterElapsedMs;
+    }
+
+    get retryCount(): number {
+        return this._retryCount;
+    }
+
+    get retryLimit(): number {
+        return this._retryLimit;
+    }
+
+    incrementRetryCount(): void {
+        this._retryCount++;
+    }
+
+    reset(): void {
+        this._retryCount = 0;
+    }
+}
+
+export class ExponentialBackOffRetryPolicy implements RetryPolicyLike {
+    /**
+     * Retries on an expotential backk off curve using a factor of 0.5.
+     * Retries up to the given max (defaults to 10s)
+     *
+     * Example retry intervals (in ms) to give an idea of the triggers
+     * 1_000
+     * 2_000
+     * 3_000
+     * 4_000
+     * 7_000
+     * 12_000
+     * 20_000
+     * 33_000
+     * 55_000
+     * 90_000
+     * 148_000
+     * 245_000
+     * 403_000
+     * 665_000
+     */
+    static defaultPolicy(description: string, errorMessage: string, maxLimitMs = 10_000): RetryPolicyLike {
+        return new ExponentialBackOffRetryPolicy(description, -1, 0.5, maxLimitMs, errorMessage);
+    }
+
+    private _retryCount: number;
+
+    constructor(
+        private readonly _description: string,
+        private readonly _retryLimit: number,
+        private readonly _backoffExponent: number,
+        private readonly _maxLimitMs: number,
+        private readonly _errorMessage: string
+    ) {
+        this._retryCount = 0;
+    }
+
+    get description(): string {
+        return this._description;
+    }
+
+    get shouldRetry(): boolean {
+        return this._retryLimit === -1 || this._retryCount < this._retryLimit;
+    }
+
+    get errorMessage(): string | null {
+        return this._errorMessage;
+    }
+
+    get retryAfterElapsedMs(): number {
+        // we -1 on our retry so our exp(x) starts off with a 0
+        const x = (this._retryCount - 1) * this._backoffExponent;
+        let retryAfter = Math.round(Math.exp(x)) * 1000;
+        return retryAfter > this._maxLimitMs ? this._maxLimitMs : retryAfter;
     }
 
     get retryCount(): number {

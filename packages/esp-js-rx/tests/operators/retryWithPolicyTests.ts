@@ -1,6 +1,7 @@
 import { TestScheduler } from 'rxjs/testing';
 import {Observable, Subject, Subscription} from 'rxjs';
-import {retryWithPolicy, RetryPolicy} from '../../src/operators';
+import {retryWithPolicy, RetryPolicy, ExponentialBackOffRetryPolicy, RetryPolicyLike} from '../../src/operators';
+import {expand} from 'rxjs/operators';
 
 describe('.retryWithPolicy()', () => {
     let _subject:Subject<any>,
@@ -8,17 +9,19 @@ describe('.retryWithPolicy()', () => {
         _testScheduler:TestScheduler,
         _relievedValue,
         _throwIf,
-        _policy,
+        _policy: RetryPolicyLike,
         _onRetryErr,
         _err,
         _subscription: Subscription;
 
     beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    function setup() {
         _subject = new Subject<any>();
         _relievedValue = 0;
         _throwIf = -1;
-        jest.useFakeTimers();
-        _policy = new RetryPolicy('TestOperation', 2, 1000, 'An Error');
         _stream = new Observable(o => {
             _subject.subscribe(
                 i => {
@@ -31,8 +34,7 @@ describe('.retryWithPolicy()', () => {
             );
             return () => {};
         });
-
-    });
+    }
 
     function subscribe() {
         _subscription = _stream
@@ -50,79 +52,134 @@ describe('.retryWithPolicy()', () => {
         );
     }
 
-    it('propagates values through the stream', () => {
-        subscribe();
-        _subject.next(1);
-        expect(_relievedValue).toEqual(1);
-    });
+    describe('RetryPolicy', () => {
 
-    it('retries after exception', () => {
-        subscribe();
-        _subject.next(1);
-        expect(_relievedValue).toEqual(1);
-        _subject.next(-1);
-        expect(_policy.retryCount).toEqual(1);
-        jest.advanceTimersByTime(1001);
-        _subject.next(2);
-        expect(_relievedValue).toEqual(2);
-    });
+        beforeEach(() => {
+            _policy = new RetryPolicy('TestOperation', 2, 1000, 'An Error');
+            setup();
+        });
 
-    it('calls onError on exception', () => {
-        subscribe();
-        _subject.next(-1);
-        expect(_onRetryErr).toEqual(new Error('Boom!'));
-    });
+        it('propagates values through the stream', () => {
+            subscribe();
+            _subject.next(1);
+            expect(_relievedValue).toEqual(1);
+        });
 
-    it('resets retry count after successful propagation', () => {
-        subscribe();
-        _subject.next(-1);
-        expect(_policy.retryCount).toEqual(1);
-        jest.advanceTimersByTime(1001);
-        _subject.next(1);
-        expect(_policy.retryCount).toEqual(0);
-    });
+        it('retries after exception', () => {
+            subscribe();
+            _subject.next(1);
+            expect(_relievedValue).toEqual(1);
+            _subject.next(-1);
+            expect(_policy.retryCount).toEqual(1);
+            jest.advanceTimersByTime(1001);
+            _subject.next(2);
+            expect(_relievedValue).toEqual(2);
+        });
 
-    it('propagates the exception after retry count limit reached', () => {
-        subscribe();
-        _subject.next(-1);
-        jest.advanceTimersByTime(1001);
-        _subject.next(-1);
-        expect(_err).toBeDefined();
-    });
+        it('calls onError on exception', () => {
+            subscribe();
+            _subject.next(-1);
+            expect(_onRetryErr).toEqual(new Error('Boom!'));
+        });
 
-    it('should dispose internal subscription after stream disposed', () => {
-        _subscription.unsubscribe();
-        _subject.next(-1);
-        expect(_policy.retryCount).toEqual(0);
-    });
+        it('resets retry count after successful propagation', () => {
+            subscribe();
+            _subject.next(-1);
+            expect(_policy.retryCount).toEqual(1);
+            jest.advanceTimersByTime(1001);
+            _subject.next(1);
+            expect(_policy.retryCount).toEqual(0);
+        });
 
-    it('should not resubscribe if retryafter callback happens after disposal occurred', () => {
-        subscribe();
-        _subject.next(-1);
-        _subscription.unsubscribe();
-        jest.advanceTimersByTime(1001);
-        expect(_policy.retryCount).toEqual(1);
-    });
-
-    it('should not retry with the none retry policy', () => {
-        _policy = RetryPolicy.none();
-        subscribe();
-        _subject.next(-1);
-        expect(_err).toBeDefined();
-    });
-
-    it('should retry unlimited when retry count is below 0', () => {
-        let doError = () => {
+        it('propagates the exception after retry count limit reached', () => {
+            subscribe();
             _subject.next(-1);
             jest.advanceTimersByTime(1001);
-        };
-        _policy = RetryPolicy.createForUnlimitedRetry('ATest', 1000);
-        subscribe();
-        doError();
-        doError();
-        doError();
-        expect(_policy.retryCount).toEqual(3);
-        _subject.next(1);
-        expect(_relievedValue).toEqual(1);
+            _subject.next(-1);
+            expect(_err).toBeDefined();
+        });
+
+        it('should dispose internal subscription after stream disposed', () => {
+            _subscription.unsubscribe();
+            _subject.next(-1);
+            expect(_policy.retryCount).toEqual(0);
+        });
+
+        it('should not resubscribe if retryafter callback happens after disposal occurred', () => {
+            subscribe();
+            _subject.next(-1);
+            _subscription.unsubscribe();
+            jest.advanceTimersByTime(1001);
+            expect(_policy.retryCount).toEqual(1);
+        });
+
+        it('should not retry with the none retry policy', () => {
+            _policy = RetryPolicy.none();
+            subscribe();
+            _subject.next(-1);
+            expect(_err).toBeDefined();
+        });
+
+        it('should retry unlimited when retry count is below 0', () => {
+            let doError = () => {
+                _subject.next(-1);
+                jest.advanceTimersByTime(1001);
+            };
+            _policy = RetryPolicy.createForUnlimitedRetry('ATest', 1000);
+            subscribe();
+            doError();
+            doError();
+            doError();
+            expect(_policy.retryCount).toEqual(3);
+            _subject.next(1);
+            expect(_relievedValue).toEqual(1);
+        });
     });
+
+    describe('ExponentialBackOffRetryPolicy', () => {
+        beforeEach(() => {
+            _policy = ExponentialBackOffRetryPolicy.defaultPolicy('TestOperation', 'Error');
+        });
+
+        it('retries on a backoff curve', () => {
+            // expected retries
+            // 1, 2, 3, 4, 7, 10, 10, 10,
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(1000);
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(2000);
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(3000);
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(4000);
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(7000);
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+        });
+
+        it('resets after error', () => {
+            _policy.incrementRetryCount();
+            _policy.incrementRetryCount();
+            _policy.incrementRetryCount();
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(4000);
+            _policy.reset();
+            _policy.incrementRetryCount();
+            expect(_policy.retryAfterElapsedMs).toEqual(1000);
+        });
+
+        it('respects retry limit', () => {
+            _policy = new ExponentialBackOffRetryPolicy('TestOperation', 3, 0.5, 10_000, 'Error');
+            expect(_policy.shouldRetry).toBeTruthy();
+            _policy.incrementRetryCount();
+            _policy.incrementRetryCount();
+            expect(_policy.shouldRetry).toBeTruthy();
+            _policy.incrementRetryCount();
+            expect(_policy.shouldRetry).toBeFalsy();
+        });
+    });
+
 });

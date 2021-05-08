@@ -19,7 +19,7 @@
 import {DisposableBase} from '../disposables';
 import {Router} from '../../router';
 import {Guard} from '../guard';
-import { Logger } from '../logger';
+import { Logger } from '../logging/logger';
 
 export abstract class ModelBase extends DisposableBase {
     protected _log: Logger;

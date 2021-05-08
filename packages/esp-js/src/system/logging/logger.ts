@@ -1,6 +1,7 @@
-import {Guard} from './guard';
-import {utils} from './utils';
-import {GlobalState} from './globalState'; 
+import {Guard} from '../guard';
+import {utils} from '../utils';
+import {GlobalState} from '../globalState';
+import {CompositeSink, ConsoleSink, Sink} from './sinks';
 
 export enum Level {
     verbose = 'verbose',
@@ -10,6 +11,123 @@ export enum Level {
     error = 'error',
     none = 'none'
 }
+
+export interface LoggerConfig {
+    dumpAdditionalDetailsToConsole: boolean;
+    level: Level;
+    /**
+     * if set, logger names will be truncated or padded (will help logs line up)
+     */
+    padOrTruncateLoggerNameLengthTo: number;
+}
+
+// note: if you want verbose you need to change this explicitly, this is just the initial default
+let _currentLevel: Level = Level.debug;
+let _sink = new CompositeSink(new ConsoleSink());
+let _loggerConfigs : {[key: string]: LoggerConfig} = {};
+
+let _defaultLoggerConfig: LoggerConfig = {
+    dumpAdditionalDetailsToConsole: false,
+    level: _currentLevel,
+    padOrTruncateLoggerNameLengthTo: null
+};
+
+const getOrCreateLoggerConfig = (loggerName: string, overrides: Partial<LoggerConfig> = {}) => {
+    let loggerConfig = _loggerConfigs[loggerName];
+    if (!loggerConfig) {
+        // using .create here as the config programmatically inherits from the base.
+        // this allows the global logging level to be changed for all loggers.
+        loggerConfig = Object.create(LoggingConfig.defaultLoggerConfig);
+        // note we can't spread due to this config prototypically inheriting
+        if (typeof overrides.level !== 'undefined') {
+            loggerConfig.level = overrides.level;
+        }
+        if (typeof overrides.dumpAdditionalDetailsToConsole !== 'undefined') {
+            loggerConfig.dumpAdditionalDetailsToConsole = overrides.dumpAdditionalDetailsToConsole;
+        }
+        _loggerConfigs[loggerName] = loggerConfig;
+    }
+    return loggerConfig;
+};
+
+export class LoggingConfig {
+    /**
+     * Sets the level for all loggers, including existing ones
+     * @param level
+     */
+    static setLevel(level: Level): void {
+        _currentLevel = level;
+        _defaultLoggerConfig.level = level;
+    }
+
+    /**
+     * Adds a sink to process log results
+     * @param sink
+     */
+    static addSinks(...sink: Array<Sink>): void {
+        _sink.addSinks(...sink);
+    }
+
+    static clearSinks(): void {
+        _sink.clearSinks();
+    }
+
+    /**
+     * Redirects any console logs so they go via configured sinks.
+     */
+    static captureConsoleLogs(): void {
+        captureConsoleLogsViaLoggingSink();
+    }
+
+    static get defaultLoggerConfig()  : LoggerConfig {
+        return _defaultLoggerConfig;
+    }
+
+    static getLoggerConfig(loggerName: string): LoggerConfig {
+        return getOrCreateLoggerConfig(loggerName);
+    }
+}
+
+declare global {
+    interface Window { _esp: { LoggingConfig:LoggingConfig }; }
+}
+
+(<any>GlobalState)._esp = {
+    LoggingConfig : LoggingConfig
+};
+
+/**
+ * Replaces window.console's log, info, warn and error functions with a variants that sends logs to the _sink.
+ * Note that the sink is a Composite sink so logs will still appear in the console via ConsoleSink.
+ */
+export const captureConsoleLogsViaLoggingSink = () => {
+    const _log = (level: Level, ...args: any[]) => {
+        _sink.log({
+            timestamp: new Date(),
+            logger: 'Console',
+            level: level,
+            message: args,
+            dumpAdditionalDetailsToConsole: true, // always dump these for console logs
+            markers: null,
+            error: null // we don't support this for raw console logs
+        });
+    };
+
+    GlobalState.console.log = (...args: any[]) => {
+        _log(Level.debug, ...args);
+    };
+
+    GlobalState.console.info = (...args: any[]) => {
+        _log(Level.info, ...args);
+    };
+
+    GlobalState.console.warn = (...args: any[]) => {
+        _log(Level.warn, ...args);
+    };
+    GlobalState.console.error = (...args: any[]) => {
+        _log(Level.error, ...args);
+    };
+};
 
 function getLevelNumber(level:Level) : number {
     switch(level)  {
@@ -41,188 +159,6 @@ export type LogEvent = {
     dumpAdditionalDetailsToConsole: boolean;
     markers: Markers;
     error: any;
-};
-
-export interface Sink {
-    log(logEvent:LogEvent): void;
-}
-
-const consoleInfo = GlobalState.console.log.bind(GlobalState.console);
-const consoleWarn = GlobalState.console.warn.bind(GlobalState.console);
-const consoleError = GlobalState.console.error.bind(GlobalState.console);
-
-export class ConsoleSink implements Sink {
-    public log(logEvent: LogEvent) : void {
-        let dateTime = new Date();
-        let logText: string;
-        let additionalArgs = null;
-        if (messageIsString(logEvent.message)) {
-            logText = logEvent.message;
-        } else {
-            logText = logEvent.message[0];
-            // copy the incoming array
-            additionalArgs = logEvent.message.slice();
-            // now remove the message since we just captured it above as logText
-            additionalArgs.splice(0, 1);
-        }
-        let logLine = `[${dateTime.getHours()}:${dateTime.getMinutes()}:${dateTime.getSeconds()}.${dateTime.getMilliseconds()}][${Level[logEvent.level]}][${logEvent.logger}] ${logText}`;
-        // The below could be simplified by pushing markers into a new array along with additionalDetails.
-        // However given the amount of times logs are written the below doesn't allocate anything extra
-        const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;
-        if (logEvent.level === Level.error) {
-            if (hasMarkers) {
-                consoleError(logLine, logEvent.markers, logEvent.error);
-            } else {
-                consoleError(logLine, logEvent.error);
-            }
-        } else if (logEvent.level === Level.warn) {
-            if (logEvent.dumpAdditionalDetailsToConsole) {
-                if (hasMarkers) {
-                    consoleWarn(logLine, logEvent.markers, ...additionalArgs);
-                } else {
-                    consoleWarn(logLine, ...additionalArgs);
-                }
-            } else {
-                consoleWarn(logLine);
-            }
-        } else {
-            if (logEvent.dumpAdditionalDetailsToConsole) {
-                if (hasMarkers) {
-                    consoleInfo(logLine, logEvent.markers, ...additionalArgs);
-                } else {
-                    consoleInfo(logLine, ...additionalArgs);
-                }
-            } else {
-                consoleInfo(logLine);
-            }
-        }
-    }
-}
-
-/**
- * Replaces window.console's log, info, warn and error functions with a variants that sends logs to the _sink.
- * Note that the sink is a Composite sink so logs will still appear in the console via ConsoleSink.
- */
-const captureConsoleLogsViaLoggingSink = () => {
-    const _log = (level: Level, ...args: any[]) => {
-        _sink.log({
-            timestamp: new Date(),
-            logger: 'Console',
-            level: level,
-            message: args,
-            dumpAdditionalDetailsToConsole: true, // always dump these for console logs
-            markers: null,
-            error: null // we don't support this for raw console logs
-        });
-    };
-
-    GlobalState.console.log = (...args: any[]) => {
-        _log(Level.debug, ...args);
-    };
-
-    GlobalState.console.info = (...args: any[]) => {
-        _log(Level.info, ...args);
-    };
-
-    GlobalState.console.warn = (...args: any[]) => {
-        _log(Level.warn, ...args);
-    };
-    GlobalState.console.error = (...args: any[]) => {
-        _log(Level.error, ...args);
-    };
-};
-
-export class CompositeSink implements Sink {
-    private _sinks: Array<Sink>;
-    
-    constructor(...sinks: Array<Sink>) {
-        this._sinks = sinks;
-    }
-    public log(logEvent: LogEvent) : void {
-        this._sinks.forEach(s => s.log(logEvent));
-    }
-    public addSinks(...sinks:Array<Sink>) {
-        this._sinks.push(...sinks);
-    }
-    public clearSinks() {
-        this._sinks.length = 0;
-    }
-}
-
-// note: if you want verbose you need to change this explicitly, this is just the initial default
-let _currentLevel = Level.debug;
-let _sink = new CompositeSink(new ConsoleSink());
-let _loggerConfigs : {[key: string]: LoggerConfig} = {};
-
-export interface LoggerConfig {
-    dumpAdditionalDetailsToConsole: boolean;
-    level: Level;
-}
-
-function getOrCreateLoggerConfig(loggerName: string, overrides: Partial<LoggerConfig> = {}) {
-    let loggerConfig = _loggerConfigs[loggerName];
-    if (!loggerConfig) {
-        // using .create here as the config programmatically inherits from the base.
-        // this allows the global logging level to be changed for all loggers.
-        loggerConfig = Object.create(LoggingConfig.defaultLoggerConfig);
-        // note we can't spread due to this config prototypically inheriting
-        if (typeof overrides.level !== 'undefined') {
-            loggerConfig.level = overrides.level;
-        }
-        if (typeof overrides.dumpAdditionalDetailsToConsole !== 'undefined') {
-            loggerConfig.dumpAdditionalDetailsToConsole = overrides.dumpAdditionalDetailsToConsole;
-        }
-        _loggerConfigs[loggerName] = loggerConfig;
-    }
-    return loggerConfig;
-}
-
-export class LoggingConfig {
-    private static _defaultLoggerConfig = { dumpAdditionalDetailsToConsole: false, level: _currentLevel };
-
-    /**
-     * Sets the level for all loggers, including existing ones
-     * @param level
-     */
-    static setLevel(level: Level): void {
-        _currentLevel = level;
-        LoggingConfig._defaultLoggerConfig.level = _currentLevel;
-    }
-
-    /**
-     * Adds a sink to process log results
-     * @param sink
-     */
-    static addSinks(...sink: Array<Sink>): void {
-        _sink.addSinks(...sink);
-    }
-
-    static clearSinks(): void {
-        _sink.clearSinks();
-    }
-
-    /**
-     * Redirects any console logs so they go via configured sinks.
-     */
-    static captureConsoleLogs(): void {
-        captureConsoleLogsViaLoggingSink();
-    }
-
-    static get defaultLoggerConfig()  : LoggerConfig {
-        return LoggingConfig._defaultLoggerConfig;
-    }
-
-    static getLoggerConfig(loggerName: string): LoggerConfig {
-        return getOrCreateLoggerConfig(loggerName);
-    }
-}
-
-declare global {
-    interface Window { _esp: { LoggingConfig:LoggingConfig }; }
-}
-
-(<any>GlobalState)._esp = {
-    LoggingConfig : LoggingConfig
 };
 
 export class Logger {
@@ -350,8 +286,4 @@ export class Logger {
             error
          });
     }
-}
-
-function messageIsString(message: string | any[]): message is string {
-    return utils.isString(message);
 }

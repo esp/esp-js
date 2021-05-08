@@ -1,12 +1,11 @@
-import { TestScheduler } from 'rxjs/testing';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {retryWithPolicy, RetryPolicy, ExponentialBackOffRetryPolicy, RetryPolicyLike} from '../../src/operators';
-import {expand} from 'rxjs/operators';
+import {ManualTestScheduler} from '../../src/schedulers';
 
 describe('.retryWithPolicy()', () => {
     let _subject:Subject<any>,
         _stream,
-        _testScheduler:TestScheduler,
+        _testScheduler: ManualTestScheduler,
         _relievedValue,
         _throwIf,
         _policy: RetryPolicyLike,
@@ -14,14 +13,11 @@ describe('.retryWithPolicy()', () => {
         _err,
         _subscription: Subscription;
 
-    beforeEach(() => {
-        jest.useFakeTimers();
-    });
-
     function setup() {
         _subject = new Subject<any>();
         _relievedValue = 0;
         _throwIf = -1;
+        _testScheduler = new ManualTestScheduler();
         _stream = new Observable(o => {
             _subject.subscribe(
                 i => {
@@ -71,7 +67,7 @@ describe('.retryWithPolicy()', () => {
             expect(_relievedValue).toEqual(1);
             _subject.next(-1);
             expect(_policy.retryCount).toEqual(1);
-            jest.advanceTimersByTime(1001);
+            _testScheduler.advanceTime(1001);
             _subject.next(2);
             expect(_relievedValue).toEqual(2);
         });
@@ -86,7 +82,7 @@ describe('.retryWithPolicy()', () => {
             subscribe();
             _subject.next(-1);
             expect(_policy.retryCount).toEqual(1);
-            jest.advanceTimersByTime(1001);
+            _testScheduler.advanceTime(1001);
             _subject.next(1);
             expect(_policy.retryCount).toEqual(0);
         });
@@ -94,7 +90,7 @@ describe('.retryWithPolicy()', () => {
         it('propagates the exception after retry count limit reached', () => {
             subscribe();
             _subject.next(-1);
-            jest.advanceTimersByTime(1001);
+            _testScheduler.advanceTime(1001);
             _subject.next(-1);
             expect(_err).toBeDefined();
         });
@@ -109,7 +105,7 @@ describe('.retryWithPolicy()', () => {
             subscribe();
             _subject.next(-1);
             _subscription.unsubscribe();
-            jest.advanceTimersByTime(1001);
+            _testScheduler.advanceTime(1001);
             expect(_policy.retryCount).toEqual(1);
         });
 
@@ -123,7 +119,7 @@ describe('.retryWithPolicy()', () => {
         it('should retry unlimited when retry count is below 0', () => {
             let doError = () => {
                 _subject.next(-1);
-                jest.advanceTimersByTime(1001);
+                _testScheduler.advanceTime(1001);
             };
             _policy = RetryPolicy.createForUnlimitedRetry('ATest', 1000);
             subscribe();

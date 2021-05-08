@@ -1,4 +1,4 @@
-import {Level, LogEvent, Logger, LoggingConfig} from '../../src/system/logging/logger';
+import {Level, LogEvent, Logger, LoggingConfig} from '../../../src/system/logging';
 
 describe('Logger', () => {
     let _logger: Logger,

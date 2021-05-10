@@ -1,7 +1,7 @@
 import {Observable} from 'rxjs';
 import {Router} from 'esp-js';
 import {Guard} from 'esp-js';
-import {materialize} from 'rxjs/operators';
+import {map, materialize} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 import {PartialObserver} from 'rxjs';
 import {toSubscriber} from 'rxjs/internal-compatibility';
@@ -37,6 +37,7 @@ export class EspRouterObservable<T, TModel> extends Observable<ValueAndModel<T, 
                     }
                     break;
                 case 'E':
+                    // if there is no error handler, we just blow up, cand dispatch to the model without a handler
                     if (error === null || error === undefined) {
                         throw i.error;
                     } else {
@@ -62,18 +63,12 @@ export class EspRouterObservable<T, TModel> extends Observable<ValueAndModel<T, 
  * There are a few ways to do this:
  * 1) publish an esp event in your rx subscription handler, handle the esp event as normal (the publish will have kicked off the the routers dispatch loop).
  * 2) call router.runAction() in your subscription handler and deal with the results inline, again this kicks off the the routers dispatch loop.
- * 3) use subscribeWithRouter which effectively wraps up method 2 for for all functions of subscribe (onNext, onError, onCompleted).
+ * 3) use runOnEspDispatchLoopWithModel which effectively wraps up method 2 for for all functions of subscribe (onNext, onError, onCompleted).
  *
- * Note: this function usage is largely deprecated and should be avoided.
- * It was a short cut to get your RX subscriber inside the esp's dispatch loop for hte model in question.
- * A cleaner, but with more boilerplate, approach is to have a gateway object that fires results events back into the model.
  * @param router
- * @param modelId : the model id you want to update
- * @param next
- * @param error
- * @param complete
+ * @param modelId : model id for which you want want the dispatch looped invoked for to received the update
  */
-export function liftToEspObservable<T, TModel>(
+export function subscribeOnEspDispatchLoopWithModel<T, TModel>(
     router: Router,
     modelId: string
 ) : (source: Observable<T>) => EspRouterObservable<T, TModel> {
@@ -81,3 +76,34 @@ export function liftToEspObservable<T, TModel>(
     Guard.isString(modelId, 'modelId should be defined and a string');
     return (source: Observable<T>) => new EspRouterObservable<T, TModel>(router, modelId, source);
 }
+
+/**
+ * A variant of runOnEspDispatchLoopWithModel which only yields the change not the model.
+ * Typically handy in OO scenarios where the object making the subscription  has local access scope to the model already (or indeed is the model)
+ * @param router
+ * @param modelId
+ */
+export function subscribeOnEspDispatchLoop<T>(
+    router: Router,
+    modelId: string
+) : (source: Observable<T>) => Observable<T> {
+    Guard.isDefined(router, 'router should be defined');
+    Guard.isString(modelId, 'modelId should be defined and a string');
+    return (source: Observable<T>) => {
+        return new Observable(s => {
+            // because EspRouterObservable is overriding the subscribe method, we can't simply do a .pipe(map()) here.
+            return new EspRouterObservable<T, any>(router, modelId, source).subscribe(
+                value => {
+                    s.next(value.value);
+                },
+                (err) => s.error(err),
+                () => s.complete(),
+            );
+        });
+    };
+}
+
+/**
+ * @deprecated please use runOnEspDispatchLoopWithModel
+ */
+export const liftToEspObservable = subscribeOnEspDispatchLoopWithModel;

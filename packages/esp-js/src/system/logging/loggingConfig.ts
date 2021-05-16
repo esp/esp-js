@@ -9,7 +9,8 @@ let _currentLevel: Level = Level.debug;
 const _defaultLoggerConfig: LoggerConfig = {
     dumpAdditionalDetailsToConsole: false,
     level: _currentLevel,
-    padOrTruncateLoggerNameLengthTo: null
+    padOrTruncateLoggerNameLengthTo: null,
+    dateFactory: () => new Date()
 };
 
 export const _getOrCreateLoggerConfig = (loggerName: string, overrides: Partial<LoggerConfig> = {}) => {

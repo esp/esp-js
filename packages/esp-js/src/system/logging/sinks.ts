@@ -9,7 +9,7 @@ const consoleError = GlobalState.console.error.bind(GlobalState.console);
 
 export class ConsoleSink implements Sink {
     public log(logEvent: LogEvent) : void {
-        let dateTime = new Date();
+        let dateTime = LoggingConfig.defaultLoggerConfig.dateFactory();
         let logText: string;
         let additionalArgs = null;
         if (messageIsString(logEvent.message)) {
@@ -24,7 +24,7 @@ export class ConsoleSink implements Sink {
         const loggerName = LoggingConfig.defaultLoggerConfig.padOrTruncateLoggerNameLengthTo === null
             ? logEvent.logger
             : padOrTruncate(logEvent.logger, LoggingConfig.defaultLoggerConfig.padOrTruncateLoggerNameLengthTo);
-        let logLine = `[${pad10(dateTime.getHours())}:${pad10(dateTime.getMinutes())}:${pad10(dateTime.getSeconds())}.${pad100(dateTime.getMilliseconds())}][${getLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
+        let logLine = `[${dateTime.getUTCFullYear()}${pad10(dateTime.getMonth() + 1)}${pad10(dateTime.getDate())}][${pad10(dateTime.getHours())}:${pad10(dateTime.getMinutes())}:${pad10(dateTime.getSeconds())}.${pad100(dateTime.getMilliseconds())}][${getLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
         // The below could be simplified by pushing markers into a new array along with additionalDetails.
         // However given the amount of times logs are written the below doesn't allocate anything extra
         const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;

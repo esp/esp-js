@@ -27,6 +27,11 @@ export interface LoggerConfig {
      * if set, logger names will be truncated or padded (will help logs line up), default null / off
      */
     padOrTruncateLoggerNameLengthTo: number;
+    /**
+     * A hook to replace the logging date, handy if back testing if you need to replace the value of 'now'.
+     * Defaults to `() => new Date`
+     */
+    dateFactory?: () => Date;
 }
 
 export interface Sink {

@@ -20,6 +20,7 @@ import InstanceLifecycleType from './instanceLifecycleType';
 import RegistrationModifier from './registrationModifier';
 import Guard from './guard';
 import EspDiConsts from './espDiConsts';
+import ResolverNames from './resolverNames';
 
 export default class Container {
     constructor() {
@@ -244,7 +245,7 @@ export default class Container {
             // A resolvers that delegates to the dependency keys resolve method to perform the resolution.
             // It expects a dependency key in format:
             // { resolver: 'factory', resolve: function(container) { return someInstance } }
-            delegate: {
+            [ResolverNames.delegate]: {
                 resolve: (container, dependencyKey) => {
                     return dependencyKey.resolve(container);
                 }
@@ -253,7 +254,7 @@ export default class Container {
             // Any arguments passed at runtime will be passed to resolve as additional dependencies
             // It expects a dependency key in format:
             // { resolver: 'factory', name: "aDependencyName" }
-            factory: {
+            [ResolverNames.factory]: {
                 resolve: (container, dependencyKey) => {
                     return function() { // using function here as I don't want babel to re-write the arguments var
                         var args = [].slice.call(arguments);
@@ -263,9 +264,16 @@ export default class Container {
                 }
             },
             // A resolver that invokes an external factory to resolve the dependency from the container.
-            externalFactory: {
+            [ResolverNames.externalFactory]: {
                 resolve: function(container, dependencyKey, ...additionalDeps) {
                     return dependencyKey.factory.apply(null, [container, ...additionalDeps]);
+                }
+            },
+            // A resolver that take a literal value
+            [ResolverNames.literal]: {
+                resolve: function(container, dependencyKey) {
+                    Guard.isDefined(dependencyKey.value, 'Invalid container configuration. A literal resolver key is missing the \'value\' property. That property should hold the value to be resolved.');
+                    return dependencyKey.value;
                 }
             }
         };

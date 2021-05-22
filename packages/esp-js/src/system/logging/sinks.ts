@@ -24,7 +24,7 @@ export class ConsoleSink implements Sink {
         const loggerName = LoggingConfig.defaultLoggerConfig.padOrTruncateLoggerNameLengthTo === null
             ? logEvent.logger
             : padOrTruncate(logEvent.logger, LoggingConfig.defaultLoggerConfig.padOrTruncateLoggerNameLengthTo);
-        let logLine = `[${dateTime.getUTCFullYear()}${pad10(dateTime.getMonth() + 1)}${pad10(dateTime.getDate())}][${pad10(dateTime.getHours())}:${pad10(dateTime.getMinutes())}:${pad10(dateTime.getSeconds())}.${pad100(dateTime.getMilliseconds())}][${getLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
+        let logLine = this._getLogLine(dateTime, logEvent, loggerName, logText);
         // The below could be simplified by pushing markers into a new array along with additionalDetails.
         // However given the amount of times logs are written the below doesn't allocate anything extra
         const hasMarkers = logEvent.markers && Object.keys(logEvent.markers).length;
@@ -54,6 +54,13 @@ export class ConsoleSink implements Sink {
             } else {
                 consoleInfo(logLine);
             }
+        }
+    }
+    private _getLogLine(dateTime: Date, logEvent: LogEvent, loggerName: string, logText: string) {
+        if (LoggingConfig.defaultLoggerConfig.logInUTCTime) {
+            return `[${dateTime.getUTCFullYear()}${pad10(dateTime.getUTCMonth() + 1)}${pad10(dateTime.getUTCDate())}][${pad10(dateTime.getUTCHours())}:${pad10(dateTime.getUTCMinutes())}:${pad10(dateTime.getUTCSeconds())}.${pad100(dateTime.getUTCMilliseconds())}][${getLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
+        } else {
+            return `[${dateTime.getFullYear()}${pad10(dateTime.getMonth() + 1)}${pad10(dateTime.getDate())}][${pad10(dateTime.getHours())}:${pad10(dateTime.getMinutes())}:${pad10(dateTime.getSeconds())}.${pad100(dateTime.getMilliseconds())}][${getLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
         }
     }
 }

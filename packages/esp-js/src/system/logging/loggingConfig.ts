@@ -10,7 +10,8 @@ const _defaultLoggerConfig: LoggerConfig = {
     dumpAdditionalDetailsToConsole: false,
     level: _currentLevel,
     padOrTruncateLoggerNameLengthTo: null,
-    dateFactory: () => new Date()
+    dateFactory: () => new Date(),
+    logInUTCTime: false
 };
 
 export const _getOrCreateLoggerConfig = (loggerName: string, overrides: Partial<LoggerConfig> = {}) => {

@@ -32,6 +32,11 @@ export interface LoggerConfig {
      * Defaults to `() => new Date`
      */
     dateFactory?: () => Date;
+    /**
+     * If true log formatting will be done using UTC time.
+     * Default false
+     */
+    logInUTCTime: boolean;
 }
 
 export interface Sink {

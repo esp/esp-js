@@ -272,7 +272,7 @@ export default class Container {
             // A resolver that take a literal value
             [ResolverNames.literal]: {
                 resolve: function(container, dependencyKey) {
-                    Guard.isDefined(dependencyKey.value, 'Invalid container configuration. A literal resolver key is missing the \'value\' property. That property should hold the value to be resolved.');
+                    Guard.isNotNullOrUndefined(dependencyKey.value, 'Invalid container configuration. A literal resolver key is missing the \'value\' property. That property should hold the value to be resolved.');
                     return dependencyKey.value;
                 }
             }

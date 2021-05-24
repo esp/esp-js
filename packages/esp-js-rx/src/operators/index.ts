@@ -1,4 +1,5 @@
 // Auto-generated 
+export * from './bufferWithSnapshot';
 export * from './doOnSubscribe';
 export * from './espObservable';
 export * from './lazyConnect';

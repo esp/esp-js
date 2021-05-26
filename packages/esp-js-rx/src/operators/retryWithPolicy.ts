@@ -6,7 +6,7 @@ import {catchError} from 'rxjs/operators';
 
 const _log = Logger.create('retryWithPolicy');
 
-export function retryWithPolicy<T>(policy: RetryPolicyLike, errorOrScheduler?: (err: Error) => void | SchedulerLike) : (source: Observable<T>) => Observable<T>;
+export function retryWithPolicy<T>(policy: RetryPolicyLike, errorOrScheduler?: ((err: Error) => void) | SchedulerLike) : (source: Observable<T>) => Observable<T>;
 export function retryWithPolicy<T>(policy: RetryPolicyLike, error?: (err: Error) => void, scheduler?: SchedulerLike) : (source: Observable<T>) => Observable<T>;
 export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => Observable<T> {
     const policy: RetryPolicyLike = args[0];

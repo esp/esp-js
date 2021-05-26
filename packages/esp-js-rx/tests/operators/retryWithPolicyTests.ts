@@ -36,7 +36,8 @@ describe('.retryWithPolicy()', () => {
         _subscription = _stream
             .pipe(
                 retryWithPolicy(
-                    _policy, err => {
+                    _policy,
+                    err => {
                         _onRetryErr = err;
                     },
                     _testScheduler
@@ -46,6 +47,17 @@ describe('.retryWithPolicy()', () => {
                 i => _relievedValue = i,
                 err => _err = err
         );
+    }
+
+    function subscribeWithoutErrorCallback() {
+        _subscription = _stream
+            .pipe(
+                retryWithPolicy(_policy, _testScheduler)
+            )
+            .subscribe(
+                i => _relievedValue = i,
+                err => _err = err
+            );
     }
 
     describe('RetryPolicy', () => {
@@ -129,6 +141,17 @@ describe('.retryWithPolicy()', () => {
             expect(_policy.retryCount).toEqual(3);
             _subject.next(1);
             expect(_relievedValue).toEqual(1);
+        });
+
+        it('can omit error handler', () => {
+            subscribeWithoutErrorCallback();
+            _subject.next(1);
+            expect(_relievedValue).toEqual(1);
+            _subject.next(-1);
+            expect(_policy.retryCount).toEqual(1);
+            _testScheduler.advanceTime(1001);
+            _subject.next(2);
+            expect(_relievedValue).toEqual(2);
         });
     });
 

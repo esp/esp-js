@@ -55,4 +55,24 @@ export namespace utils {
     export const isObject = (value: any): value is object => {
         return typeof value === 'object' && value !== null;
     };
+
+    export const pad10 = (n: number) => {
+        return n < 10 ? '0'+n : n;
+    };
+
+    export const pad100 = (n: number) => {
+        if (n < 10) { return '00'+n; }
+        if (n < 100) { return '0'+n; }
+        return n;
+    };
+
+    export const padOrTruncate = (v: string, length: number) => {
+        if (v.length === length) {
+            return v;
+        }
+        if (v.length > length) {
+            return v.substring(0, length);
+        }
+        return v.padEnd(length);
+    };
 }

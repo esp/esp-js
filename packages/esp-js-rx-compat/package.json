@@ -1,6 +1,6 @@
 {
   "name": "esp-js-rx-compat",
-  "version": "5.0.5-next.0",
+  "version": "5.0.6-next.0",
   "description": "esp-js-rx-compat Package",
   "main": ".dist/esp-js-rx-compat.js",
   "types": "esp-js-rx-compat.d.ts",
@@ -24,8 +24,8 @@
     "webpack-dev-server": "3.11.0"
   },
   "dependencies": {
-    "esp-js": "^5.0.5-next.0",
-    "esp-js-rx": "^5.0.5-next.0",
+    "esp-js": "^5.0.6-next.0",
+    "esp-js-rx": "^5.0.6-next.0",
     "rxjs": "6.6.6",
     "rxjs-compat": "6.6.6"
   },

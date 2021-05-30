@@ -191,7 +191,7 @@ describe('.retryWithPolicy()', () => {
         });
 
         it('respects retry limit', () => {
-            _policy = new ExponentialBackOffRetryPolicy('TestOperation', 3, 0.5, 10_000, 'Error');
+            _policy = new ExponentialBackOffRetryPolicy('TestOperation', 'Error', 3, 0.5, 10_000);
             expect(_policy.shouldRetry).toBeTruthy();
             _policy.incrementRetryCount();
             _policy.incrementRetryCount();

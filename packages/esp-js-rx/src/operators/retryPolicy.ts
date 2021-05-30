@@ -88,17 +88,21 @@ export class ExponentialBackOffRetryPolicy implements RetryPolicyLike {
      * 665_000
      */
     static defaultPolicy(description: string, errorMessage: string, maxLimitMs = 10_000): RetryPolicyLike {
-        return new ExponentialBackOffRetryPolicy(description, -1, 0.5, maxLimitMs, errorMessage);
+        return new ExponentialBackOffRetryPolicy(description, errorMessage, -1, 0.5, maxLimitMs);
+    }
+
+    static createdWithLimitedRetry(description: string, errorMessage: string, retryLimit: number, maxLimitMs = 10_000): RetryPolicyLike {
+        return new ExponentialBackOffRetryPolicy(description, errorMessage, retryLimit, 0.5, maxLimitMs);
     }
 
     private _retryCount: number;
 
     constructor(
         private readonly _description: string,
+        private readonly _errorMessage: string,
         private readonly _retryLimit: number,
         private readonly _backoffExponent: number,
-        private readonly _maxLimitMs: number,
-        private readonly _errorMessage: string
+        private readonly _maxLimitMs: number
     ) {
         this._retryCount = 0;
     }

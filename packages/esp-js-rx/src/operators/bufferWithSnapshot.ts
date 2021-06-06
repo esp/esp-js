@@ -5,6 +5,7 @@ export interface SnapshotOrUpdate<TStreamItem> {
     snapshot?: TStreamItem[];
     update?: TStreamItem;
     isSnapshot: boolean;
+    isResetting?: boolean;
 }
 
 /**

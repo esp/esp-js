@@ -75,4 +75,11 @@ export namespace utils {
         }
         return v.padEnd(length);
     };
+
+    export const getErrorText = (e: any) => {
+        if (e instanceof Error) {
+            return `${e.toString()}. ${e.stack || ''}`;
+        }
+        return e;
+    };
 }

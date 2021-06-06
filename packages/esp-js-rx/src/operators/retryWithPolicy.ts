@@ -44,7 +44,7 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
                         policy.incrementRetryCount();
                         if (policy.shouldRetry) {
                             let retryLimitMessage = policy.retryLimit === -1 ? 'unlimited' : policy.retryLimit;
-                            _log.error(`operation [${policy.description}] errored, scheduling retry after [${policy.retryAfterElapsedMs}]ms, this is attempt [${policy.retryCount}] of [${retryLimitMessage}]. Error: ${getErrorText(err)}`);
+                            _log.error(`operation [${policy.description}] errored, scheduling retry after [${policy.retryAfterElapsedMs}]ms, this is attempt [${policy.retryCount}] of [${retryLimitMessage}]. Error: ${utils.getErrorText(err)}`);
                             isRetry = true;
                             if (subscription) {
                                 subscription.unsubscribe();
@@ -54,7 +54,7 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
                                 policy.retryAfterElapsedMs,
                             );
                         } else {
-                            subscriber.error(new Error(`Retry policy reached retry limit of [${policy.retryCount}]. Error: [${policy.errorMessage}], Error: [${getErrorText(err)}]`));
+                            subscriber.error(new Error(`Retry policy reached retry limit of [${policy.retryCount}]. Error: [${policy.errorMessage}], Error: [${utils.getErrorText(err)}]`));
                         }
                         return NEVER;
                     }
@@ -81,10 +81,3 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
         };
     });
 }
-
-const getErrorText = (e: any) => {
-    if (e instanceof Error) {
-        return `${e.toString()}. ${e.stack || ''}`;
-    }
-    return e;
-};

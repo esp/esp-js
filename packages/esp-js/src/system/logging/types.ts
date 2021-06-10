@@ -7,7 +7,7 @@ export enum Level {
     none = 'none'
 }
 
-export type Markers = {[key:string]: string};
+export type Markers = {[key:string]: any};
 
 export type LogEvent = {
     timestamp: Date,

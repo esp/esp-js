@@ -21,7 +21,7 @@ const baseConfig = require("../../webpack.config.base");
 module.exports = {
     ...baseConfig,
     entry: {
-        'esp-js-rx-compat': './src/index.ts',
-        'esp-js-rx-compat.min': './src/index.ts',
+        'esp-js-ui-rxcompat': './src/index.ts',
+        'esp-js-ui-rxcompat.min': './src/index.ts',
     }
 };

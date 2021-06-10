@@ -10,6 +10,7 @@ import {
     RetryPolicy,
     retryWithPolicy,
     takeUntilInclusive,
+    SerialDisposable
 } from 'esp-js-rx';
 
 export {
@@ -22,4 +23,5 @@ export {
     RetryPolicy,
     retryWithPolicy,
     takeUntilInclusive,
+    SerialDisposable
 };

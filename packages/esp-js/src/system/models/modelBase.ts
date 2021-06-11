@@ -38,10 +38,10 @@ export abstract class ModelBase extends DisposableBase {
             throw new Error(`observeEvents already called for model with id ${this._modelId}`);
         }
         this._observeEventsCalled = true;
-        this._log.debug(`Adding model with id ${this._modelId} to router`);
+        this._log.verbose(`Adding model with id ${this._modelId} to router`);
         this.router.addModel(this._modelId, this);
         this.addDisposable(() => {
-            this._log.debug(`Removing model with id ${this._modelId} from router`);
+            this._log.verbose(`Removing model with id ${this._modelId} from router`);
             this.router.removeModel(this._modelId);
         });
         this.addDisposable(this.router.observeEventsOn(this._modelId, this));

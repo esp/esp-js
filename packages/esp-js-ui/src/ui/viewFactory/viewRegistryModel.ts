@@ -57,7 +57,7 @@ export class ViewRegistryModel extends ModelBase {
             Guard.isDefined(viewFactory, 'viewFactory must be defined');
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);
             Guard.isFalsey(this._viewFactoriesEntries.hasOwnProperty(metadata.viewKey), `view factory with id [${metadata.viewKey}] already added`);
-            _log.debug(`registering view factory with key [${metadata.viewKey}], short name [${metadata.shortName}]. Is legacy: ${isLegacyViewFactory}`);
+            _log.verbose(`registering view factory with key [${metadata.viewKey}], short name [${metadata.shortName}]. Is legacy: ${isLegacyViewFactory}`);
             this._viewFactoriesEntries[metadata.viewKey] = Object.freeze({
                 viewFactoryKey: metadata.viewKey,
                 factory: viewFactory,
@@ -75,7 +75,7 @@ export class ViewRegistryModel extends ModelBase {
         this.ensureOnDispatchLoop(() => {
             let metadata: ViewFactoryMetadata = getViewFactoryMetadata(viewFactory);
             Guard.isDefined(viewFactory, 'viewFactory must be defined');
-            _log.debug(`unregistering view factory with viewFactoryKey [${metadata.viewKey}]`);
+            _log.verbose(`unregistering view factory with viewFactoryKey [${metadata.viewKey}]`);
             delete this._viewFactoriesEntries[metadata.viewKey];
         });
     }

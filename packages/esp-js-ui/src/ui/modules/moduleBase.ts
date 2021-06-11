@@ -54,7 +54,7 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         // If an old derived type of this class is loaded, it won't have overrode isOnNewStateApi, thus we can infer that module is legacy
         const isOnNewStateApi = !!this.isOnNewStateApi;
         const isLegacyModule = !isOnNewStateApi;
-        _log.debug('Registering ViewFactories');
+        _log.verbose('Registering ViewFactories');
         let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
         viewFactories.forEach(viewFactory => {
             viewRegistryModel.registerViewFactory(this._moduleMetadata.moduleKey, this._moduleMetadata.moduleName, viewFactory, this.container, isLegacyModule);

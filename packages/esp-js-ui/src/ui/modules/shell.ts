@@ -83,6 +83,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     public start() {
+        _log.verbose(`'Starting`);
         this.configureContainer();
         this._router = this._container.resolve<Router>(SystemContainerConst.router);
         this._router.addModel(this._shellLoaderModelId, {});
@@ -97,6 +98,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
      */
     public load(...moduleConstructors: Array<ModuleConstructor>): void {
         if (!this._connected) {
+            _log.verbose(`'Loading all modules`);
             // Using a subject and handling the 'publish/connect' manually here as we can't create the stream at ctor time and need to expose something via .loadResults, hence the subject.
             this._connected = true;
             this._aggregateModuleLoadResult = new AggregateModuleLoadResult(moduleConstructors.length);
@@ -122,7 +124,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     private _registerShellViewFactories() {
-        _log.debug('Registering Shell ViewFactories');
+        _log.verbose('Registering Shell ViewFactories');
         let viewFactories: Array<ViewFactoryBase<any, any>> = this.getViewFactories();
         viewFactories.forEach(viewFactory => {
             this._viewRegistryModel.registerViewFactory(Shell.ShellModuleKey, 'Shell', viewFactory, this.container, false);
@@ -145,14 +147,14 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         });
     }
 
-    // TODO a crap load of tests to ensure a shell can be loaded and unloaded and everything is started/disposed correctly
+    // TODO tests to ensure a shell can be loaded and unloaded and everything is started/disposed correctly
     // TODO reentrancy check
     public unloadModules(): void {
-        _log.debug(`'Unloading all modules`);
+        _log.verbose(`'Unloading all modules`);
         this.trySaveAllComponentState();
         this._unloadRegions();
         this._moduleLoaders.forEach(moduleLoader => {
-            _log.debug(`'Unloading module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
+            _log.verbose(`'Unloading module ${moduleLoader.moduleMetadata.moduleKey} with name ${moduleLoader.moduleMetadata.moduleName}`);
             moduleLoader.disposeModule();
         });
         this._stateSaveMonitorDisposable.setDisposable(null);
@@ -193,9 +195,9 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
 
     private _loadRegions() {
         Guard.isTruthy(this._connected, `_loadRegions but we're not connected`);
-        _log.debug(`Loading Regions`);
+        _log.verbose(`Loading Regions`);
         if (this._regionsLoaded) {
-            _log.debug(`First unloading existing views`);
+            _log.verbose(`First unloading existing views`);
             this._unloadRegions();
         }
         this._regionsLoaded = true;
@@ -218,7 +220,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
 
     private _createLoadStream(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
         return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
-            _log.debug(`Loading shell and ${moduleConstructors.length} additional modules`);
+            _log.verbose(`Loading shell and ${moduleConstructors.length} additional modules`);
             return merge(...moduleConstructors.map(moduleCtor => this._loadModule(moduleCtor))).subscribe(obs);
         });
     }
@@ -226,7 +228,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _loadModule(moduleConstructor: ModuleConstructor): Rx.Observable<ModuleLoadResult> {
         return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
             let moduleMetadata = EspModuleDecoratorUtils.getMetadataFromModuleClass(moduleConstructor);
-            _log.debug(`Creating module loader for ${moduleMetadata.moduleKey}`);
+            _log.verbose(`Creating module loader for ${moduleMetadata.moduleKey}`);
             let moduleLoader = new DefaultSingleModuleLoader(
                 this._container,
                 this._viewRegistryModel,

@@ -92,7 +92,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
             obs.next(this._lastModuleLoadResult);
 
             try {
-                this._log.debug(`Creating module ${moduleName}`);
+                this._log.verbose(`Creating loader for module ${moduleName}`);
 
                 let childContainer = this._container.createChildContainer();
 
@@ -103,13 +103,13 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
 
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
 
-                this._log.debug(`Configuring Container for ${moduleName}`);
+                this._log.verbose(`Configuring Container for ${moduleName}`);
                 this.module.configureContainer();
 
-                this._log.debug(`Registering Components for ${moduleName}`);
+                this._log.verbose(`Registering Components for ${moduleName}`);
                 this.module.registerViewFactories(this._viewRegistryModel);
 
-                this._log.debug(`Registering prereqs for ${moduleName}`);
+                this._log.verbose(`Registering prereqs for ${moduleName}`);
                 this.module.registerPrerequisites(this._preReqsLoader);
             } catch (e) {
                 this._log.error(`Failed to create module ${moduleName}`, e);

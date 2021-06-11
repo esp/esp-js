@@ -265,10 +265,10 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
 
     public addToRegion(regionItem: RegionItem): void {
         if (!this.isOnDispatchLoop()) {
-            this.ensureOnDispatchLoop(() => this.addRegionItem(regionItem));
+            this.ensureOnDispatchLoop(() => this.addToRegion(regionItem));
             return;
         }
-        _log.debug(`Adding to region ${this._regionName}. ${regionItem.toString()}`);
+        _log.info(`Adding ${regionItem.toString()} to region ${this._regionName}`);
         Guard.isFalsey(this._state.has(regionItem.regionRecordId), `Model ${regionItem.modelId} already in region against region record ${regionItem.regionRecordId}`);
         // We get the initial model and store a reference to it.
         // In esp the top level model instance never changes.
@@ -313,7 +313,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
 
     private _addRegionRecord(regionItemRecord: RegionItemRecord, recordState?: RegionRecordState): RegionItemRecord {
         if (!regionItemRecord.modelCreated) {
-            _log.debug(`Region ${this._regionName}. Adding record [${regionItemRecord.toString()}]. Model not created so will wait for it's module to load.`);
+            _log.verbose(`Region ${this._regionName}. Adding record [${regionItemRecord.toString()}]. Model not created so will wait for it's module to load.`);
             const singleModuleLoader = regionItemRecord.viewFactoryEntry.container.resolve<SingleModuleLoader>(SystemContainerConst.single_module_loader);
             if (singleModuleLoader.hasLoaded) {
                 const model = regionItemRecord.viewFactoryEntry.factory.createView(recordState);
@@ -328,11 +328,11 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
                     .subscribe(
                         () => {
                             if (!this.existsInRegionByRecordId(regionItemRecord.id)) {
-                                _log.debug(`Region [${this._regionName}]. Region Item [${regionItemRecord.toString()}] no longer exists in Region. View will not be created.`);
+                                _log.verbose(`Region [${this._regionName}]. Region Item [${regionItemRecord.toString()}] no longer exists in Region. View will not be created.`);
                                 return;
                             }
 
-                            _log.debug(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
+                            _log.verbose(`Region [${this._regionName}]. Model now created for record [${regionItemRecord.toString()}].`);
 
                             try {
                                 const model = regionItemRecord.viewFactoryEntry.factory.createView(recordState);
@@ -352,7 +352,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
                 );
             }
         } else {
-            _log.debug(`Region ${this._regionName}. Adding record [${regionItemRecord.toString()}].`);
+            _log.verbose(`Region ${this._regionName}. Adding record [${regionItemRecord.toString()}].`);
         }
         this._state.addRecord(regionItemRecord);
         if (recordState && recordState.isSelected) {
@@ -364,7 +364,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
     }
 
     private _removeRegionRecord(regionItemRecord: RegionItemRecord): void {
-        _log.debug(`Region ${this._regionName}. Removing record [${regionItemRecord.toString()}].`);
+        _log.verbose(`Region ${this._regionName}. Removing record [${regionItemRecord.toString()}].`);
         this._state.removeByRecordId(regionItemRecord.id);
         this.onStateChanged(RegionChangeType.RecordRemoved, regionItemRecord);
     }

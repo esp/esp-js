@@ -1,6 +1,6 @@
 import {Observable, Subscription} from 'rxjs-compat';
 import {Router} from 'esp-js';
-import {EspRouterObservable, liftToEspObservable} from 'esp-js-ui';
+import {EspRouterObservable, liftToEspObservable} from 'esp-js-rx';
 
 const subscribeWithRouter = function <T, TModel>(
     this: Observable<T>,

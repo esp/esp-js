@@ -1,10 +1,10 @@
 import {Subject, Subscription} from 'rxjs';
 import {Router} from 'esp-js';
-import {EspRouterObservable, liftToEspObservable, ValueAndModel} from '../../../src/core/observableExt';
+import {subscribeOnEspDispatchLoop} from '../../src/operators';
 
-describe('subscribeWithRouterTests', () => {
+describe('ESP Observable subscribeOnEspDispatchLoop Tests', () => {
     let _model: {};
-    let _receivedItems: {item: ValueAndModel<number, {}>, isOnDispatchLoop: boolean}[];
+    let _receivedItems: {item: number, isOnDispatchLoop: boolean}[];
     let _receivedErrors: any[];
     let _router: Router;
     let _subject: Subject<number>;
@@ -20,10 +20,10 @@ describe('subscribeWithRouterTests', () => {
         _subject = new Subject();
         _completeCount = 0;
         let stream = _subject.pipe(
-            liftToEspObservable(_router, 'model-id')
-        ) as EspRouterObservable<number, {}>;
+            subscribeOnEspDispatchLoop(_router, 'model-id')
+        );
         _subscription = stream.subscribe(
-            (i: ValueAndModel<number, {}>) => {
+            (i: number) => {
                 _receivedItems.push({
                     item: i,
                     isOnDispatchLoop: _router.isOnDispatchLoopFor('model-id')
@@ -46,9 +46,10 @@ describe('subscribeWithRouterTests', () => {
 
     it('model instanced passed', () => {
         _subject.next(1);
-        expect(_receivedItems[0].item.model).toBe(_model);
+        expect(_receivedItems[0].item).toBe(1);
     });
 
+    // noinspection DuplicatedCode
     it('is called on models dispatch loop', () => {
         _subject.next(1);
         expect(_receivedItems[0].isOnDispatchLoop).toBeTruthy();

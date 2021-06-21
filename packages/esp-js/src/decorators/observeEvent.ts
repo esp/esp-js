@@ -18,7 +18,7 @@
 
 import {ObservationStage} from '../router';
 import {EspDecoratorUtil, DecoratorTypes, EventPredicate} from './espDecoratorMetadata';
-import { Guard, utils } from '../system';
+import {Guard, utils} from '../system';
 
 const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
     return function (target, name, descriptor) {

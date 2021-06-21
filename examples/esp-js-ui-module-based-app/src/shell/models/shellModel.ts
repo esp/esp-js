@@ -10,10 +10,7 @@ import {
     Shell,
     StatefulRegion,
     StateService,
-    ModuleLoadStage,
-    liftToEspObservable,
-    EspRouterObservable,
-    ValueAndModel
+    ModuleLoadStage
 } from 'esp-js-ui';
 import {TradingModule} from '../../trading-module/tradingModule';
 import {observeEvent} from 'esp-js';

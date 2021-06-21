@@ -4,8 +4,7 @@ import {DisposableBase, Logger} from 'esp-js';
 import {PrerequisiteRegister} from './prerequisiteRegister';
 import {LoadResult, ResultStage} from './loadResult';
 import {Unit} from '../../../core';
-import {takeUntilInclusive} from '../../../core/observableExt/takeUntilInclusive';
-import {lazyConnect} from '../../../core/observableExt/lazyConnect';
+import {takeUntilInclusive, lazyConnect} from 'esp-js-rx';
 
 const _log: Logger = Logger.create('PrerequisiteRegister');
 

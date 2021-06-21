@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import { removeAll } from '../system/utils';
+import {utils} from '../system';
 
 export class DecoratorObservationRegister {
     private readonly _registrations = {};
@@ -48,7 +48,7 @@ export class DecoratorObservationRegister {
     public removeRegistration(modelId: string, object) {
         if(this.isRegistered(modelId, object)) {
             let items = this._registrations[modelId];
-            removeAll(items, object);
+            utils.removeAll(items, object);
         }
     }
 }

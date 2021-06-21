@@ -22,9 +22,9 @@ const directoryExclusions = [
     'typings',
     'dist',
     '.dist',
-    'node_modules',
-    'esp-js',
     'esp-js-di',
+    // TODO add these to the auto index generator
+    'node_modules',
     'esp-js-polimer',
     'esp-js-react',
     'esp-js-ui-rxcompat',

@@ -16,41 +16,70 @@
  */
 // notice_end
 
-export function removeAll<T>(arr: T[], item: T) {
-    for (let i = arr.length; i--;) {
-        if (arr[i] === item) {
-            arr.splice(i, 1);
+export namespace utils {
+    export function removeAll<T>(arr: T[], item: T) {
+        for (let i = arr.length; i--;) {
+            if (arr[i] === item) {
+                arr.splice(i, 1);
+            }
         }
     }
-}
 
-export function isString(value: any): boolean {
-    return typeof value === 'string' || value instanceof String;
-}
-
-export function isFunction(value: any): boolean {
-    return typeof(value) === 'function';
-}
-
-export function startsWith(string: string, searchString: string, position: number = 0): boolean {
-    return string.indexOf(searchString, position) === position;
-}
-
-export function getPropertyNames(object: any): string[] {
-    let props = [];
-    Object.getOwnPropertyNames(object).forEach(function (key) {
-        props.push(key);
-    });
-    let proto = Object.getPrototypeOf(object);
-    if (proto !== null && typeof proto === 'object') {
-        let childProps = getPropertyNames(proto);
-        for (let i = 0; i < childProps.length; i++) {
-            props.push(childProps[i]);
-        }
+    export function isString(value: any): boolean {
+        return typeof value === 'string' || value instanceof String;
     }
-    return props;
-}
 
-export const isObject = (value: any): value is object => {
-    return typeof value === 'object' && value !== null;
-};
+    export function isFunction(value: any): boolean {
+        return typeof (value) === 'function';
+    }
+
+    export function startsWith(string: string, searchString: string, position: number = 0): boolean {
+        return string.indexOf(searchString, position) === position;
+    }
+
+    export function getPropertyNames(object: any): string[] {
+        let props = [];
+        Object.getOwnPropertyNames(object).forEach(function (key) {
+            props.push(key);
+        });
+        let proto = Object.getPrototypeOf(object);
+        if (proto !== null && typeof proto === 'object') {
+            let childProps = getPropertyNames(proto);
+            for (let i = 0; i < childProps.length; i++) {
+                props.push(childProps[i]);
+            }
+        }
+        return props;
+    }
+
+    export const isObject = (value: any): value is object => {
+        return typeof value === 'object' && value !== null;
+    };
+
+    export const pad10 = (n: number) => {
+        return n < 10 ? '0'+n : n;
+    };
+
+    export const pad100 = (n: number) => {
+        if (n < 10) { return '00'+n; }
+        if (n < 100) { return '0'+n; }
+        return n;
+    };
+
+    export const padOrTruncate = (v: string, length: number) => {
+        if (v.length === length) {
+            return v;
+        }
+        if (v.length > length) {
+            return v.substring(0, length);
+        }
+        return v.padEnd(length);
+    };
+
+    export const getErrorText = (e: any) => {
+        if (e instanceof Error) {
+            return `${e.toString()}. ${e.stack || ''}`;
+        }
+        return e;
+    };
+}

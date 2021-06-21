@@ -37,8 +37,16 @@ export class RegistrationModifier {
 }
 
 export interface Resolver<T> {
-    resolve(container:Container, dependencyKey:any):T
+    resolve(container:Container, dependencyKey:any):T;
 }
+
 export class EspDiConsts {
     static readonly owningContainer : string;
+}
+
+export class ResolverNames {
+    static readonly delegate : string;
+    static readonly factory : string;
+    static readonly externalFactory : string;
+    static readonly literal : string;
 }

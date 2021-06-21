@@ -18,7 +18,7 @@
 
 import {EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
-import {Guard, logging, utils} from '../system';
+import {Guard, Logger} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
 import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
@@ -29,7 +29,7 @@ import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext} from './eventContext';
 import {DecoratorTypes} from '../decorators';
 
-let _log = logging.Logger.create('Router');
+let _log = Logger.create('Router');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 

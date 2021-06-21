@@ -2,7 +2,7 @@ import {DefaultPrerequisiteRegister} from '../../../../src/ui/modules/prerequisi
 import {Unit} from '../../../../src/core';
 import {LoadResult, ResultStage} from '../../../../src/ui/modules/prerequisites';
 import {Observable, of, Subject} from 'rxjs';
-import {doOnSubscribe} from '../../../../src/core/observableExt/doOnSubscribe';
+import {doOnSubscribe} from 'esp-js-rx';
 
 describe('Default Prerequisite Registrar Tests', () => {
     let register: DefaultPrerequisiteRegister;

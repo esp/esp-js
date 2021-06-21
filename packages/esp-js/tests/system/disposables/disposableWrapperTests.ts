@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
-import * as system from '../../../src/system';
+import {DisposableWrapper} from '../../../src/system/disposables';
 
 describe('DisposableWrapper', () => {
 
     it('should accept functions as disposables', () => {
-    	let isDisposed = false;
-        let disposable = function() {
+        let isDisposed = false;
+        let disposable = function () {
             isDisposed = true;
         };
-        let disposableWrapper = new system.disposables.DisposableWrapper(disposable);
+        let disposableWrapper = new DisposableWrapper(disposable);
         disposableWrapper.dispose();
         expect(isDisposed).toEqual(true);
     });
@@ -33,11 +33,11 @@ describe('DisposableWrapper', () => {
     it('should accept objects with a dispose methods as disposables', () => {
         let disposable = {
             isDisposed: false,
-            dispose: function() {
+            dispose: function () {
                 this.isDisposed = true;
             }
         };
-        let disposableWrapper = new system.disposables.DisposableWrapper(disposable);
+        let disposableWrapper = new DisposableWrapper(disposable);
         disposableWrapper.dispose();
         expect(disposable.isDisposed).toEqual(true);
     });
@@ -45,32 +45,34 @@ describe('DisposableWrapper', () => {
     it('should accept objects with an unsubscribe method as disposables', () => {
         let subscriptionLikeThing = {
             closed: false,
-            unsubscribe: function() {
+            unsubscribe: function () {
                 this.closed = true;
             }
         };
-        let disposableWrapper = new system.disposables.DisposableWrapper(subscriptionLikeThing);
+        let disposableWrapper = new DisposableWrapper(subscriptionLikeThing);
         disposableWrapper.dispose();
         expect(subscriptionLikeThing.closed).toEqual(true);
     });
 
     it('should only dispose instances once', () => { // bit of a void test
         let disposeCount = 0;
-        let disposable = new system.disposables.DisposableWrapper(() => { disposeCount++; });
+        let disposable = new DisposableWrapper(() => {
+            disposeCount++;
+        });
         disposable.dispose();
         disposable.dispose();
         expect(disposeCount).toEqual(1);
     });
 
     it('should throw if undefined passed to ctor', () => {
-    	expect(() => new system.disposables.DisposableWrapper(undefined)).toThrow();
+        expect(() => new DisposableWrapper(undefined)).toThrow();
     });
 
     it('should throw if null passed to ctor', () => {
-        expect(() => new system.disposables.DisposableWrapper(null)).toThrow();
+        expect(() => new DisposableWrapper(null)).toThrow();
     });
 
     it('should throw if string passed to ctor', () => {
-        expect(() => new system.disposables.DisposableWrapper("boo")).toThrow();
+        expect(() => new DisposableWrapper(<any>'boo')).toThrow();
     });
 });

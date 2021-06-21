@@ -3,7 +3,11 @@ import {Router} from 'esp-js';
 
 // need to import the library for side effects
 import '../src';
-import {ValueAndModel} from 'esp-js-ui';
+
+interface ValueAndModel<T, TModel> {
+    value: T;
+    model: TModel;
+}
 
 describe('subscribeWithRouterTests', () => {
     let _model: {};

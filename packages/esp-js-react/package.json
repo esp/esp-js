@@ -1,6 +1,6 @@
 {
   "name": "esp-js-react",
-  "version": "4.0.4",
+  "version": "5.0.9-next.0",
   "description": "Evented State Processor (ESP) React Components",
   "keywords": [
     "esp",
@@ -24,8 +24,8 @@
     "dev": "nps dev"
   },
   "dependencies": {
-    "esp-js": "^4.0.4",
-    "esp-js-polimer": "^4.0.4",
+    "esp-js": "^5.0.9-next.0",
+    "esp-js-polimer": "^5.0.9-next.0",
     "prop-types": "^15.7.2",
     "react": "16.13.1"
   },
@@ -37,8 +37,8 @@
     "webpack-dev-server": "3.11.0"
   },
   "peerDependencies": {
-    "esp-js": "^4.0.0",
-    "esp-js-polimer": "^4.0.0",
+    "esp-js": "^5.0.0",
+    "esp-js-polimer": "^5.0.0",
     "prop-types": "^15.7.2",
     "react": "16.8.6"
   },

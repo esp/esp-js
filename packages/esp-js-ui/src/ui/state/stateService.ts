@@ -13,7 +13,7 @@ export class LocalStorageStateService implements StateService {
         Guard.isString(key, 'appKey must be a string');
         Guard.isDefined(state, 'state must be a defined');
         let stateJson = JSON.stringify(state);
-        _log.debug(`saving layout state for key ${key}.`, state);
+        _log.verbose(`saving layout state for key ${key}.`, state);
         localStorage.setItem(key, stateJson);
     }
 
@@ -37,7 +37,7 @@ export class LocalStorageStateService implements StateService {
         Guard.isDefined(state, 'state must be a defined');
         let stateJson = JSON.stringify(state);
         let stateKey = this._getStateKey(moduleKey, layoutMode);
-        _log.debug(`saving layout state for key ${stateKey}.`, state);
+        _log.verbose(`saving layout state for key ${stateKey}.`, state);
         localStorage.setItem(stateKey, stateJson);
     }
 

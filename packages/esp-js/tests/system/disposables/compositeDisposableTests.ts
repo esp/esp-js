@@ -16,8 +16,7 @@
  */
  // notice_end
 
-import * as system from '../../../src/system';
-const CompositeDisposable =  system.disposables.CompositeDisposable;
+import {CompositeDisposable} from '../../../src/system';
 
 describe('CompositeDisposable', () => {
     let disposables;

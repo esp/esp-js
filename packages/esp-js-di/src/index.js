@@ -32,15 +32,18 @@ import Container from './container';
 import RegistrationModifier from './registrationModifier';
 import ResolverContext from './resolverContext';
 import EspDiConsts from './espDiConsts';
+import ResolverNames from './resolverNames';
 
 export { Container };
 export { RegistrationModifier };
 export { ResolverContext };
 export { EspDiConsts };
+export { ResolverNames };
 
 export default {
     Container,
     RegistrationModifier,
     ResolverContext,
-    EspDiConsts
+    EspDiConsts,
+    ResolverNames
 };

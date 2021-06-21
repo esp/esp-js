@@ -35,7 +35,7 @@ export class RegionManager extends ModelBase {
         Guard.isObject(regionRecord, 'regionRecord must be an object');
         Guard.isFunction(regionRecord.addRegionItem, 'regionRecord.onAdding must be a function');
         Guard.isFunction(regionRecord.removeRegionItem, 'regionRecord.onRemoving must be a function');
-        _log.debug(`registering region ${regionName}`);
+        _log.verbose(`registering region ${regionName}`);
         if (this._regions[regionName]) {
             let message = `Cannot register region ${regionName} as it is already registered`;
             _log.error(message);
@@ -53,13 +53,13 @@ export class RegionManager extends ModelBase {
     }
 
     public unregisterRegion(regionName: string): void {
-        _log.debug('Unregistering region {0}', regionName);
+        _log.verbose('Unregistering region {0}', regionName);
         delete this._regions[regionName];
     }
 
     public loadRegion(regionState: RegionState): void {
         Guard.isObject(regionState, 'regionState must be an object');
-        _log.debug(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.regionRecordStates ? regionState.regionRecordStates.length : 0}`);
+        _log.verbose(`Loading region ${regionState.regionName} at version ${regionState.stateVersion}, view count ${regionState.regionRecordStates ? regionState.regionRecordStates.length : 0}`);
         let region = this._regions[regionState.regionName];
         region.load(regionState);
     }
@@ -124,7 +124,7 @@ export class RegionManager extends ModelBase {
             _log.error(message);
             throw new Error(message);
         }
-        _log.debug(`Adding to region ${regionName}. ${regionItem.toString()}.`);
+        _log.verbose(`Adding to region ${regionName}. ${regionItem.toString()}.`);
         this._regions[regionName].addToRegion(regionItem);
         return regionItem;
     }
@@ -157,7 +157,7 @@ export class RegionManager extends ModelBase {
         }
         // It's possible there are no records found, in this case we silently ignore
         if (recordsToRemove.length > 0) {
-            _log.debug(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
+            _log.verbose(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
             if (!(regionName in this._regions)) {
                 let message = `Cannot remove the following records from region ${regionName} as the region is not registered: ${recordsToRemove}`;
                 _log.error(message);
@@ -176,7 +176,7 @@ export class RegionManager extends ModelBase {
                 .filter(r => r.modelCreated)
                 .filter(r => r.modelId === modelId)
                 .map(r => r.id);
-            _log.debug(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
+            _log.verbose(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
             recordsToRemove.forEach(recordId => {
                 this._regions[regionName].removeFromRegion(recordId);
             });

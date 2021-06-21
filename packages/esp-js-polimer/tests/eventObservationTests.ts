@@ -453,7 +453,7 @@ describe('Event Observation', () => {
             api.actor.publishEvent(EventConst.event5, {replacementState: nextState});
             api.asserts.handlerObjectState.stateInstanceHasChanged(nextState);
             api.asserts.handlerMapState.stateInstanceHasChanged(nextState);
-            api.asserts.handlerModelState.stateInstanceHasChanged(); // doesn't support swapping of state, doesn't tuse immer
+            api.asserts.handlerModelState.stateInstanceHasChanged(); // doesn't support swapping of state, doesn't use immer
         });
     });
 });

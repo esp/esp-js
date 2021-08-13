@@ -74,7 +74,7 @@ export class DefaultEventContext implements EventContext {
         if (!this._isCommitted) {
             this._isCommitted = true;
         } else {
-            throw 'event [' + this._eventType + '] for model [' + this._modelId + '] is already committed';
+            throw new Error('event [' + this._eventType + '] for model [' + this._modelId + '] is already committed');
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui-rxcompat",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "esp-js-ui-rxcompat Package",
   "main": ".dist/esp-js-ui-rxcompat.js",
   "types": "esp-js-ui-rxcompat.d.ts",
@@ -24,8 +24,8 @@
     "webpack-dev-server": "3.11.0"
   },
   "dependencies": {
-    "esp-js": "^5.1.0",
-    "esp-js-rx": "^5.1.0",
+    "esp-js": "^5.1.1",
+    "esp-js-rx": "^5.1.1",
     "rxjs": "6.6.6",
     "rxjs-compat": "6.6.6"
   },

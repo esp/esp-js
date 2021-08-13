@@ -66,12 +66,12 @@ export class Logger {
     verbose(message: string, additionalDetails?: any): void;
     verbose(markers: Markers, message: string, additionalDetails?: any): void;
     verbose(...args: any[]) : void {
-        if (this._isLevelEnabled(Level.verbose)) {
+        if (this.isLevelEnabled(Level.verbose)) {
             this._log(Level.verbose, args);
         }
     }
 
-    private _isLevelEnabled(level: Level) : boolean {
+    public isLevelEnabled(level: Level) : boolean {
         return getLevelNumber(this._loggerConfig.level) <= getLevelNumber(level);
     }
 
@@ -81,7 +81,7 @@ export class Logger {
     debug(message: string, additionalDetails?: any): void;
     debug(markers:Markers, message: string, additionalDetails?: any): void;
     debug(...args: any[]) : void {
-        if (this._isLevelEnabled(Level.debug)) {
+        if (this.isLevelEnabled(Level.debug)) {
             this._log(Level.debug, args);
         }
     }
@@ -92,7 +92,7 @@ export class Logger {
     info(message: string, additionalDetails?: any): void;
     info(markers:Markers, message: string, additionalDetails?: any): void;
     info(...args: any[]) : void {
-        if (this._isLevelEnabled(Level.info)) {
+        if (this.isLevelEnabled(Level.info)) {
             this._log(Level.info, args);
         }
     }
@@ -103,7 +103,7 @@ export class Logger {
     warn(message: string, additionalDetails?: any): void;
     warn(markers:Markers, message: string, additionalDetails?: any): void;
     warn(...args: any[]) : void {
-        if (this._isLevelEnabled(Level.warn)) {
+        if (this.isLevelEnabled(Level.warn)) {
             this._log(Level.warn, args);
         }
     }
@@ -114,7 +114,7 @@ export class Logger {
     error(message: string, error?: any): void;
     error(markers:Markers, message: string, error?: any): void;
     error(...args: any[]) : void {
-        if (this._isLevelEnabled(Level.error)) {
+        if (this.isLevelEnabled(Level.error)) {
             this._log(Level.error, args);
         }
     }

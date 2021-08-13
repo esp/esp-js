@@ -34,7 +34,7 @@ export class DefaultEventContext implements EventContext {
     private _isCommitted: boolean;
     private _currentStage: ObservationStage;
 
-    public constructor(modelId, eventType) {
+    public constructor(modelId: string, eventType: string) {
         this._modelId = modelId;
         this._eventType = eventType;
         this._isCanceled = false;

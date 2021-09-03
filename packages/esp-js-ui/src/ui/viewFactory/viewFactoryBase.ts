@@ -16,7 +16,7 @@ export interface ViewInstance extends Disposable {
  *
  * Note this is effectively a view on RegionRecordState with all properties being optional.
  */
-export interface ViewCreationState<TViewState> extends Partial<Pick<RegionRecordState<TViewState>, 'stateVersion' | 'regionRecordId' | 'viewState'>> {
+export interface ViewCreationState<TViewState> extends Partial<Pick<RegionRecordState<TViewState>, 'stateVersion' | 'regionRecordId' | 'viewState' | 'isSelected' >> {
 
 }
 

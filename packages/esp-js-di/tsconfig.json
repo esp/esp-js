@@ -2,7 +2,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir" : "./.tsbuild",
-    "declarationDir": "./.dist/typings"
+    "declarationDir": "./.dist/typings",
+    "lib": [
+      "ESNext.WeakRef",
+    ]
   },
   "include": [
     "src/**/*"

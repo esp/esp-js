@@ -33,6 +33,7 @@ export default class Container {
         this._resolvers = this._createDefaultResolvers();
         this._isDisposed = false;
         this._childContainers = [];
+        this._containerEventHandlers = new Map();
         this._registerSelf();
     }
     createChildContainer() {
@@ -89,6 +90,7 @@ export default class Container {
                 : InstanceLifecycleType.singleton
         };
         this._instanceCache[name] = instance;
+        this._raiseContainerEvent('instanceRegistered', name, instance)
     }
     isRegistered(name) {
         this._throwIfDisposed();
@@ -119,6 +121,7 @@ export default class Container {
             if (registration.instanceLifecycleType === InstanceLifecycleType.singleton || registration.instanceLifecycleType === InstanceLifecycleType.singletonPerContainer) {
                 this._instanceCache[name] = instance;
             }
+            this._raiseContainerEvent('instanceCreated', name, instance)
         } else if(additionalDependencies.length > 0) {
             throw new Error("The provided additional dependencies can't be used to construct the instance as an existing instance was found in the container");
         }
@@ -145,6 +148,30 @@ export default class Container {
         Guard.isNonEmptyString(name, 'Error calling addResolver(name, resolver). The name argument must be a string and can not be \'\'');
         Guard.isNotNullOrUndefined(resolver, `Error calling addResolver(name, resolver). Provided resolver for [${name}] can not be null or undefined`);
         this._resolvers[name] = resolver;
+    }
+    on(eventType, eventHandler) {
+        Guard.isNonEmptyString(eventType, 'Error calling on(eventType, eventHandler). The eventType argument must be a string and can not be \'\'');
+        Guard.isFunction(eventHandler, 'Error calling on(eventType, eventHandler). The eventHandler argument must be a function can not be null or undefined');
+        let handlers = this._containerEventHandlers.get(eventType);
+        if (!handlers) {
+            handlers = [];
+            this._containerEventHandlers.set(eventType, handlers);
+        }
+        let handlerExists = handlers.some(handler => handler === eventHandler);
+        Guard.isFalsey(handlerExists, 'Error calling on(eventType, eventHandler). The eventHandler passed is already registered');
+        handlers.push(eventHandler);
+    }
+    off(eventType, eventHandler){
+        Guard.isNonEmptyString(eventType, 'Error calling off(eventType, eventHandler). The eventType argument must be a string and can not be \'\'');
+        Guard.isFunction(eventHandler, 'Error calling off(eventType, eventHandler). The eventHandler argument must be a function can not be null or undefined');
+        let handlers = this._containerEventHandlers.get(eventType);
+        if (!handlers) {
+            return;
+        }
+        const removeAtIndex = handlers.indexOf(eventHandler);
+        if (removeAtIndex > -1) {
+            handlers.splice(removeAtIndex, 1);
+        }
     }
     dispose() {
         this._disposeContainer();
@@ -281,6 +308,22 @@ export default class Container {
     _registerSelf() {
         // register the child with itself so any dependency that wants to resolve a container get's the container at the same scope as itself (i.e. the container that built it).
         this.registerInstance(EspDiConsts.owningContainer, this);
+    }
+    _raiseContainerEvent(eventType, name, instance) {
+        let handlers = this._containerEventHandlers.get(eventType);
+        if (!handlers) {
+            return;
+        }
+        let notification = {
+            name,
+            reference: new WeakRef(instance),
+            eventType
+        };
+        // copy the list as we're about to call external code which could be reentrant
+        let copy = handlers.slice(0);
+        for (let handler in copy) {
+            handler(notification)
+        }
     }
     _throwIfDisposed() {
         if (this._isDisposed) throw new Error("Container has been disposed");

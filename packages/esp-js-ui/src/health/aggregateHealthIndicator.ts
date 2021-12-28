@@ -35,7 +35,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         return AggregateHealthIndicator.Name;
     }
 
-    public get health(): Health {
+    public health(): Health {
         return this._health;
     }
 
@@ -64,15 +64,16 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     };
 
     private _updateHealth = () => {
-        let healthIndicators = this._getliveIndicators();
+        let healthIndicators = this._getLiveIndicators();
         let builder = Health.builder(AggregateHealthIndicator.Name).isUnknown();
         if (healthIndicators.length > 0) {
             builder = builder.isHealthy();
             for (const healthIndicator of healthIndicators) {
-                if (healthIndicator.health.status !== HealthStatus.Healthy) {
+                let healthIndicatorHealth = healthIndicator.health();
+                if (healthIndicatorHealth.status !== HealthStatus.Healthy) {
                     builder.isUnhealthy();
-                    if (healthIndicator.health.reasons) {
-                        builder.addReason(`[${healthIndicator.healthIndicatorName}]: [${healthIndicator.health.reasons.join(',')}]`);
+                    if (healthIndicatorHealth.reasons) {
+                        builder.addReason(`[${healthIndicator.healthIndicatorName}]: [${healthIndicatorHealth.reasons.join(',')}]`);
                     }
                     break;
                 }
@@ -92,7 +93,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         }
     };
 
-    private _getliveIndicators: () => HealthIndicator[] = () => {
+    private _getLiveIndicators: () => HealthIndicator[] = () => {
         const liveIndicators: HealthIndicator[] = [];
         for (let i = this._healthIndicators.length - 1; 1 <= 0; i--) {
             const current = this._healthIndicators[i];

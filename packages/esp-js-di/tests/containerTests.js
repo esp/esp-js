@@ -601,16 +601,125 @@ describe('Container', () =>  {
     })
 
     describe('container events', () => {
-        it('Should raise instanceRegistered once when an instance is registered', () => {
-
+        let notifications1 = [];
+        let notifications2 = [];
+        const callback1 = (notification) => {
+            notifications1.push(notification);
+        };
+        const callback2 = (notification) => {
+            notifications2.push(notification);
+        };
+        beforeEach(() => {
+            notifications1 = [];
+            notifications2 = [];
         });
 
-        it('Should raise instanceCreated once when a singleton instance is resolved', () => {
-
+        it('on(instanceRegistered, callback): callback invoked when instance registered', () => {
+            container.on('instanceRegistered', callback1);
+            let instance = new Object();
+            container.registerInstance('foo', instance);
+            expect(notifications1.length).toEqual(1);
+            expect(notifications1[0].name).toEqual('foo');
+            expect(notifications1[0].reference.deref()).toBe(instance);
+            expect(notifications1[0].eventType).toEqual('instanceRegistered');
         });
 
-        it('Should raise instanceCreated for each transient instance resolved', () => {
+        it('off(instanceRegistered, callback): removes callback', () => {
+            container.on('instanceRegistered', callback1);
+            container.off('instanceRegistered', callback1);
+            let instance = new Object();
+            container.registerInstance('foo', instance);
+            expect(notifications1.length).toEqual(0);
+        });
 
+
+        it('on(instanceRegistered, callback): multiple handlers accepted', () => {
+            let Foo = createFunction();
+            let Bar = createFunction();
+            let Baz = createFunction();
+            let Bop = createFunction();
+
+            container.registerInstance('foo', Foo);
+            expect(notifications1.length).toEqual(0);
+            expect(notifications2.length).toEqual(0);
+
+            container.on('instanceRegistered', callback1);
+            container.registerInstance('bar', Bar);
+            expect(notifications1.length).toEqual(1);
+            expect(notifications2.length).toEqual(0);
+
+            container.on('instanceRegistered', callback2);
+            container.registerInstance('baz', Baz);
+            expect(notifications1.length).toEqual(2);
+            expect(notifications2.length).toEqual(1);
+
+            container.off('instanceRegistered', callback1);
+            container.off('instanceRegistered', callback2);
+
+            container.registerInstance('bop', Bop);
+
+            expect(notifications1.length).toEqual(2);
+            expect(notifications2.length).toEqual(1);
+        });
+
+        it('on(instanceCreated, callback): callback invoked when instance resolved', () => {
+            container.on('instanceCreated', callback1);
+            let Foo = createFunction();
+            container.register('foo', Foo); // singleton by default
+            let foo = container.resolve('foo');
+            expect(notifications1.length).toEqual(1);
+            expect(notifications1[0].name).toEqual('foo');
+            expect(notifications1[0].reference.deref()).toBe(foo);
+            expect(notifications1[0].eventType).toEqual('instanceCreated');
+            container.resolve('foo');
+            expect(notifications1.length).toEqual(1);
+        });
+
+        it('off(instanceCreated, callback): removes callback', () => {
+            container.on('instanceCreated', callback1);
+            container.off('instanceCreated', callback1);
+            let Foo = createFunction();
+            container.register('foo', Foo);
+            container.resolve('foo');
+            expect(notifications1.length).toEqual(0);
+        });
+
+        it('on(instanceCreated, callback): callback invoked per transient resolution', () => {
+            container.on('instanceCreated', callback1);
+            let Foo = createFunction();
+            container.register('foo', Foo).transient();
+            container.resolve('foo');
+            container.resolve('foo');
+            container.resolve('foo');
+            expect(notifications1.length).toEqual(3);
+        });
+
+        it('on(instanceCreated, callback): multiple handlers accepted', () => {
+            let Foo = createFunction();
+            container.register('foo', Foo).transient();
+
+            container.on('instanceCreated', callback1);
+            container.on('instanceCreated', callback2);
+
+            container.resolve('foo');
+            container.resolve('foo');
+
+            expect(notifications1.length).toEqual(2);
+            expect(notifications2.length).toEqual(2);
+
+            container.off('instanceCreated', callback2);
+
+            container.resolve('foo');
+
+            expect(notifications1.length).toEqual(3);
+            expect(notifications2.length).toEqual(2);
+
+            container.off('instanceCreated', callback1);
+
+            container.resolve('foo');
+
+            expect(notifications1.length).toEqual(3);
+            expect(notifications2.length).toEqual(2);
         });
     })
 

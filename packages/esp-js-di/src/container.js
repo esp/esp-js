@@ -321,8 +321,8 @@ export default class Container {
         };
         // copy the list as we're about to call external code which could be reentrant
         let copy = handlers.slice(0);
-        for (let handler in copy) {
-            handler(notification)
+        for (let i = 0; i < copy.length; i ++) {
+            copy[i](notification)
         }
     }
     _throwIfDisposed() {

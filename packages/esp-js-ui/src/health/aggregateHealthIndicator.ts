@@ -3,8 +3,9 @@ import {HealthIndicator} from './healthIndicator';
 import {HealthStatus, Health} from './health';
 import {Container, ContainerNotification} from 'esp-js-di';
 import {HealthUtils} from './healthutils';
-import {interval} from 'rxjs';
+import {interval, SchedulerLike} from 'rxjs';
 import {MetricFactory} from 'esp-js';
+import {asyncScheduler} from 'rxjs';
 
 const _log = Logger.create('AggregateHealthIndicator');
 
@@ -16,7 +17,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     private _health = Health.builder(AggregateHealthIndicator.Name).isUnhealthy().build();
     private _healthIndicators: WeakRef<HealthIndicator>[] = [];
 
-    constructor(container: Container) {
+    constructor(container: Container, private _scheduler: SchedulerLike = asyncScheduler) {
         super();
         if (WeakRef) {
             container.on('instanceRegistered', this._instanceRegisteredOrCreated);
@@ -45,7 +46,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         }
         this._isStarted = true;
         this.addDisposable(
-            interval(5000).subscribe(() => {
+            interval(5000, this._scheduler).subscribe(() => {
                 try {
                     this._updateHealth();
                 } catch (err) {

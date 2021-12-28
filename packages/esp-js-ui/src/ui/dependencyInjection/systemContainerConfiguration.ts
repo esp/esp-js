@@ -1,4 +1,4 @@
-import {Container, EspDiConsts} from 'esp-js-di';
+import {Container} from 'esp-js-di';
 import {SystemContainerConst} from './systemContainerConst';
 import {LocalStorageStateService} from '../state/stateService';
 import {Router, Logger} from 'esp-js';

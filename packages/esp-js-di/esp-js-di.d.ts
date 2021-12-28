@@ -70,8 +70,8 @@ export interface ContainerNotification<T extends object = object> {
      */
     name: string;
     /**
-     * A weak ref to the instanced added
+     * The instance
      */
-    reference: WeakRef<T>;
+    instance: T;
     eventType: ContainerEventType;
 }

@@ -620,7 +620,7 @@ describe('Container', () =>  {
             container.registerInstance('foo', instance);
             expect(notifications1.length).toEqual(1);
             expect(notifications1[0].name).toEqual('foo');
-            expect(notifications1[0].reference.deref()).toBe(instance);
+            expect(notifications1[0].instance).toBe(instance);
             expect(notifications1[0].eventType).toEqual('instanceRegistered');
         });
 
@@ -669,7 +669,7 @@ describe('Container', () =>  {
             let foo = container.resolve('foo');
             expect(notifications1.length).toEqual(1);
             expect(notifications1[0].name).toEqual('foo');
-            expect(notifications1[0].reference.deref()).toBe(foo);
+            expect(notifications1[0].instance).toBe(foo);
             expect(notifications1[0].eventType).toEqual('instanceCreated');
             container.resolve('foo');
             expect(notifications1.length).toEqual(1);

@@ -8,5 +8,5 @@ export class SystemContainerConst {
     static get single_module_loader() { return 'single_module_loader'; }
     static get module_provider() { return 'module_provider'; }
     static get module_metadata() { return 'module_metadata'; }
-    static get aggregate_health_indicator() { return 'aggregate_health_indicator'; }
+    static get aggregate_esp_di_health_indicator() { return 'aggregate_esp_di_health_indicator'; }
 }

@@ -316,7 +316,7 @@ export default class Container {
         }
         let notification = {
             name,
-            reference: new WeakRef(instance),
+            instance,
             eventType
         };
         // copy the list as we're about to call external code which could be reentrant

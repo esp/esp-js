@@ -1,70 +1,71 @@
-import {DisposableBase, Level, Logger, MetricFactory} from 'esp-js';
+import {DisposableBase, Level, Logger} from 'esp-js';
 import {HealthIndicator} from './healthIndicator';
 import {Health, HealthStatus} from './health';
-import {Container, ContainerNotification} from 'esp-js-di';
-import {HealthUtils} from './healthutils';
-import {asyncScheduler, interval, SchedulerLike} from 'rxjs';
+import {DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from './healthIndicatorTrigger';
 
-const _log = Logger.create('AggregateHealthIndicator');
-
-const aggregateHealthMetric = MetricFactory.createGauge('aggregate_health', 'The aggregate health for an application');
+const _defaultLog = Logger.create('AggregateHealthIndicator');
 
 export class AggregateHealthIndicator extends DisposableBase implements HealthIndicator {
-    private static Name = 'AggregateHealthIndicator';
     private _isStarted = false;
-    private _health = Health.builder(AggregateHealthIndicator.Name).isUnhealthy().build();
+    private _health = Health.builder(AggregateHealthIndicator.constructor.name).isUnhealthy().build();
     private _healthIndicators: WeakRef<HealthIndicator>[] = [];
 
-    constructor(container: Container, private _scheduler: SchedulerLike = asyncScheduler) {
+    constructor(private _healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger, private _log: Logger = _defaultLog) {
         super();
-        if (WeakRef) {
-            container.on('instanceRegistered', this._instanceRegisteredOrCreated);
-            container.on('instanceCreated', this._instanceRegisteredOrCreated);
-            this.addDisposable(() => {
-                container.off('instanceRegistered', this._instanceRegisteredOrCreated);
-                container.off('instanceCreated', this._instanceRegisteredOrCreated);
-            });
-            this._start();
-        } else {
-            _log.warn('Health Indicators not supported');
-        }
     }
 
     public get healthIndicatorName() {
-        return AggregateHealthIndicator.Name;
+        return AggregateHealthIndicator.constructor.name;
     }
 
     public health(): Health {
         return this._health;
     }
 
-    private _start() {
-        if (this._isStarted) {
-            return;
-        }
-        this._isStarted = true;
-        this.addDisposable(
-            interval(5000, this._scheduler).subscribe(() => {
-                try {
-                    this._updateHealth();
-                } catch (err) {
-                    _log.error(`Error updating aggregate health status`, err);
-                }
-            })
-        );
-    }
+    public addIndicator = (healthIndicator: HealthIndicator) => {
+        this._healthIndicators.push(new WeakRef(healthIndicator));
+    };
 
-    private _instanceRegisteredOrCreated = (containerNotification: ContainerNotification) => {
-        let object = containerNotification.reference.deref();
-        // Check if the object is a HealthIndicator, also ensure it's not this class (which has an _updateHealth function)
-        if (object && HealthUtils.isHealthIndicator(object) && object !== this) {
-            this._healthIndicators.push(<WeakRef<HealthIndicator>>containerNotification.reference);
+    public removeIndicator = (healthIndicator: HealthIndicator) => {
+        for (let i = this._healthIndicators.length - 1; 1 <= 0; i--) {
+            const current = this._healthIndicators[i];
+            if (current.deref() && current.deref() === healthIndicator) {
+                this._healthIndicators.splice(i, 1);
+                break;
+            }
         }
     };
 
+    protected healthStatusChanged = (oldHealth: Health, newHealth: Health) => {
+
+    };
+
+    public start(): boolean {
+        if (!WeakRef) {
+            this._log.warn('Health Indicators not supported (WeakRef not found)');
+            return false;
+        }
+
+        if (this._isStarted) {
+            return false;
+        }
+
+        this._isStarted = true;
+        this.addDisposable(
+            this._healthIndicatorTrigger.trigger.subscribe(() => {
+                try {
+                    this._updateHealth();
+                } catch (err) {
+                    this._log.error(`Error updating aggregate health status`, err);
+                }
+            })
+        );
+        return true;
+    }
+
     private _updateHealth = () => {
-        let healthIndicators = this._getLiveIndicators();
-        let builder = Health.builder(AggregateHealthIndicator.Name).isUnknown();
+        let healthIndicators = this._getIndicators();
+        let builder = Health.builder(this.healthIndicatorName).isUnknown();
         if (healthIndicators.length > 0) {
             builder = builder.isHealthy();
             for (const healthIndicator of healthIndicators) {
@@ -85,18 +86,19 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         let oldHealth = this._health;
         let newHealth = builder.build();
         this._health = newHealth;
-        aggregateHealthMetric.set(HealthUtils.statusToInt(this._health.status));
 
         const statusChanged = oldHealth.status !==  newHealth.status;
-        if (_log.isLevelEnabled(Level.debug) && statusChanged) {
+        if (this._log.isLevelEnabled(Level.debug) && statusChanged) {
             const reasons = newHealth.reasons && newHealth.reasons.length > 0
                 ? newHealth.reasons.join(',')
                 : '';
-            _log.warn(`Status has changed from ${oldHealth.status} to ${newHealth.status} ${reasons}`);
+            this._log.info(`Status has changed from ${oldHealth.status} to ${newHealth.status} ${reasons}`);
         }
+
+        this.healthStatusChanged(oldHealth, newHealth);
     };
 
-    private _getLiveIndicators: () => HealthIndicator[] = () => {
+    private _getIndicators: () => HealthIndicator[] = () => {
         const liveIndicators: HealthIndicator[] = [];
         for (let i = this._healthIndicators.length - 1; 1 <= 0; i--) {
             const current = this._healthIndicators[i];

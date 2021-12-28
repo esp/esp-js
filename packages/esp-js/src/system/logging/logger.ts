@@ -29,6 +29,10 @@ export class Logger {
     ) {
     }
 
+    public get name() {
+        return this._name;
+    }
+
     public get config() {
         return this._loggerConfig;
     }

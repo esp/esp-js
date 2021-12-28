@@ -10,7 +10,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "es6",
-    "lib": [ "es2019", "DOM", "ES6" ,"DOM.Iterable", "ScriptHost"],
+    "lib": [ "es2019", "DOM", "ES6" ,"DOM.Iterable", "ScriptHost", "ESNext.WeakRef"],
     "module": "commonjs",
     "noEmit": false,
     "declaration": true,

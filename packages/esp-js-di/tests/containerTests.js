@@ -600,6 +600,20 @@ describe('Container', () =>  {
         });
     })
 
+    describe('container events', () => {
+        it('Should raise instanceRegistered once when an instance is registered', () => {
+
+        });
+
+        it('Should raise instanceCreated once when a singleton instance is resolved', () => {
+
+        });
+
+        it('Should raise instanceCreated for each transient instance resolved', () => {
+
+        });
+    })
+
     describe('incorrect argument handling', () =>  {
 
         it('throws if arguments incorrect for .register()', () => {

@@ -1,3 +1,5 @@
+import {Guard} from 'esp-js';
+
 export enum HealthStatus {
     Healthy = 'Healthy',
     Unhealthy = 'Unhealthy',
@@ -11,6 +13,7 @@ export interface Health {
 
 export namespace Health {
     export const builder = (name: string) => {
+        Guard.stringIsNotEmpty(name, 'Can not build Health, name must be a string and non empty');
         return new HealthStatusBuilder(name);
     };
 }
@@ -39,6 +42,7 @@ export class HealthStatusBuilder {
     }
 
     addReason(reason: string): this {
+        Guard.stringIsNotEmpty(reason, 'Can not build Health, reason must be a string and non empty');
         this._reasons.push(reason);
         return this;
     }

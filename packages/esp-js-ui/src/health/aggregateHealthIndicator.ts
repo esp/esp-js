@@ -1,11 +1,9 @@
-import {DisposableBase, Level, Logger} from 'esp-js';
+import {DisposableBase, Level, Logger, MetricFactory} from 'esp-js';
 import {HealthIndicator} from './healthIndicator';
-import {HealthStatus, Health} from './health';
+import {Health, HealthStatus} from './health';
 import {Container, ContainerNotification} from 'esp-js-di';
 import {HealthUtils} from './healthutils';
-import {interval, SchedulerLike} from 'rxjs';
-import {MetricFactory} from 'esp-js';
-import {asyncScheduler} from 'rxjs';
+import {asyncScheduler, interval, SchedulerLike} from 'rxjs';
 
 const _log = Logger.create('AggregateHealthIndicator');
 
@@ -71,12 +69,16 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
             builder = builder.isHealthy();
             for (const healthIndicator of healthIndicators) {
                 let healthIndicatorHealth = healthIndicator.health();
+                let reasonAdded = false;
                 if (healthIndicatorHealth.status !== HealthStatus.Healthy) {
                     builder.isUnhealthy();
                     if (healthIndicatorHealth.reasons) {
-                        builder.addReason(`[${healthIndicator.healthIndicatorName}]: [${healthIndicatorHealth.reasons.join(',')}]`);
+                        builder.addReason(`[${healthIndicator.healthIndicatorName}] - [${healthIndicatorHealth.status}] - [${healthIndicatorHealth.reasons.join(',')}]`);
+                        reasonAdded = true;
                     }
-                    break;
+                }
+                if (!reasonAdded) {
+                    builder.addReason(`[${healthIndicator.healthIndicatorName}] - [${healthIndicatorHealth.status}]`);
                 }
             }
         }

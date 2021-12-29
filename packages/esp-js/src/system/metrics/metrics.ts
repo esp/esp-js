@@ -1,4 +1,5 @@
 import {NoopMetricsFactory} from './noopMetrics';
+import {GlobalState} from '../globalState';
 
 // This is a pluggable API compatible with prom-client
 // By default it runs on a no-operation (noop) implementation.
@@ -66,18 +67,18 @@ declare global {
     }
 }
 
-if (!window.metricsFactoryInstance) {
-    window.metricsFactoryInstance = NoopMetricsFactory;
+if (!GlobalState.metricsFactoryInstance) {
+    GlobalState.metricsFactoryInstance = NoopMetricsFactory;
 }
 
 export const MetricFactory: MetricFactoryLike = {
     createGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {
-        return window.metricsFactoryInstance.createGauge(name, help, labelNames);
+        return GlobalState.metricsFactoryInstance.createGauge(name, help, labelNames);
     },
     createCounter(name: string, help: string, labelNames?: string []): CounterMetric {
-        return window.metricsFactoryInstance.createCounter(name, help, labelNames);
+        return GlobalState.metricsFactoryInstance.createCounter(name, help, labelNames);
     },
     createHistogram (name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric {
-        return window.metricsFactoryInstance.createHistogram(name, help, labelNames, buckets);
+        return GlobalState.metricsFactoryInstance.createHistogram(name, help, labelNames, buckets);
     }
 };

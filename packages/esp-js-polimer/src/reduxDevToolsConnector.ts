@@ -1,10 +1,10 @@
 import {PolimerModel} from './polimerModel';
 import {logger} from './logger';
-import { Router, EventEnvelope } from 'esp-js';
+import { Router, EventEnvelope, GlobalState } from 'esp-js';
 import {ImmutableModel} from './immutableModel';
 
-const devToolsExtension = window['devToolsExtension']; //tslint:disable-line
-const _withDevTools = typeof window !== 'undefined' && devToolsExtension != null;
+const devToolsExtension = GlobalState['devToolsExtension']; //tslint:disable-line
+const _withDevTools = devToolsExtension != null;
 
 type Update = {
     type: string;

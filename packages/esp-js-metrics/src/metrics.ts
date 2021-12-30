@@ -1,5 +1,5 @@
 import {NoopMetricsFactory} from './noopMetrics';
-import {GlobalState} from '../globalState';
+import {GlobalState} from './globalState';
 
 // This is a pluggable API compatible with prom-client
 // By default it runs on a no-operation (noop) implementation.
@@ -65,11 +65,22 @@ declare global {
     interface Window {
         metricsFactoryInstance: MetricFactoryLike;
     }
+    namespace NodeJS {
+        interface Global {
+            metricsFactoryInstance: MetricFactoryLike;
+        }
+    }
 }
 
 if (!GlobalState.metricsFactoryInstance) {
     GlobalState.metricsFactoryInstance = NoopMetricsFactory;
 }
+
+export const MetricFactoryImplementation = {
+    set(metricFactoryLike: MetricFactoryLike) {
+        GlobalState.metricsFactoryInstance = metricFactoryLike;
+    }
+};
 
 export const MetricFactory: MetricFactoryLike = {
     createGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {

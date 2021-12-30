@@ -29,6 +29,7 @@
     "esp-js-di": "^5.1.2",
     "esp-js-react": "^5.1.2",
     "esp-js-rx": "^5.1.2",
+    "esp-js-metrics": "^5.1.2",
     "query-string": "6.13.1",
     "react": "16.13.1",
     "rxjs": "6.6.6",

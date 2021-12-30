@@ -1,4 +1,5 @@
-import {GaugeMetric, Logger, MetricFactory} from 'esp-js';
+import {GaugeMetric,  MetricFactory} from 'esp-js-metrics';
+import {Logger} from 'esp-js';
 import {Health} from './health';
 import {Container, ContainerNotification} from 'esp-js-di';
 import {HealthUtils} from './healthutils';

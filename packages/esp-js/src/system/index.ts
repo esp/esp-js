@@ -1,7 +1,6 @@
 // Auto-generated 
 export * from './disposables';
 export * from './logging';
-export * from './metrics';
 export * from './models';
 export * from './globalState';
 export * from './guard';

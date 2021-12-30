@@ -3,7 +3,8 @@ import {HealthStatus} from './health';
 
 export namespace HealthUtils {
     export const isHealthIndicator = (o: any): o is HealthIndicator => {
-        return 'health' in o && 'healthIndicatorName' in o;
+        let isObject = typeof o === 'object' && o !== null;
+        return isObject && 'health' in o && 'healthIndicatorName' in o;
     };
     export const statusToInt = (status: HealthStatus) => {
         switch (status) {

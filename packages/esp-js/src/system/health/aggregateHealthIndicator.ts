@@ -1,7 +1,9 @@
-import {DisposableBase, Level, Logger} from 'esp-js';
 import {HealthIndicator} from './healthIndicator';
 import {Health, HealthStatus} from './health';
 import {DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from './healthIndicatorTrigger';
+import { Logger } from '../logging/logger';
+import { DisposableBase } from '../disposables/disposableBase';
+import { Level } from '../logging/types';
 
 const _defaultLog = Logger.create('AggregateHealthIndicator');
 

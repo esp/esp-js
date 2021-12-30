@@ -1,10 +1,6 @@
 import {GaugeMetric,  MetricFactory} from 'esp-js-metrics';
-import {Logger} from 'esp-js';
-import {Health} from './health';
+import {Logger, Health, HealthUtils, AggregateHealthIndicator, DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from 'esp-js';
 import {Container, ContainerNotification} from 'esp-js-di';
-import {HealthUtils} from './healthutils';
-import {AggregateHealthIndicator} from './aggregateHealthIndicator';
-import {DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from './healthIndicatorTrigger';
 
 const _log = Logger.create('AggregateEspDiHealthIndicator');
 

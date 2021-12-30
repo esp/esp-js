@@ -1,4 +1,4 @@
-import {Guard} from 'esp-js';
+import { Guard } from '../guard';
 
 export enum HealthStatus {
     Healthy = 'Healthy',

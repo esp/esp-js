@@ -23,8 +23,8 @@ export class AggregateEspDiHealthIndicator extends AggregateHealthIndicator {
                 this._container.off('instanceRegistered', this._instanceRegisteredOrCreated);
                 this._container.off('instanceCreated', this._instanceRegisteredOrCreated);
             });
-            // this class should be used as a singleton, given that we can create the metric in the ctor, else it'll fail fast.
-            this._aggregateHealthMetric = MetricFactory.createGauge('aggregate_health', 'The aggregate health for an application');
+            // this class should be used as a singleton, if createGauge is recalled with the same metric name it may blow depending on the implementation used
+            this._aggregateHealthMetric = MetricFactory.createGauge('aggregate_esp_di_health', 'The aggregate health for an application');
         }
         return wasStarted;
     }

@@ -79,6 +79,9 @@ if (!GlobalState.metricsFactoryInstance) {
 export const MetricFactoryImplementation = {
     set(metricFactoryLike: MetricFactoryLike) {
         GlobalState.metricsFactoryInstance = metricFactoryLike;
+    },
+    unset() {
+        GlobalState.metricsFactoryInstance = NoopMetricsFactory;
     }
 };
 

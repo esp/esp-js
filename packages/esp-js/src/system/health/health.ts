@@ -7,6 +7,7 @@ export enum HealthStatus {
 }
 
 export interface Health {
+    name: string;
     status: HealthStatus;
     reasons: string[];
 }
@@ -26,21 +27,43 @@ export class HealthStatusBuilder {
 
     }
 
+    get currentStatus() {
+        return this._status;
+    }
+
+    /**
+     * Sets HealthStatus to Unknown, shorthand for setStatus(HealthStatus.Unknown)
+     */
     isUnknown(): this {
         this._status = HealthStatus.Unknown;
         return this;
     }
 
+    /**
+     * Sets HealthStatus to Healthy, shorthand for setStatus(HealthStatus.Healthy)
+     */
     isHealthy(): this {
         this._status = HealthStatus.Healthy;
         return this;
     }
 
+    /**
+     * Sets HealthStatus to Unhealthy, shorthand for setStatus(HealthStatus.Unhealthy)
+     */
     isUnhealthy(): this {
         this._status = HealthStatus.Unhealthy;
         return this;
     }
 
+    setStatus(status: HealthStatus): this {
+        Guard.stringIsNotEmpty(status, 'status can not be empty');
+        this._status = status;
+        return this;
+    }
+
+    /**
+     * Adds a reason for the health, typically only used when the status isn't HealthStatus.Healthy
+     */
     addReason(reason: string): this {
         Guard.stringIsNotEmpty(reason, 'Can not build Health, reason must be a string and non empty');
         this._reasons.push(reason);
@@ -49,6 +72,7 @@ export class HealthStatusBuilder {
 
     build(): Health {
         return {
+            name: this._name,
             status: this._status,
             reasons: this._reasons
         };

@@ -1,19 +1,19 @@
 import {MetricFactoryLike, CounterMetric, GaugeMetric, HistogramMetric, LabelValues, GaugeMetricWithLabels, CounterMetricWithLabels, HistogramMetricWithLabels} from './metrics';
 
 const NoopMetrics = (new class implements CounterMetric, GaugeMetric, HistogramMetric {
-    inc(...ars:any[]): void { }
+    inc(...args:any[]): void { }
     labels(...args: any[]): any {
         return NoopMetricsWithLabels;
     }
-    remove(...ars:any[]) { }
+    remove(...args:any[]) { }
     reset() { }
-    observe(...ars:any[]) { }
+    observe(...args:any[]) { }
     dec(labels: LabelValues, value?: number): void;
     dec(value?: number): void;
     dec(...args:any[]) {}
     set(...args:any[]) {}
     startTimer(labels?: LabelValues) { return () => {}; }
-    setToCurrentTime(...ars:any[])  { }
+    setToCurrentTime(...args:any[])  { }
 });
 
 const NoopMetricsWithLabels = (new class implements CounterMetricWithLabels, GaugeMetricWithLabels, HistogramMetricWithLabels {

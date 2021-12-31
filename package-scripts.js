@@ -7,8 +7,8 @@ module.exports = {
         buildProd: 'cross-env NODE_ENV=prod webpack --display-reasons --display-error-details --color && yarn test-ci',
         buildPack: 'cross-env NODE_ENV=prod yarn pack',
         buildDocs: 'cross-env NODE_ENV=dev BUILD_DOCS=true webpack --display-reasons --display-error-details --color',
-        test: 'jest --color --no-cache -c ./jest.config.js --rootDir . --watchAll',
-        testCi: 'jest --color --no-cache -c ./jest.config.js --rootDir .',
+        test: 'node --expose-gc node_modules/jest/bin/jest.js --color --no-cache -c ./jest.config.js --rootDir . --watchAll',
+        testCi: 'node --expose-gc node_modules/jest/bin/jest.js --color --no-cache -c ./jest.config.js --rootDir .',
         clean: isWindows
             ? 'rmdir -r ./.dist && rmdir -r ./.tsbuild && del /s /q esp*.tgz'
             : `rm -rf ./.dist && rm -rf ./.tsbuild && find . -name 'esp*.tgz' -delete`,

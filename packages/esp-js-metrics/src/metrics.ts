@@ -1,5 +1,5 @@
 import {NoopMetricsFactory} from './noopMetrics';
-import {GlobalState} from './globalState';
+import {getMetricsFactoryInstance, setMetricsFactoryInstance} from './setImplementation';
 
 // This is a pluggable API compatible with prom-client
 // By default it runs on a no-operation (noop) implementation.
@@ -72,27 +72,25 @@ declare global {
     }
 }
 
-if (!GlobalState.metricsFactoryInstance) {
-    GlobalState.metricsFactoryInstance = NoopMetricsFactory;
-}
+setMetricsFactoryInstance(NoopMetricsFactory, false);
 
 export const MetricFactoryImplementation = {
     set(metricFactoryLike: MetricFactoryLike) {
-        GlobalState.metricsFactoryInstance = metricFactoryLike;
+        setMetricsFactoryInstance(metricFactoryLike, true);
     },
     unset() {
-        GlobalState.metricsFactoryInstance = NoopMetricsFactory;
+        setMetricsFactoryInstance(NoopMetricsFactory, true);
     }
 };
 
 export const MetricFactory: MetricFactoryLike = {
     createGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {
-        return GlobalState.metricsFactoryInstance.createGauge(name, help, labelNames);
+        return getMetricsFactoryInstance().createGauge(name, help, labelNames);
     },
     createCounter(name: string, help: string, labelNames?: string []): CounterMetric {
-        return GlobalState.metricsFactoryInstance.createCounter(name, help, labelNames);
+        return getMetricsFactoryInstance().createCounter(name, help, labelNames);
     },
     createHistogram (name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric {
-        return GlobalState.metricsFactoryInstance.createHistogram(name, help, labelNames, buckets);
+        return getMetricsFactoryInstance().createHistogram(name, help, labelNames, buckets);
     }
 };

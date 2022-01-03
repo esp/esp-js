@@ -3,7 +3,6 @@ import {Health, HealthStatus} from './health';
 import {DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from './healthIndicatorTrigger';
 import {Logger} from '../logging/logger';
 import {DisposableBase} from '../disposables/disposableBase';
-import {Level} from '../logging/types';
 import {Guard} from '../guard';
 
 const _defaultLog = Logger.create('AggregateHealthIndicator');
@@ -107,12 +106,10 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
                 } else if (builder.currentStatus !== HealthStatus.Unknown && healthIndicatorHealth.status === HealthStatus.Unhealthy) {
                     builder.isUnhealthy();
                 }
-                if (healthIndicatorHealth.status !== HealthStatus.Healthy) {
-                    if (healthIndicatorHealth.reasons && healthIndicatorHealth.reasons.length > 0) {
-                        builder.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}, reasons: ${healthIndicatorHealth.reasons.join(',')}]`);
-                    } else {
-                        builder.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}]`);
-                    }
+                if (healthIndicatorHealth.reasons && healthIndicatorHealth.reasons.length > 0) {
+                    builder.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}, reasons: ${healthIndicatorHealth.reasons.join(',')}]`);
+                } else {
+                    builder.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}]`);
                 }
             }
         } else {
@@ -126,7 +123,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         const statusChanged = oldHealth.status !==  newHealth.status;
         if (statusChanged) {
             const reasons = newHealth.reasons && newHealth.reasons.length > 0
-                ? newHealth.reasons.join(',')
+                ? newHealth.reasons.join(', ')
                 : '';
             this._log.debug(`Status has changed from ${oldHealth.status} to ${newHealth.status}. Reasons: ${reasons}`);
         } else if (isFirstRun) {

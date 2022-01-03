@@ -108,8 +108,9 @@ describe('AggregateHealthIndicator', () => {
         aggregateIndicator.addIndicator(indicator2);
         jest.advanceTimersByTime(5000);
         expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown);
-        expect(aggregateIndicator.health().reasons.length).toEqual(1);
-        expect(aggregateIndicator.health().reasons[0]).toEqual('[Indicator: indicator1, status: Unknown, reasons: Indicator returned a falsely status]');
+        expect(aggregateIndicator.health().reasons.length).toEqual(2);
+        expect(aggregateIndicator.health().reasons[0]).toEqual('[Indicator: indicator2, status: Healthy]');
+        expect(aggregateIndicator.health().reasons[1]).toEqual('[Indicator: indicator1, status: Unknown, reasons: Indicator returned a falsely status]');
     });
 
     test.each([

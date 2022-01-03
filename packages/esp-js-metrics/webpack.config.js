@@ -23,5 +23,11 @@ module.exports = {
     entry: {
         'esp-js-metrics': './src/index',
         'esp-js-metrics.min': './src/index'
+    },
+    module: {
+        ...baseConfig.module,
+        // Tell webpack to skip this, this results in it not re-writing the global state in this file.
+        // Given this file itself proxies which global stat to use, this makes sense.
+        noParse: /\/globalState.ts$/,
     }
 };

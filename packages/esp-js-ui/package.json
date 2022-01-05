@@ -37,10 +37,10 @@
   },
   "peerDependencies": {
     "classnames": "^2.2.6",
-    "esp-js": "^5.0.0",
-    "esp-js-di": "^5.0.0",
-    "esp-js-react": "5.0.0",
-    "esp-js-rx": "^5.0.0",
+    "esp-js": "^6.0.0",
+    "esp-js-di": "^6.0.0",
+    "esp-js-react": "6.0.0",
+    "esp-js-rx": "^6.0.0",
     "react": "^16.8.6",
     "rxjs": "^6.6.6"
   }

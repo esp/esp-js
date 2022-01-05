@@ -30,8 +30,8 @@
     "rxjs-compat": "6.6.6"
   },
   "peerDependencies": {
-    "esp-js": "^5.0.0",
-    "esp-js-rx": "^5.0.0",
+    "esp-js": "^6.0.0",
+    "esp-js-rx": "^6.0.0",
     "rxjs": "^6.6.6",
     "rxjs-compat": "^6.6.6"
   }

@@ -97,6 +97,22 @@ describe('AggregateHealthIndicator', () => {
         expect(aggregateIndicator.start()).toEqual(false);
     });
 
+    it('hasIndicator finds indicator', () => {
+        addAllIndicators();
+        expect(aggregateIndicator.hasIndicator(indicator1)).toBeTruthy();
+        expect(aggregateIndicator.hasIndicator(indicator2)).toBeTruthy();
+        expect(aggregateIndicator.hasIndicator(indicator3)).toBeTruthy();
+        expect(aggregateIndicator.hasIndicator(new TestHealthIndicator('indicator4'))).toBeFalsy();
+    });
+
+    it('hasIndicatorByName finds indicator', () => {
+        addAllIndicators();
+        expect(aggregateIndicator.hasIndicatorByName('indicator1')).toBeTruthy();
+        expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
+        expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
+        expect(aggregateIndicator.hasIndicatorByName('indicator4')).toBeFalsy();
+    });
+
     it('status - default status is Unknown', () => {
         expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown);
     });
@@ -160,21 +176,26 @@ describe('AggregateHealthIndicator', () => {
         expect(aggregateIndicator.updates[2].newHealth.status).toEqual(HealthStatus.Unknown);
     });
 
-    it('status - weak references indicators', (done) => {
+    it('Indicators can be weak referenced', (done) => {
         jest.useRealTimers();
-        addAllIndicators();
+        aggregateIndicator.addIndicator(indicator1);
+        aggregateIndicator.addIndicator(indicator2);
+        aggregateIndicator.addIndicator(indicator3, false);
         stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
         expect(aggregateIndicator.activateIndicatorCount).toEqual(3);
         indicator1 = undefined;
         indicator3 = undefined;
-        // this is a bit of a cowboy test however given the AggregateHealthIndicator is holding WeakRef s to things it's required
+        // this is a bit of a cowboy test however given the AggregateHealthIndicator can hold WeakRef s to things it's required
         if (global.gc) {
-            // it seems that the I need to run the gc on the next tick after de-referencing indicator1
+            // it seems that we need to run the gc on the next tick after de-referencing the indicators
             setTimeout(() => {
                 global.gc();
                 jest.useFakeTimers();
                 jest.advanceTimersByTime(5000);
-                expect(aggregateIndicator.activateIndicatorCount).toEqual(1);
+                // only indicator 1 should be removed, indicator 3 was added with useWeakReference=false
+                expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
+                expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
+                expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
                 done();
             }, 0);
         } else {

@@ -23,10 +23,31 @@ import {Guard} from '../guard';
 
 const _defaultLog = Logger.create('AggregateHealthIndicator');
 
+class IndicatorRecord {
+    private _weakRef?: WeakRef<HealthIndicator>;
+    private _hardRef?: HealthIndicator;
+
+    constructor(
+        indicator: HealthIndicator,
+        private _useWeakReference: boolean = true,
+    ) {
+        if (_useWeakReference) {
+            this._weakRef = new WeakRef<HealthIndicator>(indicator);
+        } else {
+            this._hardRef = indicator;
+        }
+    }
+    public get reference() {
+        return this._useWeakReference
+            ? this._weakRef.deref()
+            : this._hardRef;
+    }
+}
+
 export class AggregateHealthIndicator extends DisposableBase implements HealthIndicator {
     private _isStarted = false;
     private _health = Health.builder(AggregateHealthIndicator.constructor.name).isUnknown().build();
-    private _healthIndicators: WeakRef<HealthIndicator>[] = [];
+    private _healthIndicators: IndicatorRecord[] = [];
 
     constructor(private _healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger, private _log: Logger = _defaultLog) {
         super();
@@ -44,23 +65,48 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         return this._healthIndicators.length;
     }
 
-    public addIndicator = (healthIndicator: HealthIndicator) => {
+    /**
+     * Adds an indicator which will contribute to the aggregate status.
+     * This doesn't check if the indicator is already added.
+     *
+     * @param healthIndicator - the indicator
+     * @param useWeakReference - if true (default) the indicator will be weakly referenced
+     */
+    public addIndicator = (healthIndicator: HealthIndicator, useWeakReference = true) => {
+        Guard.isObject(healthIndicator, 'healthIndicatorName must be an object and not falsely');
         Guard.stringIsNotEmpty(healthIndicator.healthIndicatorName, 'healthIndicatorName can not be empty');
-        this._healthIndicators.push(new WeakRef(healthIndicator));
+        this._healthIndicators.push(new IndicatorRecord(healthIndicator, useWeakReference));
     };
 
+    /**
+     * Removes the first occurrence of the indicator if found
+     */
     public removeIndicator = (healthIndicator: HealthIndicator) => {
         if (!healthIndicator) {
             return;
         }
         for (let i = this._healthIndicators.length - 1; i >= 0; i--) {
             const current = this._healthIndicators[i];
-            if (current.deref() && current.deref() === healthIndicator) {
+            if (current.reference && current.reference === healthIndicator) {
                 this._healthIndicators.splice(i, 1);
                 break;
             }
         }
     };
+
+    /**
+     * Returns true on the first occurrence of the indicator found
+     */
+    public hasIndicator =  (healthIndicator: HealthIndicator) => {
+        return this._healthIndicators.some(ir => ir.reference === healthIndicator);
+    }
+
+    /**
+     * Returns true on the first occurrence of the indicator found
+     */
+    public hasIndicatorByName =  (name: string) => {
+        return this._healthIndicators.some(ir => ir.reference && ir.reference.healthIndicatorName === name);
+    }
 
     protected healthStatusChanged = (oldHealth: Health, newHealth: Health) => {
 
@@ -157,7 +203,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         const liveIndicators: HealthIndicator[] = [];
         let healthIndicatorLength = this._healthIndicators.length;
         for (let i = healthIndicatorLength - 1; i >= 0; i--) {
-            const current = this._healthIndicators[i].deref();
+            const current = this._healthIndicators[i].reference;
             if (current) {
                 liveIndicators.push(current);
             } else {

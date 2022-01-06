@@ -1,9 +1,9 @@
 import {AppDefaultStateProvider, AppState, RegionState, RegionRecordState} from 'esp-js-ui';
 import {TradingModuleContainerConst} from './trading-module/tradingModuleContainerConst';
 import {RegionNames} from './shell/regionNames';
-import {CashTilePersistedState} from './trading-module/cash-tile/state/stateModel';
+import {CashTilePersistedState} from './trading-module/views/cash-tile/state/stateModel';
 import {BlotterModuleContainerConst} from './blotter-module/blotterModuleContainerConst';
-import {BlotterState} from './blotter-module/blotter/models/blotterState';
+import {BlotterState} from './blotter-module/views/blotter/model/blotterState';
 
 export const DefaultStateProvider: AppDefaultStateProvider = {
     getDefaultAppState(): AppState {

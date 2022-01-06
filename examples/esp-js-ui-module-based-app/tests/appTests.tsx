@@ -2,7 +2,7 @@ import 'jest';
 import {configure, mount} from 'enzyme';
 import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
 import {AppShell} from '../src/shell/appShell';
-import {ShellView} from '../src/shell/views/shellView';
+import {WorkspaceView} from '../src/shell/views/workspace/views/workspaceView';
 import * as React from 'react';
 
 configure({adapter: new ReactSixteenAdapter()});
@@ -13,6 +13,6 @@ describe('ShellBootstrapper Tests', () => {
         let shellBootstrapper = new AppShell();
         shellBootstrapper.start();
         const shellBootstrapperWrapper = mount(shellBootstrapper.rootElement);
-        expect(shellBootstrapperWrapper.containsMatchingElement(<ShellView model={undefined}/>)).toBeTruthy();
+        expect(shellBootstrapperWrapper.containsMatchingElement(<WorkspaceView model={undefined}/>)).toBeTruthy();
     });
 });

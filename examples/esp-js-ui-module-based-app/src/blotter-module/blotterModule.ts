@@ -1,12 +1,12 @@
 import * as uuid from 'uuid';
 import {Container, EspDiConsts} from 'esp-js-di';
-import {espModule, Logger, ModelBase, ModuleBase, PrerequisiteRegister, RegionItemRecord, SystemContainerConst, ViewFactoryBase} from 'esp-js-ui';
-import {BlotterViewFactory} from './blotter/blotterViewFactory';
-import {BlotterModel} from './blotter/models/blotterModel';
-import {RegionNames} from '../shell/regionNames';
+import {espModule, Logger, ModelBase, ModuleBase, PrerequisiteRegister, SystemContainerConst, ViewFactoryBase} from 'esp-js-ui';
+import {BlotterViewFactory} from './views/blotter/blotterViewFactory';
+import {BlotterModel} from './views/blotter/model/blotterModel';
 import {BlotterModuleContainerConst} from './blotterModuleContainerConst';
-import {AccountsRefDataService} from './blotter/services/accountsRefDataService';
-import {ModuleLoadStage} from 'esp-js-ui';
+import {AccountsRefDataService} from './services/accountsRefDataService';
+import {PreferenceConsts} from '../common';
+import {BlotterPreferences} from './views/preferences';
 
 let _log = Logger.create('BlotterModule');
 
@@ -14,7 +14,7 @@ let _log = Logger.create('BlotterModule');
 export class BlotterModule extends ModuleBase {
     _viewFactoryGroupId: string = uuid.v4();
 
-    constructor(container: Container) {
+    constructor(container: Container /*note, this container is just for this module, is a child of the root container */) {
         super(container);
     }
 
@@ -35,6 +35,10 @@ export class BlotterModule extends ModuleBase {
             .register(BlotterModuleContainerConst.blotterModel, BlotterModel)
             .inject(SystemContainerConst.router, SystemContainerConst.region_manager, BlotterModuleContainerConst.accountsRefDataService)
             .singletonPerContainer();
+
+        this.container
+            .register(PreferenceConsts.preferenceEntity, BlotterPreferences)
+            .transient();
     }
 
     getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {

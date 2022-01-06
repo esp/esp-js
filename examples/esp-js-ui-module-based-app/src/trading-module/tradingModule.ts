@@ -10,10 +10,10 @@ import {
     espModule,
 } from 'esp-js-ui';
 import {TradingModuleContainerConst} from './tradingModuleContainerConst';
-import {CashTileViewFactory} from './cash-tile/cashTileViewFactory';
-import {CurrencyPairRefDataService} from './cash-tile/services/currencyPairRefDataService';
-import {concat, Observable, throwError, timer} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {CashTileViewFactory} from './views/cash-tile/cashTileViewFactory';
+import {CurrencyPairRefDataService} from './services/currencyPairRefDataService';
+import {PreferenceConsts} from '../common';
+import {TradingPreferences} from './views/preferences/model/tradingPreferences';
 
 let _log = Logger.create('TradingModule');
 
@@ -21,7 +21,7 @@ let _log = Logger.create('TradingModule');
 export class TradingModule extends ModuleBase {
     _viewFactoryGroupId: string = uuid.v4();
 
-    constructor(container: Container) {
+    constructor(container: Container /*note, this container is just for this module, is a child of the root container */) {
         super(container);
     }
 
@@ -39,6 +39,11 @@ export class TradingModule extends ModuleBase {
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
             .inGroup(this._viewFactoryGroupId);
+
+        this.container
+            .register(PreferenceConsts.preferenceEntity, TradingPreferences)
+            .inject(TradingModuleContainerConst.ccyPairRefDataService)
+            .transient();
     }
 
     getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {

@@ -1,15 +1,15 @@
 {
   "name": "esp-js-ui-module-based-app",
-  "version": "5.1.2",
+  "version": "6.0.0-next.0",
   "license": "MIT",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "esp-js": "^5.1.2",
-    "esp-js-di": "^5.1.2",
-    "esp-js-polimer": "^5.1.2",
-    "esp-js-react": "^5.1.2",
-    "esp-js-ui": "^5.1.2",
+    "esp-js": "^6.0.0-next.0",
+    "esp-js-di": "^6.0.0-next.0",
+    "esp-js-polimer": "^6.0.0-next.0",
+    "esp-js-react": "^6.0.0-next.0",
+    "esp-js-ui": "^6.0.0-next.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "rxjs": "6.6.6",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "jest": "26.0.1",
-    "typescript": "3.9.5",
+    "typescript": "4.5.4",
     "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "3.11.0"

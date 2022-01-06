@@ -7,7 +7,7 @@ import {ShellEvents} from '../../../events';
 import {Region} from 'esp-js-ui';
 import { ModalView } from '../../modal/views/modal';
 
-export interface ShellViewProps {
+export interface WorkspaceViewProps {
     model: WorkspaceModel;
 }
 
@@ -19,7 +19,7 @@ const SingleItemRegionViewWrapped = ({model, }: { model: Region} ) => {
     return (<SingleItemRegionView model={model} showLoadingUi={true} />);
 };
 
-export const WorkspaceView = ({model}: ShellViewProps) => {
+export const WorkspaceView = ({model}: WorkspaceViewProps) => {
     let mainContent;
     let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
     const clearStateAndReload: () => void = React.useCallback(() => {

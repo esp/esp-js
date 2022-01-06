@@ -1,3 +1,19 @@
+// notice_start
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// notice_end
+
 import {HealthIndicator} from './healthIndicator';
 import {Health, HealthStatus} from './health';
 import {DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from './healthIndicatorTrigger';
@@ -17,7 +33,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     }
 
     public get healthIndicatorName() {
-        return AggregateHealthIndicator.constructor.name;
+        return 'AggregateHealthIndicator';
     }
 
     public health(): Health {
@@ -87,9 +103,9 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
 
     private _updateHealth = (isFirstRun: boolean) => {
         let healthIndicators = this._getIndicators(isFirstRun);
-        let builder = Health.builder(this.healthIndicatorName).isUnknown();
+        let health = Health.builder(this.healthIndicatorName).isUnknown();
         if (healthIndicators.length > 0) {
-            builder = builder.isHealthy();
+            health = health.isHealthy();
             for (const healthIndicator of healthIndicators) {
                 let healthIndicatorHealth = healthIndicator.health();
                 if (!healthIndicatorHealth) {
@@ -102,22 +118,22 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
                 // Once Unknown, the overall status stays as Unknown.
                 // If there are no Unknowns, but some unhealthy the overall status is Unhealthy.
                 if (healthIndicatorHealth.status === HealthStatus.Unknown) {
-                    builder.isUnknown();
-                } else if (builder.currentStatus !== HealthStatus.Unknown && healthIndicatorHealth.status === HealthStatus.Unhealthy) {
-                    builder.isUnhealthy();
+                    health.isUnknown();
+                } else if (health.currentStatus !== HealthStatus.Unknown && healthIndicatorHealth.status === HealthStatus.Unhealthy) {
+                    health.isUnhealthy();
                 }
                 if (healthIndicatorHealth.reasons && healthIndicatorHealth.reasons.length > 0) {
-                    builder.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}, reasons: ${healthIndicatorHealth.reasons.join(',')}]`);
+                    health.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}, reasons: ${healthIndicatorHealth.reasons.join(', ')}]`);
                 } else {
-                    builder.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}]`);
+                    health.addReason(`[Indicator: ${healthIndicator.healthIndicatorName}, status: ${healthIndicatorHealth.status}]`);
                 }
             }
         } else {
-            builder = builder.isUnknown();
+            health = health.isUnknown();
         }
 
         let oldHealth = this._health;
-        let newHealth = builder.build();
+        let newHealth = health.build();
         this._health = newHealth;
 
         const statusChanged = oldHealth.status !==  newHealth.status;
@@ -130,16 +146,20 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
             this._log.debug(`Status ${newHealth.status}`);
         }
 
-        this.healthStatusChanged(oldHealth, newHealth);
+        try {
+            this.healthStatusChanged(oldHealth, newHealth);
+        } catch (err) {
+            this._log.error(`Error signaling health status change`, err);
+        }
     };
 
     private _getIndicators: (isFirstRun: boolean) => HealthIndicator[] = (isFirstRun: boolean) => {
         const liveIndicators: HealthIndicator[] = [];
         let healthIndicatorLength = this._healthIndicators.length;
         for (let i = healthIndicatorLength - 1; i >= 0; i--) {
-            const current = this._healthIndicators[i];
-            if (current.deref()) {
-                liveIndicators.push(current.deref());
+            const current = this._healthIndicators[i].deref();
+            if (current) {
+                liveIndicators.push(current);
             } else {
                 this._healthIndicators.splice(i, 1);
             }

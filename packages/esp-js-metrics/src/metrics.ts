@@ -1,10 +1,26 @@
+// notice_start
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// notice_end
+
 import {NoopMetricsFactory} from './noopMetrics';
 import {getMetricsFactoryInstance, setMetricsFactoryInstance} from './setImplementation';
 
 // This is a pluggable API compatible with prom-client
 // By default it runs on a no-operation (noop) implementation.
-// The implementation can be swapped in very early on by setting window.metricsFactoryInstance before any metrics are created.
-
+// The implementation can be swapped in very early on by calling MetricFactoryImplementation.set(impl).
+// That will set an instance on global or window depending on if your running in node or a browser.
 export type LabelValues<T extends string = string> = Partial<Record<T, string | number>>;
 
 export interface CounterMetric {

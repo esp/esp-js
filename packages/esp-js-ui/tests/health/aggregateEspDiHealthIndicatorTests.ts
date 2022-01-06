@@ -107,7 +107,7 @@ describe('AggregateEspDiHealthIndicator', () => {
         indicator.setStatus(HealthStatus.Unknown);
         moveTimeAndAssertHealth(HealthStatus.Unknown, 1);
         expect(metric.setCalls.length).toEqual(3);
-        expect(metric.setCalls[2][0]).toEqual(2); // Unknown
+        expect(metric.setCalls[2][0]).toEqual(-1); // Unknown
     });
 
     const moveTimeAndAssertHealth = (expected: HealthStatus, expectedIndicatorCount: number) => {

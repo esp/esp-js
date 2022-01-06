@@ -11,7 +11,7 @@ export class AggregateEspDiHealthIndicator extends AggregateHealthIndicator {
     }
 
     public get healthIndicatorName() {
-        return AggregateEspDiHealthIndicator.constructor.name;
+        return 'AggregateEspDiHealthIndicator';
     }
 
     public start() {

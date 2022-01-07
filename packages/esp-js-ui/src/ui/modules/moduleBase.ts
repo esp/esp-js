@@ -1,11 +1,10 @@
 import {Container} from 'esp-js-di';
 import {DisposableBase, Guard, Logger} from 'esp-js';
-import {ViewRegistryModel, ViewFactoryBase} from '../viewFactory';
+import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Module} from './module';
 import {ModelBase} from '../modelBase';
-import {ModuleMetadata} from './moduleDecorator';
-import {EspModuleDecoratorUtils} from './moduleDecorator';
+import {EspModuleDecoratorUtils, ModuleMetadata} from './moduleDecorator';
 import {RegionManager} from '../regions/models';
 import {SystemContainerConst} from '../dependencyInjection';
 import {ModuleLoadStage} from './moduleLoadResult';
@@ -14,6 +13,7 @@ const _log: Logger = Logger.create('ModuleBase');
 
 export abstract class ModuleBase extends DisposableBase implements Module {
     private readonly _moduleMetadata: ModuleMetadata;
+    private _currentLoadStage: ModuleLoadStage = ModuleLoadStage.Unknown;
 
     /**
      * Creates the module.
@@ -29,8 +29,12 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         container.registerInstance(SystemContainerConst.module_metadata, this._moduleMetadata);
     }
 
-    protected get moduleMetadata(): ModuleMetadata {
+    public get moduleMetadata(): ModuleMetadata {
         return this._moduleMetadata;
+    }
+
+    public get currentLoadStage(): ModuleLoadStage {
+        return this._currentLoadStage;
     }
 
     /**
@@ -42,15 +46,15 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         return this.container.resolve<RegionManager>(SystemContainerConst.region_manager);
     }
 
-    initialise(): void { }
+    public initialise(): void { }
 
-    abstract configureContainer();
+    public abstract configureContainer();
 
-    abstract registerPrerequisites(register: PrerequisiteRegister): void;
+    public abstract registerPrerequisites(register: PrerequisiteRegister): void;
 
     protected abstract get isOnNewStateApi(): boolean;
 
-    registerViewFactories(viewRegistryModel: ViewRegistryModel) {
+    public registerViewFactories(viewRegistryModel: ViewRegistryModel) {
         // If an old derived type of this class is loaded, it won't have overrode isOnNewStateApi, thus we can infer that module is legacy
         const isOnNewStateApi = !!this.isOnNewStateApi;
         const isLegacyModule = !isOnNewStateApi;
@@ -64,10 +68,11 @@ export abstract class ModuleBase extends DisposableBase implements Module {
         });
     }
 
-    getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {
+    public getViewFactories(): Array<ViewFactoryBase<ModelBase, any>> {
         return [];
     }
 
-    onLoadStageChanged(stage: ModuleLoadStage) {
+    public onLoadStageChanged(stage: ModuleLoadStage) {
+        this._currentLoadStage = stage;
     }
 }

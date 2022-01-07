@@ -51,6 +51,7 @@ export class BlotterModule extends ModuleBase {
     }
 
     // onLoadStageChanged(stage: ModuleLoadStage) {
+    //     super.onLoadStageChanged(stage);
     //     if (stage === ModuleLoadStage.Loaded) {
     //         this._ensureBlotterLoaded();
     //     }

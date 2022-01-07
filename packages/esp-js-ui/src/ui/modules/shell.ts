@@ -78,7 +78,9 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     public get modules(): Module[] {
-        return this._moduleLoaders.map(ml => ml.module);
+        return this._moduleLoaders
+            .filter(ml => ml.module)
+            .map(ml => ml.module);
     }
 
     public getModule(moduleKey: string): Module {

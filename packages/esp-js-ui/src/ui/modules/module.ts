@@ -3,6 +3,7 @@ import {ViewRegistryModel} from '../viewFactory';
 import {PrerequisiteRegister} from './prerequisites';
 import {Container} from 'esp-js-di';
 import {ModuleLoadStage} from './moduleLoadResult';
+import {ModuleMetadata} from './moduleDecorator';
 
 /**
  * Constructor delegate for a module.
@@ -29,6 +30,17 @@ export interface Module extends DisposableBase {
      * The modules child container.
      */
     container: Container;
+
+    /**
+     * The metadata associated with the module.
+     * Typically this is derived via the @espModule decorating the module.
+     */
+    moduleMetadata: ModuleMetadata;
+
+    /**
+     * The last set load stage
+     */
+    currentLoadStage: ModuleLoadStage;
 
     /**
      * Hook to signal the module is about to be used

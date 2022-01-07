@@ -10,6 +10,7 @@ import {
     StatefulRegion,
     StateService,
     ModuleLoadStage,
+    Module,
     Region,
 } from 'esp-js-ui';
 import {SplashScreenModel, SplashScreenState} from './splashScreenModel';
@@ -54,6 +55,8 @@ export class WorkspaceModel extends ModelBase {
                     if (currentModuleLoadResult.type === ModuleChangeType.Error) {
                         _log.error(`Pre-requisite failed. Module ${currentModuleLoadResult.moduleKey}, Pre-requisite: ${currentModuleLoadResult.prerequisiteResult.name}, Error: ${currentModuleLoadResult.errorMessage}`);
                     }
+                    const allModuleLoadInfo = this._shell.modules.map((m: Module) => `[${m.moduleMetadata.moduleName}: ${ModuleLoadStage[m.currentLoadStage]}]`).join(', ');
+                    _log.info(`All modules load info: ${allModuleLoadInfo}`);
                 },
                 e => {
                     _log.error(`Error in the module load stream ${e}.`, e);
@@ -63,10 +66,8 @@ export class WorkspaceModel extends ModelBase {
                             message: `There has been an error loading the modules.  Please refresh`
                         };
                     });
-                },
-                () => {
-                    _log.info(`Modules loaded`);
-                }));
+                })
+            );
         });
         // Typically, this might happen after login
         this._shell.load(TradingModule, BlotterModule);

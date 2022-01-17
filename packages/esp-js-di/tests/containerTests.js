@@ -598,6 +598,118 @@ describe('Container', () =>  {
             let isRegistered = container.isRegistered('b');
             expect(isRegistered).toBe(false);
         });
+
+        describe('isRegistered(key, IsRegisteredQueryOptions)', () => {
+            let childContainer;
+
+            describe('when item is registered in parent', () => {
+                beforeEach(() => {
+                    container.register('a', {});
+                    childContainer = container.createChildContainer();
+                });
+
+                it('Should return true by default', () => {
+                    let isRegistered = childContainer.isRegistered('a');
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: true });
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return false when searchParentContainers is false', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: false });
+                    expect(isRegistered).toBe(false);
+                });
+            });
+
+            describe('when item is registered in child', () => {
+                beforeEach(() => {
+                    childContainer = container.createChildContainer();
+                    childContainer.register('a', {});
+                });
+
+                it('Should return true by default', () => {
+                    let isRegistered = childContainer.isRegistered('a');
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: true });
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is false', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: false });
+                    expect(isRegistered).toBe(true);
+                });
+            });
+        });
+    })
+
+    describe('isGroupRegistered', () => {
+
+        it('Should return true when a key is registered in group', () => {
+            container.register('a', {}).inGroup('group-1');
+            container.register('b', {}).inGroup('group-1');
+            let isGroupRegistered = container.isGroupRegistered('group-1');
+            expect(isGroupRegistered).toBe(true);
+        });
+
+        it('Should return false when a key is not registered in group', () => {
+            container.register('a', {}).singleton();
+            let isGroupRegistered = container.isGroupRegistered('b');
+            expect(isGroupRegistered).toBe(false);
+        });
+
+        describe('isGroupRegistered(key, IsRegisteredQueryOptions)', () => {
+            let childContainer;
+
+            describe('when item is registered in parent', () => {
+                beforeEach(() => {
+                    container.register('a', {}).inGroup('group-1');
+                    childContainer = container.createChildContainer();
+                });
+
+                it('Should return true by default', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1');
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: true });
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return false when searchParentContainers is false', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: false });
+                    expect(isGroupRegistered).toBe(false);
+                });
+            });
+
+            describe('when item is registered in child', () => {
+                beforeEach(() => {
+                    childContainer = container.createChildContainer();
+                    childContainer.register('a', {}).inGroup('group-1');
+                });
+
+                it('Should return true by default', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1');
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: true });
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is false', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: false });
+                    expect(isGroupRegistered).toBe(true);
+                });
+            });
+        });
     })
 
     describe('container events', () => {

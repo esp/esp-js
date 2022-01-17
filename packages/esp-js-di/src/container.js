@@ -21,6 +21,7 @@ import RegistrationModifier from './registrationModifier';
 import Guard from './guard';
 import EspDiConsts from './espDiConsts';
 import ResolverNames from './resolverNames';
+import {DefaultIsRegisteredQueryOptions} from './isRegisteredQueryOptions';
 
 export default class Container {
     constructor() {
@@ -92,17 +93,21 @@ export default class Container {
         this._instanceCache[name] = instance;
         this._raiseContainerEvent('instanceRegistered', name, instance)
     }
-    isRegistered(name) {
+    isRegistered(name, options = DefaultIsRegisteredQueryOptions) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(name, 'Error calling isRegistered(name). The name argument must be a string and can not be \'\'');
-        var registration = this._registrations[name];
-        return !!registration;
+        const isRegistered = options.searchParentContainers
+            ? !!this._registrations[name]
+            : this._registrations.hasOwnProperty(name);
+        return isRegistered;
     }
-    isGroupRegistered(groupName) {
+    isGroupRegistered(groupName, options = DefaultIsRegisteredQueryOptions) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(groupName, 'Error calling isGroupRegistered(groupName). The groupName argument must be a string and can not be \'\'');
-        var registration = this._registrationGroups[groupName];
-        return !!registration;
+        const isGroupRegistered = options.searchParentContainers
+            ? !!this._registrationGroups[groupName]
+            : this._registrationGroups.hasOwnProperty(groupName);
+        return isGroupRegistered;
     }
     resolve(name, ...additionalDependencies) {
         this._throwIfDisposed();

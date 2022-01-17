@@ -21,8 +21,8 @@ export class Container {
     registerFactory<T>(name: String, factory:(context: Container, ...additionalDependencies: any[]) => T): RegistrationModifier;
     resolve<T>(name: String, ...additionalDependencies): T;
     resolveGroup<T>(groupName: String): Array<T>;
-    isRegistered(name: string) : boolean;
-    isGroupRegistered(groupName: string) : boolean;
+    isRegistered(name: string, options?: IsRegisteredQueryOptions) : boolean;
+    isGroupRegistered(groupName: string, options?: IsRegisteredQueryOptions) : boolean;
     addResolver<T>(name:String, resolver:Resolver<T>);
     on<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void);
     off<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void);
@@ -38,6 +38,18 @@ export class RegistrationModifier {
     singleton():RegistrationModifier;
     singletonPerContainer():RegistrationModifier;
     inGroup(groupName:String):RegistrationModifier;
+}
+
+/**
+ * An optional param which can modify how an 'isRegistered' or 'isGroupRegistered' search is performed.
+ *
+ * If omitted defaults to { searchContainerChain: true }
+ */
+export interface IsRegisteredQueryOptions {
+    /**
+     * If true (default) will search in the current container, and along it's chain up to the root container.
+     */
+    searchParentContainers: boolean;
 }
 
 /**

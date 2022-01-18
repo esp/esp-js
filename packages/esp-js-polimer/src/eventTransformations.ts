@@ -28,8 +28,6 @@ export interface InputEvent<TModel, TEvent> {
 
 export type InputEventStream<TModel, TEvent> = Observable<InputEvent<TModel, TEvent>>;
 
-export type InputEventStreamFactory<TModel, TEvent = any> = (eventType: string | string[], observationStage?: ObservationStage) => InputEventStream<TModel, TEvent>;
-
 export type OutputEvent<TEvent> = {
     readonly eventType: string;
     /**
@@ -48,5 +46,3 @@ export type OutputEvent<TEvent> = {
 };
 
 export type OutputEventStream<TEvent> = Observable<OutputEvent<TEvent>>;
-
-export type OutputEventStreamFactory<TModel, TInputEvent, TOutputEvent>  = (getEventStreamFor: InputEventStreamFactory<TModel, TInputEvent>) => OutputEventStream<TOutputEvent>;

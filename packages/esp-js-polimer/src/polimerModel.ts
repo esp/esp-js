@@ -1,7 +1,7 @@
-import {MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './stateEventHandlers';
+import {PolimerEventHandler} from './stateEventHandlers';
 import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
-import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
+import {InputEvent, OutputEvent} from './eventTransformations';
 import {logger} from './logger';
 import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
@@ -9,14 +9,12 @@ import produce from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {merge, Observable, Subscriber, Subscription} from 'rxjs';
-import {filter, mergeAll} from 'rxjs/operators';
+import {filter} from 'rxjs/operators';
 
 export interface PolimerModelSetup<TModel extends ImmutableModel> {
     initialModel: TModel;
-    stateHandlerMaps: Map<string, PolimerHandlerMap<any, TModel>>;
     stateHandlerObjects: Map<string, any[]>;
     stateHandlerModels: Map<string, StateHandlerModelMetadata>;
-    eventStreamFactories: OutputEventStreamFactory<TModel, any, any>[];
     eventStreamHandlerObjects: any[];
     modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     modelPostEventProcessor: ModelPostEventProcessor<TModel>;
@@ -78,7 +76,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         sendUpdateToDevTools('@@INIT', this._immutableModel, this._modelId);
         this._wireUpStateHandlerModels();
         this._wireUpStateHandlerObjects();
-        this._wireUpStateHandlersMaps();
         this._wireUpEventTransforms();
         this._listenToAllEvents();
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
@@ -234,15 +231,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         });
     }
 
-    private _wireUpStateHandlersMaps = () => {
-        this._initialSetup.stateHandlerMaps.forEach((handlerMap: PolimerHandlerMap<any, TModel>, stateName) => {
-            handlerMap = this._expandMultipleEventsIntoSeparateHandlers(handlerMap);
-            Object.keys(handlerMap).forEach((eventType: string) => {
-                this._addEventHandlerMetadata(eventType, stateName, null, ObservationStage.normal, handlerMap[eventType]);
-            });
-        });
-    };
-
     private _addEventHandlerMetadata(eventType: string, stateName: string, predicate: PolimerEventPredicate, observationStage: ObservationStage, handler: PolimerEventHandler<any, any, any>) {
         let eventHandlerMetadataArray = this._eventHandlersByEventName.get(eventType);
         if (!eventHandlerMetadataArray) {
@@ -264,23 +252,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     private _wireUpEventTransforms = () => {
-        // There are 2 APIs for event transformations:
-        // 1) Via functions that take a event stream factory, these factories take an eventType and return an `Rx.Observable<InputEvent<>>`
-        //    The handlers effectively transform the `InputEvent<>`s to `OutputEvent<>` which get dispatched back into the router
-        // 2) Via decorators on class functions.
-        //    These are functionally similar to the first method, the difference being then don't take an event stream factory,
-        //    Rather they decorate functions on an object instance which will do the event transformation.
-        //    This second approach allows for dependency injection as the handling objects are effectively containers for event transformational streams
-        //
-        // We can normalise these down to a single observable as they are effectively the same:
-        // i.e. `InputEvent<>`s to `OutputEvent<>` transformation streams.
-
         const observables = [];
-
-        // First deal with the first type
-        observables.push(
-            ...this._initialSetup.eventStreamFactories.map(outputEventStreamFactory => outputEventStreamFactory(this._observeEvent))
-        );
 
         // next with second type
         this._initialSetup.eventStreamHandlerObjects.forEach(objectToScanForObservables => {
@@ -328,7 +300,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(subscription);
     };
 
-    // NOTE: this is not quite private as it's passed out bt the  the older even stream factory API above
+    // NOTE: this is not quite private as it's passed out bt the older even stream factory API above
     // Need to remove that.
     // Given that, any changes in params need to be on the end, and defaulted.
     private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final, functionName: string = 'NA'): Observable<InputEvent<TModel, any>> => {
@@ -373,29 +345,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             model: eventEnvelope.model.getImmutableModel()
         };
     }
-
-    /**
-     * This method takes handlerMap and normalizes it producing a new handlerMap.
-     * Process of normalizing includes:
-     *   - split handler that listens on handler of events to two different handlers
-     *
-     * @param {PolimerHandlerMap<TState, TModel>} handlerMap
-     * @returns {PolimerHandlerMap<TState, TModel>}
-     */
-    private _expandMultipleEventsIntoSeparateHandlers = <TState>(handlerMap: PolimerHandlerMap<TState, TModel>): PolimerHandlerMap<TState, TModel> => {
-        return Object.keys(handlerMap).reduce((map, eventType) => {
-            if (eventType.indexOf(MULTIPLE_EVENTS_DELIMITER) !== -1) {
-                const events = eventType.split(MULTIPLE_EVENTS_DELIMITER);
-                events.forEach(event => {
-                    map[event] = handlerMap[eventType];
-                });
-            } else {
-                map[eventType] = handlerMap[eventType];
-            }
-
-            return map;
-        }, {});
-    };
 
     public getImmutableModel = (): TModel => {
         return this._immutableModel;

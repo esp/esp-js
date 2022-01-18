@@ -151,6 +151,11 @@ export class Actor {
         this._router.publishEvent(this._modelId, eventType, event);
         return event;
     }
+    public broadcastEvent(eventType: string, event?: TestEvent) {
+        event = event || {};
+        this._router.broadcastEvent(eventType, event);
+        return event;
+    }
     public publishEventWhichFiltersAtPreviewStage<TKey extends keyof TestImmutableModel>(eventType: string) {
         let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.preview};
         this._router.publishEvent(this._modelId, eventType, testEvent);

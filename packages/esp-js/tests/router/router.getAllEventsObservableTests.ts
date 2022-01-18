@@ -35,6 +35,21 @@ describe('Router', () => {
         _router.addModel('modelId1', _model1);
         _router.addModel('modelId2', _model2);
         _router.addModel('modelId3', _model3);
+
+        // getAllEventsObservable won't yield events if the models are not actually observing them.
+        // Given that, we subscribe the above models to the events used in these tests.
+
+        _router.getEventObservable('modelId1', 'Event1').subscribe();
+        _router.getEventObservable('modelId2', 'Event1').subscribe();
+        _router.getEventObservable('modelId3', 'Event1').subscribe();
+
+        _router.getEventObservable('modelId1', 'Event2').subscribe();
+        _router.getEventObservable('modelId2', 'Event2').subscribe();
+        _router.getEventObservable('modelId3', 'Event2').subscribe();
+
+        _router.getEventObservable('modelId1', 'Event3').subscribe();
+        _router.getEventObservable('modelId2', 'Event3').subscribe();
+        _router.getEventObservable('modelId3', 'Event3').subscribe();
     });
 
     describe('.getAllEventsObservable()', () => {

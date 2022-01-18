@@ -56,7 +56,6 @@ export interface OOModelTestState extends TestState {
 }
 
 export interface TestImmutableModel extends ImmutableModel {
-    handlerMapState: TestState;
     handlerObjectState: TestState;
     handlerModelState: OOModelTestState;
 }
@@ -83,7 +82,6 @@ export const defaultOOModelTestStateFactory = (stateName: string) => {
 export const defaultModelFactory: (modelId: string) => TestImmutableModel = (modelId: string) => {
     return {
         modelId: modelId,
-        handlerMapState: defaultTestStateFactory('handlerMapState'),
         handlerObjectState: defaultTestStateFactory('handlerObjectState'),
         handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
     };

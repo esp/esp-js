@@ -1,7 +1,5 @@
 import {Router, Guard, isEspDecoratedObject} from 'esp-js';
-import {PolimerHandlerMap} from './stateEventHandlers';
 import {PolimerModel, PolimerModelSetup, StateHandlerModelMetadata} from './polimerModel';
-import {OutputEventStreamFactory} from './eventTransformations';
 import {ImmutableModel} from './immutableModel';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
@@ -13,10 +11,8 @@ declare module 'esp-js/.dist/typings/router/router' {
 }
 
 export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelState = {}> {
-    private _stateHandlerMaps: Map<string, PolimerHandlerMap<any, TModel>> = new Map();
     private _stateHandlerObjects: Map<string, any[]> = new Map();
     private _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
-    private _eventStreamFactories: OutputEventStreamFactory<TModel, any, any>[] = [];
     private _eventStreamHandlerObjects: any[] = [];
     private _modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
@@ -28,11 +24,6 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
 
     withInitialModel(model: TModel): this {
         this._initialModel = model;
-        return this;
-    }
-
-    withStateHandlerMap<TKey extends keyof TModel, TState extends TModel[TKey]>(state: TKey, handlerMap: PolimerHandlerMap<TState, TModel>): this {
-        this._stateHandlerMaps.set(<string>state, handlerMap);
         return this;
     }
 
@@ -56,15 +47,10 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
      *
      * @param state
      * @param stateHandlerModel
-     * @param autoWireUpObservers
+     * @param autoWireUpObservers: if true the given model will be wired up to the model (Router.observeEventsOn(model), this defaults to false as often the given instance may have specific initialisation and observe events itself.
      */
     withStateHandlerModel<TKey extends keyof TModel, TStateHandlerModel extends StateHandlerModel<TModel[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): this  {
         this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers});
-        return this;
-    }
-
-    withEventStreams(...outputEventStreamFactory: OutputEventStreamFactory<TModel, any, any>[]): this {
-        this._eventStreamFactories.push(...outputEventStreamFactory);
         return this;
     }
 
@@ -98,7 +84,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
     registerWithRouter(): PolimerModel<TModel> {
         Guard.isDefined(this._initialModel, 'Initial model is not set');
         Guard.stringIsNotEmpty(this._initialModel.modelId, `Initial model's modelId must not be null or empty`);
-        Guard.isTruthy(this._stateHandlerMaps.size > 0 || this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `ERROR: No state handlers (maps, objects or models) setup for model with id ${this._initialModel.modelId}`);
+        Guard.isTruthy(this._stateHandlerObjects.size > 0 || this._stateHandlerModels.size > 0, `ERROR: No state handlers (maps, objects or models) setup for model with id ${this._initialModel.modelId}`);
 
         // The polimer model is a special case,
         // Some attributes may get bound to it dynamically.
@@ -109,10 +95,8 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
             this._router,
             <PolimerModelSetup<TModel>>{
                 initialModel: this._initialModel,
-                stateHandlerMaps: this._stateHandlerMaps,
                 stateHandlerObjects: this._stateHandlerObjects,
                 stateHandlerModels: this._stateHandlerModels,
-                eventStreamFactories: this._eventStreamFactories,
                 eventStreamHandlerObjects: this._eventStreamHandlerObjects,
                 modelPreEventProcessor: this._modelPreEventProcessor,
                 modelPostEventProcessor: this._modelPostEventProcessor,

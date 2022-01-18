@@ -1,4 +1,4 @@
-import {multipleEvents, PolimerHandlerMap, PolimerModel} from '../../src/';
+import {PolimerModel} from '../../src/';
 import {defaultOOModelTestStateFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestImmutableModel} from './testModel';
 import {EventContext, DefaultEventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
 
@@ -40,7 +40,6 @@ function isTestState(state: any): state is TestState {
 function isImmutableTestModel(model: any): model is TestImmutableModel {
     let testModel = <TestImmutableModel>model;
     return testModel && (
-        testModel.handlerMapState !== undefined &&
         testModel.handlerModelState !== undefined &&
         testModel.handlerObjectState !== undefined
     );
@@ -64,30 +63,6 @@ const observeEventPredicate: ObserveEventPredicate = (model?: any, event?: TestE
         eventContext.commit();
     }
     return !event.shouldFilter;
-};
-
-export const TestStateHandlerMap: PolimerHandlerMap<TestState, TestImmutableModel> = {
-    [EventConst.event1]: (draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) => {
-        processEvent(draft, ev, model, eventContext);
-    },
-    [EventConst.event2]: (draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) => {
-        processEvent(draft, ev, model, eventContext);
-    },
-    [multipleEvents(EventConst.event3, EventConst.event4)]: (draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) => {
-        processEvent(draft, ev, model, eventContext);
-    },
-    [EventConst.event5]: (draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) => {
-        if (ev.replacementState) {
-            return ev.replacementState;
-        }
-        processEvent(draft, ev, model, eventContext);
-    },
-    [EventConst.event7]: (draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) => {
-        processEvent(draft, ev, model, eventContext);
-    },
-    [EventConst.event8]: (draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) => {
-        processEvent(draft, ev, model, eventContext);
-    },
 };
 
 export class TestStateObjectHandler {
@@ -155,7 +130,7 @@ export class TestStateHandlerModel extends DisposableBase {
             ...this._currentState,
             preProcessInvokeCount
         };
-    };
+    }
 
     public postProcess() {
         let postProcessInvokeCount = this._currentState.postProcessInvokeCount + 1;

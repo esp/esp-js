@@ -5,37 +5,6 @@ import {defaultTestStateFactory, EventConst} from './testApi/testModel';
 describe('Event Observation', () => {
     let api: PolimerTestApi;
 
-    describe('handler maps', () => {
-        beforeEach(() => {
-            api = PolimerTestApiBuilder.create()
-                .withStateHandlerMap()
-                .build();
-            api.asserts.handlerMapState.captureCurrentState();
-        });
-
-        afterEach(() => {
-            api.asserts.handlerMapState.stateInstanceHasChanged();
-        });
-
-        it('can receives events at normal stage', () => {
-            let testEvent = api.actor.publishEvent(EventConst.event1);
-            api.asserts.handlerMapState
-                .normalEvents()
-                .eventCountIs(1)
-                .callIs(0, EventConst.event1, testEvent, ObservationStage.normal);
-        });
-
-        it('can receives multiple events via same handler', () => {
-            let event3 = api.actor.publishEvent(EventConst.event3);
-            let event4 = api.actor.publishEvent(EventConst.event4);
-            api.asserts.handlerMapState
-                .normalEvents()
-                .eventCountIs(2)
-                .callIs(0, EventConst.event3, event3, ObservationStage.normal)
-                .callIs(1, EventConst.event4, event4, ObservationStage.normal);
-        });
-    });
-
     describe('handler objects', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
@@ -149,27 +118,20 @@ describe('Event Observation', () => {
     describe('handler compositions', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
-                .withStateHandlerMap()
                 .withStateHandlerObject()
                 .withStateHandlerModel()
                 .build();
-            api.asserts.handlerMapState.captureCurrentState();
             api.asserts.handlerObjectState.captureCurrentState();
             api.asserts.handlerModelState.captureCurrentState();
         });
 
         afterEach(() => {
-            api.asserts.handlerMapState.stateInstanceHasChanged();
             api.asserts.handlerObjectState.stateInstanceHasChanged();
             api.asserts.handlerModelState.stateInstanceHasChanged();
         });
 
         it('updates all states that observed the event', () => {
             let testEvent = api.actor.publishEvent(EventConst.event1);
-            api.asserts.handlerMapState
-                .normalEvents()
-                .eventCountIs(1)
-                .callIs(0, EventConst.event1, testEvent, ObservationStage.normal);
             api.asserts.handlerObjectState
                 .normalEvents()
                 .eventCountIs(1)
@@ -260,53 +222,6 @@ describe('Event Observation', () => {
     });
 
     describe('Dispatch handler signature', () => {
-
-        describe('handler maps', () => {
-            beforeEach(() => {
-                api = PolimerTestApiBuilder.create()
-                    .withStateHandlerMap()
-                    .build();
-                api.asserts.handlerMapState.captureCurrentState();
-            });
-
-            afterEach(() => {
-                api.asserts.handlerMapState.stateInstanceHasChanged();
-            });
-
-            it('only dispatches event once', () => {
-                api.actor.publishEvent(EventConst.event1);
-                api.asserts.handlerMapState
-                    .receivedEventsAll()
-                    .eventCountIs(1);
-            });
-            it('receives the current state', () => {
-                api.actor.publishEvent(EventConst.event1);
-                api.asserts.handlerMapState
-                    .receivedEventsAll()
-                    .stateIs(0, 'handlerMapState');
-            });
-
-            it('receives the given event', () => {
-                const event = api.actor.publishEvent(EventConst.event1);
-                api.asserts.handlerMapState
-                    .receivedEventsAll()
-                    .eventIs(0, event);
-            });
-
-            it('receives the current model', () => {
-                api.actor.publishEvent(EventConst.event1);
-                api.asserts.handlerMapState
-                    .receivedEventsAll()
-                    .ensureModelReceived(0);
-            });
-
-            it('receives the event context', () => {
-                api.actor.publishEvent(EventConst.event1);
-                api.asserts.handlerMapState
-                    .receivedEventsAll()
-                    .ensureEventContextReceived(0);
-            });
-        });
 
         describe('handler objects', () => {
             beforeEach(() => {
@@ -415,7 +330,6 @@ describe('Event Observation', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
                 .withStateHandlerModel()
-                .withStateHandlerMap()
                 .withStateHandlerObject()
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
@@ -425,7 +339,6 @@ describe('Event Observation', () => {
             api.actor.publishEventWhichFiltersAtPreviewStage(EventConst.event5);
             api.asserts.handlerModelState.receivedEventsAll().eventCountIs(0);
             api.asserts.handlerObjectState.receivedEventsAll().eventCountIs(0);
-            api.asserts.handlerMapState.receivedEventsAll().eventCountIs(1); // maps don't support filtering, no decorator support
         });
     });
 
@@ -433,18 +346,15 @@ describe('Event Observation', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
                 .withStateHandlerModel()
-                .withStateHandlerMap()
                 .withStateHandlerObject()
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
-            api.asserts.handlerMapState.captureCurrentState();
             api.asserts.handlerObjectState.captureCurrentState();
         });
 
         it('mutative state changes result in a new state object', () => {
             api.actor.publishEvent(EventConst.event1);
             api.asserts.handlerModelState.stateInstanceHasChanged();
-            api.asserts.handlerMapState.stateInstanceHasChanged();
             api.asserts.handlerObjectState.stateInstanceHasChanged();
         });
 
@@ -452,7 +362,6 @@ describe('Event Observation', () => {
             const nextState = defaultTestStateFactory('replacementState');
             api.actor.publishEvent(EventConst.event5, {replacementState: nextState});
             api.asserts.handlerObjectState.stateInstanceHasChanged(nextState);
-            api.asserts.handlerMapState.stateInstanceHasChanged(nextState);
             api.asserts.handlerModelState.stateInstanceHasChanged(); // doesn't support swapping of state, doesn't use immer
         });
     });

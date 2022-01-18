@@ -272,6 +272,13 @@ describe('Event Observation', () => {
                     .receivedEventsAll()
                     .ensureEventContextReceived(0);
             });
+
+            it('receives broadcast events', () => {
+                const event = api.actor.broadcastEvent(EventConst.event1);
+                api.asserts.handlerObjectState
+                    .receivedEventsAll()
+                    .eventIs(0, event);
+            });
         });
 
         describe('handler models', () => {
@@ -322,6 +329,13 @@ describe('Event Observation', () => {
                 api.asserts.handlerModelState
                     .receivedEventsAll()
                     .ensureEventContextReceived(0);
+            });
+
+            it('receives broadcast events', () => {
+                const event = api.actor.broadcastEvent(EventConst.event1);
+                api.asserts.handlerModelState
+                    .receivedEventsAll()
+                    .eventIs(0, event);
             });
         });
     });

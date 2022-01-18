@@ -135,11 +135,15 @@ export class ModelRecord {
         }
         return eventStreamsRegistration.streams;
     }
-    public enqueueEvent(eventType: string, event: any): void {
+    public tryEnqueueEvent(eventType: string, event: any): boolean {
+        if (!this._eventStreams.has(eventType)) {
+            return false;
+        }
         if (!this._eventQueueDirtyEpochMs) {
             this._eventQueueDirtyEpochMs = Date.now();
         }
         this.eventQueue.push({eventType: eventType, event: event});
+        return true;
     }
     public eventQueuePurged() {
         this._eventQueueDirtyEpochMs = null;

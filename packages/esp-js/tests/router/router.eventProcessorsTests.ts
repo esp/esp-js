@@ -160,25 +160,25 @@ describe('Router', () => {
             expect(_model5.eventsProcessed).toEqual(['startEvent']);
         });
 
-        it('calls a models preProcess() function if the model is NOT observing the published event', () => {
+        it('does not call a models preProcess() function if the model is NOT observing the published event', () => {
             _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
-            expect(_model5.preProcessCount).toBe(1);
+            expect(_model5.preProcessCount).toBe(0);
         });
 
-        it('calls a models postProcess() function if the model is NOT observing the published event', () => {
+        it('does not call a models postProcess() function if the model is NOT observing the published event', () => {
             _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
-            expect(_model5.postProcessCount).toBe(1);
+            expect(_model5.postProcessCount).toBe(0);
         });
 
-        it('calls a models pre event processor even if the model is not observing the published event', () => {
+        it('does not call a models pre event processor even if the model is not observing the published event', () => {
             _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
-            const passed = _modelsSentForPreProcessing.length === 1;
+            const passed = _modelsSentForPreProcessing.length === 0;
             expect(passed).toBe(true);
         });
 
-        it('calls a models post event processor even if the model is not observing the published event', () => {
+        it('does not call a models post event processor even if the model is not observing the published event', () => {
             _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
-            const passed = _modelsSentForPostProcessing.length === 1;
+            const passed = _modelsSentForPostProcessing.length === 0;
             expect(passed).toBe(true);
         });
 

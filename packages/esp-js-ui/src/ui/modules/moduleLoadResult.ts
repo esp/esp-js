@@ -6,6 +6,7 @@ export enum ModuleChangeType {
 }
 
 export enum ModuleLoadStage {
+    Unknown = 0,
     Loading = 1,
     Registered = 2,
     Prerequisites = 3,

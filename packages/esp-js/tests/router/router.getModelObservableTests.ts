@@ -35,7 +35,7 @@ describe('Router', () => {
 
         it('throws if arguments incorrect', () => {
             expect(() => {_router.getModelObservable(undefined).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
-            expect(() => {_router.getModelObservable({}).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
+            expect(() => {_router.getModelObservable(<any>{}).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
         });
 
         it('dispatches model once registered', () => {
@@ -152,6 +152,20 @@ describe('Router', () => {
             _router.publishEvent('modelId2', 'StartEvent', 'payload');
             expect(model1UpdateCount).toBe(1);
             expect(model2UpdateCount).toBe(2);
+        });
+
+        it('does not dispatches changes when publishing to a model that is not listening to said event', () => {
+            let model1UpdateCount = 0, model2UpdateCount = 0;
+            _router.getModelObservable('modelId1').subscribe(() => {
+                model1UpdateCount++;
+            });
+            expect(model1UpdateCount).toBe(1);
+            _router.publishEvent('modelId1', 'StartEvent', 'payload');
+            expect(model1UpdateCount).toBe(1);
+            // now observe and publish again
+            _router.getEventObservable('modelId1', 'StartEvent').subscribe(() => { /*noop*/  });
+            _router.publishEvent('modelId1', 'StartEvent', 'payload');
+            expect(model1UpdateCount).toBe(2);
         });
 
         it('should dispatch change to models if event if only one event was processed', () => {

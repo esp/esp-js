@@ -6,15 +6,15 @@ import {RegionBase, RegionManager, RegionState} from '../regions/models';
 import {AppDefaultStateProvider, AppState, NoopAppDefaultStateProvider} from './appState';
 import {IdFactory} from '../idFactory';
 import * as Rx from 'rxjs';
+import {merge, Observable} from 'rxjs';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
-import {DisposableBase, Guard, Router, Logger} from 'esp-js';
+import {DisposableBase, Guard, Logger, Router} from 'esp-js';
 import {Module, ModuleConstructor} from './module';
 import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
 import {ModuleProvider} from './moduleProvider';
 import {ModelBase} from '../modelBase';
 import {SerialDisposable} from 'esp-js-rx';
-import {merge, Observable} from 'rxjs';
 
 const _log: Logger = Logger.create('Shell');
 
@@ -75,6 +75,12 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         SystemContainerConfiguration.configureContainer(this._container);
         this._container.registerInstance(SystemContainerConst.app_shell, this);
         this._container.registerInstance(SystemContainerConst.module_provider, this);
+    }
+
+    public get modules(): Module[] {
+        return this._moduleLoaders
+            .filter(ml => ml.module)
+            .map(ml => ml.module);
     }
 
     public getModule(moduleKey: string): Module {

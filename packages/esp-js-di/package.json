@@ -1,6 +1,6 @@
 {
   "name": "esp-js-di",
-  "version": "5.1.2",
+  "version": "6.0.3-next.0",
   "description": "A tiny DI container (formally microdi-js)",
   "keywords": [
     "di",
@@ -27,7 +27,7 @@
   "typings": "./esp-js-di.d.ts",
   "devDependencies": {
     "jest": "26.0.1",
-    "typescript": "3.9.5",
+    "typescript": "4.5.4",
     "webpack": "4.43.0",
     "webpack-cli": "^3.3.0",
     "webpack-dev-server": "3.11.0"

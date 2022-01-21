@@ -1,6 +1,6 @@
 import {Level, LoggingConfig, ObservationStage, Router} from 'esp-js';
 import {defaultModelFactory, OOModelTestState, ReceivedEvent, TestEvent, TestImmutableModel, TestState} from './testModel';
-import {TestStateHandlerMap, TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
+import {TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
 import {PolimerModel, PolimerModelBuilder} from '../../src';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from '../../src/eventProcessors';
 import {ObjectEventTransforms} from './eventTransforms';
@@ -151,6 +151,11 @@ export class Actor {
         this._router.publishEvent(this._modelId, eventType, event);
         return event;
     }
+    public broadcastEvent(eventType: string, event?: TestEvent) {
+        event = event || {};
+        this._router.broadcastEvent(eventType, event);
+        return event;
+    }
     public publishEventWhichFiltersAtPreviewStage<TKey extends keyof TestImmutableModel>(eventType: string) {
         let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.preview};
         this._router.publishEvent(this._modelId, eventType, testEvent);
@@ -229,15 +234,12 @@ export class Actor {
 }
 
 export class Asserts {
-    private _handlerMapState: StateAsserts;
     private _handlerObjectState: StateAsserts;
     private _handlerModelState: OOModelTestStateAsserts;
     constructor(private _router: Router, private _model: PolimerModel<TestImmutableModel>, private _testEventProcessors: TestEventProcessors, testStateHandlerModel: TestStateHandlerModel) {
-        this._handlerMapState = new StateAsserts(() => this._model.getImmutableModel().handlerMapState);
         this._handlerObjectState = new StateAsserts(() => this._model.getImmutableModel().handlerObjectState);
         this._handlerModelState = new OOModelTestStateAsserts(() => this._model.getImmutableModel().handlerModelState, testStateHandlerModel);
     }
-    public get handlerMapState() { return this._handlerMapState; }
     public get handlerObjectState() { return this._handlerObjectState; }
     public get handlerModelState() { return this._handlerModelState; }
     public throwsOnInvalidEventContextAction(action: () => void, errorRegex?: RegExp): this {
@@ -292,7 +294,6 @@ class TestEventProcessors {
 }
 
 export class PolimerTestApiBuilder {
-    private _useHandlerMap: boolean = false;
     private _useHandlerObject: boolean = false;
     private _useHandlerModel: boolean = false;
     private _handlerModelAutoWireUp: boolean = false;
@@ -301,11 +302,6 @@ export class PolimerTestApiBuilder {
 
     public static create(): PolimerTestApiBuilder {
         return new PolimerTestApiBuilder();
-    }
-
-    public withStateHandlerMap() {
-        this._useHandlerMap = true;
-        return this;
     }
 
     public withStateHandlerObject() {
@@ -341,9 +337,6 @@ export class PolimerTestApiBuilder {
             .modelBuilder<TestImmutableModel>()
             .withInitialModel(initialModel)
             .withStateSaveHandler(this._stateSaveHandler);
-        if (this._useHandlerMap) {
-            builder.withStateHandlerMap('handlerMapState', TestStateHandlerMap);
-        }
         if (this._useHandlerObject) {
             builder.withStateHandlerObject('handlerObjectState', new TestStateObjectHandler(router));
         }
@@ -363,8 +356,8 @@ export class PolimerTestApiBuilder {
         let model = builder.registerWithRouter();
         // TestStateObject is a classic esp model, it is modeled here to have a typical external lifecycle and manages it's state internally
         let currentModel: TestImmutableModel;
-        router.getModelObservable<PolimerModel<TestImmutableModel>>(modelId).map(m => m.getImmutableModel()).subscribe(model => {
-            currentModel = model;
+        router.getModelObservable<PolimerModel<TestImmutableModel>>(modelId).map(m => m.getImmutableModel()).subscribe(m1 => {
+            currentModel = m1;
         });
         return {
             removeModel() {

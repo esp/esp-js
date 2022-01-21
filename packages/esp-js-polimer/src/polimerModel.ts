@@ -1,7 +1,7 @@
-import {MULTIPLE_EVENTS_DELIMITER, PolimerEventHandler, PolimerHandlerMap} from './stateEventHandlers';
+import {PolimerEventHandler} from './stateEventHandlers';
 import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
 import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
-import {InputEvent, OutputEvent, OutputEventStreamFactory} from './eventTransformations';
+import {InputEvent, OutputEvent} from './eventTransformations';
 import {logger} from './logger';
 import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
@@ -9,14 +9,12 @@ import produce from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {merge, Observable, Subscriber, Subscription} from 'rxjs';
-import {filter, mergeAll} from 'rxjs/operators';
+import {filter} from 'rxjs/operators';
 
 export interface PolimerModelSetup<TModel extends ImmutableModel> {
     initialModel: TModel;
-    stateHandlerMaps: Map<string, PolimerHandlerMap<any, TModel>>;
     stateHandlerObjects: Map<string, any[]>;
     stateHandlerModels: Map<string, StateHandlerModelMetadata>;
-    eventStreamFactories: OutputEventStreamFactory<TModel, any, any>[];
     eventStreamHandlerObjects: any[];
     modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     modelPostEventProcessor: ModelPostEventProcessor<TModel>;
@@ -28,20 +26,12 @@ export interface StateHandlerModelMetadata {
     autoWireUpObservers: boolean;
 }
 
-interface EventHandlerMetadata {
-    stateName: string;
-    observationStage: ObservationStage;
-    predicate: PolimerEventPredicate;
-    handler: PolimerEventHandler<any, any, any>;
-}
-
 interface ModelHandlerMetadata<TModel> {
     stateName: string;
     model: StateHandlerModel<TModel>;
 }
 
 export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase {
-    private readonly _eventHandlersByEventName: Map<string, EventHandlerMetadata[]> = new Map();
     private readonly _modelEventHandlersByEventName: Map<string, ModelHandlerMetadata<TModel>[]> = new Map();
     private _immutableModel: TModel;
     private _modelPreEventProcessor: ModelPreEventProcessor<TModel>;
@@ -78,9 +68,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         sendUpdateToDevTools('@@INIT', this._immutableModel, this._modelId);
         this._wireUpStateHandlerModels();
         this._wireUpStateHandlerObjects();
-        this._wireUpStateHandlersMaps();
         this._wireUpEventTransforms();
-        this._listenToAllEvents();
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     };
 
@@ -157,49 +145,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         super.dispose();
     }
 
-    private _listenToAllEvents() {
-        let eventsToObserve = Array.from(this._eventHandlersByEventName.keys());
-        if (eventsToObserve.length === 0) {
-            return;
-        }
-        this.addDisposable(
-            this._router.getAllEventsObservable(eventsToObserve, ObservationStage.all)
-                .filter(eventEnvelope => (eventEnvelope.modelId === this._modelId))
-                .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
-                    const eventReceivers = this._eventHandlersByEventName.get(eventEnvelope.eventType);
-                    const model = <any>this._immutableModel;
-                    eventReceivers.forEach((handlerMetadata: EventHandlerMetadata) => {
-                        if (handlerMetadata.observationStage === eventEnvelope.observationStage) {
-                            const beforeState = model[handlerMetadata.stateName];
-                            let processEvent = true;
-                            if (handlerMetadata.predicate) {
-                                let notYetCanceled = eventEnvelope.context.isCanceled === false;
-                                let notYetCommitted = eventEnvelope.context.isCommitted === false;
-                                processEvent = handlerMetadata.predicate(beforeState, eventEnvelope.event, model, eventEnvelope.context);
-                                if (notYetCanceled && eventEnvelope.context.isCanceled) {
-                                    throw new Error('You can\'t cancel an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
-                                }
-                                if (notYetCommitted && eventEnvelope.context.isCommitted) {
-                                    throw new Error('You can\'t commit an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
-                                }
-                            }
-                            if (processEvent) {
-                                logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState);
-                                const afterState = handlerMetadata.handler(beforeState, eventEnvelope.event, model, eventEnvelope.context);
-                                logger.verbose(`State [${handlerMetadata.stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);
-                                model[handlerMetadata.stateName] = afterState;
-                            } else {
-                                logger.verbose(`Received "${eventEnvelope.eventType}" for "${handlerMetadata.stateName}" state, skipping as the handlers predicate returned false`, beforeState);
-                            }
-                        }
-                    });
-                    if (ObservationStage.isFinal(eventEnvelope.observationStage)) {
-                        sendUpdateToDevTools(eventEnvelope, this._immutableModel, this._modelId);
-                    }
-                })
-        );
-    }
-
     private _wireUpStateHandlerModels() {
         this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if (metadata.autoWireUpObservers) {
@@ -227,60 +172,49 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // we could just omit the decorator and just use function names, but there can be more than one decorators on a function
                 let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
                 events.forEach((decoratorMetadata: EventObservationMetadata) => {
-                    const handler = objectToScanForHandlers[decoratorMetadata.functionName].bind(objectToScanForHandlers);
-                    this._addEventHandlerMetadata(decoratorMetadata.eventType, stateName, <PolimerEventPredicate>decoratorMetadata.predicate, decoratorMetadata.observationStage, handler);
+                    // A note on the produce() overload we use, from https://github.com/mweststrate/immer:
+                    //
+                    // Passing a function as the first argument to produce is intended to be used for currying.
+                    // This means that you get a pre-bound producer that only needs a state to produce the value from.
+                    // The producer function gets passed in the draft, and any further arguments that were passed to the curried function.
+                    const handler = produce(
+                       objectToScanForHandlers[decoratorMetadata.functionName].bind(objectToScanForHandlers) as PolimerEventHandler<any, any, any> // informational only cast
+                    );
+                    let predicate = <PolimerEventPredicate>decoratorMetadata.predicate;
+                    this.addDisposable(
+                    this._router.getEventObservable(this._modelId, decoratorMetadata.eventType, decoratorMetadata.observationStage)
+                        .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
+                            const model = <any>this._immutableModel;
+                            const beforeState = model[stateName];
+                            let processEvent = true;
+                            if (predicate) {
+                                let notYetCanceled = eventEnvelope.context.isCanceled === false;
+                                let notYetCommitted = eventEnvelope.context.isCommitted === false;
+                                processEvent = predicate(beforeState, eventEnvelope.event, model, eventEnvelope.context);
+                                if (notYetCanceled && eventEnvelope.context.isCanceled) {
+                                    throw new Error('You can\'t cancel an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                }
+                                if (notYetCommitted && eventEnvelope.context.isCommitted) {
+                                    throw new Error('You can\'t commit an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                }
+                            }
+                            if (processEvent) {
+                                logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState);
+                                const afterState = handler(beforeState, eventEnvelope.event, model, eventEnvelope.context);
+                                logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);
+                                model[stateName] = afterState;
+                            } else {
+                                logger.verbose(`Received "${eventEnvelope.eventType}" for "${stateName}" state, skipping as the handlers predicate returned false`, beforeState);
+                            }
+                        })
+                    );
                 });
             });
         });
     }
 
-    private _wireUpStateHandlersMaps = () => {
-        this._initialSetup.stateHandlerMaps.forEach((handlerMap: PolimerHandlerMap<any, TModel>, stateName) => {
-            handlerMap = this._expandMultipleEventsIntoSeparateHandlers(handlerMap);
-            Object.keys(handlerMap).forEach((eventType: string) => {
-                this._addEventHandlerMetadata(eventType, stateName, null, ObservationStage.normal, handlerMap[eventType]);
-            });
-        });
-    };
-
-    private _addEventHandlerMetadata(eventType: string, stateName: string, predicate: PolimerEventPredicate, observationStage: ObservationStage, handler: PolimerEventHandler<any, any, any>) {
-        let eventHandlerMetadataArray = this._eventHandlersByEventName.get(eventType);
-        if (!eventHandlerMetadataArray) {
-            eventHandlerMetadataArray = [];
-            this._eventHandlersByEventName.set(eventType, eventHandlerMetadataArray);
-        }
-        eventHandlerMetadataArray.push(
-            <EventHandlerMetadata>{
-                stateName: stateName,
-                predicate:  predicate,
-                observationStage: observationStage,
-                // A note on the produce() overload we use, from https://github.com/mweststrate/immer:
-                //
-                // Passing a function as the first argument to produce is intended to be used for currying.
-                // This means that you get a pre-bound producer that only needs a state to produce the value from.
-                // The producer function gets passed in the draft, and any further arguments that were passed to the curried function.
-                handler: produce(handler)
-        });
-    }
-
     private _wireUpEventTransforms = () => {
-        // There are 2 APIs for event transformations:
-        // 1) Via functions that take a event stream factory, these factories take an eventType and return an `Rx.Observable<InputEvent<>>`
-        //    The handlers effectively transform the `InputEvent<>`s to `OutputEvent<>` which get dispatched back into the router
-        // 2) Via decorators on class functions.
-        //    These are functionally similar to the first method, the difference being then don't take an event stream factory,
-        //    Rather they decorate functions on an object instance which will do the event transformation.
-        //    This second approach allows for dependency injection as the handling objects are effectively containers for event transformational streams
-        //
-        // We can normalise these down to a single observable as they are effectively the same:
-        // i.e. `InputEvent<>`s to `OutputEvent<>` transformation streams.
-
         const observables = [];
-
-        // First deal with the first type
-        observables.push(
-            ...this._initialSetup.eventStreamFactories.map(outputEventStreamFactory => outputEventStreamFactory(this._observeEvent))
-        );
 
         // next with second type
         this._initialSetup.eventStreamHandlerObjects.forEach(objectToScanForObservables => {
@@ -328,16 +262,11 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(subscription);
     };
 
-    // NOTE: this is not quite private as it's passed out bt the  the older even stream factory API above
-    // Need to remove that.
-    // Given that, any changes in params need to be on the end, and defaulted.
-    private _observeEvent = (eventType: string | string[], observationStage: ObservationStage = ObservationStage.final, functionName: string = 'NA'): Observable<InputEvent<TModel, any>> => {
+    private _observeEvent = (eventType: string, observationStage: ObservationStage = ObservationStage.final, functionName: string = 'NA'): Observable<InputEvent<TModel, any>> => {
         return new Observable((obs: Subscriber<any>) => {
             logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `);
-            const events = typeof eventType === 'string' ? [eventType] : eventType;
                 const espEventStreamSubscription = this._router
-                    .getAllEventsObservable(events, observationStage)
-                    .filter(eventEnvelope => eventEnvelope.modelId === this._modelId)
+                    .getEventObservable(this._modelId, eventType, observationStage)
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>) => {
                             logger.verbose(`Event transform: event [${eventEnvelope.eventType}] received at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}].`);
@@ -373,29 +302,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             model: eventEnvelope.model.getImmutableModel()
         };
     }
-
-    /**
-     * This method takes handlerMap and normalizes it producing a new handlerMap.
-     * Process of normalizing includes:
-     *   - split handler that listens on handler of events to two different handlers
-     *
-     * @param {PolimerHandlerMap<TState, TModel>} handlerMap
-     * @returns {PolimerHandlerMap<TState, TModel>}
-     */
-    private _expandMultipleEventsIntoSeparateHandlers = <TState>(handlerMap: PolimerHandlerMap<TState, TModel>): PolimerHandlerMap<TState, TModel> => {
-        return Object.keys(handlerMap).reduce((map, eventType) => {
-            if (eventType.indexOf(MULTIPLE_EVENTS_DELIMITER) !== -1) {
-                const events = eventType.split(MULTIPLE_EVENTS_DELIMITER);
-                events.forEach(event => {
-                    map[event] = handlerMap[eventType];
-                });
-            } else {
-                map[eventType] = handlerMap[eventType];
-            }
-
-            return map;
-        }, {});
-    };
 
     public getImmutableModel = (): TModel => {
         return this._immutableModel;

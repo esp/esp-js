@@ -227,9 +227,19 @@ export class Router extends DisposableBase {
         });
     }
 
-    // all events, optionally provide a stage to filter on
+    /**
+     * Provides a fat pipe of all events sent to models.
+     *
+     * Note: If an event is published to a model, and that model is not explicitly observing the event, it will get dropped, this won't yield those.
+     * @param stage
+     */
     public getAllEventsObservable<TModel>(stage?: ObservationStage): Observable<EventEnvelope<any, TModel>>;
-    // given events, optionally provide a stage to filter on
+    /**
+     * Provides a fat pipe of the given events sent to models.
+     *
+     * Note: If an event is published to a model, and that model is not explicitly observing the event, it will get dropped, this won't yield those.
+     * @param stage
+     */
     public getAllEventsObservable<TModel>(eventTypes: string[], stage?: ObservationStage): Observable<EventEnvelope<any, TModel>>;
     public getAllEventsObservable<TModel>(...args: any[]): Observable<EventEnvelope<any, TModel>> {
         let eventFilter: (eventType?: string) => boolean;
@@ -371,9 +381,10 @@ export class Router extends DisposableBase {
             try {
                 if (this._models.has(modelId)) {
                     let modelRecord = this._getOrCreateModelRecord(modelId);
-                    modelRecord.enqueueEvent(eventType, event);
-                    this._diagnosticMonitor.eventEnqueued(modelId, eventType);
-                    this._purgeEventQueues();
+                    if (modelRecord.tryEnqueueEvent(eventType, event)) {
+                        this._diagnosticMonitor.eventEnqueued(modelId, eventType);
+                        this._purgeEventQueues();
+                    }
                 }
             } catch (err) {
                 this._halt(err);

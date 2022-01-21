@@ -126,8 +126,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Loading
                 });
-                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
+                obs.next(this._lastModuleLoadResult);
                 obs.complete();
                 return () => {
                 };
@@ -141,8 +141,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: false,
                 stage: ModuleLoadStage.Registered
             });
-            obs.next(this._lastModuleLoadResult);
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
+            obs.next(this._lastModuleLoadResult);
 
             let initStream = this._buildInitStream(this.module);
 
@@ -176,8 +176,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Initialising
                 });
-                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
+                obs.next(this._lastModuleLoadResult);
                 module.initialise();
             } catch (e) {
                 this._log.error(`Failed to initialise module ${this._moduleMetadata.moduleName}`, e);
@@ -189,8 +189,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                     hasCompletedLoaded: false,
                     stage: ModuleLoadStage.Initialising
                 });
-                obs.next(this._lastModuleLoadResult);
                 this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
+                obs.next(this._lastModuleLoadResult);
                 obs.complete();
                 return () => {
                 };
@@ -203,8 +203,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: true,
                 stage: ModuleLoadStage.Loaded
             });
-            obs.next(this._lastModuleLoadResult);
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
+            obs.next(this._lastModuleLoadResult);
             obs.complete();
         });
     }

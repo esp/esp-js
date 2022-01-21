@@ -598,6 +598,241 @@ describe('Container', () =>  {
             let isRegistered = container.isRegistered('b');
             expect(isRegistered).toBe(false);
         });
+
+        describe('isRegistered(key, IsRegisteredQueryOptions)', () => {
+            let childContainer;
+
+            describe('when item is registered in parent', () => {
+                beforeEach(() => {
+                    container.register('a', {});
+                    childContainer = container.createChildContainer();
+                });
+
+                it('Should return true by default', () => {
+                    let isRegistered = childContainer.isRegistered('a');
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: true });
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return false when searchParentContainers is false', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: false });
+                    expect(isRegistered).toBe(false);
+                });
+            });
+
+            describe('when item is registered in child', () => {
+                beforeEach(() => {
+                    childContainer = container.createChildContainer();
+                    childContainer.register('a', {});
+                });
+
+                it('Should return true by default', () => {
+                    let isRegistered = childContainer.isRegistered('a');
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: true });
+                    expect(isRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is false', () => {
+                    let isRegistered = childContainer.isRegistered('a', { searchParentContainers: false });
+                    expect(isRegistered).toBe(true);
+                });
+            });
+        });
+    })
+
+    describe('isGroupRegistered', () => {
+
+        it('Should return true when a key is registered in group', () => {
+            container.register('a', {}).inGroup('group-1');
+            container.register('b', {}).inGroup('group-1');
+            let isGroupRegistered = container.isGroupRegistered('group-1');
+            expect(isGroupRegistered).toBe(true);
+        });
+
+        it('Should return false when a key is not registered in group', () => {
+            container.register('a', {}).singleton();
+            let isGroupRegistered = container.isGroupRegistered('b');
+            expect(isGroupRegistered).toBe(false);
+        });
+
+        describe('isGroupRegistered(key, IsRegisteredQueryOptions)', () => {
+            let childContainer;
+
+            describe('when item is registered in parent', () => {
+                beforeEach(() => {
+                    container.register('a', {}).inGroup('group-1');
+                    childContainer = container.createChildContainer();
+                });
+
+                it('Should return true by default', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1');
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: true });
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return false when searchParentContainers is false', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: false });
+                    expect(isGroupRegistered).toBe(false);
+                });
+            });
+
+            describe('when item is registered in child', () => {
+                beforeEach(() => {
+                    childContainer = container.createChildContainer();
+                    childContainer.register('a', {}).inGroup('group-1');
+                });
+
+                it('Should return true by default', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1');
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is true', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: true });
+                    expect(isGroupRegistered).toBe(true);
+                });
+
+                it('Should return true when searchParentContainers is false', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: false });
+                    expect(isGroupRegistered).toBe(true);
+                });
+            });
+        });
+    })
+
+    describe('container events', () => {
+        let notifications1 = [];
+        let notifications2 = [];
+        const callback1 = (notification) => {
+            notifications1.push(notification);
+        };
+        const callback2 = (notification) => {
+            notifications2.push(notification);
+        };
+        beforeEach(() => {
+            notifications1 = [];
+            notifications2 = [];
+        });
+
+        it('on(instanceRegistered, callback): callback invoked when instance registered', () => {
+            container.on('instanceRegistered', callback1);
+            let instance = new Object();
+            container.registerInstance('foo', instance);
+            expect(notifications1.length).toEqual(1);
+            expect(notifications1[0].name).toEqual('foo');
+            expect(notifications1[0].instance).toBe(instance);
+            expect(notifications1[0].eventType).toEqual('instanceRegistered');
+        });
+
+        it('off(instanceRegistered, callback): removes callback', () => {
+            container.on('instanceRegistered', callback1);
+            container.off('instanceRegistered', callback1);
+            let instance = new Object();
+            container.registerInstance('foo', instance);
+            expect(notifications1.length).toEqual(0);
+        });
+
+
+        it('on(instanceRegistered, callback): multiple handlers accepted', () => {
+            let Foo = createFunction();
+            let Bar = createFunction();
+            let Baz = createFunction();
+            let Bop = createFunction();
+
+            container.registerInstance('foo', Foo);
+            expect(notifications1.length).toEqual(0);
+            expect(notifications2.length).toEqual(0);
+
+            container.on('instanceRegistered', callback1);
+            container.registerInstance('bar', Bar);
+            expect(notifications1.length).toEqual(1);
+            expect(notifications2.length).toEqual(0);
+
+            container.on('instanceRegistered', callback2);
+            container.registerInstance('baz', Baz);
+            expect(notifications1.length).toEqual(2);
+            expect(notifications2.length).toEqual(1);
+
+            container.off('instanceRegistered', callback1);
+            container.off('instanceRegistered', callback2);
+
+            container.registerInstance('bop', Bop);
+
+            expect(notifications1.length).toEqual(2);
+            expect(notifications2.length).toEqual(1);
+        });
+
+        it('on(instanceCreated, callback): callback invoked when instance resolved', () => {
+            container.on('instanceCreated', callback1);
+            let Foo = createFunction();
+            container.register('foo', Foo); // singleton by default
+            let foo = container.resolve('foo');
+            expect(notifications1.length).toEqual(1);
+            expect(notifications1[0].name).toEqual('foo');
+            expect(notifications1[0].instance).toBe(foo);
+            expect(notifications1[0].eventType).toEqual('instanceCreated');
+            container.resolve('foo');
+            expect(notifications1.length).toEqual(1);
+        });
+
+        it('off(instanceCreated, callback): removes callback', () => {
+            container.on('instanceCreated', callback1);
+            container.off('instanceCreated', callback1);
+            let Foo = createFunction();
+            container.register('foo', Foo);
+            container.resolve('foo');
+            expect(notifications1.length).toEqual(0);
+        });
+
+        it('on(instanceCreated, callback): callback invoked per transient resolution', () => {
+            container.on('instanceCreated', callback1);
+            let Foo = createFunction();
+            container.register('foo', Foo).transient();
+            container.resolve('foo');
+            container.resolve('foo');
+            container.resolve('foo');
+            expect(notifications1.length).toEqual(3);
+        });
+
+        it('on(instanceCreated, callback): multiple handlers accepted', () => {
+            let Foo = createFunction();
+            container.register('foo', Foo).transient();
+
+            container.on('instanceCreated', callback1);
+            container.on('instanceCreated', callback2);
+
+            container.resolve('foo');
+            container.resolve('foo');
+
+            expect(notifications1.length).toEqual(2);
+            expect(notifications2.length).toEqual(2);
+
+            container.off('instanceCreated', callback2);
+
+            container.resolve('foo');
+
+            expect(notifications1.length).toEqual(3);
+            expect(notifications2.length).toEqual(2);
+
+            container.off('instanceCreated', callback1);
+
+            container.resolve('foo');
+
+            expect(notifications1.length).toEqual(3);
+            expect(notifications2.length).toEqual(2);
+        });
     })
 
     describe('incorrect argument handling', () =>  {

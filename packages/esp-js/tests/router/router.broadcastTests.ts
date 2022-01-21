@@ -16,14 +16,14 @@
  */
 // notice_end
 
-import * as esp from '../../src';
+import {EventEnvelope, Router} from '../../src';
 
 describe('Router', () => {
 
     let _router;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _router = new Router();
         _router.enableDiagnosticLogging = true;
     });
 
@@ -33,7 +33,7 @@ describe('Router', () => {
             expect(() => {_router.broadcastEvent('anEvent', undefined); }).toThrow();
         });
 
-        it('should deliver the event to all models', () => {
+        it('should deliver the event to all models observing event', () => {
             let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
             _router.addModel('modelId1', {});
             _router.addModel('modelId2', {});
@@ -46,6 +46,38 @@ describe('Router', () => {
             _router.broadcastEvent('Event1', 10);
             expect(model1ProcessorReceived).toEqual(10);
             expect(model2ProcessorReceived).toEqual(10);
+        });
+
+        it('should not deliver the event to models not observing event', () => {
+            let model1ProcessorReceivedCount = 0, model2ProcessorReceivedCount = 0, receivedEvents: EventEnvelope<any, any>[] = [];
+            _router.addModel('modelId1', {});
+            _router.addModel('modelId2', {});
+            // first subscribe model 1 to the event
+            _router.getEventObservable('modelId1', 'Event1').subscribe(({event}) => {
+                model1ProcessorReceivedCount++;
+            });
+            _router.getAllEventsObservable().subscribe((envelope: EventEnvelope<any, any>) => {
+                receivedEvents.push(envelope);
+            });
+
+            _router.broadcastEvent('Event1', 10);
+            expect(model1ProcessorReceivedCount).toEqual(1);
+            expect(receivedEvents.length).toEqual(1);
+            expect(receivedEvents[0].modelId).toEqual('modelId1');
+            expect(receivedEvents[0].eventType).toEqual('Event1');
+
+            // now subscribe model 2
+            _router.getEventObservable('modelId2', 'Event1').subscribe(({event}) => {
+                model2ProcessorReceivedCount++;
+            });
+
+            _router.broadcastEvent('Event1', 20);
+            expect(model1ProcessorReceivedCount).toEqual(2);
+            expect(model2ProcessorReceivedCount).toEqual(1);
+            expect(receivedEvents.length).toEqual(3);
+            expect(receivedEvents[1].modelId).toEqual('modelId1');
+            expect(receivedEvents[2].modelId).toEqual('modelId2');
+            expect(receivedEvents[2].eventType).toEqual('Event1');
         });
     });
 });

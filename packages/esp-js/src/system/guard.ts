@@ -70,7 +70,7 @@ export class Guard {
         }
     }
     public static isObject(value: any, message: string): void {
-        if(typeof value !== 'object') {
+        if(typeof value !== 'object' || value === null) {
             doThrow(message);
         }
     }

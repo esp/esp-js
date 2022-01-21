@@ -1,0 +1,36 @@
+{
+  "name": "esp-js-metrics",
+  "version": "6.0.3-next.0",
+  "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
+  "keywords": [
+    "state processor",
+    "evented state processor",
+    "reactive",
+    "event loop",
+    "complex state processor",
+    "router",
+    "event router",
+    "metrics"
+  ],
+  "scripts": {
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "build-pack": "nps build-pack",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "dev": "nps dev"
+  },
+  "main": ".dist/esp-js-metrics.js",
+  "typings": ".dist/typings/index.d.ts",
+  "author": "Keith Woods",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/esp/esp-js",
+  "devDependencies": {
+    "jest": "26.0.1",
+    "typescript": "4.5.4",
+    "webpack": "4.43.0",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "3.11.0"
+  }
+}

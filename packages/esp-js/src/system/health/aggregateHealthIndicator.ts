@@ -20,6 +20,7 @@ import {DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from './healthInd
 import {Logger} from '../logging/logger';
 import {DisposableBase} from '../disposables/disposableBase';
 import {Guard} from '../guard';
+import {Level} from '../logging';
 
 const _defaultLog = Logger.create('AggregateHealthIndicator');
 
@@ -49,7 +50,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     private _health = Health.builder(AggregateHealthIndicator.constructor.name).isUnknown().build();
     private _healthIndicators: IndicatorRecord[] = [];
 
-    constructor(private _healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger, private _log: Logger = _defaultLog) {
+    constructor(protected _log: Logger = _defaultLog, private _healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger) {
         super();
     }
 
@@ -75,6 +76,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     public addIndicator = (healthIndicator: HealthIndicator, useWeakReference = true) => {
         Guard.isObject(healthIndicator, 'healthIndicatorName must be an object and not falsely');
         Guard.stringIsNotEmpty(healthIndicator.healthIndicatorName, 'healthIndicatorName can not be empty');
+        this._log.debug(`Adding indicator ${healthIndicator.healthIndicatorName}`);
         this._healthIndicators.push(new IndicatorRecord(healthIndicator, useWeakReference));
     };
 
@@ -88,6 +90,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         for (let i = this._healthIndicators.length - 1; i >= 0; i--) {
             const current = this._healthIndicators[i];
             if (current.reference && current.reference === healthIndicator) {
+                this._log.debug(`Removing indicator ${current.reference.healthIndicatorName}`);
                 this._healthIndicators.splice(i, 1);
                 break;
             }
@@ -122,7 +125,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
             return false;
         }
 
-        this._log.warn(`Starting with trigger [${this._healthIndicatorTrigger.triggerDescription}]`);
+        this._log.info(`Starting with trigger [${this._healthIndicatorTrigger.triggerDescription}]`);
 
         let isFirstRun = true;
         this.addDisposable(
@@ -184,12 +187,16 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
 
         const statusChanged = oldHealth.status !==  newHealth.status;
         if (statusChanged) {
-            const reasons = newHealth.reasons && newHealth.reasons.length > 0
-                ? newHealth.reasons.join(', ')
-                : '';
-            this._log.debug(`Status has changed from ${oldHealth.status} to ${newHealth.status}. Reasons: ${reasons}`);
+            let message = `Status has changed from ${oldHealth.status} to ${newHealth.status}. Reasons: ${this._aggregateHealthReasons(newHealth)}`;
+            if (newHealth.status === HealthStatus.Unhealthy) {
+                this._log.warn(message);
+            } else {
+                this._log.info(message);
+            }
         } else if (isFirstRun) {
-            this._log.debug(`Status ${newHealth.status}`);
+            this._log.debug(`Status ${newHealth.status}. Reasons: ${this._aggregateHealthReasons(newHealth)}`);
+        } else if (this._log.isLevelEnabled(Level.verbose)) {
+            this._log.verbose(`Status ${newHealth.status}. Reasons: ${this._aggregateHealthReasons(newHealth)}`);
         }
 
         try {
@@ -198,6 +205,13 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
             this._log.error(`Error signaling health status change`, err);
         }
     };
+
+    private _aggregateHealthReasons(newHealth: Health) {
+        const reasons = newHealth.reasons && newHealth.reasons.length > 0
+            ? newHealth.reasons.join(', ')
+            : '';
+        return reasons;
+    }
 
     private _getIndicators: (isFirstRun: boolean) => HealthIndicator[] = (isFirstRun: boolean) => {
         const liveIndicators: HealthIndicator[] = [];

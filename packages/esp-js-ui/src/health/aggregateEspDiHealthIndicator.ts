@@ -2,12 +2,11 @@ import {GaugeMetric,  MetricFactory} from 'esp-js-metrics';
 import {Logger, Health, HealthUtils, AggregateHealthIndicator, DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from 'esp-js';
 import {Container, ContainerNotification} from 'esp-js-di';
 
-const _log = Logger.create('AggregateEspDiHealthIndicator');
-
 export class AggregateEspDiHealthIndicator extends AggregateHealthIndicator {
     private _aggregateHealthMetric: GaugeMetric;
+
     constructor(private _container: Container, healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger) {
-        super(healthIndicatorTrigger, _log);
+        super(Logger.create('AggregateEspDiHealthIndicator'), healthIndicatorTrigger);
     }
 
     public get healthIndicatorName() {
@@ -17,6 +16,7 @@ export class AggregateEspDiHealthIndicator extends AggregateHealthIndicator {
     public start() {
         let wasStarted = super.start();
         if (wasStarted) {
+            this._log.debug(`Adding hooks for HealthIndicator discovery`);
             this._container.on('instanceRegistered', this._instanceRegisteredOrCreated);
             this._container.on('instanceCreated', this._instanceRegisteredOrCreated);
             this.addDisposable(() => {
@@ -24,7 +24,7 @@ export class AggregateEspDiHealthIndicator extends AggregateHealthIndicator {
                 this._container.off('instanceCreated', this._instanceRegisteredOrCreated);
             });
             // this class should be used as a singleton, if createGauge is recalled with the same metric name it may blow depending on the implementation used
-            this._aggregateHealthMetric = MetricFactory.createGauge('aggregate_esp_di_health', 'The aggregate health for an application');
+            this._aggregateHealthMetric = MetricFactory.createGauge('aggregate_esp_di_health', 'The aggregate health for an application (-1=Unknown,0=Unhealthy,1=Healthy)');
         }
         return wasStarted;
     }

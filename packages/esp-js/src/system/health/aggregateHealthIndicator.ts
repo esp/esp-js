@@ -21,6 +21,7 @@ import {Logger} from '../logging/logger';
 import {DisposableBase} from '../disposables/disposableBase';
 import {Guard} from '../guard';
 import {Level} from '../logging';
+import {EsNextFeatureDetection, EsNextFeatureDetectionLike} from '../esNextFeatureDetection';
 
 const _defaultLog = Logger.create('AggregateHealthIndicator');
 
@@ -50,7 +51,11 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     private _health = Health.builder(AggregateHealthIndicator.constructor.name).isUnknown().build();
     private _healthIndicators: IndicatorRecord[] = [];
 
-    constructor(protected _log: Logger = _defaultLog, private _healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger) {
+    constructor(
+        protected _log: Logger = _defaultLog,
+        private _healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger,
+        private _esNextFeatureDetection: EsNextFeatureDetectionLike = EsNextFeatureDetection,
+    ) {
         super();
     }
 
@@ -76,6 +81,10 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     public addIndicator = (healthIndicator: HealthIndicator, useWeakReference = true) => {
         Guard.isObject(healthIndicator, 'healthIndicatorName must be an object and not falsely');
         Guard.stringIsNotEmpty(healthIndicator.healthIndicatorName, 'healthIndicatorName can not be empty');
+        if (!this._esNextFeatureDetection.supportsWeakRef) {
+            this._log.warn(`Health Indicators not supported (WeakRef not found). Won\'t add indicator ${healthIndicator.healthIndicatorName}`);
+            return;
+        }
         this._log.debug(`Adding indicator ${healthIndicator.healthIndicatorName}`);
         this._healthIndicators.push(new IndicatorRecord(healthIndicator, useWeakReference));
     };
@@ -116,7 +125,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
     };
 
     public start(): boolean {
-        if (!WeakRef) {
+        if (!this._esNextFeatureDetection.supportsWeakRef) {
             this._log.warn('Health Indicators not supported (WeakRef not found)');
             return false;
         }

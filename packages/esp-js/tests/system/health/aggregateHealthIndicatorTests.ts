@@ -16,7 +16,7 @@
  */
  // notice_end
 
-import {AggregateHealthIndicator, Health, HealthIndicator, HealthStatus} from '../../../src/system';
+import {AggregateHealthIndicator, DefaultHealthIndicatorTrigger, EsNextFeatureDetectionLike, Health, HealthIndicator, HealthStatus, Logger} from '../../../src/system';
 
 class TestAggregateHealthIndicator extends AggregateHealthIndicator {
     public updates: {oldHealth: Health, newHealth: Health}[] = [];
@@ -56,25 +56,35 @@ describe('AggregateHealthIndicator', () => {
     let indicator2: TestHealthIndicator;
     let indicator3: TestHealthIndicator;
     let wasStarted: boolean;
+    let testEsNextFeatureDetection: EsNextFeatureDetectionLike;
 
     beforeAll(() => {
         jest.useFakeTimers();
         jest.spyOn(global, 'setInterval');
     });
 
-    beforeEach(() => {
-        jest.clearAllTimers();
-        updates = 0;
-        aggregateIndicator = new TestAggregateHealthIndicator();
-        indicator1 = new TestHealthIndicator('indicator1');
-        indicator2 = new TestHealthIndicator('indicator2');
-        indicator3 = new TestHealthIndicator('indicator3');
-        wasStarted = aggregateIndicator.start();
-    });
-
     afterAll(() => {
         jest.useRealTimers();
     });
+
+    beforeEach(() => {
+        jest.clearAllTimers();
+        updates = 0;
+        testEsNextFeatureDetection = {
+            supportsWeakRef: true
+        };
+    });
+
+    const createIndicators = () => {
+        aggregateIndicator = new TestAggregateHealthIndicator(
+            Logger.create('AggregateHealthIndicator'),
+            DefaultHealthIndicatorTrigger,
+            testEsNextFeatureDetection
+        );
+        indicator1 = new TestHealthIndicator('indicator1');
+        indicator2 = new TestHealthIndicator('indicator2');
+        indicator3 = new TestHealthIndicator('indicator3');
+    };
 
     const addAllIndicators = () => {
         aggregateIndicator.addIndicator(indicator1);
@@ -89,141 +99,166 @@ describe('AggregateHealthIndicator', () => {
         indicator3.setHealth(status3 ? Health.builder(indicator3.healthIndicatorName).setStatus(status3).build() : undefined);
     };
 
-    it('start returns true', () => {
-        expect(wasStarted).toEqual(true);
+    describe('when started', () => {
+        beforeEach(() => {
+            createIndicators();
+            wasStarted = aggregateIndicator.start();
+        });
+
+        it('start returns true', () => {
+            expect(wasStarted).toEqual(true);
+        });
+
+        it('start only starts once true', () => {
+            expect(aggregateIndicator.start()).toEqual(false);
+        });
+
+        it('hasIndicator finds indicator', () => {
+            addAllIndicators();
+            expect(aggregateIndicator.hasIndicator(indicator1)).toBeTruthy();
+            expect(aggregateIndicator.hasIndicator(indicator2)).toBeTruthy();
+            expect(aggregateIndicator.hasIndicator(indicator3)).toBeTruthy();
+            expect(aggregateIndicator.hasIndicator(new TestHealthIndicator('indicator4'))).toBeFalsy();
+        });
+
+        it('hasIndicatorByName finds indicator', () => {
+            addAllIndicators();
+            expect(aggregateIndicator.hasIndicatorByName('indicator1')).toBeTruthy();
+            expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
+            expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
+            expect(aggregateIndicator.hasIndicatorByName('indicator4')).toBeFalsy();
+        });
+
+        it('status - default status is Unknown', () => {
+            expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown);
+        });
+
+        it('status - if indicator returns an undefined status, overall status is Unknown', () => {
+            indicator1.setHealth(undefined);
+            indicator2.setHealth(Health.builder(indicator2.healthIndicatorName).isHealthy().build());
+            aggregateIndicator.addIndicator(indicator1);
+            aggregateIndicator.addIndicator(indicator2);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown);
+            expect(aggregateIndicator.health().reasons.length).toEqual(2);
+            expect(aggregateIndicator.health().reasons[0]).toEqual('[Indicator: indicator2, status: Healthy]');
+            expect(aggregateIndicator.health().reasons[1]).toEqual('[Indicator: indicator1, status: Unknown, reasons: Indicator returned a falsely status]');
+        });
+
+        test.each([
+            [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy],
+            [HealthStatus.Unhealthy, HealthStatus.Unhealthy, HealthStatus.Unhealthy, HealthStatus.Unhealthy],
+            [HealthStatus.Unknown, HealthStatus.Unknown, HealthStatus.Unknown, HealthStatus.Unknown],
+
+            [HealthStatus.Unhealthy, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unhealthy],
+            [HealthStatus.Healthy, HealthStatus.Unhealthy, HealthStatus.Healthy, HealthStatus.Unhealthy],
+            [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unhealthy, HealthStatus.Unhealthy],
+
+            [HealthStatus.Unknown, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown],
+            [HealthStatus.Healthy, HealthStatus.Unknown, HealthStatus.Healthy, HealthStatus.Unknown],
+            [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown, HealthStatus.Unknown],
+
+            [undefined, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown],
+            [HealthStatus.Healthy, undefined, HealthStatus.Healthy, HealthStatus.Unknown],
+            [HealthStatus.Healthy, HealthStatus.Healthy, undefined, HealthStatus.Unknown],
+        ])('Status of [%s, %s, %s] = %s', (indicator1Status, indicator2Status, indicator3Status, expectedAggregatedStatus) => {
+            addAllIndicators();
+            stateAllStatuses(indicator1Status, indicator2Status, indicator3Status);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.health().status).toEqual(expectedAggregatedStatus);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.health().status).toEqual(expectedAggregatedStatus);
+        });
+
+        it('healthStatusChanged called on change', () => {
+            addAllIndicators();
+
+            stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.updates.length).toEqual(1);
+            expect(aggregateIndicator.updates[0].oldHealth.status).toEqual(HealthStatus.Unknown);
+            expect(aggregateIndicator.updates[0].newHealth.status).toEqual(HealthStatus.Healthy);
+
+            stateAllStatuses(HealthStatus.Unhealthy, HealthStatus.Healthy, HealthStatus.Healthy);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.updates.length).toEqual(2);
+            expect(aggregateIndicator.updates[1].oldHealth.status).toEqual(HealthStatus.Healthy);
+            expect(aggregateIndicator.updates[1].newHealth.status).toEqual(HealthStatus.Unhealthy);
+
+            stateAllStatuses(HealthStatus.Unhealthy, HealthStatus.Unknown, HealthStatus.Healthy);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.updates.length).toEqual(3);
+            expect(aggregateIndicator.updates[2].oldHealth.status).toEqual(HealthStatus.Unhealthy);
+            expect(aggregateIndicator.updates[2].newHealth.status).toEqual(HealthStatus.Unknown);
+        });
+
+        it('Indicators can be weak referenced', (done) => {
+            jest.useRealTimers();
+            aggregateIndicator.addIndicator(indicator1);
+            aggregateIndicator.addIndicator(indicator2);
+            aggregateIndicator.addIndicator(indicator3, false);
+            stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
+            expect(aggregateIndicator.activateIndicatorCount).toEqual(3);
+            indicator1 = undefined;
+            indicator3 = undefined;
+            // this is a bit of a cowboy test however given the AggregateHealthIndicator can hold WeakRef s to things it's required
+            if (global.gc) {
+                // it seems that we need to run the gc on the next tick after de-referencing the indicators
+                setTimeout(() => {
+                    global.gc();
+                    jest.useFakeTimers();
+                    jest.advanceTimersByTime(5000);
+                    // only indicator 1 should be removed, indicator 3 was added with useWeakReference=false
+                    expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
+                    expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
+                    expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
+                    done();
+                }, 0);
+            } else {
+                fail(`can't trigger GC, call jest with --expose-gc`);
+            }
+        });
+
+        it('removeIndicator - remvoes indicator', () => {
+            addAllIndicators();
+            expect(aggregateIndicator.activateIndicatorCount).toEqual(3);
+            aggregateIndicator.removeIndicator(indicator2);
+            expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
+        });
+
+        it('dispose - stops pushing updates', () => {
+            addAllIndicators();
+
+            stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.updates.length).toEqual(1);
+            expect(aggregateIndicator.health().status).toEqual(HealthStatus.Healthy);
+
+            aggregateIndicator.dispose();
+
+            stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
+            jest.advanceTimersByTime(5000);
+            expect(aggregateIndicator.updates.length).toEqual(1); // no change
+
+            expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown); // should be set on dispose
+        });
     });
 
-    it('start only starts once true', () => {
-        expect(aggregateIndicator.start()).toEqual(false);
-    });
+    describe('when WeakRef not supported', () => {
+        beforeEach(() => {
+            testEsNextFeatureDetection.supportsWeakRef = false;
+            createIndicators();
+            wasStarted = aggregateIndicator.start();
+        });
 
-    it('hasIndicator finds indicator', () => {
-        addAllIndicators();
-        expect(aggregateIndicator.hasIndicator(indicator1)).toBeTruthy();
-        expect(aggregateIndicator.hasIndicator(indicator2)).toBeTruthy();
-        expect(aggregateIndicator.hasIndicator(indicator3)).toBeTruthy();
-        expect(aggregateIndicator.hasIndicator(new TestHealthIndicator('indicator4'))).toBeFalsy();
-    });
+        it('start returns false', () => {
+            expect(wasStarted).toEqual(false);
+        });
 
-    it('hasIndicatorByName finds indicator', () => {
-        addAllIndicators();
-        expect(aggregateIndicator.hasIndicatorByName('indicator1')).toBeTruthy();
-        expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
-        expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
-        expect(aggregateIndicator.hasIndicatorByName('indicator4')).toBeFalsy();
-    });
-
-    it('status - default status is Unknown', () => {
-        expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown);
-    });
-
-    it('status - if indicator returns an undefined status, overall status is Unknown', () => {
-        indicator1.setHealth(undefined);
-        indicator2.setHealth(Health.builder(indicator2.healthIndicatorName).isHealthy().build());
-        aggregateIndicator.addIndicator(indicator1);
-        aggregateIndicator.addIndicator(indicator2);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown);
-        expect(aggregateIndicator.health().reasons.length).toEqual(2);
-        expect(aggregateIndicator.health().reasons[0]).toEqual('[Indicator: indicator2, status: Healthy]');
-        expect(aggregateIndicator.health().reasons[1]).toEqual('[Indicator: indicator1, status: Unknown, reasons: Indicator returned a falsely status]');
-    });
-
-    test.each([
-        [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy],
-        [HealthStatus.Unhealthy, HealthStatus.Unhealthy, HealthStatus.Unhealthy, HealthStatus.Unhealthy],
-        [HealthStatus.Unknown, HealthStatus.Unknown, HealthStatus.Unknown, HealthStatus.Unknown],
-
-        [HealthStatus.Unhealthy, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unhealthy],
-        [HealthStatus.Healthy, HealthStatus.Unhealthy, HealthStatus.Healthy, HealthStatus.Unhealthy],
-        [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unhealthy, HealthStatus.Unhealthy],
-
-        [HealthStatus.Unknown, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown],
-        [HealthStatus.Healthy, HealthStatus.Unknown, HealthStatus.Healthy, HealthStatus.Unknown],
-        [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown, HealthStatus.Unknown],
-
-        [undefined, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown],
-        [HealthStatus.Healthy, undefined, HealthStatus.Healthy, HealthStatus.Unknown],
-        [HealthStatus.Healthy, HealthStatus.Healthy, undefined, HealthStatus.Unknown],
-    ])('Status of [%s, %s, %s] = %s', (indicator1Status, indicator2Status, indicator3Status, expectedAggregatedStatus) => {
-        addAllIndicators();
-        stateAllStatuses(indicator1Status, indicator2Status, indicator3Status);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.health().status).toEqual(expectedAggregatedStatus);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.health().status).toEqual(expectedAggregatedStatus);
-    });
-
-    it('healthStatusChanged called on change', () => {
-        addAllIndicators();
-
-        stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.updates.length).toEqual(1);
-        expect(aggregateIndicator.updates[0].oldHealth.status).toEqual(HealthStatus.Unknown);
-        expect(aggregateIndicator.updates[0].newHealth.status).toEqual(HealthStatus.Healthy);
-
-        stateAllStatuses(HealthStatus.Unhealthy, HealthStatus.Healthy, HealthStatus.Healthy);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.updates.length).toEqual(2);
-        expect(aggregateIndicator.updates[1].oldHealth.status).toEqual(HealthStatus.Healthy);
-        expect(aggregateIndicator.updates[1].newHealth.status).toEqual(HealthStatus.Unhealthy);
-
-        stateAllStatuses(HealthStatus.Unhealthy, HealthStatus.Unknown, HealthStatus.Healthy);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.updates.length).toEqual(3);
-        expect(aggregateIndicator.updates[2].oldHealth.status).toEqual(HealthStatus.Unhealthy);
-        expect(aggregateIndicator.updates[2].newHealth.status).toEqual(HealthStatus.Unknown);
-    });
-
-    it('Indicators can be weak referenced', (done) => {
-        jest.useRealTimers();
-        aggregateIndicator.addIndicator(indicator1);
-        aggregateIndicator.addIndicator(indicator2);
-        aggregateIndicator.addIndicator(indicator3, false);
-        stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
-        expect(aggregateIndicator.activateIndicatorCount).toEqual(3);
-        indicator1 = undefined;
-        indicator3 = undefined;
-        // this is a bit of a cowboy test however given the AggregateHealthIndicator can hold WeakRef s to things it's required
-        if (global.gc) {
-            // it seems that we need to run the gc on the next tick after de-referencing the indicators
-            setTimeout(() => {
-                global.gc();
-                jest.useFakeTimers();
-                jest.advanceTimersByTime(5000);
-                // only indicator 1 should be removed, indicator 3 was added with useWeakReference=false
-                expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
-                expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
-                expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
-                done();
-            }, 0);
-        } else {
-            fail(`can't trigger GC, call jest with --expose-gc`);
-        }
-    });
-
-    it('removeIndicator - remvoes indicator', () => {
-        addAllIndicators();
-        expect(aggregateIndicator.activateIndicatorCount).toEqual(3);
-        aggregateIndicator.removeIndicator(indicator2);
-        expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
-    });
-
-    it('dispose - stops pushing updates', () => {
-        addAllIndicators();
-
-        stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.updates.length).toEqual(1);
-        expect(aggregateIndicator.health().status).toEqual(HealthStatus.Healthy);
-
-        aggregateIndicator.dispose();
-
-        stateAllStatuses(HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Healthy);
-        jest.advanceTimersByTime(5000);
-        expect(aggregateIndicator.updates.length).toEqual(1); // no change
-
-        expect(aggregateIndicator.health().status).toEqual(HealthStatus.Unknown); // should be set on dispose
+        it('adding indicator has no effect', () => {
+            expect(wasStarted).toEqual(false);
+            aggregateIndicator.addIndicator(indicator1);
+            expect(aggregateIndicator.hasIndicator(indicator1)).toBeFalsy();
+        });
     });
 });

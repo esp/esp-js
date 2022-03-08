@@ -1,4 +1,6 @@
-const SupportsWeakRef = !!window.WeakRef;
+import {GlobalState} from './globalState';
+
+const SupportsWeakRef = !!GlobalState.WeakRef;
 
 export interface EsNextFeatureDetectionLike {
     supportsWeakRef: boolean;

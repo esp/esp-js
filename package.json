@@ -24,7 +24,6 @@
     "pre-release-patch": "yarn clean && yarn build-prod && lerna publish prepatch --preid next --dist-tag next",
     "start-sample": "lerna run start --scope esp-js-ui-module-based-app --stream"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/classnames": "2.2.10",
     "@types/enzyme": "3.10.5",

@@ -90,6 +90,12 @@ describe('.retryWithPolicy()', () => {
             expect(_onRetryErr).toEqual(new Error('Boom!'));
         });
 
+        it('error passed to retry policy', () => {
+            subscribe();
+            _subject.next(-1);
+            expect(_policy.lastError).toEqual(new Error('Boom!'));
+        });
+
         it('resets retry count after successful propagation', () => {
             subscribe();
             _subject.next(-1);
@@ -97,6 +103,15 @@ describe('.retryWithPolicy()', () => {
             _testScheduler.advanceTime(1001);
             _subject.next(1);
             expect(_policy.retryCount).toEqual(0);
+        });
+
+        it('resets error after successful propagation', () => {
+            subscribe();
+            _subject.next(-1);
+            expect(_policy.lastError).toBeDefined();
+            _testScheduler.advanceTime(1001);
+            _subject.next(1);
+            expect(_policy.lastError).toBeNull();
         });
 
         it('propagates the exception after retry count limit reached', () => {
@@ -183,9 +198,11 @@ describe('.retryWithPolicy()', () => {
             _policy.incrementRetryCount();
             _policy.incrementRetryCount();
             _policy.incrementRetryCount();
-            _policy.incrementRetryCount();
+            _policy.incrementRetryCount(new Error());
             expect(_policy.retryAfterElapsedMs).toEqual(4000);
+            expect(_policy.lastError).toBeDefined();
             _policy.reset();
+            expect(_policy.lastError).toBeNull();
             _policy.incrementRetryCount();
             expect(_policy.retryAfterElapsedMs).toEqual(1000);
         });
@@ -200,5 +217,4 @@ describe('.retryWithPolicy()', () => {
             expect(_policy.shouldRetry).toBeFalsy();
         });
     });
-
 });

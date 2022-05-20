@@ -5,8 +5,9 @@ export interface RetryPolicyLike {
     readonly retryAfterElapsedMs: number;
     readonly retryCount: number;
     readonly retryLimit: number;
+    readonly lastError: any;
 
-    incrementRetryCount(): void;
+    incrementRetryCount(error?: any): void;
 
     reset(): void;
 }
@@ -23,6 +24,7 @@ export class RetryPolicy implements RetryPolicyLike {
     }
 
     private _retryCount: number;
+    private _lastError: any = null;
 
     constructor(
         private readonly _description: string,
@@ -57,12 +59,18 @@ export class RetryPolicy implements RetryPolicyLike {
         return this._retryLimit;
     }
 
-    incrementRetryCount(): void {
+    get lastError(): any {
+        return this._lastError;
+    }
+
+    incrementRetryCount(error?: any): void {
         this._retryCount++;
+        this._lastError = error;
     }
 
     reset(): void {
         this._retryCount = 0;
+        this._lastError = null;
     }
 }
 
@@ -96,6 +104,7 @@ export class ExponentialBackOffRetryPolicy implements RetryPolicyLike {
     }
 
     private _retryCount: number;
+    private _lastError: any = null;
 
     constructor(
         private readonly _description: string,
@@ -134,11 +143,17 @@ export class ExponentialBackOffRetryPolicy implements RetryPolicyLike {
         return this._retryLimit;
     }
 
-    incrementRetryCount(): void {
+    get lastError(): any {
+        return this._lastError;
+    }
+
+    incrementRetryCount(error?: any): void {
         this._retryCount++;
+        this._lastError = error;
     }
 
     reset(): void {
         this._retryCount = 0;
+        this._lastError = null;
     }
 }

@@ -41,7 +41,7 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
                         if (error) {
                             error(err);
                         }
-                        policy.incrementRetryCount();
+                        policy.incrementRetryCount(err);
                         if (policy.shouldRetry) {
                             let retryLimitMessage = policy.retryLimit === -1 ? 'unlimited' : policy.retryLimit;
                             _log.error(`operation [${policy.description}] errored, scheduling retry after [${policy.retryAfterElapsedMs}]ms, this is attempt [${policy.retryCount}] of [${retryLimitMessage}]. Error: ${utils.getErrorText(err)}`);

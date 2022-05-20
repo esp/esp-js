@@ -6,8 +6,3 @@ export function doOnSubscribeCompat<T>(this: Observable<T>, action: () => void):
 }
 
 (Observable as any).prototype.doOnSubscribe = doOnSubscribeCompat;
-declare module 'rxjs/internal/Observable' {
-    interface Observable<T> {
-        doOnSubscribe: typeof doOnSubscribeCompat;
-    }
-}

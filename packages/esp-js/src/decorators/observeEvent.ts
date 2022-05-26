@@ -28,7 +28,7 @@ const _observeEvent = (observeEnvelope: boolean, ...args: any[]) => {
         }
         if(args.length >= 1) {
             if(utils.isString(args[1])) {
-                observationStage1 = args[1];
+                observationStage1 = ObservationStage[args[1]];
             } else if (utils.isFunction(args[1])) {
                 predicate1 = args[1];
             }

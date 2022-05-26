@@ -1,7 +1,7 @@
 import {NEVER, Observable, SchedulerLike, Subscription} from 'rxjs';
 import {RetryPolicyLike} from './retryPolicy';
 import {Logger, utils} from 'esp-js';
-import {async} from 'rxjs/internal/scheduler/async';
+import {asyncScheduler} from 'rxjs/internal/scheduler/async';
 import {catchError} from 'rxjs/operators';
 
 const _log = Logger.create('retryWithPolicy');
@@ -22,7 +22,7 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
         error = args[1];
         scheduler = args[2];
     }
-    scheduler = scheduler || async;
+    scheduler = scheduler || asyncScheduler;
     return (source: Observable<T>) => new Observable<T>((subscriber) => {
         let subscription: Subscription,
             isDisposed = false,
@@ -31,7 +31,7 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
             subscribe,
             isRetry = false;
         subscribe = () => {
-            // given we could try resubscribe via a timer callback, we need to ensure the stream is still value
+            // given we could try re-subscribe via a timer callback, we need to ensure the stream is still value
             if (!isDisposed && !isCompleted && !hasError) {
                 if (isRetry) {
                     _log.debug(`operation [${policy.description}] retrying`);
@@ -41,7 +41,12 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
                         if (error) {
                             error(err);
                         }
-                        policy.incrementRetryCount();
+                        // For backwards compatability (specifically for micro front ends where esp APIs may be dynamically loaded into the DOM), we need first try the old method, else the new one
+                        if (policy.incrementRetryCount) {
+                            policy.incrementRetryCount(err);
+                        } else {
+                            policy.onError(err);
+                        }
                         if (policy.shouldRetry) {
                             let retryLimitMessage = policy.retryLimit === -1 ? 'unlimited' : policy.retryLimit;
                             _log.error(`operation [${policy.description}] errored, scheduling retry after [${policy.retryAfterElapsedMs}]ms, this is attempt [${policy.retryCount}] of [${retryLimitMessage}]. Error: ${utils.getErrorText(err)}`);
@@ -54,7 +59,7 @@ export function retryWithPolicy<T>(...args: any[]) : (source: Observable<T>) => 
                                 policy.retryAfterElapsedMs,
                             );
                         } else {
-                            subscriber.error(new Error(`Retry policy reached retry limit of [${policy.retryCount}]. Error: [${policy.errorMessage}], Error: [${utils.getErrorText(err)}]`));
+                            subscriber.error(new Error(`Retry policy [${policy.description}] will not retry. Policy error: [${policy.errorMessage}]`));
                         }
                         return NEVER;
                     }

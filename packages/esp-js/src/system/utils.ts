@@ -25,7 +25,7 @@ export namespace utils {
         }
     }
 
-    export function isString(value: any): boolean {
+    export function isString(value: any): value is string {
         return typeof value === 'string' || value instanceof String;
     }
 
@@ -78,7 +78,7 @@ export namespace utils {
 
     export const getErrorText = (e: any) => {
         if (e instanceof Error) {
-            return `${e.toString()}. ${e.stack || ''}`;
+            return `Message: ${e.message}, Stack: ${e.stack || ''}`;
         }
         return e;
     };

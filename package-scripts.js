@@ -5,7 +5,7 @@ module.exports = {
         dev: 'cross-env NODE_ENV=dev webpack --display "normal" --color --watch',
         buildDev: 'cross-env NODE_ENV=dev webpack --display-reasons --display-error-details --color && yarn test-ci',
         buildProd: 'cross-env NODE_ENV=prod webpack --display-reasons --display-error-details --color && yarn test-ci',
-        buildPack: 'cross-env NODE_ENV=prod yarn pack',
+        buildPack: 'cross-env NODE_ENV=prod yarn pack --out %s-v%v.tgz',
         buildDocs: 'cross-env NODE_ENV=dev BUILD_DOCS=true webpack --display-reasons --display-error-details --color',
         test: 'node --expose-gc node_modules/jest/bin/jest.js --color --no-cache -c ./jest.config.js --rootDir . --watchAll',
         testCi: 'node --expose-gc node_modules/jest/bin/jest.js --color --no-cache -c ./jest.config.js --rootDir .',

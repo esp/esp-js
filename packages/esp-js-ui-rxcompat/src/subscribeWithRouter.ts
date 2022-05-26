@@ -20,8 +20,3 @@ const subscribeWithRouter = function <T, TModel>(
 };
 
 (Observable as any).prototype.subscribeWithRouter = subscribeWithRouter;
-declare module 'rxjs/internal/Observable' {
-    interface Observable<T> {
-        subscribeWithRouter: typeof subscribeWithRouter;
-    }
-}

@@ -6,8 +6,3 @@ export function liftToEspObservableCompat<T, TModel>(this: Observable<T>, router
     return liftToEspObservable<T, TModel>(router, modelId)(this);
 }
 (Observable as any).prototype.liftToEspObservable = liftToEspObservableCompat;
-declare module 'rxjs/internal/Observable' {
-    interface Observable<T> {
-        liftToEspObservable: typeof liftToEspObservableCompat;
-    }
-}

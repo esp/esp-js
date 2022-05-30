@@ -63,7 +63,7 @@ describe('.retryWithPolicy()', () => {
     describe('RetryPolicy', () => {
 
         beforeEach(() => {
-            _policy = new RetryPolicy('TestOperation', 2, 1000, () => 'An Error');
+            _policy = new RetryPolicy('TestOperation', 1000, 2, () => 'An Error');
             setup();
         });
 
@@ -144,12 +144,15 @@ describe('.retryWithPolicy()', () => {
             expect(_err.message).toContain(`Retry policy [SomeOperation] will not retry. Policy error: [Message: Boom!, Stack: Error: Boom!`);
         });
 
-        it('should retry unlimited when retry count is below 0', () => {
+        test.each([
+            [null],
+            [-1],
+        ])('should retry unlimited when retry limit is %s', (retryLimit) => {
             let doError = () => {
                 _subject.next(-1);
                 _testScheduler.advanceTime(1001);
             };
-            _policy = RetryPolicy.createForLimitedRetryWithLinearBackOff('ATest', 1000);
+            _policy = new RetryPolicy('TestOperation', 1000, retryLimit, () => 'An Error');
             subscribe();
             doError();
             doError();
@@ -175,7 +178,7 @@ describe('.retryWithPolicy()', () => {
 
         it('errorMessageFactory sets error message', () => {
             const factory = (err) => `The Factory ${err.message}`;
-            _policy = RetryPolicy.createForLimitedRetryWithLinearBackOff('TestOperation', 5, 1000, factory);
+            _policy = new RetryPolicy('TestOperation', 1000, 2, factory);
             setup();
             subscribe();
             _subject.next(-1);
@@ -183,7 +186,7 @@ describe('.retryWithPolicy()', () => {
         });
 
         it('errorMessageFactory can be null', () => {
-            _policy = new RetryPolicy('TestOperation', null, 5, null);
+            _policy = new RetryPolicy('TestOperation', 1000, 2, null);
             setup();
             subscribe();
             _subject.next(-1);
@@ -246,12 +249,64 @@ describe('.retryWithPolicy()', () => {
         });
     });
 
-    describe('ExponentialBackOffRetryPolicy', () => {
-        beforeEach(() => {
-            _policy = RetryPolicy.createForUnlimitedRetryWithExponentialBackOff('TestOperation', 10_000);
+    describe('Constant Back Off', () => {
+        it('retries on a constant backoff curve', () => {
+            _policy = RetryPolicy.retry('TestOperation', 10_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
         });
 
+        it('respect limit', () => {
+            _policy = RetryPolicy.retry('TestOperation', 10_000, 2);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.onError();
+            expect(_policy.shouldRetry).toBeFalsy();
+        });
+    });
+
+    describe('Linear Back Off', () => {
+        beforeEach(() => {
+            _policy = RetryPolicy.retryWithLinearBackOff('TestOperation', 10_000, 60_000);
+        });
+
+        it('retries on a linear backoff curve', () => {
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(20_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(30_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(40_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(50_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(60_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(60_000);
+        });
+
+        it('respect limit', () => {
+            _policy = RetryPolicy.retryWithLinearBackOff('TestOperation', 10_000, 60_000, 2);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(10_000);
+            _policy.onError();
+            expect(_policy.retryAfterElapsedMs).toEqual(20_000);
+            _policy.onError();
+            expect(_policy.shouldRetry).toBeFalsy();
+        });
+    });
+
+    describe('Exponential Back Off', () => {
         it('retries on a backoff curve', () => {
+            _policy = RetryPolicy.retryWithExponentialBackOff('TestOperation', 10_000);
             // expected retries
             // 1, 2, 3, 4, 7, 10, 10, 10,
             _policy.onError();
@@ -270,21 +325,8 @@ describe('.retryWithPolicy()', () => {
             expect(_policy.retryAfterElapsedMs).toEqual(10_000);
         });
 
-        it('resets after error', () => {
-            _policy.onError();
-            _policy.onError();
-            _policy.onError();
-            _policy.onError(new Error());
-            expect(_policy.retryAfterElapsedMs).toEqual(4000);
-            expect(_policy.lastError).toBeDefined();
-            _policy.reset();
-            expect(_policy.lastError).toBeNull();
-            _policy.onError();
-            expect(_policy.retryAfterElapsedMs).toEqual(1000);
-        });
-
         it('respects retry limit', () => {
-            _policy = new ExponentialBackOffRetryPolicy('TestOperation', 3, 0.5, 10_000);
+            _policy = new ExponentialBackOffRetryPolicy('TestOperation', 0.5, 10_000, 3);
             expect(_policy.shouldRetry).toBeTruthy();
             _policy.onError();
             _policy.onError();

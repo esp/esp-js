@@ -1,5 +1,4 @@
-import {Guard} from 'esp-js';
-import {utils} from 'esp-js';
+import {Guard, utils} from 'esp-js';
 
 export interface RetryPolicyLike {
     readonly description: string;
@@ -31,30 +30,53 @@ export type ErrorMessageFactory = (err?: any) => string;
 
 export class RetryPolicy implements RetryPolicyLike {
     /**
-     * @deprecated, use createForUnlimitedRetryWithLinearBackOff
+     * @deprecated, use retry
+     * This has been left here for backwards compatability.
      */
     static createForUnlimitedRetry(description: string, retryAfterElapsedMs: number): RetryPolicy {
-        return RetryPolicy.createForUnlimitedRetryWithLinearBackOff(description, retryAfterElapsedMs);
+        return RetryPolicy.retry(description, retryAfterElapsedMs);
     }
 
+    /**
+     * A policy that does not retry
+     */
     static none(description: string): RetryPolicy {
         return new RetryPolicy(description, null, 0); // do not retry
     }
 
-    static createForLimitedRetryWithLinearBackOff(description: string, retryLimit: number, retryAfterElapsedMs: number, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
-        return new RetryPolicy(description, retryLimit, retryAfterElapsedMs, errorMessageFactory);
+    /**
+     * Retries at a constant interval
+     * @param description the operation being retired
+     * @param retryIntervalMs the time at which to wait before retrying
+     * @param retryLimit the maximum number of retires, omit or pass null for unlimited,
+     * @param errorMessageFactory an optional error factory, can be omitted and a default which prints the error will be used
+     */
+    static retry(description: string, retryIntervalMs: number, retryLimit: number = null, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
+        return new RetryPolicy(description, retryIntervalMs, retryLimit, errorMessageFactory);
     }
 
-    static createForUnlimitedRetryWithLinearBackOff(description: string, retryAfterElapsedMs: number, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
-        return new RetryPolicy(description, -1, retryAfterElapsedMs, errorMessageFactory);
+    /**
+     * Retries on a linear backoff curve, i.e. 5, 10, 15, 20, 20, 20
+     * @param description the operation being retired
+     * @param retryIntervalMs the initial wait time, then this will be doubled for each followed on retry
+     * @param maxIntervalMs the maximum wait time
+     * @param retryLimit the maximum number of retires, omit or pass null for unlimited,
+     * @param errorMessageFactory an optional error factory, can be omitted and a default which prints the error will be used
+     */
+    static retryWithLinearBackOff(description: string, retryIntervalMs: number, maxIntervalMs: number, retryLimit: number = null, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
+        return new LinearBackOffRetryPolicy(description, retryIntervalMs, maxIntervalMs, retryLimit, errorMessageFactory);
     }
 
-    static createForLimitedRetryWithExponentialBackOff(description: string, retryLimit: number, maxLimitMs: number, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
-        return new ExponentialBackOffRetryPolicy(description, retryLimit, 0.5, maxLimitMs, errorMessageFactory);
-    }
-
-    static createForUnlimitedRetryWithExponentialBackOff(description: string, maxLimitMs: number, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
-        return new ExponentialBackOffRetryPolicy(description, -1, 0.5, maxLimitMs, errorMessageFactory);
+    /**
+     * Retries on an exponential backoff curve, i.e. 1, 2, 3, 4, 7, 12, 20, 33, 55, 60, 60, 60
+     * @param description the operation being retired
+     * @param maxIntervalMs the maximum wait time
+     * @param retryLimit the maximum number of retires, omit or pass null for unlimited,
+     * @param backoffExponent the exponent which modifies the backoff curve, default is 0.5
+     * @param errorMessageFactory an optional error factory, can be omitted and a default which prints the error will be used
+     */
+    static retryWithExponentialBackOff(description: string, maxIntervalMs: number, retryLimit: number = null, backoffExponent: number = 0.5, errorMessageFactory: ErrorMessageFactory = null): RetryPolicy {
+        return new ExponentialBackOffRetryPolicy(description, backoffExponent, maxIntervalMs, retryLimit, errorMessageFactory);
     }
 
     protected _retryCount: number;
@@ -63,8 +85,8 @@ export class RetryPolicy implements RetryPolicyLike {
 
     constructor(
         protected readonly _description: string,
-        protected readonly _retryLimit: number,
         protected readonly _retryAfterElapsedMs: number,
+        protected readonly _retryLimit: number = null,
         errorMessageFactory: ErrorMessageFactory = null
     ) {
         Guard.isString(_description, 'description required');
@@ -87,7 +109,12 @@ export class RetryPolicy implements RetryPolicyLike {
     }
 
     get shouldRetry(): boolean {
-        return this._retryLimit === -1 || this._retryCount < this._retryLimit;
+        // This is a bit of an odd check.
+        // Historically if _retryLimit was -1 it meant 'unlimited', later null offered the same behaviour, hence this does an explicit check for either.
+        if (this._retryLimit === null || this._retryLimit === -1) {
+            return true;
+        }
+        return this._retryCount < this._retryLimit;
     }
 
     get errorMessage(): string | null {
@@ -150,12 +177,12 @@ export class RetryPolicy implements RetryPolicyLike {
 export class ExponentialBackOffRetryPolicy extends RetryPolicy {
     constructor(
         description: string,
-        retryLimit: number,
         private readonly _backoffExponent: number,
         private readonly _maxLimitMs: number,
+        retryLimit: number = null,
         errorMessageFactory: ErrorMessageFactory = null
     ) {
-        super(description, retryLimit, null, errorMessageFactory);
+        super(description, null, retryLimit, errorMessageFactory);
     }
 
     get retryAfterElapsedMs(): number {
@@ -163,5 +190,27 @@ export class ExponentialBackOffRetryPolicy extends RetryPolicy {
         const x = (this._retryCount - 1) * this._backoffExponent;
         let retryAfter = Math.round(Math.exp(x)) * 1000;
         return retryAfter > this._maxLimitMs ? this._maxLimitMs : retryAfter;
+    }
+}
+
+export class LinearBackOffRetryPolicy extends RetryPolicy {
+    constructor(
+        description: string,
+        retryAfterElapsedMs: number,
+        private readonly _maxLimitMs: number,
+        retryLimit: number = null,
+        errorMessageFactory: ErrorMessageFactory = null
+    ) {
+        super(description, retryAfterElapsedMs, retryLimit, errorMessageFactory);
+    }
+
+    get retryAfterElapsedMs(): number {
+        if (this._retryCount === 1) {
+            return this._retryAfterElapsedMs;
+        }
+        let retryAfter = this._retryAfterElapsedMs * this._retryCount;
+        return retryAfter > this._maxLimitMs
+            ? this._maxLimitMs
+            : retryAfter;
     }
 }

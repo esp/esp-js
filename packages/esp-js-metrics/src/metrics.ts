@@ -72,9 +72,15 @@ export interface HistogramMetricWithLabels {
 }
 
 export interface MetricFactoryLike {
+    hasGauge(name: string): boolean;
+    hasCounter(name: string): boolean;
+    hasHistogram(name: string): boolean;
     createGauge(name: string, help: string, labelNames?: string[]): GaugeMetric;
+    getOrCreateGauge(name: string, help: string, labelNames?: string[]): GaugeMetric;
     createCounter(name: string, help: string, labelNames?: string[]): CounterMetric;
+    getOrCreateCounter(name: string, help: string, labelNames?: string[]): CounterMetric;
     createHistogram(name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric;
+    getOrCreateHistogram(name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric;
 }
 
 declare global {
@@ -100,13 +106,31 @@ export const MetricFactoryImplementation = {
 };
 
 export const MetricFactory: MetricFactoryLike = {
+    hasGauge(name: string): boolean {
+        return getMetricsFactoryInstance().hasGauge(name);
+    },
     createGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {
         return getMetricsFactoryInstance().createGauge(name, help, labelNames);
+    },
+    getOrCreateGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {
+        return getMetricsFactoryInstance().getOrCreateGauge(name, help, labelNames);
+    },
+    hasCounter(name: string): boolean {
+        return getMetricsFactoryInstance().hasCounter(name);
     },
     createCounter(name: string, help: string, labelNames?: string []): CounterMetric {
         return getMetricsFactoryInstance().createCounter(name, help, labelNames);
     },
+    getOrCreateCounter(name: string, help: string, labelNames?: string []): CounterMetric {
+        return getMetricsFactoryInstance().getOrCreateCounter(name, help, labelNames);
+    },
+    hasHistogram(name: string): boolean {
+        return getMetricsFactoryInstance().hasHistogram(name);
+    },
     createHistogram (name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric {
         return getMetricsFactoryInstance().createHistogram(name, help, labelNames, buckets);
+    },
+    getOrCreateHistogram (name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric {
+        return getMetricsFactoryInstance().getOrCreateHistogram(name, help, labelNames, buckets);
     }
 };

@@ -42,13 +42,31 @@ const NoopMetricsWithLabels = (new class implements CounterMetricWithLabels, Gau
 });
 
 export const NoopMetricsFactory: MetricFactoryLike = {
+    hasCounter(name: string): boolean {
+        return false;
+    },
+    hasGauge(name: string): boolean {
+        return false;
+    },
+    hasHistogram(name: string): boolean {
+        return false;
+    },
     createCounter(name: string, help: string, labelNames?: string[]): CounterMetric {
+        return NoopMetrics;
+    },
+    getOrCreateCounter(name: string, help: string, labelNames?: string[]): CounterMetric {
         return NoopMetrics;
     },
     createGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {
         return NoopMetrics;
     },
+    getOrCreateGauge(name: string, help: string, labelNames?: string[]): GaugeMetric {
+        return NoopMetrics;
+    },
     createHistogram(name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric {
+        return NoopMetrics;
+    },
+    getOrCreateHistogram(name: string, help: string, labelNames?: string[], buckets?: number[]): HistogramMetric {
         return NoopMetrics;
     }
 };

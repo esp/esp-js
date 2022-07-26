@@ -2,15 +2,15 @@ import {GaugeMetric,  MetricFactory} from 'esp-js-metrics';
 import {Logger, Health, HealthUtils, AggregateHealthIndicator, DefaultHealthIndicatorTrigger, HealthIndicatorTrigger} from 'esp-js';
 import {Container, ContainerNotification} from 'esp-js-di';
 
-export class AggregateEspDiHealthIndicator extends AggregateHealthIndicator {
+export class EspAggregateHealthIndicator extends AggregateHealthIndicator {
     private _aggregateHealthMetric: GaugeMetric;
 
     constructor(private _container: Container, healthIndicatorTrigger: HealthIndicatorTrigger = DefaultHealthIndicatorTrigger) {
-        super(Logger.create('AggregateEspDiHealthIndicator'), healthIndicatorTrigger);
+        super(Logger.create('EspAggregateHealthIndicator'), healthIndicatorTrigger);
     }
 
     public get healthIndicatorName() {
-        return 'AggregateEspDiHealthIndicator';
+        return 'EspAggregateHealthIndicator';
     }
 
     public start() {

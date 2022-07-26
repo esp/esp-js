@@ -1,2 +1,2 @@
 // Auto-generated 
-export * from './aggregateEspDiHealthIndicator';
+export * from './espAggregateHealthIndicator';

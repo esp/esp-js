@@ -1,4 +1,4 @@
-import {AggregateEspDiHealthIndicator} from '../../src/health/';
+import {EspAggregateHealthIndicator} from '../../src/health/';
 import {Health, HealthIndicator} from 'esp-js/src';
 import {Container} from 'esp-js-di';
 import {HealthStatus} from 'esp-js';
@@ -18,9 +18,9 @@ class TestHealthIndicator implements HealthIndicator {
     }
 }
 
-describe('AggregateEspDiHealthIndicator', () => {
+describe('EspAggregateHealthIndicator Tests', () => {
     let updates = 0;
-    let aggregateIndicator: AggregateEspDiHealthIndicator = null;
+    let aggregateIndicator: EspAggregateHealthIndicator = null;
     let container: Container;
     let testMetricFactory: TestMetricFactory;
 
@@ -35,7 +35,7 @@ describe('AggregateEspDiHealthIndicator', () => {
         MetricFactoryImplementation.set(testMetricFactory);
         updates = 0;
         container = new Container();
-        aggregateIndicator = new AggregateEspDiHealthIndicator(container);
+        aggregateIndicator = new EspAggregateHealthIndicator(container);
         aggregateIndicator.start();
     });
 
@@ -91,7 +91,7 @@ describe('AggregateEspDiHealthIndicator', () => {
 
     it('health metric changes when health changes', () => {
         let indicator = new TestHealthIndicator('i1');
-        let metric = testMetricFactory.metricsByName.get('aggregate_esp_di_health');
+        let metric = testMetricFactory.metricsByName.get('esp_aggregate_health');
         indicator.setStatus(HealthStatus.Healthy);
         container.registerInstance('indicator1-key', indicator);
 

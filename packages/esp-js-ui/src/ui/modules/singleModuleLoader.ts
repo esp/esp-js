@@ -7,7 +7,8 @@ import {ViewRegistryModel} from '../viewFactory';
 import {Module, ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
 import {SystemContainerConst} from '../dependencyInjection';
-import {DisposableBase, Logger} from 'esp-js';
+import {DisposableBase, Health, HealthIndicator, Logger} from 'esp-js';
+import {MetricFactory} from 'esp-js-metrics';
 
 export interface SingleModuleLoader {
     readonly moduleMetadata: ModuleMetadata;
@@ -16,6 +17,8 @@ export interface SingleModuleLoader {
     readonly hasLoaded: boolean;
 }
 
+const moduleLoadedCounter = MetricFactory.createCounter('esp_module_loaded', 'Counts when an esp module has fully loaded', ['module_key']);
+
 /**
  * Owns load orchestrations for a module.
  *
@@ -23,13 +26,15 @@ export interface SingleModuleLoader {
  *
  * This loader gets added to the modules container so other areas of the module can get read only access to it.
  */
-export class DefaultSingleModuleLoader extends DisposableBase implements SingleModuleLoader {
+export class DefaultSingleModuleLoader extends DisposableBase implements SingleModuleLoader, HealthIndicator {
     private readonly _preReqsLoader: DefaultPrerequisiteRegister;
     private _log: Logger;
     private _module: Module;
     private _loadStream: ConnectableObservable<ModuleLoadResult>;
     private _lastModuleLoadResult: ModuleLoadResult;
     private _connected = false;
+    private _healthIndicatorName: string;
+    private _health: Health;
 
     public constructor(
         private _container: Container,
@@ -38,9 +43,20 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
         private _moduleConstructor: ModuleConstructor,
     ) {
         super();
-        this._log = Logger.create(`SingleModuleLoader-${this._moduleMetadata.moduleKey}`);
+        let name = `SingleModuleLoader-${this._moduleMetadata.moduleKey}`;
+        this._log = Logger.create(name);
+        this._healthIndicatorName = name;
+        this._health = Health.builder(name).isUnknown().build();
         this._preReqsLoader = new DefaultPrerequisiteRegister();
         this._loadStream = <ConnectableObservable<ModuleLoadResult>>this._createLoadStream().pipe(multicast(new ReplaySubject<ModuleLoadResult>(1)));
+    }
+
+    public get healthIndicatorName(): string {
+        return this._healthIndicatorName;
+    }
+
+    public health() : Health {
+        return this._health;
     }
 
     public get module(): Module {
@@ -112,7 +128,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 this._log.verbose(`Registering prereqs for ${moduleName}`);
                 this.module.registerPrerequisites(this._preReqsLoader);
             } catch (e) {
-                this._log.error(`Failed to create module ${moduleName}`, e);
+                let errorMessage = `Failed to create module ${moduleName}`;
+                this._log.error(errorMessage, e);
+                this._health = Health.builder(this._healthIndicatorName).isUnhealthy().addReason(errorMessage).build();
                 this._lastModuleLoadResult = Object.freeze({
                     type: ModuleChangeType.Error,
                     moduleName,
@@ -180,7 +198,9 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 obs.next(this._lastModuleLoadResult);
                 module.initialise();
             } catch (e) {
-                this._log.error(`Failed to initialise module ${this._moduleMetadata.moduleName}`, e);
+                let errorMessage = `Failed to initialise module ${this._moduleMetadata.moduleName}`;
+                this._log.error(errorMessage, e);
+                this._health = Health.builder(this._healthIndicatorName).isUnhealthy().addReason(errorMessage).build();
                 this._lastModuleLoadResult = Object.freeze({
                     type: ModuleChangeType.Error,
                     moduleName: this._moduleMetadata.moduleName,
@@ -203,6 +223,8 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 hasCompletedLoaded: true,
                 stage: ModuleLoadStage.Loaded
             });
+            this._health = Health.builder(this._healthIndicatorName).isHealthy().build();
+            moduleLoadedCounter.inc({module_key: this._moduleMetadata.moduleKey });
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
             obs.next(this._lastModuleLoadResult);
             obs.complete();

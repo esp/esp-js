@@ -8,13 +8,14 @@ import {IdFactory} from '../idFactory';
 import * as Rx from 'rxjs';
 import {merge, Observable} from 'rxjs';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
-import {DisposableBase, Guard, Logger, Router} from 'esp-js';
+import {AggregateHealthIndicator, DisposableBase, Guard, Logger, Router} from 'esp-js';
 import {Module, ModuleConstructor} from './module';
 import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
 import {ModuleProvider} from './moduleProvider';
 import {ModelBase} from '../modelBase';
 import {SerialDisposable} from 'esp-js-rx';
+import {MetricFactory} from 'esp-js-metrics';
 
 const _log: Logger = Logger.create('Shell');
 
@@ -34,6 +35,8 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _viewRegistryModel: ViewRegistryModel;
     private _router: Router;
     private _stateService: StateService;
+    private _regionsLoadedCounter = MetricFactory.getOrCreateCounter('esp_regions_loaded', 'Tracks when the shell displays its regions');
+    private _modulesLoadedCounter = MetricFactory.getOrCreateCounter('esp_modules_loaded', 'Tracks when all of the shell\'s modules have full loaded');
 
     public constructor(container: Container = new Container()) {
         super();
@@ -124,6 +127,10 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
                 },
                 exception => {
                     _log.error(`Error on module load stream`, exception);
+                },
+                () => {
+                    _log.verbose(`'All modules loaded`);
+                    this._modulesLoadedCounter.inc();
                 }
             ));
         }
@@ -149,6 +156,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
             if (!this._regionsLoaded) {
                 this._loadRegions();
                 this._trySetStateSaveMonitor();
+                this._regionsLoadedCounter.inc();
             }
         });
     }
@@ -225,7 +233,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     }
 
     private _createLoadStream(...moduleConstructors: Array<ModuleConstructor>): Rx.Observable<ModuleLoadResult> {
-        return Rx.Observable.create((obs: Rx.Subscriber<ModuleLoadResult>) => {
+        return new Observable((obs: Rx.Subscriber<ModuleLoadResult>) => {
             _log.verbose(`Loading shell and ${moduleConstructors.length} additional modules`);
             return merge(...moduleConstructors.map(moduleCtor => this._loadModule(moduleCtor))).subscribe(obs);
         });

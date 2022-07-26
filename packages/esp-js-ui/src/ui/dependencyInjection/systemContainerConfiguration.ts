@@ -6,7 +6,7 @@ import {ViewRegistryModel} from '../viewFactory';
 import {LiteralResolver} from './literalResolver';
 import {SchedulerService} from '../../core';
 import {RegionManager} from '../regions/models';
-import {AggregateEspDiHealthIndicator} from '../../health';
+import {EspAggregateHealthIndicator} from '../../health';
 
 const _log = Logger.create('SystemContainerConfiguration');
 
@@ -14,12 +14,12 @@ export class SystemContainerConfiguration {
     public static configureContainer(rootContainer: Container) {
         _log.verbose('Configuring container with system components');
 
-        if (!rootContainer.isRegistered(SystemContainerConst.aggregate_esp_di_health_indicator)) {
+        if (!rootContainer.isRegistered(SystemContainerConst.esp_aggregate_health_indicator)) {
             // Register a health indicator which monitors container object which themselves are HealthIndicators.
             // This needs to be created now (hence using registerInstance) as it needs to be up and running before types start resolving.
-            let aggregateEspDiHealthIndicator = new AggregateEspDiHealthIndicator(rootContainer);
+            let aggregateEspDiHealthIndicator = new EspAggregateHealthIndicator(rootContainer);
             aggregateEspDiHealthIndicator.start();
-            rootContainer.registerInstance(SystemContainerConst.aggregate_esp_di_health_indicator, aggregateEspDiHealthIndicator);
+            rootContainer.registerInstance(SystemContainerConst.esp_aggregate_health_indicator, aggregateEspDiHealthIndicator);
         }
 
         rootContainer.addResolver(LiteralResolver.resolverName, new LiteralResolver());

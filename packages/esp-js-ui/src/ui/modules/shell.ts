@@ -35,7 +35,6 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _viewRegistryModel: ViewRegistryModel;
     private _router: Router;
     private _stateService: StateService;
-    private _aggregateHealthIndicator: AggregateHealthIndicator;
     private _regionsLoadedCounter = MetricFactory.getOrCreateCounter('esp_regions_loaded', 'Tracks when the shell displays its regions');
     private _modulesLoadedCounter = MetricFactory.getOrCreateCounter('esp_modules_loaded', 'Tracks when all of the shell\'s modules have full loaded');
 
@@ -100,7 +99,6 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         this._regionManager = this._container.resolve<RegionManager>(SystemContainerConst.region_manager);
         this._viewRegistryModel = this._container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
         this._stateService = this._container.resolve<StateService>(SystemContainerConst.state_service);
-        this._aggregateHealthIndicator = this._container.resolve<AggregateHealthIndicator>(SystemContainerConst.esp_aggregate_health_indicator);
         this._registerShellViewFactories();
     }
 
@@ -251,7 +249,6 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
                 moduleMetadata,
                 moduleConstructor,
             );
-            this._aggregateHealthIndicator.addIndicator(moduleLoader, true);
             this._moduleLoaders.push(moduleLoader);
             let subscription = moduleLoader.loadResults.subscribe(obs);
             moduleLoader.load();

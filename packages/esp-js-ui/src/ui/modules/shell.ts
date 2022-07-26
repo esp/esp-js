@@ -8,7 +8,7 @@ import {IdFactory} from '../idFactory';
 import * as Rx from 'rxjs';
 import {merge, Observable} from 'rxjs';
 import {AggregateModuleLoadResult, ModuleLoadResult, ModuleLoadStage} from './moduleLoadResult';
-import {DisposableBase, Guard, Logger, Router} from 'esp-js';
+import {AggregateHealthIndicator, DisposableBase, Guard, Logger, Router} from 'esp-js';
 import {Module, ModuleConstructor} from './module';
 import {ViewFactoryBase, ViewRegistryModel} from '../viewFactory';
 import {DefaultSingleModuleLoader} from './singleModuleLoader';
@@ -34,6 +34,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
     private _viewRegistryModel: ViewRegistryModel;
     private _router: Router;
     private _stateService: StateService;
+    private _aggregateHealthIndicator: AggregateHealthIndicator;
 
     public constructor(container: Container = new Container()) {
         super();
@@ -96,6 +97,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         this._regionManager = this._container.resolve<RegionManager>(SystemContainerConst.region_manager);
         this._viewRegistryModel = this._container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
         this._stateService = this._container.resolve<StateService>(SystemContainerConst.state_service);
+        this._aggregateHealthIndicator = this._container.resolve<AggregateHealthIndicator>(SystemContainerConst.aggregate_esp_di_health_indicator);
         this._registerShellViewFactories();
     }
 
@@ -241,6 +243,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
                 moduleMetadata,
                 moduleConstructor,
             );
+            this._aggregateHealthIndicator.addIndicator(moduleLoader, true);
             this._moduleLoaders.push(moduleLoader);
             let subscription = moduleLoader.loadResults.subscribe(obs);
             moduleLoader.load();

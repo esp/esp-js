@@ -8,6 +8,7 @@ import {Module, ModuleConstructor} from './module';
 import {ModuleMetadata} from './moduleDecorator';
 import {SystemContainerConst} from '../dependencyInjection';
 import {DisposableBase, Health, HealthIndicator, Logger} from 'esp-js';
+import {MetricFactory} from 'esp-js-metrics';
 
 export interface SingleModuleLoader {
     readonly moduleMetadata: ModuleMetadata;
@@ -15,6 +16,8 @@ export interface SingleModuleLoader {
     readonly loadResults: Observable<ModuleLoadResult>;
     readonly hasLoaded: boolean;
 }
+
+const moduleLoadedCounter = MetricFactory.createCounter('esp_module_loaded', 'Counts when an esp module has fully loaded', ['module_key']);
 
 /**
  * Owns load orchestrations for a module.
@@ -221,6 +224,7 @@ export class DefaultSingleModuleLoader extends DisposableBase implements SingleM
                 stage: ModuleLoadStage.Loaded
             });
             this._health = Health.builder(this._healthIndicatorName).isHealthy().build();
+            moduleLoadedCounter.inc({module_key: this._moduleMetadata.moduleKey });
             this._module.onLoadStageChanged(this._lastModuleLoadResult.stage);
             obs.next(this._lastModuleLoadResult);
             obs.complete();

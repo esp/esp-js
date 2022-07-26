@@ -14,12 +14,12 @@ export class SystemContainerConfiguration {
     public static configureContainer(rootContainer: Container) {
         _log.verbose('Configuring container with system components');
 
-        if (!rootContainer.isRegistered(SystemContainerConst.aggregate_esp_di_health_indicator)) {
+        if (!rootContainer.isRegistered(SystemContainerConst.esp_aggregate_health_indicator)) {
             // Register a health indicator which monitors container object which themselves are HealthIndicators.
             // This needs to be created now (hence using registerInstance) as it needs to be up and running before types start resolving.
             let aggregateEspDiHealthIndicator = new AggregateEspDiHealthIndicator(rootContainer);
             aggregateEspDiHealthIndicator.start();
-            rootContainer.registerInstance(SystemContainerConst.aggregate_esp_di_health_indicator, aggregateEspDiHealthIndicator);
+            rootContainer.registerInstance(SystemContainerConst.esp_aggregate_health_indicator, aggregateEspDiHealthIndicator);
         }
 
         rootContainer.addResolver(LiteralResolver.resolverName, new LiteralResolver());

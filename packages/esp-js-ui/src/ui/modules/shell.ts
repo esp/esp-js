@@ -100,7 +100,7 @@ export abstract class Shell extends DisposableBase implements ModuleProvider {
         this._regionManager = this._container.resolve<RegionManager>(SystemContainerConst.region_manager);
         this._viewRegistryModel = this._container.resolve<ViewRegistryModel>(SystemContainerConst.views_registry_model);
         this._stateService = this._container.resolve<StateService>(SystemContainerConst.state_service);
-        this._aggregateHealthIndicator = this._container.resolve<AggregateHealthIndicator>(SystemContainerConst.aggregate_esp_di_health_indicator);
+        this._aggregateHealthIndicator = this._container.resolve<AggregateHealthIndicator>(SystemContainerConst.esp_aggregate_health_indicator);
         this._registerShellViewFactories();
     }
 

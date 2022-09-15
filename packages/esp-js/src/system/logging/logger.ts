@@ -148,7 +148,9 @@ export class Logger {
             message: args,
             dumpAdditionalDetailsToConsole: this._loggerConfig.dumpAdditionalDetailsToConsole,
             markers: markers,
-            error
+            error,
+            formatter: this._loggerConfig.formatter,
+            logInUTCTime: this._loggerConfig.logInUTCTime,
          });
     }
 }

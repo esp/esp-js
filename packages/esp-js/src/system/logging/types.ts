@@ -18,6 +18,8 @@ export type LogEvent = {
     dumpAdditionalDetailsToConsole: boolean;
     markers: Markers;
     error: any;
+    formatter: LogFormatter;
+    logInUTCTime: boolean;
 };
 
 export interface LoggerConfig {
@@ -37,7 +39,18 @@ export interface LoggerConfig {
      * Default false
      */
     logInUTCTime: boolean;
+    /**
+     * The log line formatter.
+     *
+     * Defaults to:
+     * [YYYYMMDD][<level-shorthand>][<logger-name>] <text>
+     * For example:
+     * [20210915][D][MyLogger] Some Message
+     */
+    formatter: LogFormatter;
 }
+
+export type LogFormatter = (dateTime: Date, logEvent: LogEvent, loggerName: string, logText: string) => string;
 
 export interface Sink {
     log(logEvent:LogEvent): void;

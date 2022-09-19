@@ -16,6 +16,8 @@
  */
 // notice_end
 
+import {Level} from './logging/types';
+
 export namespace utils {
     export function removeAll<T>(arr: T[], item: T) {
         for (let i = arr.length; i--;) {
@@ -81,5 +83,24 @@ export namespace utils {
             return `Message: ${e.message}, Stack: ${e.stack || ''}`;
         }
         return e;
+    };
+
+    export const getLogLevelShorthand = (level: Level) => {
+        switch (level) {
+            case Level.verbose:
+                return 'V';
+            case Level.debug:
+                return 'D';
+            case Level.info:
+                return 'I';
+            case Level.warn:
+                return 'W';
+            case Level.error:
+                return 'E';
+            case Level.none:
+                return '';
+            default:
+                throw new Error(`Unknown level ${level}`);
+        }
     };
 }

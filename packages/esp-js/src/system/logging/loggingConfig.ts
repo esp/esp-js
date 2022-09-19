@@ -1,17 +1,35 @@
 import {CompositeSink, ConsoleSink} from './sinks';
 import {GlobalState} from '../globalState';
-import {Level, LoggerConfig, Sink} from './types';
+import {Level, LogEvent, LogFormatter, LoggerConfig, Sink} from './types';
+import {utils as u} from '../utils';
 
+let _currentLevel: Level = Level.debug;
 const _sink = new CompositeSink(new ConsoleSink());
 const _loggerConfigs : {[key: string]: LoggerConfig} = {};
-let _currentLevel: Level = Level.debug;
+/**
+ * A formatter that defaults to:
+ * [YYYYMMDD][<level-shorthand>][<logger-name>] <text>
+ * For example:
+ * [20210915][D][MyLogger] Some Message
+ *
+ * This is exported as it may be easier to call this, then amend the output.
+ * Ideally we'd have a proper tokenizer in place, but perhaps at a later date.
+ */
+export const DefaultFormatter: LogFormatter = (dateTime: Date, logEvent: LogEvent, loggerName: string, logText: string) => {
+    if (logEvent.logInUTCTime) {
+        return `[${dateTime.getUTCFullYear()}${u.pad10(dateTime.getUTCMonth() + 1)}${u.pad10(dateTime.getUTCDate())}][${u.pad10(dateTime.getUTCHours())}:${u.pad10(dateTime.getUTCMinutes())}:${u.pad10(dateTime.getUTCSeconds())}.${u.pad100(dateTime.getUTCMilliseconds())}][${u.getLogLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
+    } else {
+        return `[${dateTime.getFullYear()}${u.pad10(dateTime.getMonth() + 1)}${u.pad10(dateTime.getDate())}][${u.pad10(dateTime.getHours())}:${u.pad10(dateTime.getMinutes())}:${u.pad10(dateTime.getSeconds())}.${u.pad100(dateTime.getMilliseconds())}][${u.getLogLevelShorthand(logEvent.level)}][${loggerName}] ${logText}`;
+    }
+};
 
 const _defaultLoggerConfig: LoggerConfig = {
     dumpAdditionalDetailsToConsole: false,
     level: _currentLevel,
     padOrTruncateLoggerNameLengthTo: null,
     dateFactory: () => new Date(),
-    logInUTCTime: false
+    logInUTCTime: false,
+    formatter: DefaultFormatter
 };
 
 export const _getOrCreateLoggerConfig = (loggerName: string, overrides: Partial<LoggerConfig> = {}) => {
@@ -73,7 +91,9 @@ export class LoggingConfig {
                 message: args,
                 dumpAdditionalDetailsToConsole: true, // always dump these for console logs
                 markers: null,
-                error: null // we don't support this for raw console logs
+                error: null, // we don't support this for raw console logs,
+                formatter: LoggingConfig.defaultLoggerConfig.formatter,
+                logInUTCTime: LoggingConfig.defaultLoggerConfig.logInUTCTime,
             });
         };
 

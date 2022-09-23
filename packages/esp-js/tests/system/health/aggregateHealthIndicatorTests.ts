@@ -158,9 +158,14 @@ describe('AggregateHealthIndicator', () => {
             [HealthStatus.Healthy, HealthStatus.Unknown, HealthStatus.Healthy, HealthStatus.Unknown],
             [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown, HealthStatus.Unknown],
 
+            [HealthStatus.Terminal, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Terminal],
+            [HealthStatus.Healthy, HealthStatus.Terminal, HealthStatus.Healthy, HealthStatus.Terminal],
+            [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Terminal, HealthStatus.Terminal],
+
             [undefined, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown],
             [HealthStatus.Healthy, undefined, HealthStatus.Healthy, HealthStatus.Unknown],
             [HealthStatus.Healthy, HealthStatus.Healthy, undefined, HealthStatus.Unknown],
+            [HealthStatus.Terminal, HealthStatus.Healthy, undefined, HealthStatus.Terminal],
         ])('Status of [%s, %s, %s] = %s', (indicator1Status, indicator2Status, indicator3Status, expectedAggregatedStatus) => {
             addAllIndicators();
             stateAllStatuses(indicator1Status, indicator2Status, indicator3Status);

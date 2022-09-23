@@ -29,8 +29,11 @@ export namespace HealthUtils {
             case HealthStatus.Healthy:
                 return 1;
             case HealthStatus.Unknown:
-            default:
                 return -1;
+            case HealthStatus.Terminal:
+                return -2;
+            default:
+                return -3;
         }
     };
 }

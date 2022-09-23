@@ -20,6 +20,7 @@ export enum HealthStatus {
     Healthy = 'Healthy',
     Unhealthy = 'Unhealthy',
     Unknown = 'Unknown',
+    Terminal = 'Terminal',
 }
 
 export interface Health {
@@ -68,6 +69,14 @@ export class HealthStatusBuilder {
      */
     isUnhealthy(): this {
         this._status = HealthStatus.Unhealthy;
+        return this;
+    }
+
+    /**
+     * Sets HealthStatus to Terminal, shorthand for setStatus(HealthStatus.Terminal)
+     */
+    isTerminal(): this {
+        this._status = HealthStatus.Terminal;
         return this;
     }
 

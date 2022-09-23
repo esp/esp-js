@@ -1,6 +1,6 @@
 {
   "name": "esp-js-api",
-  "version": "6.3.1",
+  "version": "6.3.2",
   "private": true,
   "scripts": {
     "clean": "nps clean",
@@ -11,7 +11,7 @@
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
-    "esp-js": "^6.3.1",
+    "esp-js": "^6.3.2",
     "prompt": "1.0.0"
   },
   "devDependencies": {

@@ -18,7 +18,7 @@
 
 import {EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
-import {Guard, Logger} from '../system';
+import {Guard, Health, HealthIndicator, Logger} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
 import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
@@ -35,7 +35,7 @@ type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
 const RUN_ACTION_EVENT_NAME = '__runAction';
 
-export class Router extends DisposableBase {
+export class Router extends DisposableBase implements HealthIndicator {
     private _models: Map<string, ModelRecord>;
     private _dispatchSubject: Subject<Envelope>;
     private _haltingException: Error;
@@ -43,6 +43,7 @@ export class Router extends DisposableBase {
     private _onErrorHandlers: Array<(error: Error) => void>;
     private _diagnosticMonitor: CompositeDiagnosticMonitor;
     private _decoratorObservationRegister: DecoratorObservationRegister;
+    private _currentHealth = Health.builder(this.healthIndicatorName).isHealthy().build();
 
     public constructor() {
         super();
@@ -61,6 +62,14 @@ export class Router extends DisposableBase {
 
     public get currentStatus(): Status {
         return this._state.currentStatus;
+    }
+
+    public get healthIndicatorName(): string {
+        return 'Router';
+    }
+
+    public health(): Health {
+        return this._currentHealth;
     }
 
     public addModel(modelId: string, model: any, eventProcessors?: EventProcessors) {
@@ -592,12 +601,17 @@ export class Router extends DisposableBase {
 
         let modelIds = [...this._models.keys()];
         this._diagnosticMonitor.halted(modelIds, err);
-        _log.error('The ESP router has caught an unhandled error and will halt', err);
+        let errorMessage = 'The ESP router has caught an unhandled error and will halt';
+        _log.error(errorMessage, err);
         this._haltingException = err;
 
         // We run the onErrorHandlers after the
         // router has had time to set it's own state
         if (isInitialHaltingError) {
+            this._currentHealth = Health.builder(this.healthIndicatorName)
+                .isTerminal()
+                .addReason(`${errorMessage} - ${err}`)
+                .build();
             this._onErrorHandlers.forEach(handler => {
                 try {
                     handler(err);

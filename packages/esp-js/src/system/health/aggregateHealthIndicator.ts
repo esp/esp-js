@@ -173,9 +173,13 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
                         .addReason('Indicator returned a falsely status')
                         .build();
                 }
+                // Once Terminal, the overall status stays as Terminal.
                 // Once Unknown, the overall status stays as Unknown.
-                // If there are no Unknowns, but some unhealthy the overall status is Unhealthy.
-                if (healthIndicatorHealth.status === HealthStatus.Unknown) {
+                // If there are no Terminal or Unknowns, but some unhealthy the overall status is Unhealthy.
+                // else Healthy
+                if (healthIndicatorHealth.status === HealthStatus.Terminal) {
+                    health.isTerminal();
+                } if (healthIndicatorHealth.status === HealthStatus.Unknown) {
                     health.isUnknown();
                 } else if (health.currentStatus !== HealthStatus.Unknown && healthIndicatorHealth.status === HealthStatus.Unhealthy) {
                     health.isUnhealthy();
@@ -197,7 +201,9 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         const statusChanged = oldHealth.status !==  newHealth.status;
         if (statusChanged) {
             let message = `Status has changed from ${oldHealth.status} to ${newHealth.status}. Reasons: ${this._aggregateHealthReasons(newHealth)}`;
-            if (newHealth.status === HealthStatus.Unhealthy) {
+            if (newHealth.status === HealthStatus.Terminal) {
+                this._log.error(message);
+            } else if (newHealth.status === HealthStatus.Unhealthy) {
                 this._log.warn(message);
             } else {
                 this._log.info(message);

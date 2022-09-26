@@ -9,12 +9,16 @@ import {RegionState} from './regionState';
 
 const _log = Logger.create('RegionManager');
 
-export interface DisplayOptions {
-    title?:string;
+export interface RegionItemOptions {
+    title?: string;
     /**
      * If provided, will be used to select the @viewBinding on the model with the matching displayContext
      */
-    displayContext?:string;
+    displayContext?: string;
+    /**
+     * An optional, caller provided, tag which can later be used to identify the region item.
+     */
+    tag?: string;
 }
 
 // exists to decouple all the region and their models from the rest of the app
@@ -73,6 +77,15 @@ export class RegionManager extends ModelBase {
         }
     }
 
+    @observeEvent(EspUiEventNames.regions_regionManager_updateRegionItem)
+    private _updateRegionItem(event: EspUiEvents.UpdateRegionItemEvent) {
+        if (event && event.regionItem) {
+            this.updateRegionItem(event.regionItem);
+        } else {
+            _log.warn(`Ignoring event ${EspUiEventNames.regions_regionManager_updateRegionItem} as incoming event not well formed`, event);
+        }
+    }
+
     @observeEvent(EspUiEventNames.regions_regionManager_removeFromRegion)
     private _onRemoveFromToRegion(event: EspUiEvents.RemoveFromRegionEvent) {
         if (event && event.regionName && event.regionItem) {
@@ -98,8 +111,8 @@ export class RegionManager extends ModelBase {
      *
      * @deprecated use the overload that takes a RegionItem
      */
-    public addToRegion(regionName: string, modelId:string, displayOptions: DisplayOptions): RegionItem;
-    public addToRegion(...args: (string|DisplayOptions|RegionItem)[]): RegionItem {
+    public addToRegion(regionName: string, modelId:string, regionItemOptions: RegionItemOptions): RegionItem;
+    public addToRegion(...args: (string|RegionItemOptions|RegionItem)[]): RegionItem {
         // I'm not dispatching this call onto the router as by design this model doesn't really have any true observers.
         // It does listen to events, but nothing should render it's state, thus this call is synchronous
         let regionName = <string>args[0];
@@ -112,21 +125,40 @@ export class RegionManager extends ModelBase {
                 regionItem = <RegionItem>args[1];
             }
         } else {
-            regionItem = RegionItem.create(<string>args[1], <DisplayOptions>args[2]);
+            regionItem = RegionItem.create(<string>args[1], <RegionItemOptions>args[2]);
         }
         this._addToRegion(regionName, regionItem);
         return regionItem;
     }
 
-    private _addToRegion(regionName: string, regionItem: RegionItem) {
+    private _ensureRegionExist(regionName: string, errorMessage: string) {
         if (!(regionName in this._regions)) {
-            let message = `Cannot add model with id ${regionItem.modelId} to region ${regionName} as the region is not registered`;
+            let message = `Region ${regionName} is not registered. ${errorMessage}`;
             _log.error(message);
             throw new Error(message);
         }
+    }
+
+    private _addToRegion(regionName: string, regionItem: RegionItem) {
+        this._ensureRegionExist(regionName, `Cannot add model with id ${regionItem.modelId}.`);
         _log.verbose(`Adding to region ${regionName}. ${regionItem.toString()}.`);
         this._regions[regionName].addToRegion(regionItem);
         return regionItem;
+    }
+
+    /**
+     * Used to update the region item.
+     * Typically this is only to update the associated RegionItemOptions.
+     * The
+     * @param regionItem
+     */
+    public updateRegionItem(regionItem: RegionItem) {
+        Object.keys(this._regions).forEach(rn => {
+            let region = this._regions[rn];
+            if (region.existsInRegionByRecordId(regionItem.regionRecordId)) {
+                region.updateRegionItem(regionItem);
+            }
+        });
     }
 
     /**
@@ -158,11 +190,7 @@ export class RegionManager extends ModelBase {
         // It's possible there are no records found, in this case we silently ignore
         if (recordsToRemove.length > 0) {
             _log.verbose(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
-            if (!(regionName in this._regions)) {
-                let message = `Cannot remove the following records from region ${regionName} as the region is not registered: ${recordsToRemove}`;
-                _log.error(message);
-                throw new Error(message);
-            }
+            this._ensureRegionExist(regionName, `Cannot remove records ${recordsToRemove}.`);
             recordsToRemove.forEach(recordId => {
                 this._regions[regionName].removeFromRegion(recordId);
             });

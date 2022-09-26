@@ -6,6 +6,10 @@ export namespace EspUiEvents {
         regionItem: RegionItem;
     }
 
+    export interface UpdateRegionItemEvent {
+        regionItem: RegionItem;
+    }
+
     export interface RemoveFromRegionEvent {
         regionName: string;
         regionItem: RegionItem;

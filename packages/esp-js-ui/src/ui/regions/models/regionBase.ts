@@ -202,7 +202,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
     }
 
     /**
-     * Called any time a RegionItemRecord is added/removed and/or if the RegionItemRecord 'model creation' state changes (i.e. the record is updated)
+     * Called any time a RegionItemRecord is added/removed and/or if the RegionItemRecord is updated (for example if it's model became available or if it's options changed)
      * @param type
      * @param change
      */
@@ -276,8 +276,15 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
         let model = this._router.getModel(regionItem.modelId);
         const viewFactoryMetadata: ViewFactoryMetadata = getViewFactoryMetadataFromModelInstance(model);
         const viewFactoryEntry = this._viewRegistry.getViewFactoryEntry(viewFactoryMetadata.viewKey);
-        let regionItemRecord = RegionItemRecord.createForExistingItem(regionItem.regionRecordId, viewFactoryEntry, model, regionItem.displayOptions);
+        let regionItemRecord = RegionItemRecord.createForExistingItem(regionItem.regionRecordId, viewFactoryEntry, model, regionItem.regionItemOptions);
         this._addRegionRecord(regionItemRecord);
+    }
+
+    public updateRegionItem(regionItem: RegionItem): void {
+        let regionItemRecord = this._state.getByRecordId(regionItem.regionRecordId);
+        // we only update the options, ignoring anything else
+        regionItemRecord = regionItemRecord.updateWithOptions(regionItem.regionItemOptions);
+        this._updateRecordAndRaiseStateChanged(regionItemRecord);
     }
 
     /**
@@ -341,8 +348,7 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
                                 _log.error(`Region [${this._regionName}]. Error calling ViewFactory (${regionItemRecord.viewFactoryEntry.viewFactoryKey}) to create view, Record [${regionItemRecord.toString()}].`, err);
                                 regionItemRecord = regionItemRecord.updateWithError(err);
                             }
-                            this._state.updateRecord(regionItemRecord);
-                            this.onStateChanged(RegionChangeType.RecordUpdated, regionItemRecord);
+                            this._updateRecordAndRaiseStateChanged(regionItemRecord);
                         },
                         (err: any) => {
                             _log.error(`Region [${this._regionName}]. Error waiting for module to load inorder to create view from factory ${recordState.viewFactoryKey}, record [${regionItemRecord.toString()}].`, err);
@@ -361,6 +367,11 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
         const changeType = recordState ? RegionChangeType.RecordAddedFromState : RegionChangeType.RecordAdded;
         this.onStateChanged(changeType, regionItemRecord);
         return regionItemRecord;
+    }
+
+    private _updateRecordAndRaiseStateChanged(regionItemRecord: RegionItemRecord) {
+        this._state.updateRecord(regionItemRecord);
+        this.onStateChanged(RegionChangeType.RecordUpdated, regionItemRecord);
     }
 
     private _removeRegionRecord(regionItemRecord: RegionItemRecord): void {

@@ -1,6 +1,6 @@
 import {RegionRecordState, ViewFactoryEntry, ViewFactoryMetadata} from '../../viewFactory';
 import {DisposableBase, Guard} from 'esp-js';
-import {DisplayOptions} from './regionManager';
+import {RegionItemOptions} from './regionManager';
 
 /**
  * Contains all data a regions holds about a given view it contains.
@@ -11,7 +11,7 @@ export class RegionItemRecord extends DisposableBase {
     private readonly _model: any;
     private readonly _modelId: string;
     private readonly _viewFactoryEntry: ViewFactoryEntry;
-    private readonly _displayOptions: DisplayOptions;
+    private readonly _regionItemOptions: RegionItemOptions;
     private readonly _initialRecordState: RegionRecordState;
     private readonly _error: any;
 
@@ -22,15 +22,15 @@ export class RegionItemRecord extends DisposableBase {
         return new RegionItemRecord(id, viewFactoryEntry, viewFactoryEntry.factory.metadata, null, null, recordState, null);
     }
 
-    public static createForExistingItem(id: string, viewFactoryEntry: ViewFactoryEntry, model: any, displayOptions?: DisplayOptions) {
+    public static createForExistingItem(id: string, viewFactoryEntry: ViewFactoryEntry, model: any, regionItemOptions?: RegionItemOptions) {
         Guard.isString(id, `id required`);
         Guard.isDefined(viewFactoryEntry, `viewFactoryEntry required`);
         Guard.isDefined(model, `model required`);
         Guard.isString(model.modelId, `model.modelId required`);
-        if (displayOptions) {
-            Guard.isObject(displayOptions, `displayOptions should be an object`);
+        if (regionItemOptions) {
+            Guard.isObject(regionItemOptions, `regionItemOptions should be an object`);
         }
-        return new RegionItemRecord(id, viewFactoryEntry, viewFactoryEntry.factory.metadata, model, displayOptions, null, null);
+        return new RegionItemRecord(id, viewFactoryEntry, viewFactoryEntry.factory.metadata, model, regionItemOptions, null, null);
     }
 
     private constructor(
@@ -38,7 +38,7 @@ export class RegionItemRecord extends DisposableBase {
         viewFactoryEntry: ViewFactoryEntry,
         viewFactoryMetadata: ViewFactoryMetadata,
         model: any,
-        displayOptions: DisplayOptions,
+        regionItemOptions: RegionItemOptions,
         recordState: RegionRecordState,
         error: any
     ) {
@@ -48,7 +48,7 @@ export class RegionItemRecord extends DisposableBase {
         this._viewFactoryMetadata = viewFactoryMetadata;
         this._model = model;
         this._modelId = model ? model.modelId : null;
-        this._displayOptions = displayOptions;
+        this._regionItemOptions = regionItemOptions;
         this._initialRecordState = recordState;
         this._error = error;
     }
@@ -74,11 +74,15 @@ export class RegionItemRecord extends DisposableBase {
     }
 
     public get displayContext(): string {
-        return this._displayOptions ? this._displayOptions.displayContext : null;
+        return this._regionItemOptions ? this._regionItemOptions.displayContext : null;
     }
 
     public get title(): string {
-        return this._displayOptions ? this._displayOptions.title : null;
+        return this._regionItemOptions ? this._regionItemOptions.title : null;
+    }
+
+    public get tag(): string {
+        return this._regionItemOptions ? this._regionItemOptions.tag : null;
     }
 
     public get modelCreated(): boolean {
@@ -103,11 +107,20 @@ export class RegionItemRecord extends DisposableBase {
 
     public updateWithModel(model: any): RegionItemRecord {
         Guard.isDefined(model, `model required`);
-        return new RegionItemRecord(this._id, this._viewFactoryEntry, this._viewFactoryMetadata, model, this._displayOptions, this._initialRecordState, this._error);
+        return new RegionItemRecord(this._id, this._viewFactoryEntry, this._viewFactoryMetadata, model, this._regionItemOptions, this._initialRecordState, this._error);
+    }
+
+    public updateWithOptions(regionItemOptions: Partial<RegionItemOptions>): RegionItemRecord {
+        Guard.isDefined(regionItemOptions, `regionItemOptions required`);
+        const newOptions = {
+            ...this._regionItemOptions,
+            ...regionItemOptions
+        };
+        return new RegionItemRecord(this._id, this._viewFactoryEntry, this._viewFactoryMetadata, this._model, newOptions, this._initialRecordState, this._error);
     }
 
     public updateWithError(error: any): RegionItemRecord {
-        return new RegionItemRecord(this._id, this._viewFactoryEntry, this._viewFactoryMetadata, this._model, this._displayOptions, this._initialRecordState, error);
+        return new RegionItemRecord(this._id, this._viewFactoryEntry, this._viewFactoryMetadata, this._model, this._regionItemOptions, this._initialRecordState, error);
     }
 
     public toString() {

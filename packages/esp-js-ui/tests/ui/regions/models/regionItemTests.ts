@@ -20,7 +20,7 @@ describe('Region Item Tests', () => {
         expect(item.modelId).toEqual('modelId');
         expect(item.regionRecordExists).toEqual(false);
         expect(item.regionRecordId).toBeDefined();
-        expect(item.displayOptions.title).toEqual('foo');
+        expect(item.regionItemOptions.title).toEqual('foo');
     });
 
     it('RegionItem.createExisting(recordId, modelId)', () => {
@@ -35,6 +35,6 @@ describe('Region Item Tests', () => {
         expect(item.regionRecordId).toEqual('recordId');
         expect(item.modelId).toEqual('modelId');
         expect(item.regionRecordExists).toEqual(true);
-        expect(item.displayOptions).toBeNull();
+        expect(item.regionItemOptions).toBeNull();
     });
 });

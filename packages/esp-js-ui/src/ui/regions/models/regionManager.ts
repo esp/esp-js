@@ -147,18 +147,33 @@ export class RegionManager extends ModelBase {
     }
 
     /**
+     * Set the selected item
+     */
+    public setSelected(regionItemRecord: RegionItemRecord);
+    public setSelected(regionItem: RegionItem);
+    public setSelected(recordId: string);
+    public setSelected(...args: any[]) {
+        for (const region of this.getRegions()) {
+            let arg = args[0];
+            if(region.existsInRegion(arg)) {
+                region.setSelected(arg);
+                break;
+            }
+        }
+    }
+
+    /**
      * Used to update the region item.
      * Typically this is only to update the associated RegionItemOptions.
      * The
      * @param regionItem
      */
     public updateRegionItem(regionItem: RegionItem) {
-        Object.keys(this._regions).forEach(rn => {
-            let region = this._regions[rn];
-            if (region.existsInRegionByRecordId(regionItem.regionRecordId)) {
+        for (const region of this.getRegions()) {
+            if (region.existsInRegion(regionItem.regionRecordId)) {
                 region.updateRegionItem(regionItem);
             }
-        });
+        }
     }
 
     /**
@@ -198,48 +213,50 @@ export class RegionManager extends ModelBase {
     }
 
     public removeFromAllRegions(modelId: string) {
-        Object.keys(this._regions).forEach(regionName => {
+        for (const region of this.getRegions()) {
             let recordsToRemove: string[];
-            recordsToRemove = this._regions[regionName].regionRecords
+            recordsToRemove = region.regionRecords
                 .filter(r => r.modelCreated)
                 .filter(r => r.modelId === modelId)
                 .map(r => r.id);
-            _log.verbose(`Removing the following region records from region ${regionName}: ${recordsToRemove}.`);
+            _log.verbose(`Removing the following region records from region ${region.name}: ${recordsToRemove}.`);
             recordsToRemove.forEach(recordId => {
-                this._regions[regionName].removeFromRegion(recordId);
+                region.removeFromRegion(recordId);
             });
-        });
+        }
     }
 
     /**
      * Returns true if any view for the give model ID exists in the region.
+     *
+     * @deprecated use existsInRegion()
      */
     public existsInRegionByModelId(regionName: string, modelId: string): boolean {
-        return this._regions[regionName].existsInRegionByModelId(modelId);
+        return this.existsInRegion(regionName, rr => rr.modelId === modelId);
     }
 
     /**
      * Returns true if a view for the give regionItem exists in the region.
      *
-     * Used regionItem.regionRecordId for the search
+     * @deprecated use existsInRegion()
      */
     public existsInRegionByRegionItem(regionName: string, regionItem: RegionItem): boolean {
-        return this._regions[regionName].existsInRegionByRegionItem(regionItem);
+        return this.existsInRegion(regionName, regionItem);
     }
 
     /**
      * Returns true if a view for the give regionRecordId exists in the region.
+     * @deprecated use existsInRegion()
      */
     public existsInRegionByRecordId(regionName: string, regionRecordId: string): boolean {
-        return this._regions[regionName].existsInRegionByRecordId(regionRecordId);
+        return this.existsInRegion(regionName, regionRecordId);
     }
 
-    /**
-     * Returns true based on the provided predicate.
-     *
-     * Will stop on first match.
-     */
-    public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean {
-        return this._regions[regionName].existsInRegion(predicate);
+    public existsInRegion(regionName: string, regionItemRecord: RegionItemRecord): boolean;
+    public existsInRegion(regionName: string, regionItem: RegionItem): boolean;
+    public existsInRegion(regionName: string, recordId: string): boolean;
+    public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
+    public existsInRegion(...args: any[]): boolean {
+        return this._regions[args[0]].existsInRegion(args[1]);
     }
 }

@@ -14,6 +14,7 @@ import {SingleModuleLoader} from '../../modules';
 import {SystemContainerConst} from '../../dependencyInjection';
 import * as uuid from 'uuid';
 import {filter, take} from 'rxjs/operators';
+import {isRegionItem, isRegionItemRecord} from './regionUtils';
 
 const _log = Logger.create('RegionsModelBase');
 
@@ -210,24 +211,51 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
 
     }
 
+    /**
+     * @deprecated use existsInRegion()
+     * @param regionRecordId
+     */
     public existsInRegionByModelId(modelId: string): boolean {
-        return this._state.regionRecords
-            .filter(r => r.modelCreated)
-            .some(r => r.modelId === modelId);
+        return this.existsInRegion(rr => rr.modelCreated && rr.modelId === modelId);
     }
 
+    /**
+     * @deprecated use existsInRegion()
+     * @param regionRecordId
+     */
     public existsInRegionByRegionItem(regionItem: RegionItem): boolean {
-        return this._state.regionRecordsById.has(regionItem.regionRecordId);
+        return this.existsInRegion(regionItem);
     }
 
+    /**
+     * @deprecated use existsInRegion()
+     * @param regionRecordId
+     */
     public existsInRegionByRecordId(regionRecordId: string): boolean {
-        return this._state.regionRecordsById.has(regionRecordId);
+        return this.existsInRegion(regionRecordId);
     }
 
-    public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean {
+    public existsInRegion(regionItemRecord: RegionItemRecord): boolean;
+    public existsInRegion(regionItem: RegionItem): boolean;
+    public existsInRegion(recordId: string): boolean;
+    public existsInRegion(predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
+    public existsInRegion(...args: any[]): boolean {
+        let regionItemRecord: RegionItemRecord = isRegionItemRecord(args[0]) ? args[0] : null;
+        let regionItem: RegionItem = isRegionItem(args[0]) ? args[0] : null;
+        let recordId: string = isString(args[0]) ? args[0] : null;
+        let predicate: (regionItemRecord: RegionItemRecord) => boolean = utils.isFunction(args[0]) ? args[0] : null;
         // This is read only hence can perform the call on any dispatch loop
-        for (let x of this._state.regionRecordsById.values()) {
-            const match = predicate(x);
+        for (let record of this._state.regionRecordsById.values()) {
+            let match = false;
+            if (regionItemRecord) {
+                match = record.id === regionItemRecord.id;
+            } else if (regionItem) {
+                match = record.id === regionItem.regionRecordId;
+            } else if (recordId) {
+                match = record.id === recordId;
+            } else if (predicate) {
+                match = predicate(record);
+            }
             if (match) {
                 return true;
             }
@@ -242,18 +270,30 @@ export abstract class RegionBase<TCustomState = any> extends ModelBase {
 
     /**
      * Set the selected item
-     * @param item: a RegionItemRecord, RegionItem or a string representing the RegionItemRecord.id
      */
-    public setSelected(item: RegionItemRecord | string) {
+    public setSelected(regionItemRecord: RegionItemRecord);
+    public setSelected(regionItem: RegionItem);
+    public setSelected(recordId: string);
+    public setSelected(...args: any[]) {
         if (!this.isOnDispatchLoop()) {
-            this.setSelected(item);
+            this.ensureOnDispatchLoop(() => this.setSelected(args[0]));
             return;
         }
-        if (isString(item)) {
-            item = this._state.findRecordById(item);
+        let regionItemRecord: RegionItemRecord = isRegionItemRecord(args[0]) ? args[0] : null;
+        let regionItem: RegionItem = isRegionItem(args[0]) ? args[0] : null;
+        let recordId: string = isString(args[0]) ? args[0] : null;
+        let record: RegionItemRecord;
+        if (regionItemRecord) {
+            record = regionItemRecord;
+        } else if (regionItem) {
+            record = this._state.findRecordById(regionItem.regionRecordId);
+        } else if (recordId) {
+            record = this._state.findRecordById(recordId);
         }
-        this._state.setSelected(item);
-        this.onStateChanged(RegionChangeType.RecordSelected, item);
+        if (record) {
+            this._state.setSelected(record);
+            this.onStateChanged(RegionChangeType.RecordSelected, record);
+        }
     }
 
     /**

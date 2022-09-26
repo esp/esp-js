@@ -7,4 +7,5 @@ export * from './regionItemRecord';
 export * from './regionManager';
 export * from './regionModelBase';
 export * from './regionState';
+export * from './regionUtils';
 export * from './statefulRegion';

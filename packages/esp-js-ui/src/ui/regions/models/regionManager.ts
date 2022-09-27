@@ -23,6 +23,9 @@ export interface RegionItemOptions {
 
 // exists to decouple all the region and their models from the rest of the app
 export class RegionManager extends ModelBase {
+    // Other than the regions, this has no state.
+    // The regions own their own state and can be interacted with independently.
+    // That said, it's best to use this class as a facade.
     private _regions: { [regionName: string]: RegionBase<any> } = { };
 
     public static ModelId = 'region-manager';
@@ -34,18 +37,16 @@ export class RegionManager extends ModelBase {
     }
 
     // adds a region to the region manager
-    public registerRegion(regionName: string, regionRecord: RegionBase<any>) {
+    public registerRegion(regionName: string, regionBase: RegionBase) {
         Guard.stringIsNotEmpty(regionName, 'region name required');
-        Guard.isObject(regionRecord, 'regionRecord must be an object');
-        Guard.isFunction(regionRecord.addRegionItem, 'regionRecord.onAdding must be a function');
-        Guard.isFunction(regionRecord.removeRegionItem, 'regionRecord.onRemoving must be a function');
+        Guard.isObject(regionBase, 'regionBase must be an object');
         _log.verbose(`registering region ${regionName}`);
         if (this._regions[regionName]) {
             let message = `Cannot register region ${regionName} as it is already registered`;
             _log.error(message);
             throw new Error(message);
         }
-        this._regions[regionName] = regionRecord;
+        this._regions[regionName] = regionBase;
     }
 
     public getRegions(): RegionBase<any>[] {
@@ -77,12 +78,12 @@ export class RegionManager extends ModelBase {
         }
     }
 
-    @observeEvent(EspUiEventNames.regions_regionManager_updateRegionItem)
+    @observeEvent(EspUiEventNames.regions_regionManager_updateRegionItemOptions)
     private _updateRegionItem(event: EspUiEvents.UpdateRegionItemEvent) {
-        if (event && event.regionItem) {
-            this.updateRegionItem(event.regionItem);
+        if (event && event.options) {
+            this.updateRegionItemOptions(event.id, event.options);
         } else {
-            _log.warn(`Ignoring event ${EspUiEventNames.regions_regionManager_updateRegionItem} as incoming event not well formed`, event);
+            _log.warn(`Ignoring event ${EspUiEventNames.regions_regionManager_updateRegionItemOptions} as incoming event not well formed`, event);
         }
     }
 
@@ -99,36 +100,17 @@ export class RegionManager extends ModelBase {
      * Adds a model to the region.
      * It's view will be discovered based on model metadata.
      */
-    public addToRegion(regionName: string, modelId:string): RegionItem;
+    public addToRegion(regionName: string, modelId:string);
     /**
      * Adds a model to the region.
      * It's view will be discovered based on model metadata.
      */
-    public addToRegion(regionName: string, regionItem: RegionItem): RegionItem;
-    /**
-     * Adds a model to the region.
-     * It's view will be discovered based on model metadata.
-     *
-     * @deprecated use the overload that takes a RegionItem
-     */
-    public addToRegion(regionName: string, modelId:string, regionItemOptions: RegionItemOptions): RegionItem;
-    public addToRegion(...args: (string|RegionItemOptions|RegionItem)[]): RegionItem {
+    public addToRegion(regionName: string, regionItem: RegionItem);
+    public addToRegion(...args: (string|RegionItem)[]) {
         // I'm not dispatching this call onto the router as by design this model doesn't really have any true observers.
         // It does listen to events, but nothing should render it's state, thus this call is synchronous
         let regionName = <string>args[0];
-        let regionItem: RegionItem;
-        if (args.length === 2) {
-            if (typeof args[1] === 'string') {
-                regionItem = RegionItem.create(args[1]);
-            } else {
-                Guard.isDefined(args[1], 'Second parameter (modelId or regionItem) required but was undefined or null');
-                regionItem = <RegionItem>args[1];
-            }
-        } else {
-            regionItem = RegionItem.create(<string>args[1], <RegionItemOptions>args[2]);
-        }
-        this._addToRegion(regionName, regionItem);
-        return regionItem;
+        this._addToRegion(regionName, args[1]);
     }
 
     private _ensureRegionExist(regionName: string, errorMessage: string) {
@@ -139,24 +121,23 @@ export class RegionManager extends ModelBase {
         }
     }
 
-    private _addToRegion(regionName: string, regionItem: RegionItem) {
-        this._ensureRegionExist(regionName, `Cannot add model with id ${regionItem.modelId}.`);
-        _log.verbose(`Adding to region ${regionName}. ${regionItem.toString()}.`);
-        this._regions[regionName].addToRegion(regionItem);
-        return regionItem;
+    private _addToRegion(regionName: string, itemOrModelId: RegionItem | string) {
+        this._ensureRegionExist(regionName, `Region ${regionName} not found.`);
+        this._regions[regionName].addToRegion(<any>itemOrModelId);
     }
 
     /**
      * Set the selected item
      */
-    public setSelected(regionItemRecord: RegionItemRecord);
+    public setSelected(modelId: string);
     public setSelected(regionItem: RegionItem);
-    public setSelected(recordId: string);
+    public setSelected(regionItemRecord: RegionItemRecord);
     public setSelected(...args: any[]) {
         for (const region of this.getRegions()) {
             let arg = args[0];
             if(region.existsInRegion(arg)) {
                 region.setSelected(arg);
+                // While a model could be in multiple regions, a record can only be in 1, given that we break out here.
                 break;
             }
         }
@@ -166,12 +147,15 @@ export class RegionManager extends ModelBase {
      * Used to update the region item.
      * Typically this is only to update the associated RegionItemOptions.
      * The
-     * @param regionItem
      */
-    public updateRegionItem(regionItem: RegionItem) {
+    public updateRegionItemOptions(modelId: string, RegionItemOptions);
+    public updateRegionItemOptions(regionItem: RegionItem);
+    public updateRegionItemOptions(...args: any[]) {
         for (const region of this.getRegions()) {
-            if (region.existsInRegion(regionItem.regionRecordId)) {
-                region.updateRegionItem(regionItem);
+            if (region.existsInRegion(args[0])) {
+                region.updateRegionItemOptions(args[0]);
+                // While a model could be in multiple regions, a record can only be in 1, given that we break out here.
+                break;
             }
         }
     }
@@ -252,9 +236,9 @@ export class RegionManager extends ModelBase {
         return this.existsInRegion(regionName, regionRecordId);
     }
 
-    public existsInRegion(regionName: string, regionItemRecord: RegionItemRecord): boolean;
+    public existsInRegion(regionName: string, modelId: string): boolean;
     public existsInRegion(regionName: string, regionItem: RegionItem): boolean;
-    public existsInRegion(regionName: string, recordId: string): boolean;
+    public existsInRegion(regionName: string, regionItemRecord: RegionItemRecord): boolean;
     public existsInRegion(regionName: string, predicate: (regionItemRecord: RegionItemRecord) => boolean): boolean;
     public existsInRegion(...args: any[]): boolean {
         return this._regions[args[0]].existsInRegion(args[1]);

@@ -1,4 +1,4 @@
-import {RegionItem} from './regions';
+import {RegionItem, RegionItemOptions} from './regions';
 
 export namespace EspUiEvents {
     export interface AddToRegionEvent {
@@ -7,7 +7,11 @@ export namespace EspUiEvents {
     }
 
     export interface UpdateRegionItemEvent {
-        regionItem: RegionItem;
+        /**
+         * Can be model id, or regionRecordId
+         */
+        id: string;
+        options: RegionItemOptions;
     }
 
     export interface RemoveFromRegionEvent {

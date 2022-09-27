@@ -52,6 +52,9 @@ export abstract class ModelBase extends DisposableBase {
      * @param action
      */
     public ensureOnDispatchLoop(action:() => void) {
+        if (!this._observeEventsCalled) {
+            throw new Error(`observeEvents has not yet been called for model with id ${this._modelId}. Can not yet call ensureOnDispatchLoop(action).`);
+        }
         if (this.router.isOnDispatchLoopFor(this.modelId)) {
             action();
         } else {

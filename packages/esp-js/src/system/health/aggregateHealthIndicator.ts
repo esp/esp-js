@@ -177,11 +177,11 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
                 // Once Unknown, the overall status stays as Unknown.
                 // If there are no Terminal or Unknowns, but some unhealthy the overall status is Unhealthy.
                 // else Healthy
-                if (healthIndicatorHealth.status === HealthStatus.Terminal) {
+                if (health.currentStatus === HealthStatus.Terminal || healthIndicatorHealth.status === HealthStatus.Terminal) {
                     health.isTerminal();
-                } if (healthIndicatorHealth.status === HealthStatus.Unknown) {
+                } else if (health.currentStatus === HealthStatus.Unknown || healthIndicatorHealth.status === HealthStatus.Unknown) {
                     health.isUnknown();
-                } else if (health.currentStatus !== HealthStatus.Unknown && healthIndicatorHealth.status === HealthStatus.Unhealthy) {
+                } else if (healthIndicatorHealth.status === HealthStatus.Unhealthy) {
                     health.isUnhealthy();
                 }
                 if (healthIndicatorHealth.reasons && healthIndicatorHealth.reasons.length > 0) {
@@ -204,7 +204,7 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
             if (newHealth.status === HealthStatus.Terminal) {
                 this._log.error(message);
             } else if (newHealth.status === HealthStatus.Unhealthy) {
-                this._log.warn(message);
+                this._log.error(message);
             } else {
                 this._log.info(message);
             }

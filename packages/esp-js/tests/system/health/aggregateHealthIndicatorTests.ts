@@ -161,6 +161,7 @@ describe('AggregateHealthIndicator', () => {
             [HealthStatus.Terminal, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Terminal],
             [HealthStatus.Healthy, HealthStatus.Terminal, HealthStatus.Healthy, HealthStatus.Terminal],
             [HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Terminal, HealthStatus.Terminal],
+            [HealthStatus.Unknown, HealthStatus.Healthy, HealthStatus.Terminal, HealthStatus.Terminal],
 
             [undefined, HealthStatus.Healthy, HealthStatus.Healthy, HealthStatus.Unknown],
             [HealthStatus.Healthy, undefined, HealthStatus.Healthy, HealthStatus.Unknown],

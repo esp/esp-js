@@ -19,8 +19,8 @@ export class Container {
     register(name: String, proto: any):RegistrationModifier;
     registerInstance<T>(name: String, instance: T, isExternallyOwned?): void;
     registerFactory<T>(name: String, factory:(context: Container, ...additionalDependencies: any[]) => T): RegistrationModifier;
-    resolve<T>(name: String, ...additionalDependencies): T;
-    resolveGroup<T>(groupName: String): Array<T>;
+    resolve<T>(name: String, ...additionalDependencies: any[]): T;
+    resolveGroup<T>(groupName: String,  ...additionalDependencies: any[]): Array<T>;
     isRegistered(name: string, options?: IsRegisteredQueryOptions) : boolean;
     isGroupRegistered(groupName: string, options?: IsRegisteredQueryOptions) : boolean;
     addResolver<T>(name:String, resolver:Resolver<T>);

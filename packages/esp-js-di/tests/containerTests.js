@@ -184,6 +184,25 @@ describe('Container', () =>  {
                 expect(A.isPrototypeOf(group1[1].dependencies[0])).toBe(true);
                 expect(group1[0]).not.toBe(group1[1].dependencies[0]);
             });
+
+            it('should pass additional dependencies to object being resolved', () =>  {
+                let A = createObject();
+                let B = createObject();
+                container.register('a', A)
+                    .transient()
+                    .inGroup('myGroup');
+                container.register('b', B)
+                    .transient()
+                    .inGroup('myGroup');
+                // if some registered items are singleton, then this will behave like `resolve`, those objects won't get recreated.
+                let myGroup = container.resolveGroup('myGroup', "Foo", "Bar");
+                expect(myGroup[0].dependencies.length).toEqual(2);
+                expect(myGroup[0].dependencies[0]).toEqual("Foo");
+                expect(myGroup[0].dependencies[1]).toEqual("Bar");
+                expect(myGroup[1].dependencies.length).toEqual(2);
+                expect(myGroup[1].dependencies[0]).toEqual("Foo");
+                expect(myGroup[1].dependencies[1]).toEqual("Bar");
+            });
         });
 
         describe('constructor functions', () =>  {
@@ -940,6 +959,8 @@ describe('Container', () =>  {
 
     function createObject(props) {
         let o = Object.create(Object.prototype, {
+                // The container will call any init() if found.
+                // Not commonly used these days as containers are often used for classes
                 init : {
                     value: function() {
                         this.dependencies = Array.prototype.slice.call(arguments);

@@ -132,7 +132,7 @@ export default class Container {
         }
         return instance;
     }
-    resolveGroup(groupName) {
+    resolveGroup(groupName, ...additionalDependencies) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(groupName, 'Error calling resolveGroup(groupName). The groupName argument must be a string and can not be \'\'');
         var items = [],
@@ -144,7 +144,7 @@ export default class Container {
             throw new Error(error);
         }
         for (let i = 0, len = mapings.length; i < len; i++) {
-            items.push(this.resolve(mapings[i]));
+            items.push(this.resolve(mapings[i], ...additionalDependencies));
         }
         return items;
     }

@@ -5949,7 +5949,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "esp-js-api@workspace:examples/esp-js-api"
   dependencies:
-    esp-js: ^6.0.6
+    esp-js: ^6.4.0
     jest: 26.0.1
     prompt: 1.0.0
     ts-node: ^8.0.3
@@ -5964,7 +5964,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "esp-js-di-api@workspace:examples/esp-js-di-api"
   dependencies:
-    esp-js-di: ^6.0.6
+    esp-js-di: ^6.4.0
     jest: 26.0.1
     prompt: 1.0.0
     ts-node: ^8.0.3
@@ -5975,7 +5975,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js-di@^6.0.6, esp-js-di@workspace:packages/esp-js-di":
+"esp-js-di@^6.4.0, esp-js-di@workspace:packages/esp-js-di":
   version: 0.0.0-use.local
   resolution: "esp-js-di@workspace:packages/esp-js-di"
   dependencies:
@@ -5987,7 +5987,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js-metrics@^6.0.6, esp-js-metrics@workspace:packages/esp-js-metrics":
+"esp-js-metrics@^6.4.0, esp-js-metrics@workspace:packages/esp-js-metrics":
   version: 0.0.0-use.local
   resolution: "esp-js-metrics@workspace:packages/esp-js-metrics"
   dependencies:
@@ -5999,11 +5999,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js-polimer@^6.0.6, esp-js-polimer@workspace:packages/esp-js-polimer":
+"esp-js-polimer@^6.4.0, esp-js-polimer@workspace:packages/esp-js-polimer":
   version: 0.0.0-use.local
   resolution: "esp-js-polimer@workspace:packages/esp-js-polimer"
   dependencies:
-    esp-js: ^6.0.6
+    esp-js: ^6.4.0
     immer: 9.0.7
     jest: 26.0.1
     rxjs: 6.6.6
@@ -6023,8 +6023,8 @@ __metadata:
   resolution: "esp-js-react-agile-board@workspace:examples/esp-js-react-agile-board"
   dependencies:
     classnames: 2.2.6
-    esp-js: ^6.0.6
-    esp-js-react: ^6.0.6
+    esp-js: ^6.4.0
+    esp-js-react: ^6.4.0
     immutable: ^4.0.0-rc.12
     jest: 26.0.1
     react: 16.13.1
@@ -6036,12 +6036,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js-react@^6.0.6, esp-js-react@workspace:packages/esp-js-react":
+"esp-js-react@^6.4.0, esp-js-react@workspace:packages/esp-js-react":
   version: 0.0.0-use.local
   resolution: "esp-js-react@workspace:packages/esp-js-react"
   dependencies:
-    esp-js: ^6.0.6
-    esp-js-polimer: ^6.0.6
+    esp-js: ^6.4.0
+    esp-js-polimer: ^6.4.0
     jest: 26.0.1
     prop-types: ^15.7.2
     react: 16.13.1
@@ -6104,11 +6104,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js-rx@^6.0.6, esp-js-rx@workspace:packages/esp-js-rx":
+"esp-js-rx@^6.4.0, esp-js-rx@workspace:packages/esp-js-rx":
   version: 0.0.0-use.local
   resolution: "esp-js-rx@workspace:packages/esp-js-rx"
   dependencies:
-    esp-js: ^6.0.6
+    esp-js: ^6.4.0
     jest: 26.0.1
     rxjs: 6.6.6
     typescript: 4.5.4
@@ -6125,11 +6125,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "esp-js-ui-module-based-app@workspace:examples/esp-js-ui-module-based-app"
   dependencies:
-    esp-js: ^6.0.6
-    esp-js-di: ^6.0.6
-    esp-js-polimer: ^6.0.6
-    esp-js-react: ^6.0.6
-    esp-js-ui: ^6.0.6
+    esp-js: ^6.4.0
+    esp-js-di: ^6.4.0
+    esp-js-polimer: ^6.4.0
+    esp-js-react: ^6.4.0
+    esp-js-ui: ^6.4.0
     jest: 26.0.1
     react: 16.13.1
     react-dom: 16.13.1
@@ -6146,8 +6146,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "esp-js-ui-rxcompat@workspace:packages/esp-js-ui-rxcompat"
   dependencies:
-    esp-js: ^6.0.6
-    esp-js-rx: ^6.0.6
+    esp-js: ^6.4.0
+    esp-js-rx: ^6.4.0
     jest: 26.0.1
     rxjs: 6.6.6
     rxjs-compat: 6.6.6
@@ -6163,16 +6163,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js-ui@^6.0.6, esp-js-ui@workspace:packages/esp-js-ui":
+"esp-js-ui@^6.4.0, esp-js-ui@workspace:packages/esp-js-ui":
   version: 0.0.0-use.local
   resolution: "esp-js-ui@workspace:packages/esp-js-ui"
   dependencies:
     classnames: 2.2.6
-    esp-js: ^6.0.6
-    esp-js-di: ^6.0.6
-    esp-js-metrics: ^6.0.6
-    esp-js-react: ^6.0.6
-    esp-js-rx: ^6.0.6
+    esp-js: ^6.4.0
+    esp-js-di: ^6.4.0
+    esp-js-metrics: ^6.4.0
+    esp-js-react: ^6.4.0
+    esp-js-rx: ^6.4.0
     jest: 26.0.1
     query-string: 6.13.1
     react: 16.13.1
@@ -6193,7 +6193,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"esp-js@^6.0.6, esp-js@workspace:packages/esp-js":
+"esp-js@^6.4.0, esp-js@workspace:packages/esp-js":
   version: 0.0.0-use.local
   resolution: "esp-js@workspace:packages/esp-js"
   dependencies:
@@ -6984,7 +6984,7 @@ __metadata:
 
 "fsevents@patch:fsevents@^1.2.7#~builtin<compat/fsevents>":
   version: 1.2.13
-  resolution: "fsevents@patch:fsevents@npm%3A1.2.13#~builtin<compat/fsevents>::version=1.2.13&hash=18f3a7"
+  resolution: "fsevents@patch:fsevents@npm%3A1.2.13#~builtin<compat/fsevents>::version=1.2.13&hash=d11327"
   dependencies:
     bindings: ^1.5.0
     nan: ^2.12.1
@@ -6994,7 +6994,7 @@ __metadata:
 
 "fsevents@patch:fsevents@^2.1.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -10512,9 +10512,9 @@ __metadata:
   linkType: hard
 
 "minimist@npm:^1.1.1, minimist@npm:^1.1.3, minimist@npm:^1.2.0, minimist@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "minimist@npm:1.2.5"
-  checksum: 86706ce5b36c16bfc35c5fe3dbb01d5acdc9a22f2b6cc810b6680656a1d2c0e44a0159c9a3ba51fb072bb5c203e49e10b51dcd0eec39c481f4c42086719bae52
+  version: 1.2.8
+  resolution: "minimist@npm:1.2.8"
+  checksum: 75a6d645fb122dad29c06a7597bddea977258957ed88d7a6df59b5cd3fe4a527e253e9bbf2e783e4b73657f9098b96a5fe96ab8a113655d4109108577ecf85b0
   languageName: node
   linkType: hard
 
@@ -13095,7 +13095,7 @@ __metadata:
 
 "resolve@patch:resolve@^1.10.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.18.1#~builtin<compat/resolve>, resolve@patch:resolve@^1.3.2#~builtin<compat/resolve>":
   version: 1.20.0
-  resolution: "resolve@patch:resolve@npm%3A1.20.0#~builtin<compat/resolve>::version=1.20.0&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A1.20.0#~builtin<compat/resolve>::version=1.20.0&hash=c3c19d"
   dependencies:
     is-core-module: ^2.2.0
     path-parse: ^1.0.6
@@ -15138,7 +15138,7 @@ __metadata:
 
 "typescript@patch:typescript@4.5.4#~builtin<compat/typescript>":
   version: 4.5.4
-  resolution: "typescript@patch:typescript@npm%3A4.5.4#~builtin<compat/typescript>::version=4.5.4&hash=7ad353"
+  resolution: "typescript@patch:typescript@npm%3A4.5.4#~builtin<compat/typescript>::version=4.5.4&hash=bcec9a"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver

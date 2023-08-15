@@ -1,13 +1,13 @@
 {
   "name": "esp-js-react-agile-board",
-  "version": "6.4.0",
+  "version": "6.5.0",
   "description": "ESP JS React Components Sample.",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
     "classnames": "2.2.6",
-    "esp-js": "^6.4.0",
-    "esp-js-react": "^6.4.0",
+    "esp-js": "^6.5.0",
+    "esp-js-react": "^6.5.0",
     "immutable": "^4.0.0-rc.12",
     "react": "16.14.0",
     "react-dom": "16.14.0"

@@ -10,8 +10,8 @@
     "esp-js-polimer": "^6.4.0",
     "esp-js-react": "^6.4.0",
     "esp-js-ui": "^6.4.0",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
     "rxjs": "6.6.6",
     "uuid": "8.3.2"
   },

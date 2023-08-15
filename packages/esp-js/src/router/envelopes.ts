@@ -3,7 +3,8 @@ import {ObservationStage} from './observationStage';
 
 export enum DispatchType {
     'Event',
-    'Model'
+    'ModelUpdate',
+    'ModelDelete'
 }
 
 export interface EventEnvelope<TEvent, TModel> {

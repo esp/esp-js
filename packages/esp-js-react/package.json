@@ -27,7 +27,7 @@
     "esp-js": "^6.4.0",
     "esp-js-polimer": "^6.4.0",
     "prop-types": "^15.7.2",
-    "react": "16.13.1"
+    "react": "16.14.0"
   },
   "devDependencies": {
     "jest": "26.0.1",
@@ -40,7 +40,7 @@
     "esp-js": "^6.0.0",
     "esp-js-polimer": "^6.0.0",
     "prop-types": "^15.7.2",
-    "react": "16.8.6"
+    "react": "16.14.0"
   },
   "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
 }

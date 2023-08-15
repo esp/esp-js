@@ -86,7 +86,7 @@ export class Router extends DisposableBase implements HealthIndicator {
             Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
         }
         this._getOrCreateModelRecord(modelId, model, eventProcessors);
-        this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.Model});
+        this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.ModelUpdate});
         this._diagnosticMonitor.addModel(modelId);
     }
 
@@ -98,6 +98,7 @@ export class Router extends DisposableBase implements HealthIndicator {
             modelRecord.wasRemoved = true;
             this._models.delete(modelId);
             modelRecord.dispose();
+            this._dispatchSubject.onNext({modelId: modelId, model: undefined, dispatchType: DispatchType.ModelDelete});
         }
     }
 
@@ -310,6 +311,16 @@ export class Router extends DisposableBase implements HealthIndicator {
         });
     }
 
+    public getAllModelsObservable(): Observable<ModelEnvelope<any>> {
+        return Observable.create(o => {
+            this._throwIfHaltedOrDisposed();
+            return this._dispatchSubject
+                .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate || envelope.dispatchType === DispatchType.ModelDelete)
+                .cast<ModelEnvelope<any>>()
+                .subscribe(o);
+        });
+    }
+
     public createObservableFor<TModel>(modelId: string, observer): RouterObservable<TModel> {
         return Observable
             .create<TModel>(observer)
@@ -373,7 +384,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         } else {
             let modelObservationStream =  this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
-                .filter(envelope => envelope.dispatchType === DispatchType.Model && envelope.modelId === modelId)
+                .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate && envelope.modelId === modelId)
                 .share(true);
             modelRecord = new ModelRecord(modelId, model, modelObservationStream, eventProcessors);
             this._models.set(modelId, modelRecord);
@@ -523,7 +534,7 @@ export class Router extends DisposableBase implements HealthIndicator {
             this._dispatchSubject.onNext({
                 modelId: modelRecord.modelId,
                 model: modelRecord.model,
-                dispatchType: DispatchType.Model
+                dispatchType: DispatchType.ModelUpdate
             });
         }
     }

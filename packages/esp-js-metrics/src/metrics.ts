@@ -64,6 +64,7 @@ export interface HistogramMetric {
     reset(): void;
     labels(...values: string[]): HistogramMetricWithLabels;
     remove(...values: string[]): void;
+    zero(labels?: LabelValues): void;
 }
 
 export interface HistogramMetricWithLabels {

@@ -30,6 +30,7 @@ const NoopMetrics = (new class implements CounterMetric, GaugeMetric, HistogramM
     set(...args:any[]) {}
     startTimer(labels?: LabelValues) { return () => {}; }
     setToCurrentTime(...args:any[])  { }
+    zero(...args:any[]) {}
 });
 
 const NoopMetricsWithLabels = (new class implements CounterMetricWithLabels, GaugeMetricWithLabels, HistogramMetricWithLabels {

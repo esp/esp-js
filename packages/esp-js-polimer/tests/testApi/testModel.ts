@@ -1,5 +1,6 @@
 import {ObservationStage} from 'esp-js';
-import {ImmutableModel} from '../../src';
+import {ImmutableModel, ModelMapState} from '../../src';
+import {EspModelEntity} from '../../src/modelMapState';
 
 export interface TestEvent {
     shouldCancel?: boolean;
@@ -49,6 +50,9 @@ export interface TestState {
     receivedEventsAll: ReceivedEvent[];
 }
 
+export interface TestSubModelEntity extends EspModelEntity{
+}
+
 export interface OOModelTestState extends TestState {
     preProcessInvokeCount: number;
     postProcessInvokeCount: number;
@@ -58,6 +62,7 @@ export interface OOModelTestState extends TestState {
 export interface TestImmutableModel extends ImmutableModel {
     handlerObjectState: TestState;
     handlerModelState: OOModelTestState;
+    modelMapState: ModelMapState<TestSubModelEntity>;
 }
 
 export const defaultTestStateFactory = (stateName: string) => {
@@ -84,5 +89,6 @@ export const defaultModelFactory: (modelId: string) => TestImmutableModel = (mod
         modelId: modelId,
         handlerObjectState: defaultTestStateFactory('handlerObjectState'),
         handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
+        modelMapState: new ModelMapState<TestSubModelEntity>()
     };
 };

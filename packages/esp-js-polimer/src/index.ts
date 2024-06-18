@@ -5,6 +5,7 @@ export {PolimerEventHandler} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {ImmutableModel} from './immutableModel';
 export {PolimerModelBuilder} from './modelBuilder';
+export {ModelMapState} from './modelMapState';
 export {
     InputEvent,
     InputEventStream,

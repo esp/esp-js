@@ -2,6 +2,7 @@
 export * from './devtools';
 export * from './decoratorObservationRegister';
 export * from './envelopes';
+export * from './eventAddress';
 export * from './eventContext';
 export * from './eventProcessors';
 export * from './modelRecord';

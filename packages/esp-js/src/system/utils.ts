@@ -17,6 +17,7 @@
 // notice_end
 
 import {Level} from './logging/types';
+import {EventAddress} from '../router';
 
 export namespace utils {
     export function removeAll<T>(arr: T[], item: T) {
@@ -56,6 +57,11 @@ export namespace utils {
 
     export const isObject = (value: any): value is object => {
         return typeof value === 'object' && value !== null;
+    };
+
+    export const isEventAddress = (value: any): value is EventAddress => {
+        const valueAsEventAddress = <EventAddress>value;
+        return typeof valueAsEventAddress === 'object' && isString(valueAsEventAddress.modelId) && isString(valueAsEventAddress.modelPath);
     };
 
     export const pad10 = (n: number) => {

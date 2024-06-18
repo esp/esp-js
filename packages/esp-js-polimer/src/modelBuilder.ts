@@ -3,6 +3,7 @@ import {PolimerModel, PolimerModelSetup, StateHandlerModelMetadata} from './poli
 import {ImmutableModel} from './immutableModel';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
+import {EspModelEntity, ModelMapState} from './modelMapState';
 
 declare module 'esp-js/.dist/typings/router/router' {
     export interface Router {
@@ -24,6 +25,11 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
 
     withInitialModel(model: TModel): this {
         this._initialModel = model;
+        return this;
+    }
+
+    withModelMapStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...objectToScanForHandlers: any[]): this {
+
         return this;
     }
 

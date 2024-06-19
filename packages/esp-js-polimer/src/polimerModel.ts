@@ -11,14 +11,17 @@ import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors
 import {merge, Observable, Subscriber, Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
 
-export interface PolimerModelSetup<TModel extends ImmutableModel> {
+export interface PolimerModelInitialConfig<TModel extends ImmutableModel> extends PolimerModelConfig {
     initialModel: TModel;
-    stateHandlerObjects: Map<string, any[]>;
-    stateHandlerModels: Map<string, StateHandlerModelMetadata>;
-    eventStreamHandlerObjects: any[];
     modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     modelPostEventProcessor: ModelPostEventProcessor<TModel>;
     stateSaveHandler: (model: TModel) => any;
+}
+
+export interface PolimerModelConfig {
+    stateHandlerObjects: Map<string, any[]>;
+    stateHandlerModels: Map<string, StateHandlerModelMetadata>;
+    eventStreamHandlerObjects: any[];
 }
 
 export interface StateHandlerModelMetadata {
@@ -40,22 +43,22 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
 
     constructor(
         private readonly _router: Router,
-        private readonly _initialSetup: PolimerModelSetup<TModel>
+        private readonly _initialConfig: PolimerModelInitialConfig<TModel>
     ) {
         super();
         Guard.isDefined(_router, 'router must be defined');
-        Guard.isDefined(_initialSetup, 'initialSetup must be defined');
-        Guard.isObject(_initialSetup.initialModel, 'initialModel must be defined');
-        Guard.stringIsNotEmpty(_initialSetup.initialModel.modelId, `modelId must not be null or empty`);
-        this._modelId = this._initialSetup.initialModel.modelId;
-        this._immutableModel = this._initialSetup.initialModel;
-        if (this._initialSetup.modelPreEventProcessor) {
-            Guard.isFunction(this._initialSetup.modelPreEventProcessor, 'The modelPreEventProcessor is not a function');
-            this._modelPreEventProcessor = this._initialSetup.modelPreEventProcessor;
+        Guard.isDefined(_initialConfig, 'initialSetup must be defined');
+        Guard.isObject(_initialConfig.initialModel, 'initialModel must be defined');
+        Guard.stringIsNotEmpty(_initialConfig.initialModel.modelId, `modelId must not be null or empty`);
+        this._modelId = this._initialConfig.initialModel.modelId;
+        this._immutableModel = this._initialConfig.initialModel;
+        if (this._initialConfig.modelPreEventProcessor) {
+            Guard.isFunction(this._initialConfig.modelPreEventProcessor, 'The modelPreEventProcessor is not a function');
+            this._modelPreEventProcessor = this._initialConfig.modelPreEventProcessor;
         }
-        if (this._initialSetup.modelPostEventProcessor) {
-            Guard.isFunction(this._initialSetup.modelPostEventProcessor, 'The modelPostEventProcessor is not a function');
-            this._modelPostEventProcessor = this._initialSetup.modelPostEventProcessor;
+        if (this._initialConfig.modelPostEventProcessor) {
+            Guard.isFunction(this._initialConfig.modelPostEventProcessor, 'The modelPostEventProcessor is not a function');
+            this._modelPostEventProcessor = this._initialConfig.modelPostEventProcessor;
         }
     }
 
@@ -72,6 +75,10 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     };
 
+    public update = (config: PolimerModelConfig) => {
+
+    }
+
     preProcess() {
         if (this._modelPreEventProcessor) {
             let newModel = this._modelPreEventProcessor(this._immutableModel);
@@ -80,7 +87,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 this._immutableModel = newModel;
             }
         }
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
+        this._initialConfig.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
             if(metadata.model.preProcess) {
                 metadata.model.preProcess(metadata.model);
                 this._immutableModel[stateName] = metadata.model.getEspPolimerState();
@@ -96,7 +103,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 this._immutableModel = newModel;
             }
         }
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
+        this._initialConfig.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
             if(metadata.model.postProcess) {
                 metadata.model.postProcess(metadata.model, eventsProcessed);
                 this._immutableModel[stateName] = metadata.model.getEspPolimerState();
@@ -110,10 +117,10 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
      *
      * */
     getEspUiModelState(): any {
-        if (!this._initialSetup.stateSaveHandler) {
+        if (!this._initialConfig.stateSaveHandler) {
             return null;
         }
-        return this._initialSetup.stateSaveHandler(this._immutableModel);
+        return this._initialConfig.stateSaveHandler(this._immutableModel);
     }
 
     /**
@@ -146,11 +153,14 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     private _wireUpStateHandlerModels() {
-        this._initialSetup.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
+        this._initialConfig.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: string) => {
             if (metadata.autoWireUpObservers) {
                 this.addDisposable(this._router.observeEventsOn(this._modelId, metadata.model));
             }
             let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(metadata.model);
+
+            // TODO TODO keep a disposable for all streams against metadata.model
+
             events.forEach((eventObservationMetadata: EventObservationMetadata) => {
                 let modelEventHandlers = this._modelEventHandlersByEventName.get(eventObservationMetadata.eventType);
                 if (!modelEventHandlers) {
@@ -163,14 +173,17 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     private _wireUpStateHandlerObjects() {
-        if (!this._initialSetup.stateHandlerObjects) {
+        if (!this._initialConfig.stateHandlerObjects) {
             return;
         }
-        this._initialSetup.stateHandlerObjects.forEach((objectsToScanForHandlers: any[], stateName) => {
+        this._initialConfig.stateHandlerObjects.forEach((objectsToScanForHandlers: any[], stateName) => {
             objectsToScanForHandlers.forEach(objectToScanForHandlers => {
                 // create a new handler map which has the eventType as the key
                 // we could just omit the decorator and just use function names, but there can be more than one decorators on a function
                 let events: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForHandlers);
+
+                // TODO keep a disposable for all streams against objectToScanForHandlers
+
                 events.forEach((decoratorMetadata: EventObservationMetadata) => {
                     // A note on the produce() overload we use, from https://github.com/mweststrate/immer:
                     //
@@ -217,8 +230,10 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         const observables = [];
 
         // next with second type
-        this._initialSetup.eventStreamHandlerObjects.forEach(objectToScanForObservables => {
+        this._initialConfig.eventStreamHandlerObjects.forEach(objectToScanForObservables => {
             const metadata: EventObservationMetadata[] = EspDecoratorUtil.getAllEvents(objectToScanForObservables);
+
+            // TODO keep a disposable for all streams against objectToScanForObservables
 
             // group by the function name as there may be multiple events being observed by 1 function
             let metadataGroupedByFunction: { [functionName: string]: EventObservationMetadata[] } = metadata.reduce(
@@ -259,6 +274,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 }
             );
         // now we've normalised them as a single observable and we can kick it off
+
+        // TODO keep a disposable for all streams against objectToScanForObservables
+
         this.addDisposable(subscription);
     };
 

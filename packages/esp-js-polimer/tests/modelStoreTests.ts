@@ -36,7 +36,7 @@ describe('Model StoreTests', () => {
         router
             .modelBuilder<TestImmutableModel>()
             .withInitialModel(initialModel)
-          //  .withModelMapStateHandlerObject('handlerObjectState', {})
+            // .withModelMapStateHandlerObject('handlerObjectState', {})
             .withModelMapStateHandlerObject('modelMapState', {})
             .registerWithRouter();
     });

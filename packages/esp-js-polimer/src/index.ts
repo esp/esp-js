@@ -1,10 +1,10 @@
 // import for side effects
-import './modelBuilder';
+import './modelBuilderUpdater';
 
 export {PolimerEventHandler} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {ImmutableModel} from './immutableModel';
-export {PolimerModelBuilder} from './modelBuilder';
+export {PolimerModelBuilder, PolimerModelUpdater} from './modelBuilderUpdater';
 export {ModelMapState} from './modelMapState';
 export {
     InputEvent,

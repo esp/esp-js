@@ -7,7 +7,9 @@ import {ObjectEventTransforms} from './eventTransforms';
 
 export interface PolimerTestApi {
     removeModel();
+
     disposeModel();
+
     actor: Actor;
     model: TestImmutableModel;
     asserts: Asserts;
@@ -18,6 +20,7 @@ export class ReceivedEventsAsserts {
     constructor(private _parent: StateAsserts, private _receivedEvents: ReceivedEvent[]) {
 
     }
+
     public eventCountIs(expectedLength: number): this {
         expect(this._receivedEvents.length).toEqual(expectedLength);
         return this;
@@ -79,16 +82,20 @@ export class ReceivedEventsAsserts {
 
 export class StateAsserts {
     private _lastState: TestState;
+
     constructor(protected _stateGetter: () => TestState) {
 
     }
+
     protected get _state() {
         return this._stateGetter();
     }
+
     public captureCurrentState(): this {
         this._lastState = this._stateGetter();
         return this;
     }
+
     public stateInstanceHasChanged(expectedNextState?: TestState): this {
         // preconditions
         expect(this._lastState).toBeDefined();
@@ -100,18 +107,23 @@ export class StateAsserts {
         }
         return this;
     }
+
     public previewEvents(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAtPreview);
     }
+
     public normalEvents(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAtNormal);
     }
+
     public committedEvents(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAtCommitted);
     }
+
     public finalEvents(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAtFinal);
     }
+
     public receivedEventsAll(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAll);
     }
@@ -121,22 +133,27 @@ export class OOModelTestStateAsserts extends StateAsserts {
     constructor(private _ooModelTestStateGetter: () => OOModelTestState, private _testStateHandlerModel: TestStateHandlerModel) {
         super(_ooModelTestStateGetter);
     }
+
     public preProcessInvokeCountIs(expected: number): this {
         expect(this._ooModelTestStateGetter().preProcessInvokeCount).toEqual(expected);
         return this;
     }
+
     public postProcessInvokeCountIs(expected: number): this {
         expect(this._ooModelTestStateGetter().postProcessInvokeCount).toEqual(expected);
         return this;
     }
+
     public isDisposed(isDisposed: boolean = false): this {
         expect(this._testStateHandlerModel.isDisposed).toEqual(isDisposed);
         return this;
     }
+
     public eventHandlersReceivedStateOnModelMatchesLocalState(): this {
         expect(this._ooModelTestStateGetter().eventHandlersReceivedStateOnModelMatchesLocalState).toEqual(true);
         return this;
     }
+
     public modelsStateMatchesModelsState(): this {
         expect(this._testStateHandlerModel.currentState).toBe(this._ooModelTestStateGetter());
         return this;
@@ -146,46 +163,55 @@ export class OOModelTestStateAsserts extends StateAsserts {
 export class Actor {
     constructor(private _modelId: string, private _router: Router) {
     }
+
     public publishEvent(eventType: string, event?: TestEvent) {
         event = event || {};
         this._router.publishEvent(this._modelId, eventType, event);
         return event;
     }
+
     public broadcastEvent(eventType: string, event?: TestEvent) {
         event = event || {};
         this._router.broadcastEvent(eventType, event);
         return event;
     }
+
     public publishEventWhichFiltersAtPreviewStage<TKey extends keyof TestImmutableModel>(eventType: string) {
-        let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.preview};
+        let testEvent = <TestEvent>{shouldFilter: true, filterAtStage: ObservationStage.preview};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichFiltersAtNormalStage<TKey extends keyof TestImmutableModel>(eventType: string) {
-        let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.normal};
+        let testEvent = <TestEvent>{shouldFilter: true, filterAtStage: ObservationStage.normal};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichFiltersAtCommitStage<TKey extends keyof TestImmutableModel>(eventType: string) {
-        let testEvent = <TestEvent>{ shouldFilter: true, filterAtStage: ObservationStage.committed};
+        let testEvent = <TestEvent>{shouldFilter: true, filterAtStage: ObservationStage.committed};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCancelsAtPreviewStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCancel: true, cancelAtStage: ObservationStage.preview, stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCancel: true, cancelAtStage: ObservationStage.preview, stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCancelsAtNormalStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCancel: true, cancelAtStage: ObservationStage.normal, stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCancel: true, cancelAtStage: ObservationStage.normal, stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCancelsAtFinalStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCancel: true, cancelAtStage: ObservationStage.final, stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCancel: true, cancelAtStage: ObservationStage.final, stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCancelsAtCommittedStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
         let testEvent = <TestEvent>{
             shouldCommit: true,
@@ -197,21 +223,25 @@ export class Actor {
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCancelsInEventFilter<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCancel: true, cancelInEventFilter: true, stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCancel: true, cancelInEventFilter: true, stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCommitsAtPreviewStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCommit: true, commitAtStages: [ObservationStage.preview], stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCommit: true, commitAtStages: [ObservationStage.preview], stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCommitsAtNormalStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCommit: true, commitAtStages: [ObservationStage.normal], stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCommit: true, commitAtStages: [ObservationStage.normal], stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCommitsAtCommittedStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
         let testEvent = <TestEvent>{
             shouldCommit: true,
@@ -221,13 +251,15 @@ export class Actor {
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCommitsAtFinalStage<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCommit: true, commitAtStages: [ObservationStage.final], stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCommit: true, commitAtStages: [ObservationStage.final], stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
+
     public publishEventWhichCommitsInEventFilter<TKey extends keyof TestImmutableModel>(eventType: string, stateNameWhichDoesTheCommit: TKey) {
-        let testEvent = <TestEvent>{ shouldCommit: true, commitInEventFilter: true, stateTakingAction: stateNameWhichDoesTheCommit};
+        let testEvent = <TestEvent>{shouldCommit: true, commitInEventFilter: true, stateTakingAction: stateNameWhichDoesTheCommit};
         this._router.publishEvent(this._modelId, eventType, testEvent);
         return testEvent;
     }
@@ -236,28 +268,40 @@ export class Actor {
 export class Asserts {
     private _handlerObjectState: StateAsserts;
     private _handlerModelState: OOModelTestStateAsserts;
+
     constructor(private _router: Router, private _model: PolimerModel<TestImmutableModel>, private _testEventProcessors: TestEventProcessors, testStateHandlerModel: TestStateHandlerModel) {
         this._handlerObjectState = new StateAsserts(() => this._model.getImmutableModel().handlerObjectState);
         this._handlerModelState = new OOModelTestStateAsserts(() => this._model.getImmutableModel().handlerModelState, testStateHandlerModel);
     }
-    public get handlerObjectState() { return this._handlerObjectState; }
-    public get handlerModelState() { return this._handlerModelState; }
+
+    public get handlerObjectState() {
+        return this._handlerObjectState;
+    }
+
+    public get handlerModelState() {
+        return this._handlerModelState;
+    }
+
     public throwsOnInvalidEventContextAction(action: () => void, errorRegex?: RegExp): this {
         expect(action).toThrow(errorRegex || /You can't .* an event at the .* stage.*/);
         return this;
     }
+
     public preEventProcessorCountIs(expectedInvokeCount: number): this {
         expect(this._testEventProcessors.preEventProcessorInvokeCount).toEqual(expectedInvokeCount);
         return this;
     }
+
     public postEventProcessorCountIs(expectedInvokeCount: number): this {
         expect(this._testEventProcessors.postEventProcessorInvokeCount).toEqual(expectedInvokeCount);
         return this;
     }
+
     public polimerModelIsRegistered(isRegistered: boolean = true): this {
         expect(this._router.isModelRegistered(this._model.modelId)).toEqual(isRegistered);
         return this;
     }
+
     public assertSavedState(assertingFunction: (savedStateState) => void) {
         assertingFunction(this._model.getEspUiModelState());
         return this;
@@ -279,38 +323,52 @@ class TestEventProcessors {
             this._postEventProcessorInvokeCount++;
         };
     }
+
     public get preEventProcessorInvokeCount() {
         return this._preEventProcessorInvokeCount;
     }
+
     public get preEventProcessor() {
         return this._preEventProcessor;
     }
+
     public get postEventProcessorInvokeCount() {
         return this._postEventProcessorInvokeCount;
     }
+
     public get postEventProcessor() {
         return this._postEventProcessor;
     }
 }
 
 export class PolimerTestApiBuilder {
-    private _useHandlerObject: boolean = false;
-    private _useHandlerModel: boolean = false;
+    private _stateHandlerObjects: any[] = [];
+    private _stateHandlerModel: any = null;
     private _handlerModelAutoWireUp: boolean = false;
     private _useEventTransformModel: boolean = false;
     private _stateSaveHandler: (model: TestImmutableModel) => any;
+    private _modelId = 'modelId';
+    public router = new Router();
 
     public static create(): PolimerTestApiBuilder {
         return new PolimerTestApiBuilder();
     }
 
-    public withStateHandlerObject() {
-        this._useHandlerObject = true;
+    public withStateHandlerObject(...objects: any[]) {
+        if (objects.length === 0) {
+            this._stateHandlerObjects.push(new TestStateObjectHandler(this.router));
+        } else {
+            this._stateHandlerObjects.push(...objects);
+        }
         return this;
     }
 
-    public withStateHandlerModel(autoWireUp = false) {
-        this._useHandlerModel = true;
+    public withStateHandlerModel(autoWireUp = false, modelEntity: any = null) {
+        if (modelEntity) {
+            this._stateHandlerModel = modelEntity;
+        } else {
+            this._stateHandlerModel = new TestStateHandlerModel(this._modelId, this.router);
+        }
         this._handlerModelAutoWireUp = autoWireUp;
         return this;
     }
@@ -329,22 +387,22 @@ export class PolimerTestApiBuilder {
         // stop esp logging to the console by default (so unhappy path tests to fill up the console with errors).
         LoggingConfig.setLevel(Level.none);
         let testEventProcessors = new TestEventProcessors();
-        let testStateHandlerModel: TestStateHandlerModel;
-        let router = new Router();
-        let modelId = 'modelId';
-        let initialModel = defaultModelFactory(modelId);
-        let builder: PolimerModelBuilder<TestImmutableModel>  = router
+        let initialModel = defaultModelFactory(this._modelId);
+        let builder: PolimerModelBuilder<TestImmutableModel> = this.router
             .modelBuilder<TestImmutableModel>()
             .withInitialModel(initialModel)
             .withStateSaveHandler(this._stateSaveHandler);
-        if (this._useHandlerObject) {
-            builder.withStateHandlerObject('handlerObjectState', new TestStateObjectHandler(router));
+        // The Poliimer API allows for multiple state handlers per state key
+        if (this._stateHandlerObjects) {
+            for (let handler of this._stateHandlerObjects) {
+                builder.withStateHandlerObject('handlerObjectState', handler);
+            }
         }
-        if (this._useHandlerModel) {
-            testStateHandlerModel = new TestStateHandlerModel(modelId, router);
-            builder.withStateHandlerModel('handlerModelState', testStateHandlerModel, this._handlerModelAutoWireUp);
+        // ... however it only allows 1 object handler per state key (as the model is meant to own all handling for its states).
+        if (this._stateHandlerModel) {
+            builder.withStateHandlerModel('handlerModelState', this._stateHandlerModel, this._handlerModelAutoWireUp);
             if (!this._handlerModelAutoWireUp) {
-                testStateHandlerModel.initialise();
+                this._stateHandlerModel.initialise();
             }
         }
         if (this._useEventTransformModel) {
@@ -356,22 +414,26 @@ export class PolimerTestApiBuilder {
         let model = builder.registerWithRouter();
         // TestStateObject is a classic esp model, it is modeled here to have a typical external lifecycle and manages it's state internally
         let currentModel: TestImmutableModel;
-        router.getModelObservable<PolimerModel<TestImmutableModel>>(modelId).map(m => m.getImmutableModel()).subscribe(m1 => {
+        this.router.getModelObservable<PolimerModel<TestImmutableModel>>(this._modelId).map(m => m.getImmutableModel()).subscribe(m1 => {
             currentModel = m1;
         });
+        return PolimerTestApiBuilder.createTestApi(this.router, model, testEventProcessors, this._stateHandlerModel);
+    }
+
+    private static createTestApi(router: Router, model: PolimerModel<TestImmutableModel>, testEventProcessors: TestEventProcessors, stateHandlerModel: any) {
         return {
             removeModel() {
-                router.removeModel(modelId);
+                router.removeModel(model.modelId);
             },
             disposeModel() {
                 model.dispose();
             },
-            actor: new Actor(modelId, router),
+            actor: new Actor(model.modelId,router),
             get model() {
                 return model.getImmutableModel();
             },
-            asserts: new Asserts(router, model, testEventProcessors, testStateHandlerModel),
-            router
+            asserts: new Asserts(router, model, testEventProcessors, stateHandlerModel),
+            router: router
         };
     }
 }

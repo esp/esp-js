@@ -1,6 +1,6 @@
 import {PolimerEventHandler} from './stateEventHandlers';
 import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
-import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
+import {DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, Level, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {InputEvent, OutputEvent} from './eventTransformations';
 import {logger} from './logger';
 import {ImmutableModel} from './immutableModel';
@@ -10,27 +10,40 @@ import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {merge, Observable, Subscriber, Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
+import {Disposable} from 'esp-js';
 
-export interface PolimerModelInitialConfig<TModel extends ImmutableModel> extends PolimerModelConfig {
+export interface PolimerModelConfig<TModel extends ImmutableModel> {
     initialModel: TModel;
     modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     modelPostEventProcessor: ModelPostEventProcessor<TModel>;
     stateSaveHandler: (model: TModel) => any;
-}
-
-export interface PolimerModelConfig {
     stateHandlerObjects: Map<string, any[]>;
     stateHandlerModels: Map<string, StateHandlerModelMetadata>;
     eventStreamHandlerObjects: any[];
 }
 
+export interface PolimerModelConfigUpdate {
+    itemsToWireUp: {
+        stateHandlerObjects: Map<string, any[]>;
+        stateHandlerModels: Map<string, StateHandlerModelMetadata>;
+        eventStreamHandlerObjects: any[];
+    };
+    itemsToUnWire: {
+        stateHandlerObjects: Map<string, any[]>;
+        stateHandlerModels: Map<string, StateHandlerModel<any>>;
+        eventStreamHandlerObjects: any[];
+    };
+}
+
 export interface StateHandlerModelMetadata {
+    // a non-polimer OO type model
     model: StateHandlerModel<any>;
     autoWireUpObservers: boolean;
 }
 
 interface ModelHandlerMetadata<TModel> {
     stateName: string;
+    // a non-polimer OO type model
     model: StateHandlerModel<TModel>;
 }
 
@@ -39,11 +52,13 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     private _immutableModel: TModel;
     private _modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
+    private _subscriptionsByObject: Map<object, Disposable> = new Map();
+
     private readonly _modelId: string;
 
     constructor(
         private readonly _router: Router,
-        private readonly _initialConfig: PolimerModelInitialConfig<TModel>
+        private readonly _initialConfig: PolimerModelConfig<TModel>
     ) {
         super();
         Guard.isDefined(_router, 'router must be defined');
@@ -75,9 +90,11 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
     };
 
-    public update = (config: PolimerModelConfig) => {
+    public update = (config: PolimerModelConfigUpdate) => {
 
-    }
+        throw new Error('TODO');
+
+    };
 
     preProcess() {
         if (this._modelPreEventProcessor) {
@@ -87,8 +104,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 this._immutableModel = newModel;
             }
         }
+        // run pre-processing for the OO/legacy type models which may be integrating with polimer models
         this._initialConfig.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
-            if(metadata.model.preProcess) {
+            if (metadata.model.preProcess) {
                 metadata.model.preProcess(metadata.model);
                 this._immutableModel[stateName] = metadata.model.getEspPolimerState();
             }
@@ -103,8 +121,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 this._immutableModel = newModel;
             }
         }
+        // run post-processing for the OO/legacy type models which may be integrating with polimer models
         this._initialConfig.stateHandlerModels.forEach((metadata: StateHandlerModelMetadata, stateName: keyof TModel) => {
-            if(metadata.model.postProcess) {
+            if (metadata.model.postProcess) {
                 metadata.model.postProcess(metadata.model, eventsProcessed);
                 this._immutableModel[stateName] = metadata.model.getEspPolimerState();
             }
@@ -149,6 +168,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     public dispose() {
         logger.debug(`Disposing PolimerModel<> ${this._modelId}`);
         this._router.removeModel(this.modelId);
+        this._subscriptionsByObject.forEach(d => (d.dispose()));
         super.dispose();
     }
 
@@ -191,35 +211,35 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                     // This means that you get a pre-bound producer that only needs a state to produce the value from.
                     // The producer function gets passed in the draft, and any further arguments that were passed to the curried function.
                     const handler = produce(
-                       objectToScanForHandlers[decoratorMetadata.functionName].bind(objectToScanForHandlers) as PolimerEventHandler<any, any, any> // informational only cast
+                        objectToScanForHandlers[decoratorMetadata.functionName].bind(objectToScanForHandlers) as PolimerEventHandler<any, any, any> // informational only cast
                     );
                     let predicate = <PolimerEventPredicate>decoratorMetadata.predicate;
                     this.addDisposable(
-                    this._router.getEventObservable(this._modelId, decoratorMetadata.eventType, decoratorMetadata.observationStage)
-                        .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
-                            const model = <any>this._immutableModel;
-                            const beforeState = model[stateName];
-                            let processEvent = true;
-                            if (predicate) {
-                                let notYetCanceled = eventEnvelope.context.isCanceled === false;
-                                let notYetCommitted = eventEnvelope.context.isCommitted === false;
-                                processEvent = predicate(beforeState, eventEnvelope.event, model, eventEnvelope.context);
-                                if (notYetCanceled && eventEnvelope.context.isCanceled) {
-                                    throw new Error('You can\'t cancel an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                        this._router.getEventObservable(this._modelId, decoratorMetadata.eventType, decoratorMetadata.observationStage)
+                            .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
+                                const model = <any>this._immutableModel;
+                                const beforeState = model[stateName];
+                                let processEvent = true;
+                                if (predicate) {
+                                    let notYetCanceled = eventEnvelope.context.isCanceled === false;
+                                    let notYetCommitted = eventEnvelope.context.isCommitted === false;
+                                    processEvent = predicate(beforeState, eventEnvelope.event, model, eventEnvelope.context);
+                                    if (notYetCanceled && eventEnvelope.context.isCanceled) {
+                                        throw new Error('You can\'t cancel an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                    }
+                                    if (notYetCommitted && eventEnvelope.context.isCommitted) {
+                                        throw new Error('You can\'t commit an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                    }
                                 }
-                                if (notYetCommitted && eventEnvelope.context.isCommitted) {
-                                    throw new Error('You can\'t commit an event in an event filter/predicate. Event: [' + eventEnvelope.eventType + '], ModelId: [' + eventEnvelope.modelId + ']');
+                                if (processEvent) {
+                                    if (logger.isLevelEnabled(Level.verbose)) { logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState); }
+                                    const afterState = handler(beforeState, eventEnvelope.event, model, eventEnvelope.context);
+                                    if (logger.isLevelEnabled(Level.verbose)) { logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState); }
+                                    model[stateName] = afterState;
+                                } else {
+                                    if (logger.isLevelEnabled(Level.verbose)) { logger.verbose(`Received "${eventEnvelope.eventType}" for "${stateName}" state, skipping as the handlers predicate returned false`, beforeState); }
                                 }
-                            }
-                            if (processEvent) {
-                                logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: invoking a reducer. Before state logged to console.`, beforeState);
-                                const afterState = handler(beforeState, eventEnvelope.event, model, eventEnvelope.context);
-                                logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);
-                                model[stateName] = afterState;
-                            } else {
-                                logger.verbose(`Received "${eventEnvelope.eventType}" for "${stateName}" state, skipping as the handlers predicate returned false`, beforeState);
-                            }
-                        })
+                            })
                     );
                 });
             });
@@ -254,18 +274,18 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             });
         });
 
-       let subscription: Subscription = merge(...observables)
-           .pipe(
-               filter(output => output != null)
+        let subscription: Subscription = merge(...observables)
+            .pipe(
+                filter(output => output != null)
             )
             .subscribe(
                 (outputEvent: OutputEvent<any>) => {
                     if (outputEvent.broadcast) {
-                        logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent);
+                        if (logger.isLevelEnabled(Level.verbose)) { logger.verbose('Received a broadcast event from observable. Dispatching to esp-js router.', outputEvent); }
                         this._router.broadcastEvent(outputEvent.eventType, outputEvent.event || {});
                     } else {
                         const targetModelId = outputEvent.modelId || this._modelId;
-                        logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent);
+                        if (logger.isLevelEnabled(Level.verbose)) { logger.verbose(`Received eventType ${outputEvent.eventType} for model ${targetModelId}. Dispatching to esp-js router.`, outputEvent); }
                         this._router.publishEvent(targetModelId, outputEvent.eventType, outputEvent.event);
                     }
                 },
@@ -282,12 +302,12 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
 
     private _observeEvent = (eventType: string, observationStage: ObservationStage = ObservationStage.final, functionName: string = 'NA'): Observable<InputEvent<TModel, any>> => {
         return new Observable((obs: Subscriber<any>) => {
-            logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `);
+                if (logger.isLevelEnabled(Level.verbose)) { logger.verbose(`Event transform: wire-up on function [${functionName}] for event [${eventType}] at stage [${observationStage}] for model [${this._modelId}] `); }
                 const espEventStreamSubscription = this._router
                     .getEventObservable(this._modelId, eventType, observationStage)
                     .subscribe(
                         (eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>) => {
-                            logger.verbose(`Event transform: event [${eventEnvelope.eventType}] received at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}].`);
+                            if (logger.isLevelEnabled(Level.verbose)) {logger.verbose(`Event transform: event [${eventEnvelope.eventType}] received at stage [${eventEnvelope.observationStage}] for model [${eventEnvelope.modelId}].`); }
                             let inputEvent: InputEvent<TModel, any> = this._mapEventEnvelopToInputEvent(eventEnvelope);
                             // Pass the event off to our polimer observable stream.
                             // In theory, these streams must never error.
@@ -301,7 +321,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                             }
                         },
                         () => {
-                            logger.verbose(`Event transform: stream for function [${functionName}] event [${eventType}] stage [${observationStage}] model [${this._modelId}] completed`);
+                            if (logger.isLevelEnabled(Level.verbose)) { logger.verbose(`Event transform: stream for function [${functionName}] event [${eventType}] stage [${observationStage}] model [${this._modelId}] completed`); }
                             obs.complete();
                         }
                     );

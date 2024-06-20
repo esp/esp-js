@@ -1,0 +1,114 @@
+ import {defaultModelFactory, EventConst, TestImmutableModel} from './testApi/testModel';
+ import {Router} from 'esp-js';
+ import {TestStateHandlerModel, TestStateObjectHandler} from './testApi/stateHandlers';
+ import {Actor, OOModelTestStateAsserts, StateAsserts} from './testApi/testApi';
+ import {ObjectEventTransforms} from './testApi/eventTransforms';
+
+ describe('ModelBuilderUpdaterTests', () => {
+     let router: Router;
+     let modelId: string;
+
+     beforeEach(() => {
+         router = new Router();
+         modelId = 'modelId';
+     });
+
+     it('Can add and remove StateHandlerObject', () => {
+         let testStateObjectHandler1 = new TestStateObjectHandler(router);
+         let testStateObjectHandler2 = new TestStateObjectHandler(router);
+
+         let polimerModel = router
+             .modelBuilder<TestImmutableModel>()
+             .withInitialModel(defaultModelFactory(modelId))
+             .withStateHandlerObject('handlerObjectState', testStateObjectHandler1, testStateObjectHandler2)
+             .registerWithRouter();
+
+         let asserts = new StateAsserts(() => polimerModel.getImmutableModel().handlerObjectState);
+         let actor = new Actor(modelId, router);
+
+         actor.publishEvent(EventConst.event1);
+         asserts.normalEvents().eventCountIs(2); // because we have 2 handlers
+
+         router
+             .modelUpdater<TestImmutableModel>(modelId)
+             .removeStateHandlerObject('handlerObjectState', testStateObjectHandler1)
+             .updateRegistrationsWithRouter();
+
+         actor.publishEvent(EventConst.event1);
+         asserts.normalEvents().eventCountIs(3); // because we have only 1 handler now
+
+         router
+             .modelUpdater<TestImmutableModel>(modelId)
+             .removeStateHandlerObject('handlerObjectState', testStateObjectHandler2)
+             .updateRegistrationsWithRouter();
+
+         actor.publishEvent(EventConst.event1);
+         asserts.normalEvents().eventCountIs(3); // no handlers, so no change
+     });
+
+     it('Can add and remove StateHandlerModel', () => {
+         let testStateHandlerModel = new TestStateHandlerModel(modelId, router);
+
+         let polimerModel = router
+             .modelBuilder<TestImmutableModel>()
+             .withInitialModel(defaultModelFactory(modelId))
+             .withStateHandlerModel('handlerModelState', testStateHandlerModel, true)
+             .registerWithRouter();
+
+         let asserts = new OOModelTestStateAsserts(() => polimerModel.getImmutableModel().handlerModelState, testStateHandlerModel);
+         let actor = new Actor(modelId, router);
+
+         actor.publishEvent(EventConst.event1);
+         asserts.normalEvents().eventCountIs(1);
+
+         router
+             .modelUpdater<TestImmutableModel>(modelId)
+             .removeStateHandlerObject('handlerModelState', testStateHandlerModel)
+             .updateRegistrationsWithRouter();
+
+         actor.publishEvent(EventConst.event1);
+         asserts.normalEvents().eventCountIs(1); // no handlers, so no change
+     });
+
+     it('Can add and remove EventStreamsOn', () => {
+         let testStateObjectHandler1 = new TestStateObjectHandler(router);
+         let objectEventTransforms = new ObjectEventTransforms();
+
+         let polimerModel = router
+             .modelBuilder<TestImmutableModel>()
+             .withInitialModel(defaultModelFactory(modelId))
+             .withStateHandlerObject('handlerObjectState', testStateObjectHandler1)
+             .withEventStreamsOn(objectEventTransforms)
+             .registerWithRouter();
+
+         let asserts = new StateAsserts(() => polimerModel.getImmutableModel().handlerObjectState);
+         let actor = new Actor(modelId, router);
+
+         // send something to a transform, which ultimately goes back onto a model
+         actor.publishEvent(EventConst.event7);
+         asserts.normalEvents().eventCountIs(2); // the model observes event7, and the event observer pushes another event based on event7
+         asserts.normalEvents().eventTypeIs(0, EventConst.event7);
+         asserts.normalEvents().eventTypeIs(1, EventConst.event8); // transformed by ObjectEventTransforms in response to event7
+
+         router
+             .modelUpdater<TestImmutableModel>(modelId)
+             .removeEventStreamsFrom(objectEventTransforms)
+             .updateRegistrationsWithRouter();
+
+         actor.publishEvent(EventConst.event7);
+         asserts.normalEvents().eventCountIs(2); // should have no change
+     });
+
+     it('Can add and remove MapStateHandlerObject', () => {
+
+         // // TODO the PolimerModel needs to be smart enough when it comes accross a state of type ModelMapState
+         // // It can have built in support to allow an event to be given to a sub model in this data structure
+         //
+         // let polimerModel = router
+         //     .modelBuilder<TestImmutableModel>()
+         //     .withInitialModel(defaultModelFactory(modelId))
+         //     .withStateHandlerObject('modelMapState', {})
+         //     .registerWithRouter();
+
+     });
+ });

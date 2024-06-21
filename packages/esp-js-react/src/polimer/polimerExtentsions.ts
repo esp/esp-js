@@ -1,7 +1,7 @@
 import {PolimerModelBuilder, PolimerModel} from 'esp-js-polimer';
 import {DEFAULT_VIEW_KEY, viewBinding} from '../viewBindingDecorator';
 
-declare module 'esp-js-polimer/.dist/typings/modelBuilder' {
+declare module 'esp-js-polimer/.dist/typings/modelBuilderUpdater' {
     export interface PolimerModelBuilder<TModel> {
         withViewBindings?(view: any, displayContext?: string): PolimerModelBuilder<TModel>;
     }

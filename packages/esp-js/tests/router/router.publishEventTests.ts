@@ -31,7 +31,7 @@ describe('Router', () => {
             expect(() => {_router.publishEvent(undefined, 'Foo', 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', undefined, 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', 'Foo', undefined); }).toThrow();
-            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('The modelIdOrEventAddress argument should be a string (model) or EventAddress');
+            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('The modelIdOrModelAddress argument should be a string (model) or EventAddress');
         });
 
         it('queues and processes events received during event loop by model id', () => {

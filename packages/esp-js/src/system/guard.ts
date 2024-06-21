@@ -17,7 +17,7 @@
 // notice_end
 
 import {utils} from './utils';
-import {EventAddress} from '../router';
+import {ModelAddress} from '../router';
 
 export class Guard {
     public static isDefined(value: any, message: string): void {

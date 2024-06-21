@@ -3,21 +3,30 @@ import {PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './pol
 import {ImmutableModel} from './immutableModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {StateHandlerModel} from './stateHandlerModel';
+import {StateHandlerConfiguration} from './stateHandlerConfiguration';
 
 export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
-    protected _stateHandlerObjects: Map<string, any[]> = new Map();
+    protected _stateHandlerObjects: Map<string, StateHandlerConfiguration[]> = new Map();
     protected _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
     protected _eventStreamHandlerObjects: any[] = [];
 
-    withStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...objectToScanForHandlers: any[]): this {
-        objectToScanForHandlers.forEach(handler => {
-            if (isEspDecoratedObject(handler)) {
+    /**
+     * Used to register handler objects against a state slice on the store.
+     * @param state
+     * @param handlersOrConfigurations
+     */
+    withStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...handlersOrConfigurations: (object | StateHandlerConfiguration)[]): this {
+        handlersOrConfigurations.forEach(handlerOrConfiguration => {
+            const configuration: StateHandlerConfiguration = StateHandlerConfiguration.isHandlerConfiguration(handlerOrConfiguration)
+                ? handlerOrConfiguration
+                : { stateHandler: handlerOrConfiguration };
+            if (isEspDecoratedObject(configuration.stateHandler)) {
                 let handlers = this._stateHandlerObjects.get(<string>state);
                 if (!handlers) {
                     handlers = [];
                     this._stateHandlerObjects.set(<string>state, handlers);
                 }
-                handlers.push(handler);
+                handlers.push(configuration);
             } else {
                 throw new Error(`Unknown observable object for state ${<string>state}. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
             }
@@ -26,7 +35,9 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     }
 
     /**
+     * Used to register a legacy OO type model which can interact with Polimer models.
      *
+     * Typically, this is only used if you have existing OO models which contain both state and event handlers, and you want that model to hang off your store.
      * @param state
      * @param stateHandlerModel
      * @param autoWireUpObservers: if true the given model will be wired up to the model (Router.observeEventsOn(model), this defaults to false as often the given instance may have specific initialisation and observe events itself.
@@ -103,7 +114,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
 }
 
 export class PolimerModelUpdater<TModel extends ImmutableModel> extends PolimerModelBuilderUpdaterBase<TModel> {
-    protected _stateHandlerObjectsToRemove: Map<string, any[]> = new Map();
+    protected _stateHandlerObjectsToRemove: Map<string, StateHandlerConfiguration[]> = new Map();
     protected _stateHandlerModelsToRemove: Map<string, StateHandlerModel<any>> = new Map();
     protected _eventStreamHandlerObjectsToRemove: any[] = [];
 
@@ -111,8 +122,18 @@ export class PolimerModelUpdater<TModel extends ImmutableModel> extends PolimerM
         super();
     }
 
-    removeStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...objectWithHandlersToRemove: any[]): this {
-        this._stateHandlerObjectsToRemove.set('state', objectWithHandlersToRemove);
+    removeStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...handlersOrConfigurations: (object | StateHandlerConfiguration)[]): this {
+        let itemsToRemoveForState = this._stateHandlerObjectsToRemove.get(<string>state);
+        if (!itemsToRemoveForState) {
+            itemsToRemoveForState = [];
+            this._stateHandlerObjectsToRemove.set(<string>state, itemsToRemoveForState);
+        }
+        const configurations: StateHandlerConfiguration[] = handlersOrConfigurations.map(handlerOrConfiguration => (
+            StateHandlerConfiguration.isHandlerConfiguration(handlerOrConfiguration)
+                ? handlerOrConfiguration
+                : { stateHandler: handlerOrConfiguration }
+        ));
+        itemsToRemoveForState.push(...configurations);
         return this;
     }
 

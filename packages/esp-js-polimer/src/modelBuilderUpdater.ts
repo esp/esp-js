@@ -32,7 +32,7 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
      * @param autoWireUpObservers: if true the given model will be wired up to the model (Router.observeEventsOn(model), this defaults to false as often the given instance may have specific initialisation and observe events itself.
      */
     withStateHandlerModel<TKey extends keyof TModel, TStateHandlerModel extends StateHandlerModel<TModel[TKey]>>(state: TKey, stateHandlerModel: TStateHandlerModel, autoWireUpObservers = false): this  {
-        this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers});
+        this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers: autoWireUpObservers});
         return this;
     }
 
@@ -87,7 +87,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
         // Eor example the @viewBinding decorator.
         // Given that, we create a new ctro function to allow custom metadata to be added to this specific instance dynamically.
         let customPolimerModel = class CustomPolimerModel extends PolimerModel<TModel> {};
-        let polimerModel = new customPolimerModel(
+        return new customPolimerModel(
             this._router,
             <PolimerModelConfig<TModel>>{
                 initialModel: this._initialModel,
@@ -99,12 +99,6 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
                 stateSaveHandler: this._stateSaveHandler,
             }
         );
-
-        this._router.addModel(this._initialModel.modelId, polimerModel);
-
-        polimerModel.initialize();
-
-        return polimerModel;
     }
 }
 

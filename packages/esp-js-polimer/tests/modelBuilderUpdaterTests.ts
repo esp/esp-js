@@ -96,7 +96,8 @@
              .updateRegistrationsWithRouter();
 
          actor.publishEvent(EventConst.event7);
-         asserts.normalEvents().eventCountIs(2); // should have no change
+         asserts.normalEvents().eventCountIs(3); // this should be +1 (3) as the model would have received the event, but the ObjectEventTransforms would not have pushed event8
+         asserts.normalEvents().eventTypeIs(2, EventConst.event7);
      });
 
      it('Can add and remove MapStateHandlerObject', () => {

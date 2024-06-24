@@ -1,7 +1,7 @@
 import {Level, LoggingConfig, ObservationStage, Router} from 'esp-js';
 import {defaultModelFactory, OOModelTestState, ReceivedEvent, TestEvent, TestImmutableModel, TestState} from './testModel';
 import {TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
-import {PolimerModel, PolimerModelBuilder} from '../../src';
+import {ModelMapState, PolimerModel, PolimerModelBuilder} from '../../src';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from '../../src/eventProcessors';
 import {ObjectEventTransforms} from './eventTransforms';
 
@@ -157,6 +157,30 @@ export class OOModelTestStateAsserts extends StateAsserts {
     public modelsStateMatchesModelsState(): this {
         expect(this._testStateHandlerModel.currentState).toBe(this._ooModelTestStateGetter());
         return this;
+    }
+}
+
+export class ModelStoreAsserts {
+    constructor(private _stateGetter: () => ModelMapState<TestState>) {
+    }
+
+    protected get _state() {
+        return this._stateGetter();
+    }
+
+    public entityCountIs(count: number): this {
+        expect(this._state.items.length).toEqual(count);
+        expect(this._state.itemsLookup.size).toEqual(count);
+        return this;
+    }
+
+    public expectedStatesToChange(): this {
+
+        return this;
+    }
+
+    public state(stateId: string): StateAsserts {
+        return new StateAsserts(() => this._state.getByKey(stateId));
     }
 }
 

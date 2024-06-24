@@ -5,7 +5,7 @@ export {PolimerEventHandler} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {ImmutableModel} from './immutableModel';
 export {PolimerModelBuilder, PolimerModelUpdater} from './modelBuilderUpdater';
-export {ModelMapState} from './modelMapState';
+export {ModelMapState, EspModelEntity} from './modelMapState';
 export {
     InputEvent,
     InputEventStream,

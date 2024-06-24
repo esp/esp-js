@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {DefaultEventAddress, EventAddress, EventContext, EventRecord, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
+import {DefaultEventAddress, ModelAddress, EventContext, EventRecord, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, Health, HealthIndicator, Logger} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
@@ -149,12 +149,12 @@ export class Router extends DisposableBase implements HealthIndicator {
         return null;
     }
 
-    public publishEvent(modelIdOrEventAddress: string | EventAddress, eventType: string, event: any) {
-        Guard.isStringOrEventAddress(modelIdOrEventAddress, 'The modelIdOrEventAddress argument should be a string (model) or EventAddress');
+    public publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any) {
+        Guard.isStringOrEventAddress(modelIdOrModelAddress, 'The modelIdOrModelAddress argument should be a string (model) or EventAddress');
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument must be defined');
         this._throwIfHaltedOrDisposed();
-        const eventAddress = new DefaultEventAddress(modelIdOrEventAddress);
+        const eventAddress = new DefaultEventAddress(modelIdOrModelAddress);
         if (this._state.currentStatus === Status.EventExecution) {
             throw new Error('You can not publish further events when performing an event execution. eventAddress: [' + eventAddress + '], eventType:[' + eventType + ']');
         }

@@ -1,14 +1,14 @@
 import {utils} from '../system';
 
-export interface EventAddress {
+export interface ModelAddress {
     modelId: string;
     modelPath: string;
 }
 
-export class DefaultEventAddress implements EventAddress {
+export class DefaultEventAddress implements ModelAddress {
     private readonly _modelId: string;
     private readonly _modelPath: string = null;
-    constructor(modelIdOrEventAddress: string | EventAddress) {
+    constructor(modelIdOrEventAddress: string | ModelAddress) {
         if (utils.isEventAddress(modelIdOrEventAddress)) {
             this._modelId = modelIdOrEventAddress.modelId;
             this._modelPath = modelIdOrEventAddress.modelPath;

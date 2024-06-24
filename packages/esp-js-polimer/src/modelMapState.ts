@@ -1,5 +1,6 @@
-export type EspModelEntity = { espEntityId: string };
 import {immerable} from 'immer';
+
+export type EspModelEntity = { espEntityId: string };
 
 export class ModelMapState<ModelMapEntity extends EspModelEntity> {
     // With this enabled immer will copy the private state fields when it drafts/copies instances of this class
@@ -9,14 +10,14 @@ export class ModelMapState<ModelMapEntity extends EspModelEntity> {
     private readonly _sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number = null;
 
     constructor();
-    constructor(sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number);
-    constructor(sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number, itemsLookup: Map<string, ModelMapEntity>);
+    constructor(initialState: Map<string, ModelMapEntity>);
+    constructor(initialState: Map<string, ModelMapEntity>, sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number);
     constructor(...args: any[]) {
         if (args.length >= 1) {
-            this._sortingComparator = args[0];
+            this._itemsLookup = args[0];
         }
         if (args.length >= 2) {
-            this._itemsLookup = args[1];
+            this._sortingComparator = args[1];
         }
     }
 

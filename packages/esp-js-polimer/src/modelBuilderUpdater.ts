@@ -3,12 +3,18 @@ import {PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './pol
 import {ImmutableModel} from './immutableModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {StateHandlerModel} from './stateHandlerModel';
+import {ModelMapState} from './modelMapState';
 
 export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     protected _stateHandlerObjects: Map<string, any[]> = new Map();
     protected _stateHandlerModels: Map<string, StateHandlerModelMetadata> = new Map();
     protected _eventStreamHandlerObjects: any[] = [];
 
+    /**
+     * Used to register handler objects against a state slice on the store.
+     * @param state
+     * @param objectToScanForHandlers
+     */
     withStateHandlerObject<TKey extends keyof TModel>(state: TKey, ...objectToScanForHandlers: any[]): this {
         objectToScanForHandlers.forEach(handler => {
             if (isEspDecoratedObject(handler)) {
@@ -25,8 +31,15 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
         return this;
     }
 
+    withStateHandlerForModelMap<TKey extends keyof TModel, TStateSlice extends ModelMapState<TModel[TKey]>>(state: TKey, espEntityId: string, ...objectToScanForHandlers: any[]): this  {
+        // this._stateHandlerModels.set(<string>state, {model: stateHandlerModel, autoWireUpObservers: autoWireUpObservers});
+        return this;
+    }
+
     /**
+     * Used to register a legacy OO type model which can interact with Polimer models.
      *
+     * Typically, this is only used if you have existing OO models which contain both state and event handlers, and you want that model to hang off your store.
      * @param state
      * @param stateHandlerModel
      * @param autoWireUpObservers: if true the given model will be wired up to the model (Router.observeEventsOn(model), this defaults to false as often the given instance may have specific initialisation and observe events itself.

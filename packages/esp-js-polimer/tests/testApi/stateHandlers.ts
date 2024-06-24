@@ -1,6 +1,7 @@
 import {PolimerModel} from '../../src/';
 import {defaultOOModelTestStateFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestImmutableModel} from './testModel';
 import {EventContext, DefaultEventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
+import {ModelMapState} from '../../.dist/typings';
 
 function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
     let receivedEvent = <ReceivedEvent>{
@@ -111,6 +112,15 @@ export class TestStateObjectHandler {
     @observeEvent(EventConst.event8)
     _event8Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
         processEvent(draft, ev, model, eventContext);
+    }
+}
+
+export class TestModelMapStateHandler {
+    constructor(private _router: Router) {
+    }
+    @observeEvent(EventConst.event1)
+    _event1Handler(draft: TestState, ev: TestEvent, stateSlice: TestState, eventContext: EventContext) {
+        // processEvent(draft, ev, model, eventContext);
     }
 }
 

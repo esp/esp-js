@@ -1,4 +1,5 @@
 import {immerable} from 'immer';
+import {utils} from 'esp-js';
 
 export type EspModelEntity = { espEntityId: string };
 
@@ -10,13 +11,18 @@ export class ModelMapState<ModelMapEntity extends EspModelEntity> {
     private readonly _sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number = null;
 
     constructor();
+    constructor(sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number);
     constructor(initialState: Map<string, ModelMapEntity>);
     constructor(initialState: Map<string, ModelMapEntity>, sortingComparator: (e1: ModelMapEntity, e2: ModelMapEntity) => number);
     constructor(...args: any[]) {
-        if (args.length >= 1) {
+        if (args.length === 1) {
+            if (utils.isFunction(args[0])) {
+                this._sortingComparator = args[0];
+            } else {
+                this._itemsLookup = args[0];
+            }
+        } else if (args.length === 2) {
             this._itemsLookup = args[0];
-        }
-        if (args.length >= 2) {
             this._sortingComparator = args[1];
         }
     }

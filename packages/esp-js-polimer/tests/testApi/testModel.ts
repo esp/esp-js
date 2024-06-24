@@ -98,6 +98,10 @@ export const defaultModelFactory: (modelId: string) => TestImmutableModel = (mod
         modelId: modelId,
         handlerObjectState: defaultTestStateFactory({ stateName: 'handlerObjectState' }),
         handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
-        modelMapState: new ModelMapState<TestState>()
+        modelMapState: new ModelMapState<TestState>(new Map([
+            ['1', defaultTestStateFactory({espEntityId: '1'})],
+            ['2', defaultTestStateFactory({espEntityId: '2'})],
+            ['3', defaultTestStateFactory({espEntityId: '3'})]
+        ]))
     };
 };

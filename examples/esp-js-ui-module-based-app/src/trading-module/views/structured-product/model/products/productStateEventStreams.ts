@@ -1,10 +1,11 @@
 import {Router} from 'esp-js';
-import {eventTransformFor, InputEvent, InputEventStream, ModelMapState, OutputEvent, OutputEventStream} from 'esp-js-polimer/src';
-import {TestImmutableModel, TestState} from 'esp-js-polimer/tests/testApi/testModel';
+import {eventTransformFor, InputEvent, InputEventStream, ModelMapState, OutputEvent, OutputEventStream} from 'esp-js-polimer';
 import {map, switchAll} from 'rxjs/operators';
-import {TestModelMapStateHandler} from 'esp-js-polimer/tests/testApi/stateHandlers';
 import {of} from 'rxjs';
 import {StructuredProductEvents} from '../../events';
+import {ProductStateHandler} from './productStateHandlers';
+import {StructureProductTileModel} from '../structureProductTileModel';
+import {Product} from './product';
 
 export class AddNewProductEventStream {
 
@@ -12,20 +13,20 @@ export class AddNewProductEventStream {
     }
 
     @eventTransformFor(StructuredProductEvents.Products.addProduct_requested)
-    _addProduct(inputEventStream: InputEventStream<TestImmutableModel, StructuredProductEvents.Products.AddProductRequestedEvent>): OutputEventStream<StructuredProductEvents.Products.AddProductConfiguredEvent> {
+    _addProduct(inputEventStream: InputEventStream<StructureProductTileModel, StructuredProductEvents.Products.AddProductRequestedEvent>): OutputEventStream<StructuredProductEvents.Products.AddProductConfiguredEvent> {
         return inputEventStream
             .pipe(
-                map((inputEvent: InputEvent<TestImmutableModel, StructuredProductEvents.Products.AddProductRequestedEvent>) => {
+                map((inputEvent: InputEvent<StructureProductTileModel, StructuredProductEvents.Products.AddProductRequestedEvent>) => {
 
                     let { model, event } = inputEvent;
 
-                    const newStateId = this._getNextId(model.modelMapState);
+                    const newStateId = this._getNextId(model.products);
 
-                    let testModelMapStateHandler = new TestModelMapStateHandler(this._router);
+                    let productStateHandler = new ProductStateHandler();
 
                     this._router
                         .modelUpdater(this._modelId)
-                        .withStateHandlerForModelMap('modelMapState', newStateId, testModelMapStateHandler)
+                        .withStateHandlerForModelMap('modelMapState', newStateId, productStateHandler)
                         .updateRegistrationsWithRouter();
 
                     let outputEvent: OutputEvent<StructuredProductEvents.Products.AddProductConfiguredEvent> = {
@@ -42,7 +43,7 @@ export class AddNewProductEventStream {
             );
     }
 
-    private _getNextId = (state: ModelMapState<TestState>) => {
+    private _getNextId = (state: ModelMapState<Product>) => {
         // figure out what our next ID will be.
         // In real apps this could come in on the event or just be a GUID of sorts
         const lastId = state.items.length > 0

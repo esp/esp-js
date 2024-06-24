@@ -1,12 +1,9 @@
 import {Router, Logger} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
 import {TradingModuleContainerConst} from '../../tradingModuleContainerConst';
-import {StructureProductTileModel, StructureProductTileModelBuilder} from './model/structureProductTileModel';
-import {AddNewProductEventStream} from './model/products/productStateEventStreams';
-import {ProductsStateHandler} from './model/products/productsStateHandlers';
-import {ViewFactoryBase} from 'esp-js-ui';
-import {viewFactory} from 'esp-js-ui';
+import {ViewFactoryBase, viewFactory} from 'esp-js-ui';
 import {StructuredProductEvents} from './events';
+import {AddNewProductEventStream, AddProductsStateHandler, StructureProductTileModel, StructureProductTileModelBuilder} from './model';
 
 const _log = Logger.create('CashTileViewFactory');
 
@@ -30,7 +27,7 @@ export class StructuredProductTileViewFactory extends ViewFactoryBase<PolimerMod
             // event stream that expands the model by adding new products and their associated handlers
             .withEventStreamsOn(new AddNewProductEventStream(model.modelId, this._router))
             // state handler that acts on the entire ModelMapState, this is just treating it like any other state handler, no special Polimer behaviour
-            .withStateHandlerObject('products', new ProductsStateHandler())
+            .withStateHandlerObject('products', new AddProductsStateHandler())
             .registerWithRouter();
 
         this._router.publishEvent(model.modelId, StructuredProductEvents.bootstrap, {});

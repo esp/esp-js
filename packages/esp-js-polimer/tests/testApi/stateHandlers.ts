@@ -115,15 +115,6 @@ export class TestStateObjectHandler {
     }
 }
 
-export class TestModelMapStateHandler {
-    constructor(private _router: Router) {
-    }
-    @observeEvent(EventConst.event1)
-    _event1Handler(draft: TestState, ev: TestEvent, stateSlice: TestState, eventContext: EventContext) {
-        // processEvent(draft, ev, model, eventContext);
-    }
-}
-
 // this model is a more classic esp based model which can interop with polimer state handlers,
 // it won't receive an immer based model to mutate state, rather state is maintained internally
 export class TestStateHandlerModel extends DisposableBase {

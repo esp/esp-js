@@ -1,13 +1,13 @@
-import {EspModelEntity, ModelMapState} from 'esp-js-polimer';
-import {Product} from './products/productStateHandlers';
+import {ModelMapState} from 'esp-js-polimer';
+import {Product} from './products/';
 
 export interface StructureProductTileModel {
     modelId: string;
-    rootState: RootState;
+    metaState: StructureProductTileMetaState;
     products: ModelMapState<Product>;
 }
 
-export interface RootState {
+export interface StructureProductTileMetaState {
     title: string;
 }
 
@@ -15,11 +15,11 @@ export namespace StructureProductTileModelBuilder {
     export const createDefault = (modelId: string): StructureProductTileModel => {
         return {
             modelId: `structured-product-tile-${modelId}`,
-            rootState: {
+            metaState: {
                 title: 'Structured Product Tile',
             },
             products: new ModelMapState<Product>(new Map([
-                ['id-1', {productId: 'barrier'}]
+                ['id-1', { productType: 'swap', espEntityId: 'id-1', productId: 'barrier', ccyPair: 'EURUSD'}],
             ]))
         };
     };

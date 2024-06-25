@@ -16,6 +16,7 @@ export interface TestEvent {
     eventKey?: string;
     transformedEventKey?: string;
     publishToModelId?: string;
+    data?: string;
 }
 
 export interface NewStateForModelMapConfigured {
@@ -44,6 +45,7 @@ export interface ReceivedEvent {
     stateName: string;
     modelReceived: boolean;
     eventContextReceived: boolean;
+    expectedStateHandlerModelPath: string;
 }
 
 export interface TestState {

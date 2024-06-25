@@ -1,4 +1,4 @@
-import {Level, LoggingConfig, ObservationStage, Router} from 'esp-js';
+import {Level, LoggingConfig, ObservationStage, Router, utils} from 'esp-js';
 import {defaultModelFactory, OOModelTestState, ReceivedEvent, TestEvent, TestImmutableModel, TestState} from './testModel';
 import {TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
 import {StateMap, PolimerModel, PolimerModelBuilder} from '../../src';
@@ -38,8 +38,24 @@ export class ReceivedEventsAsserts {
         return this;
     }
 
-    public eventIs(callNumber: number, event: TestEvent): this {
-        expect(this._receivedEvents[callNumber].receivedEvent).toBe(event);
+    public eventWasProcessedByHandlerWithSpecificModelPath(callNumber: number, expectedModelPathOfHandler: string): this {
+        expect(this._receivedEvents[callNumber].expectedStateHandlerModelPath).toEqual(expectedModelPathOfHandler);
+        return this;
+    }
+
+    public eventIs(callNumber: number, event: TestEvent): this;
+    public eventIs(callNumber: number, predicate: (event: TestEvent) => boolean): this;
+    public eventIs(...args: any[]): this {
+        const callNumber = args[0];
+        let receivedEvent = this._receivedEvents[callNumber].receivedEvent;
+        if (utils.isFunction(args[1])) {
+            let testPassed = args[1](receivedEvent);
+            if (!testPassed) {
+                fail(`Predicated for specified event at callNumber ${callNumber} failed. Event received was ${JSON.stringify(receivedEvent)}`);
+            }
+        } else {
+            expect(receivedEvent).toBe(args[1]);
+        }
         return this;
     }
 

@@ -2,19 +2,9 @@ import {immerable} from 'immer';
 import {utils} from 'esp-js';
 
 export class StateMap<StateMapEntity> {
-    // public static AddressPrefix = 'stateMap://modelPath/';
     public static isStateMap = <T>(value: any): value is StateMap<T> => {
         return typeof value === 'object' && (value as StateMap<T>)._itemsLookup !== undefined && (value as StateMap<T>)._items !== undefined;
     };
-    // public static isValidMapAddress = (modelPath: string) => {
-    //     return typeof modelPath === 'string' && modelPath.includes(StateMap.AddressPrefix);
-    // };
-    // public static getIdFromAddress = (modelPath: string) => {
-    //     return modelPath.replace(StateMap.AddressPrefix, '');
-    // };
-    // public static createAddress = (modelPath: string) => {
-    //     return `${StateMap.AddressPrefix}${modelPath}`;
-    // };
 
     // With this enabled immer will copy the private state fields when it drafts/copies instances of this class
     [immerable] = true;

@@ -255,19 +255,20 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                         stateHandler[decoratorMetadata.functionName].bind(stateHandler) as PolimerEventHandler<any, any, any> // informational only cast
                     );
                     const eventIsForThisSpecificHandlerPredicate = utils.isString(modelPath)
-                        ? (mp: string) => utils.isObject(mp) && mp === modelPath
-                        : () => true;
+                        ? (mp: string) => utils.isString(mp) && mp === modelPath
+                        : () => true; // no modelPath specified so
                     const eventObservationPredicate = <PolimerEventPredicate>decoratorMetadata.predicate;
-                    const stateReaderWrite = this._getStateReaderWriter(stateName);
+                    // If the dispatched event has a modelPath and the state relating to 'stateName' is of type StateMap, then we will update a piece of state in a map.
+                    // This will allow for more focused handlers that just receive the state type rather than the entire state slice/store.
+                    // stateReaderWriter will hide away the logic to access the specific state we need.
+                    const getStateReaderWriterForModelPath = this._createStateReaderWriterAccessorForModelPath(stateName);
                     handlerDisposables.add(
                         this._router
                             .getEventObservable(this._modelId, decoratorMetadata.eventType, decoratorMetadata.observationStage)
                             .filter(eventEnvelope => eventIsForThisSpecificHandlerPredicate(eventEnvelope.modelPath))
                             .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
                                 const model = <any>this._immutableModel;
-                                // if the dispatched event has a modelPath which is recognised by Polimer, i.e. works with StateMap, then we update a piece of state in a map rather than the whole slice.
-                                // stateReaderWrite will hide away that logic.
-                                let stateReaderWriter: StateReaderWriter = stateReaderWrite(eventEnvelope.modelPath);
+                                let stateReaderWriter: StateReaderWriter = getStateReaderWriterForModelPath(eventEnvelope.modelPath);
                                 const beforeState = stateReaderWriter.getState(eventEnvelope.modelPath);
                                 let processEvent = true;
                                 if (eventObservationPredicate) {
@@ -417,7 +418,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         return instanceDisposables;
     }
 
-    private _getStateReaderWriter = (stateName: string): (modelPath: string) => StateReaderWriter => {
+    private _createStateReaderWriterAccessorForModelPath = (stateName: string): (modelPath: string) => StateReaderWriter => {
         // If the state slice is of type StateMap we need to have special logic to process events targeted to that state.
         // While we can know at event subscription if the state on the model is a StateMap, we don't know if an event will want to target a slice of the state, or the entire map.
         // Which of the two will be known if the event is published with a 'modelPath', which is an addressing property the esp router supports.
@@ -451,9 +452,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                     stateMap.upsert(modelPath, state);
                     this._model[stateName] = stateMap.clone();
                 }
-                // _parseId(address?: string) {
-                //     return address.replace(StateMap.AddressPrefix, '');
-                // }
                 _getLatestStateMap() {
                     return this._model[stateName] as StateMap<any>;
                 }

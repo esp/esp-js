@@ -16,6 +16,13 @@ export namespace StructuredProductEvents {
             modelPath: string;
             productType: string;
         }
+
+        export const removeProduct_requested = 'removeProduct_requested';
+        export const removeProduct_removed = 'removeProduct_removed';
+
+        export interface RemoveProductEvent {
+            modelPath: string;
+        }
     }
 
     export namespace Product {

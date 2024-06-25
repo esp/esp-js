@@ -24,14 +24,15 @@ export class StructuredProductTileViewFactory extends ViewFactoryBase<PolimerMod
         let polimerModel = this._router
             .modelBuilder<StructureProductTileModel>()
             .withInitialModel(model)
+            // event stream that expands the model by adding new products and their associated handlers.
+            .withEventStreamsOn(new AddNewProductEventStream(model.modelId, this._router))
+            // handler which processes events (from the above stream) to add new state to the model.
+            // State handler that acts on the entire ModelMapState, this is just treating it like any other state handler, no special Polimer behaviour
+            .withStateHandlerObject('products', new AddProductsStateHandler())
             // ProductDateStateHandler is a narrower type of handler which works with instances of Product inside the specific StateMap 'products'.
             // It's registered here and will apply to all products that get put in to the 'products' StateMap
             // See AddNewProductEventStream and AddProductsStateHandler for examples of how products get added.
             .withStateHandlerObject('products', new ProductDateStateHandler())
-            // event stream that expands the model by adding new products and their associated handlers
-            .withEventStreamsOn(new AddNewProductEventStream(model.modelId, this._router))
-            // state handler that acts on the entire ModelMapState, this is just treating it like any other state handler, no special Polimer behaviour
-            .withStateHandlerObject('products', new AddProductsStateHandler())
             .registerWithRouter();
 
         this._router.publishEvent(model.modelId, StructuredProductEvents.bootstrap, {});

@@ -8,12 +8,18 @@ import {StructureProductTileModel} from '../structureProductTileModel';
 import {Product, ProductType} from './product';
 import * as uuid from 'uuid';
 
-export class AddProductsStateHandler {
+export class AddNewProductsStateHandler {
     @observeEvent(StructuredProductEvents.Products.addProduct_configured)
     _addProductToModel(draft: StateMap<Product>, event: StructuredProductEvents.Products.AddProductConfiguredEvent) {
         let {modelPath, productType} = event;
         let newProductState = {modelPath: modelPath, productType: productType, ccyPair: 'EURUSD', date: null} as Product;
         draft.upsert(modelPath, newProductState);
+    }
+
+    @observeEvent(StructuredProductEvents.Products.removeProduct_removed)
+    _removeProduct(draft: StateMap<Product>, event: StructuredProductEvents.Products.RemoveProductEvent) {
+        let {modelPath} = event;
+        draft.deleteByPath(modelPath);
     }
 }
 
@@ -28,23 +34,29 @@ export class AddNewProductEventStream {
         return inputEventStream
             .pipe(
                 map((inputEvent: InputEvent<StructureProductTileModel, StructuredProductEvents.Products.AddProductRequestedEvent>) => {
-                    let {model, event} = inputEvent;
+                    // Here we update the current model to add any product-instance-specific state handlers.
+                    // Later if/when this product instance is deleted, we can remove the handlers.
+                    // It important that anything we add that's product-instance-specific, i.e. specific to an entity in the StateMap, is registered using a StateHandlerConfiguration
+                    // Polimer will ensure that the events published will be filtered by the specified StateHandlerConfiguration.modelPath.
+                    // This will allow you to have different instances of teh same state handlers with specific configurations.
+                    // If you don't have any instance-specific edge cases, then just register the handler at the time you initially create the PolimerModel, i.e. in the ViewFactory.
+
+                    let {event} = inputEvent;
                     let modelPath = uuid.v4();
-                    // add some product specific state to show how a handler can be wrired up to a specific modelPath only
+                    // add some product specific state to show how a handler can be wired up to a specific modelPath only
                     const ccyPairs = event.productType === ProductType.swap
                         ? ['EURUSD', 'USDJPY']
                         : ['GBPAUD'];
                     let stateHandlerConfiguration: StateHandlerConfiguration = {modelPath: modelPath, stateHandler: new ProductCurrencyPairStateHandler(ccyPairs)};
                     // Store the handler for later removal (if/when the product is removed)
-                    // this is a side effect, maybe we should store this on the model?
-                    // It's perhaps find as this event stream instance will be scoped to the current model.
-                    this._handlersByModelPath.set(modelPath, [stateHandlerConfiguration]);
+                    this._handlersByModelPath.set(modelPath, [stateHandlerConfiguration]); // side effect
+
+                    // Update the models configuration.
                     this._router
                         .modelUpdater<StructureProductTileModel>(this._modelId)
-                        // Update the current model to add a state handler that is specific to this product instance.
-                        // Later if/when this product instance is deleted, we can remove this handler.
                         .withStateHandlerObject('products', stateHandlerConfiguration)
                         .updateRegistrationsWithRouter();
+
                     let outputEvent: OutputEvent<StructuredProductEvents.Products.AddProductConfiguredEvent> = {
                         eventType: StructuredProductEvents.Products.addProduct_configured,
                         modelId: this._modelId,
@@ -64,9 +76,9 @@ export class AddNewProductEventStream {
         return inputEventStream
             .pipe(
                 map((inputEvent: InputEvent<StructureProductTileModel, StructuredProductEvents.Products.RemoveProductEvent>) => {
-                    let {model, event} = inputEvent;
+                    let {event} = inputEvent;
                     let handlerConfigurations = this._handlersByModelPath.get(event.modelPath);
-                    this._handlersByModelPath.delete(event.modelPath);
+                    this._handlersByModelPath.delete(event.modelPath); // side effect
                     this._router
                         .modelUpdater<StructureProductTileModel>(this._modelId)
                         .removeStateHandlerObject('products', ...handlerConfigurations)

@@ -23,6 +23,7 @@ export interface EventContext {
     readonly eventType: string;
     readonly isCanceled: boolean;
     readonly isCommitted: boolean;
+    readonly modelPath: string;
     cancel(): void;
     commit(): void;
 }
@@ -30,13 +31,15 @@ export interface EventContext {
 export class DefaultEventContext implements EventContext {
     private _modelId: string;
     private _eventType: string;
+    private _modelPath: string;
     private _isCanceled: boolean;
     private _isCommitted: boolean;
     private _currentStage: ObservationStage;
 
-    public constructor(modelId: string, eventType: string) {
+    public constructor(modelId: string, eventType: string, modelPath: string) {
         this._modelId = modelId;
         this._eventType = eventType;
+        this._modelPath = modelPath;
         this._isCanceled = false;
         this._isCommitted = false;
         this._currentStage = ObservationStage.preview; // initial state
@@ -48,6 +51,10 @@ export class DefaultEventContext implements EventContext {
 
     get eventType() {
         return this._eventType;
+    }
+
+    get modelPath() {
+        return this._modelPath;
     }
 
     public updateCurrentState(newState: ObservationStage) {

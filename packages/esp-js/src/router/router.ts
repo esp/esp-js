@@ -476,7 +476,8 @@ export class Router extends DisposableBase implements HealthIndicator {
     private _dispatchEventToEventProcessors(modelRecord: ModelRecord, modelPath: string, event: any, eventType: string): void {
         let eventContext = new DefaultEventContext(
             modelRecord.modelId,
-            eventType
+            eventType,
+            modelPath
         );
         this._dispatchEvent(modelRecord, modelPath, event, eventType, eventContext, ObservationStage.preview);
         if (eventContext.isCommitted) {

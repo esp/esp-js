@@ -45,17 +45,17 @@ export interface ReceivedEvent {
     stateName: string;
     modelReceived: boolean;
     eventContextReceived: boolean;
-    expectedStateHandlerModelPath: string;
+    modelPath: string;
 }
 
 export interface TestState {
-    modelPath: string; // used by the ModelMapState tests
     stateName: string;
     receivedEventsAtPreview: ReceivedEvent[];
     receivedEventsAtNormal: ReceivedEvent[];
     receivedEventsAtCommitted: ReceivedEvent[];
     receivedEventsAtFinal: ReceivedEvent[];
     receivedEventsAll: ReceivedEvent[];
+    modelPathOfHandlerWhichProcessedEvents: string;
 }
 
 export interface OOModelTestState extends TestState {
@@ -70,16 +70,15 @@ export interface TestImmutableModel extends ImmutableModel {
     testStatMap: StateMap<TestState>;
 }
 
-export const defaultTestStateFactory = (partialState: Partial<TestState>) => {
+export const defaultTestStateFactory = (partialState?: Partial<TestState>) => {
     return <TestState>{
-        modelPath: '',
         stateName: '',
         receivedEventsAtPreview: [],
         receivedEventsAtNormal: [],
         receivedEventsAtCommitted: [],
         receivedEventsAtFinal: [],
         receivedEventsAll: [],
-        ...partialState
+        ...(partialState ? partialState : [])
     };
 };
 
@@ -97,9 +96,9 @@ export const defaultModelFactory: (modelId: string) => TestImmutableModel = (mod
         handlerObjectState: defaultTestStateFactory({ stateName: 'handlerObjectState' }),
         handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
         testStatMap: new StateMap<TestState>(new Map([
-            ['id-1', defaultTestStateFactory({modelPath: 'id-1'})],
-            ['id-2', defaultTestStateFactory({modelPath: 'id-2'})],
-            ['id-3', defaultTestStateFactory({modelPath: 'id-3'})]
+            ['id-1', defaultTestStateFactory()],
+            ['id-2', defaultTestStateFactory()],
+            ['id-3', defaultTestStateFactory()]
         ]))
     };
 };

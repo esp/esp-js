@@ -1,10 +1,10 @@
-import {ModelMapState} from 'esp-js-polimer';
+import {StateMap} from 'esp-js-polimer';
 import {Product} from './products/';
 
 export interface StructureProductTileModel {
     modelId: string;
     metaState: StructureProductTileMetaState;
-    products: ModelMapState<Product>;
+    products: StateMap<Product>;
 }
 
 export interface StructureProductTileMetaState {
@@ -18,9 +18,7 @@ export namespace StructureProductTileModelBuilder {
             metaState: {
                 title: 'Structured Product Tile',
             },
-            products: new ModelMapState<Product>(new Map([
-                ['id-1', { productType: 'swap', modelPath: 'id-1', productId: 'barrier', ccyPair: 'EURUSD'}],
-            ]))
+            products: new StateMap<Product>()
         };
     };
 }

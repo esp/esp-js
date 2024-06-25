@@ -1,11 +1,21 @@
-import {Router} from 'esp-js';
-import {eventTransformFor, InputEvent, InputEventStream, ModelMapState, OutputEvent, OutputEventStream} from 'esp-js-polimer';
+import {observeEvent, Router} from 'esp-js';
+import {eventTransformFor, InputEvent, InputEventStream, OutputEvent, OutputEventStream, StateMap} from 'esp-js-polimer';
 import {map, switchAll} from 'rxjs/operators';
 import {of} from 'rxjs';
 import {StructuredProductEvents} from '../../events';
-import {ProductStateHandler} from './productStateHandlers';
+import {ProductCurrencyPairStateHandler} from './productStateHandlers';
 import {StructureProductTileModel} from '../structureProductTileModel';
-import {Product} from './product';
+import {Product, ProductType} from './product';
+import * as uuid from 'uuid';
+
+export class AddProductsStateHandler {
+    @observeEvent(StructuredProductEvents.Products.addProduct_configured)
+    _addProductToModel(draft: StateMap<Product>, event: StructuredProductEvents.Products.AddProductConfiguredEvent) {
+        let {modelPath, productType} = event;
+        let newProductState = {modelPath: modelPath, productType: productType, ccyPair: 'EURUSD', date: null} as Product;
+        draft.upsert(modelPath, newProductState);
+    }
+}
 
 export class AddNewProductEventStream {
 
@@ -20,20 +30,23 @@ export class AddNewProductEventStream {
 
                     let { model, event } = inputEvent;
 
-                    const newStateId = this._getNextId(model.products);
+                    let modelPath = uuid.v4();
 
-                    let productStateHandler = new ProductStateHandler();
+                    // add some product specific state to show how a handler can be wrired up to a specific modelPath only
+                    const ccyPairs = event.productType === ProductType.swap
+                        ? ['EURUSD', 'USDJPY']
+                        : ['GBPAUD'];
 
                     this._router
                         .modelUpdater<StructureProductTileModel>(this._modelId)
-                        .withStateHandlerForModelMap('products', newStateId, productStateHandler)
+                        .withStateHandlerObject('products', { modelPath: modelPath, stateHandler: new ProductCurrencyPairStateHandler(ccyPairs) })
                         .updateRegistrationsWithRouter();
 
                     let outputEvent: OutputEvent<StructuredProductEvents.Products.AddProductConfiguredEvent> = {
                         eventType: StructuredProductEvents.Products.addProduct_configured,
                         modelId: this._modelId,
                         event: {
-                            newStateId: newStateId,
+                            modelPath: modelPath,
                             productType: event.productType
                         }
                     };
@@ -41,14 +54,5 @@ export class AddNewProductEventStream {
                 }),
                 switchAll()
             );
-    }
-
-    private _getNextId = (state: ModelMapState<Product>) => {
-        // figure out what our next ID will be.
-        // In real apps this could come in on the event or just be a GUID of sorts
-        const lastId = state.items.length > 0
-            ? Number(state.items[state.items.length - 1].modelPath) + 1
-            : 1;
-        return lastId.toString();
     }
 }

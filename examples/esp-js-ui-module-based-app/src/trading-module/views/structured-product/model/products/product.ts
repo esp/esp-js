@@ -1,6 +1,10 @@
-import {EspModelEntity} from 'esp-js-polimer';
+export enum ProductType {
+    'swap' = 'swap',
+    'option' = 'option'
+}
 
-export interface Product extends EspModelEntity {
-    productType: string;
+export interface Product {
+    productType: ProductType;
     ccyPair: string;
+    date: Date;
 }

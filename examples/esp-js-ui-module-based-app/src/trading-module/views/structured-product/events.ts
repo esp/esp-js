@@ -1,3 +1,5 @@
+import {ProductType} from './model';
+
 export namespace StructuredProductEvents {
     export const bootstrap = 'bootstrap';
 
@@ -5,13 +7,13 @@ export namespace StructuredProductEvents {
         export const addProduct_requested = 'addProduct_requested';
 
         export interface AddProductRequestedEvent {
-            productType: string;
+            productType: ProductType;
         }
 
         export const addProduct_configured = 'addProduct_configured';
 
         export interface AddProductConfiguredEvent {
-            newStateId: string;
+            modelPath: string;
             productType: string;
         }
     }
@@ -21,6 +23,12 @@ export namespace StructuredProductEvents {
 
         export interface CcyPairChangedEvent {
             newCcyPair: string;
+        }
+
+        export const date_changed = 'date_changed';
+
+        export interface DateChangedEvent {
+            newDate: Date;
         }
     }
 }

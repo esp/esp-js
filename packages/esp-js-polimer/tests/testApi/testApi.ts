@@ -38,8 +38,8 @@ export class ReceivedEventsAsserts {
         return this;
     }
 
-    public eventWasProcessedByHandlerWithSpecificModelPath(callNumber: number, expectedModelPathOfHandler: string): this {
-        expect(this._receivedEvents[callNumber].expectedStateHandlerModelPath).toEqual(expectedModelPathOfHandler);
+    public eventModelPath(callNumber: number, modelPath: string): this {
+        expect(this._receivedEvents[callNumber].modelPath).toEqual(modelPath);
         return this;
     }
 
@@ -142,6 +142,16 @@ export class StateAsserts {
 
     public receivedEventsAll(): ReceivedEventsAsserts {
         return new ReceivedEventsAsserts(this, this._state.receivedEventsAll);
+    }
+
+    public dispatchedEventsHadExpectedModelPath(modelPath: string): this {
+        expect(this._state.modelPathOfHandlerWhichProcessedEvents).toEqual(modelPath);
+        return this;
+    }
+
+    public dispatchedEventsHadExpectedModelPathIsUndefined(): this {
+        expect(this._state.modelPathOfHandlerWhichProcessedEvents).toBeUndefined();
+        return this;
     }
 }
 

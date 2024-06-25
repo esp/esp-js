@@ -25,8 +25,8 @@ export class AddNewProductEventStream {
                     let productStateHandler = new ProductStateHandler();
 
                     this._router
-                        .modelUpdater(this._modelId)
-                        .withStateHandlerForModelMap('modelMapState', newStateId, productStateHandler)
+                        .modelUpdater<StructureProductTileModel>(this._modelId)
+                        .withStateHandlerForModelMap('products', newStateId, productStateHandler)
                         .updateRegistrationsWithRouter();
 
                     let outputEvent: OutputEvent<StructuredProductEvents.Products.AddProductConfiguredEvent> = {
@@ -47,7 +47,7 @@ export class AddNewProductEventStream {
         // figure out what our next ID will be.
         // In real apps this could come in on the event or just be a GUID of sorts
         const lastId = state.items.length > 0
-            ? Number(state.items[state.items.length - 1].espEntityId) + 1
+            ? Number(state.items[state.items.length - 1].modelPath) + 1
             : 1;
         return lastId.toString();
     }

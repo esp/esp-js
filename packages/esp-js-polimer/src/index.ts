@@ -5,7 +5,7 @@ export {PolimerEventHandler} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {ImmutableModel} from './immutableModel';
 export {PolimerModelBuilder, PolimerModelUpdater} from './modelBuilderUpdater';
-export {ModelMapState, EspModelEntity} from './modelMapState';
+export {StateMap} from './stateMap';
 export {
     InputEvent,
     InputEventStream,
@@ -16,3 +16,4 @@ export {
 export {PolimerEvents} from './polimerEvents';
 export {sendUpdateToDevTools, connectDevTools} from './reduxDevToolsConnector';
 export {StateHandlerModel} from './stateHandlerModel';
+export {StateHandlerConfiguration} from './stateHandlerConfiguration';

@@ -1,7 +1,7 @@
 import {Level, LoggingConfig, ObservationStage, Router} from 'esp-js';
 import {defaultModelFactory, OOModelTestState, ReceivedEvent, TestEvent, TestImmutableModel, TestState} from './testModel';
 import {TestStateHandlerModel, TestStateObjectHandler} from './stateHandlers';
-import {ModelMapState, PolimerModel, PolimerModelBuilder} from '../../src';
+import {StateMap, PolimerModel, PolimerModelBuilder} from '../../src';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from '../../src/eventProcessors';
 import {ObjectEventTransforms} from './eventTransforms';
 
@@ -161,7 +161,7 @@ export class OOModelTestStateAsserts extends StateAsserts {
 }
 
 export class ModelStoreAsserts {
-    constructor(private _stateGetter: () => ModelMapState<TestState>) {
+    constructor(private _stateGetter: () => StateMap<TestState>) {
     }
 
     protected get _state() {
@@ -180,7 +180,7 @@ export class ModelStoreAsserts {
     }
 
     public state(stateId: string): StateAsserts {
-        return new StateAsserts(() => this._state.getByKey(stateId));
+        return new StateAsserts(() => this._state.getByPath(stateId));
     }
 }
 

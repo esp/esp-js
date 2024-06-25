@@ -99,17 +99,4 @@
          asserts.normalEvents().eventCountIs(3); // this should be +1 (3) as the model would have received the event, but the ObjectEventTransforms would not have pushed event8
          asserts.normalEvents().eventTypeIs(2, EventConst.event7);
      });
-
-     it('Can add and remove MapStateHandlerObject', () => {
-
-         // // TODO the PolimerModel needs to be smart enough when it comes accross a state of type ModelMapState
-         // // It can have built in support to allow an event to be given to a sub model in this data structure
-         //
-         // let polimerModel = router
-         //     .modelBuilder<TestImmutableModel>()
-         //     .withInitialModel(defaultModelFactory(modelId))
-         //     .withStateHandlerObject('modelMapState', {})
-         //     .registerWithRouter();
-
-     });
  });

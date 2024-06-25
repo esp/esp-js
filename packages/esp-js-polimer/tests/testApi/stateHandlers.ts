@@ -67,7 +67,7 @@ const observeEventPredicate: ObserveEventPredicate = (model?: any, event?: TestE
 };
 
 export class TestStateObjectHandler {
-    constructor(private _router: Router) {
+    constructor(private _router: Router, private _expectedModelPath?: string) {
     }
     @observeEvent(EventConst.event1, ObservationStage.preview)
     @observeEvent(EventConst.event1) // defaults to ObservationStage.normal

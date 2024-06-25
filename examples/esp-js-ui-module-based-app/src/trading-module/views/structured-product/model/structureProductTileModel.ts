@@ -19,7 +19,7 @@ export namespace StructureProductTileModelBuilder {
                 title: 'Structured Product Tile',
             },
             products: new ModelMapState<Product>(new Map([
-                ['id-1', { productType: 'swap', espEntityId: 'id-1', productId: 'barrier', ccyPair: 'EURUSD'}],
+                ['id-1', { productType: 'swap', modelPath: 'id-1', productId: 'barrier', ccyPair: 'EURUSD'}],
             ]))
         };
     };

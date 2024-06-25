@@ -7,7 +7,7 @@ export class AddProductsStateHandler {
     @observeEvent(StructuredProductEvents.Products.addProduct_configured)
     _addProductToModel(draft:ModelMapState<Product>, event: StructuredProductEvents.Products.AddProductConfiguredEvent) {
         let { newStateId, productType } = event;
-        let newProductState = { espEntityId: newStateId, productType: productType, ccyPair: 'EURUSD' } as Product;
+        let newProductState = { modelPath: newStateId, productType: productType, ccyPair: 'EURUSD' } as Product;
         draft.upsert(newStateId, newProductState);
     }
 }

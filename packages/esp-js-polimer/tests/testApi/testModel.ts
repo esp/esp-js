@@ -1,5 +1,5 @@
 import {ObservationStage} from 'esp-js';
-import {ImmutableModel, ModelMapState} from '../../src';
+import {ImmutableModel, StateMap} from '../../src';
 
 export interface TestEvent {
     shouldCancel?: boolean;
@@ -47,7 +47,7 @@ export interface ReceivedEvent {
 }
 
 export interface TestState {
-    espEntityId: string; // used by the ModelMapState tests
+    modelPath: string; // used by the ModelMapState tests
     stateName: string;
     receivedEventsAtPreview: ReceivedEvent[];
     receivedEventsAtNormal: ReceivedEvent[];
@@ -55,10 +55,6 @@ export interface TestState {
     receivedEventsAtFinal: ReceivedEvent[];
     receivedEventsAll: ReceivedEvent[];
 }
-
-// export interface TestSubModelEntity extends EspModelEntity {
-//
-// }
 
 export interface OOModelTestState extends TestState {
     preProcessInvokeCount: number;
@@ -69,12 +65,12 @@ export interface OOModelTestState extends TestState {
 export interface TestImmutableModel extends ImmutableModel {
     handlerObjectState: TestState;
     handlerModelState: OOModelTestState;
-    modelMapState: ModelMapState<TestState>;
+    testStatMap: StateMap<TestState>;
 }
 
 export const defaultTestStateFactory = (partialState: Partial<TestState>) => {
     return <TestState>{
-        espEntityId: '',
+        modelPath: '',
         stateName: '',
         receivedEventsAtPreview: [],
         receivedEventsAtNormal: [],
@@ -98,10 +94,10 @@ export const defaultModelFactory: (modelId: string) => TestImmutableModel = (mod
         modelId: modelId,
         handlerObjectState: defaultTestStateFactory({ stateName: 'handlerObjectState' }),
         handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
-        modelMapState: new ModelMapState<TestState>(new Map([
-            ['1', defaultTestStateFactory({espEntityId: '1'})],
-            ['2', defaultTestStateFactory({espEntityId: '2'})],
-            ['3', defaultTestStateFactory({espEntityId: '3'})]
+        testStatMap: new StateMap<TestState>(new Map([
+            ['id-1', defaultTestStateFactory({modelPath: 'id-1'})],
+            ['id-2', defaultTestStateFactory({modelPath: 'id-2'})],
+            ['id-3', defaultTestStateFactory({modelPath: 'id-3'})]
         ]))
     };
 };

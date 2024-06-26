@@ -5,7 +5,7 @@ import {InputEvent, OutputEvent} from './eventTransformations';
 import {logger} from './logger';
 import {ImmutableModel} from './immutableModel';
 import {PolimerEvents} from './polimerEvents';
-import produce from 'immer';
+import {produce} from 'immer';
 import {StateHandlerModel} from './stateHandlerModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {merge, Observable, Subscriber, Subscription} from 'rxjs';

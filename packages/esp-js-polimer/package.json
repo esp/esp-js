@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "esp-js": "^6.5.1",
-    "immer": "9.0.7",
+    "immer": "10.1.1",
     "rxjs": "6.6.6"
   },
   "devDependencies": {

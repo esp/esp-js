@@ -21,7 +21,7 @@
 const webpack = require('webpack');
 const path  = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const PeerDepsExternalsPlugin = require('peer-deps-externals-webpack-plugin');
+const PeerDepsExternalsPlugin = require('./webpack/peerDepsExternalsPlugin');
 const logger = require('webpack-log')({ name: 'BaseConfig' });
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
@@ -37,14 +37,16 @@ logger.info('Running for env:' + process.env.NODE_ENV);
 const config = {
     mode: mode,
     output: {
-        library: path.basename(process.cwd()),
-        libraryTarget: 'umd',
+        library: {
+            name: path.basename(process.cwd()),
+            type: 'umd'
+        },
         sourcePrefix: '    ',
         path: process.cwd() + '/.dist',
-        // webpack 4 incorrectly has `window` in the UMD definition
-        // This is a workaround to enable node to consume esp's umc, see
-        // https://github.com/webpack/webpack/issues/6522
-        globalObject: `typeof self !== 'undefined' ? self : this`,
+        // // webpack 4 incorrectly has `window` in the UMD definition
+        // // This is a workaround to enable node to consume esp's umc, see
+        // // https://github.com/webpack/webpack/issues/6522
+        // globalObject: `typeof self !== 'undefined' ? self : this`,
         filename: '[name].js',
         devtoolNamespace: path.basename(process.cwd()),
         devtoolModuleFilenameTemplate: info => {
@@ -56,6 +58,11 @@ const config = {
             const relativeFilePath = path.relative(process.cwd(), info.absoluteResourcePath).replace(/\\/g, '/');
             return `webpack:///${info.namespace}/${relativeFilePath}`;
         }
+    },
+    stats: {
+        errorDetails: true,
+        colors: true,
+        reasons: true
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -113,7 +120,7 @@ const config = {
                 'NODE_ENV': JSON.stringify(mode)
             }
         }),
-    ]
+    ],
 };
 
 if (isProduction && path.resolve().includes('packages')) {

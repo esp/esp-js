@@ -3,10 +3,10 @@ module.exports = {
     scripts: {
         // Scripts shared by each package under examples & packages
         dev: 'cross-env NODE_ENV=dev webpack --display "normal" --color --watch',
-        buildDev: 'cross-env NODE_ENV=dev webpack --display-reasons --display-error-details --color && yarn test-ci',
-        buildProd: 'cross-env NODE_ENV=prod webpack --display-reasons --display-error-details --color && yarn test-ci',
+        buildDev: 'cross-env NODE_ENV=dev webpack && yarn test-ci',
+        buildProd: 'cross-env NODE_ENV=prod webpack && yarn test-ci',
         buildPack: 'cross-env NODE_ENV=prod yarn pack --out %s-v%v.tgz',
-        buildDocs: 'cross-env NODE_ENV=dev BUILD_DOCS=true webpack --display-reasons --display-error-details --color',
+        buildDocs: 'cross-env NODE_ENV=dev BUILD_DOCS=true webpack',
         test: 'node --expose-gc node_modules/jest/bin/jest.js --color --no-cache -c ./jest.config.js --rootDir . --watchAll',
         testCi: 'node --expose-gc node_modules/jest/bin/jest.js --color --no-cache -c ./jest.config.js --rootDir .',
         clean: isWindows

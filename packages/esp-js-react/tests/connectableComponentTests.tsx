@@ -1,14 +1,14 @@
 import 'jest';
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
-import {configure, mount, ReactWrapper} from 'enzyme';
-import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
+// import {configure, mount, ReactWrapper} from 'enzyme';
+// import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
 import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel} from '../src';
 import {Router} from 'esp-js';
 import {observeEvent} from 'esp-js/src/decorators/observeEvent';
 import {ConnectableComponentChildProps, PublishEvent, PublishModelEventContext, PublishModelEventDelegate} from '../src/connectableComponent';
-
-configure({adapter: new ReactSixteenAdapter()});
+import {render, screen} from '@testing-library/react';
+import {Screen} from '@testing-library/dom/types/screen';
 
 class TestModelView1 extends React.Component {
     constructor(props) {
@@ -96,7 +96,7 @@ describe('ConnectableComponent', () => {
     let router,
         testModel: TestModel,
         testModel2: TestModel,
-        connectableComponentWrapper: ReactWrapper<ConnectableComponentProps<TestModel>, {}, ConnectableComponent<TestModel>>,
+        connectableComponentWrapper: Screen,
         connectableComponentProps: ConnectableComponentProps<TestModel>,
         mapModelToProps,
         createPublishEventProps,
@@ -126,10 +126,10 @@ describe('ConnectableComponent', () => {
             modelId: 'model-id'
         };
         if (options.useMapModelToProps) {
-            mapModelToProps = (model: TestModel | MappedModel, publishEventProps: any) => {
+            mapModelToProps = (model: TestModel | MappedModel, publishEventProps2: any) => {
                 return {
                     foo: model.value,
-                    publishEventProps,
+                    publishEventProps: publishEventProps2,
                     ...model
                 };
             };
@@ -149,10 +149,11 @@ describe('ConnectableComponent', () => {
                 mapModelToProps,
                 createPublishEventProps
             )(TestModelView2);
-            connectableComponentWrapper = mount(
+            render(
                 <HotView2 {...otherProps}/>,
                 {context: {router}, childContextTypes: {router: PropTypes.instanceOf(Router)}}
             );
+            connectableComponentWrapper = screen
             connectableComponentWrapper.setProps(connectableComponentProps);
         } else {
             connectableComponentWrapper = mount(

@@ -1,4 +1,4 @@
-import produce, {enableMapSet} from 'immer';
+import {enableMapSet, produce} from 'immer';
 import {StateMap} from '../src';
 
 // required so Immer correctly drafts/mutates Maps and Sets

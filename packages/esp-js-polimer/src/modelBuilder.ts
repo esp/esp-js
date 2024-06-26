@@ -37,7 +37,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
                 }
                 handlers.push(handler);
             } else {
-                throw new Error(`Unknown observable object for state ${state}. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
+                throw new Error(`Unknown observable object for state ${<string>state}. There was no esp decorator metadata on object passed to 'withObservablesOn(o)'`);
             }
         });
         return this;

@@ -22,7 +22,7 @@ describe('EventContext', () => {
     let ec;
 
     beforeEach(function(){
-        ec = new DefaultEventContext('modelId', 'eventType');
+        ec = new DefaultEventContext('modelId', 'eventType', undefined);
     });
 
     it('throws if canceled twice', () => {

@@ -2,7 +2,7 @@ import {PolimerModel} from '../../src/';
 import {defaultOOModelTestStateFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestImmutableModel} from './testModel';
 import {EventContext, DefaultEventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
 
-function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
+function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext, stateHandlerSpecificModelPath: string) {
     let receivedEvent = <ReceivedEvent>{
         eventType: eventContext.eventType,
         receivedEvent: ev,
@@ -11,6 +11,7 @@ function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel
         stateReceived: isTestState(draft),
         modelReceived: isImmutableTestModel(model),
         eventContextReceived: eventContext instanceof DefaultEventContext,
+        modelPath: eventContext.modelPath
     };
     if (eventContext.currentStage === ObservationStage.preview) {
         draft.receivedEventsAtPreview.push(receivedEvent);
@@ -29,6 +30,10 @@ function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel
         if (ev.shouldCommit && ev.commitAtStages && ev.commitAtStages.includes(eventContext.currentStage)) {
             eventContext.commit();
         }
+    }
+    if (!draft.modelPathOfHandlerWhichProcessedEvents) {
+        // if set, this should never change else there is something wrong
+        draft.modelPathOfHandlerWhichProcessedEvents = stateHandlerSpecificModelPath;
     }
 }
 
@@ -66,14 +71,14 @@ const observeEventPredicate: ObserveEventPredicate = (model?: any, event?: TestE
 };
 
 export class TestStateObjectHandler {
-    constructor(private _router: Router) {
+    constructor(private _router: Router, private _stateHandlerSpecificModelPath?: string) {
     }
     @observeEvent(EventConst.event1, ObservationStage.preview)
     @observeEvent(EventConst.event1) // defaults to ObservationStage.normal
     @observeEvent(EventConst.event1, ObservationStage.committed)
     @observeEvent(EventConst.event1, ObservationStage.final)
     _event1Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
     }
 
     @observeEvent(EventConst.event2, ObservationStage.preview)
@@ -81,12 +86,12 @@ export class TestStateObjectHandler {
     @observeEvent(EventConst.event2, ObservationStage.committed)
     @observeEvent(EventConst.event2, ObservationStage.final)
     _event2Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
     }
     @observeEvent(EventConst.event3)
     @observeEvent(EventConst.event4)
     _event3And4Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
     }
 
     @observeEvent(EventConst.event5, polimerEventPredicate)
@@ -94,23 +99,23 @@ export class TestStateObjectHandler {
         if (ev.replacementState) {
             return ev.replacementState;
         }
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
     }
 
     @observeEvent(EventConst.event6)
     _event6Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
         this._router.publishEvent(model.modelId, EventConst.event5, <TestEvent>{ stateTakingAction: 'handlerObjectState' });
     }
 
     @observeEvent(EventConst.event7)
     _event7Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
     }
 
     @observeEvent(EventConst.event8)
     _event8Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        processEvent(draft, ev, model, eventContext, this._stateHandlerSpecificModelPath);
     }
 }
 

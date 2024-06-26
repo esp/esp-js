@@ -1,5 +1,5 @@
 import {ObservationStage} from 'esp-js';
-import {ImmutableModel} from '../../src';
+import {ImmutableModel, StateMap} from '../../src';
 
 export interface TestEvent {
     shouldCancel?: boolean;
@@ -16,6 +16,11 @@ export interface TestEvent {
     eventKey?: string;
     transformedEventKey?: string;
     publishToModelId?: string;
+    data?: string;
+}
+
+export interface NewStateForModelMapConfigured {
+    newStateId: string;
 }
 
 export const EventConst  = {
@@ -28,6 +33,8 @@ export const EventConst  = {
     event7: 'event7',
     event8: 'event8',
     eventNotObservedByModel: 'eventNotObservedByModel',
+    newStateForModelMap_configure: 'newStateForModelMap_configure',
+    newStateForModelMap_configured: 'newStateForModelMap_configured',
 };
 
 export interface ReceivedEvent {
@@ -38,6 +45,7 @@ export interface ReceivedEvent {
     stateName: string;
     modelReceived: boolean;
     eventContextReceived: boolean;
+    modelPath: string;
 }
 
 export interface TestState {
@@ -47,6 +55,7 @@ export interface TestState {
     receivedEventsAtCommitted: ReceivedEvent[];
     receivedEventsAtFinal: ReceivedEvent[];
     receivedEventsAll: ReceivedEvent[];
+    modelPathOfHandlerWhichProcessedEvents: string;
 }
 
 export interface OOModelTestState extends TestState {
@@ -58,22 +67,24 @@ export interface OOModelTestState extends TestState {
 export interface TestImmutableModel extends ImmutableModel {
     handlerObjectState: TestState;
     handlerModelState: OOModelTestState;
+    testStatMap: StateMap<TestState>;
 }
 
-export const defaultTestStateFactory = (stateName: string) => {
+export const defaultTestStateFactory = (partialState?: Partial<TestState>) => {
     return <TestState>{
-        stateName: stateName,
+        stateName: '',
         receivedEventsAtPreview: [],
         receivedEventsAtNormal: [],
         receivedEventsAtCommitted: [],
         receivedEventsAtFinal: [],
-        receivedEventsAll: []
+        receivedEventsAll: [],
+        ...(partialState ? partialState : [])
     };
 };
 
 export const defaultOOModelTestStateFactory = (stateName: string) => {
     return <OOModelTestState>{
-        ...defaultTestStateFactory(stateName),
+        ...defaultTestStateFactory({ stateName }),
         postProcessInvokeCount: 0,
         preProcessInvokeCount: 0
     };
@@ -82,7 +93,12 @@ export const defaultOOModelTestStateFactory = (stateName: string) => {
 export const defaultModelFactory: (modelId: string) => TestImmutableModel = (modelId: string) => {
     return {
         modelId: modelId,
-        handlerObjectState: defaultTestStateFactory('handlerObjectState'),
+        handlerObjectState: defaultTestStateFactory({ stateName: 'handlerObjectState' }),
         handlerModelState: defaultOOModelTestStateFactory('handlerObjectState'),
+        testStatMap: new StateMap<TestState>(new Map([
+            ['id-1', defaultTestStateFactory()],
+            ['id-2', defaultTestStateFactory()],
+            ['id-3', defaultTestStateFactory()]
+        ]))
     };
 };

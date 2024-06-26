@@ -1,10 +1,11 @@
 // import for side effects
-import './modelBuilder';
+import './modelBuilderUpdater';
 
 export {PolimerEventHandler} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {ImmutableModel} from './immutableModel';
-export {PolimerModelBuilder} from './modelBuilder';
+export {PolimerModelBuilder, PolimerModelUpdater} from './modelBuilderUpdater';
+export {StateMap} from './stateMap';
 export {
     InputEvent,
     InputEventStream,
@@ -15,3 +16,4 @@ export {
 export {PolimerEvents} from './polimerEvents';
 export {sendUpdateToDevTools, connectDevTools} from './reduxDevToolsConnector';
 export {StateHandlerModel} from './stateHandlerModel';
+export {StateHandlerConfiguration} from './stateHandlerConfiguration';

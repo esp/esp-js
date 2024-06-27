@@ -3,6 +3,8 @@ import * as PropTypes from 'prop-types';
 import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
+import {useModelId} from './modelIdProvider';
+import {useRouter} from './routerProvider';
 
 export type PublishEvent = (eventType: string, event: any) => void;
 
@@ -54,11 +56,6 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
     private _observationSubscription: Disposable;
     context: ConnectableComponentContext;
 
-    static contextTypes = {
-        router: PropTypes.instanceOf(Router).isRequired,
-        modelId: PropTypes.string
-    };
-
     constructor(props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, context: ConnectableComponentContext) {
         super(props, context);
         this.state = {model: null, currentModelId: null};
@@ -91,7 +88,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 
     private _getModelId(): string {
         // props override context
-        return this.props.modelId || this.context.modelId;
+        return this.props.modelId || useModelId();
     }
 
     private _tryObserveModel(modelId: string): void {
@@ -105,7 +102,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 
         let publishEvent = this.state.publishEvent;
         if (stateChanged) {
-            publishEvent = this._publishEvent(this.context.router, modelId);
+            publishEvent = this._publishEvent(useRouter(), modelId);
         }
 
         let publishProps = this.state.publishProps;
@@ -120,7 +117,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
                 publishEvent,
                 publishProps
             });
-            this._observationSubscription = this.context.router
+            this._observationSubscription = useRouter()
                 .getModelObservable(modelId)
                 .subscribe(model => {
                     if (this._isMounted) {
@@ -155,7 +152,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
         const model = this._getRenderModel(this.state.model);
         let childProps = {
             modelId,
-            router: this.context.router,
+            router: useRouter(),
             ...rest,
             ...this.state.publishProps,
             model
@@ -191,7 +188,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 }
 
 // Lifting 'ConnectableView' into it's own type so it can be exported, else tsc doesn't correctly generated declaration files
-export type ConnectableView = React.ComponentClass | React.SFC;
+export type ConnectableView = React.ComponentClass | React.FunctionComponent;
 
 export const connect = function<TModel, TPublishEventProps, TModelMappedToProps = {}>(
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,

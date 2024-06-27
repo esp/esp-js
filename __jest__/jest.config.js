@@ -24,6 +24,7 @@ module.exports = {
     ],
     "testURL": "http://localhost/",
     "setupFilesAfterEnv": [
-        "<rootDir>/../../__jest__/mocks/cryptoMock.ts"
+        "<rootDir>/../../__jest__/mocks/cryptoMock.ts",
+        "<rootDir>/../../__jest__/mocks/setupReactTestingLib.js"
     ]
 };

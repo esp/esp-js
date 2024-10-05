@@ -2,7 +2,7 @@ import {PolimerModel} from '../../src/';
 import {defaultOOModelTestStateFactory, EventConst, OOModelTestState, ReceivedEvent, TestEvent, TestState, TestImmutableModel} from './testModel';
 import {EventContext, DefaultEventContext, ObservationStage, observeEvent, PolimerEventPredicate, ObserveEventPredicate, DisposableBase, Router} from 'esp-js';
 
-function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
+function updateDraftWithEventDetails(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext, stateHandlerName: string, handlersEntityKey?: string) {
     let receivedEvent = <ReceivedEvent>{
         eventType: eventContext.eventType,
         receivedEvent: ev,
@@ -11,6 +11,8 @@ function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel
         stateReceived: isTestState(draft),
         modelReceived: isImmutableTestModel(model),
         eventContextReceived: eventContext instanceof DefaultEventContext,
+        entityKey: eventContext.entityKey,
+        nameOfStateHandlerReceivingEvent: stateHandlerName
     };
     if (eventContext.currentStage === ObservationStage.preview) {
         draft.receivedEventsAtPreview.push(receivedEvent);
@@ -30,6 +32,10 @@ function processEvent(draft: TestState, ev: TestEvent, model: TestImmutableModel
             eventContext.commit();
         }
     }
+    if (draft.entityKeyOfHandler && handlersEntityKey !== handlersEntityKey) {
+        throw new Error(`entity key of handler should not change. Was: ${draft.entityKeyOfHandler}, changed: ${handlersEntityKey}`);
+    }
+    draft.entityKeyOfHandler = handlersEntityKey;
 }
 
 function isTestState(state: any): state is TestState {
@@ -65,15 +71,29 @@ const observeEventPredicate: ObserveEventPredicate = (model?: any, event?: TestE
     return !event.shouldFilter;
 };
 
+export interface TestStateObjectHandlerOptions {
+    router: Router;
+    entityKeyOfHandler?: string;
+    stateHandlerName?: string;
+}
+
 export class TestStateObjectHandler {
-    constructor(private _router: Router) {
+    private _router: Router;
+    private _stateHandlerName: string;
+    private _entityKeyOfHandler?: string;
+
+    constructor(options: TestStateObjectHandlerOptions) {
+        this._router = options.router;
+        this._entityKeyOfHandler = options.entityKeyOfHandler;
+        this._stateHandlerName = options.stateHandlerName || 'defaultHandlerName';
     }
+
     @observeEvent(EventConst.event1, ObservationStage.preview)
     @observeEvent(EventConst.event1) // defaults to ObservationStage.normal
     @observeEvent(EventConst.event1, ObservationStage.committed)
     @observeEvent(EventConst.event1, ObservationStage.final)
     _event1Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
     }
 
     @observeEvent(EventConst.event2, ObservationStage.preview)
@@ -81,12 +101,12 @@ export class TestStateObjectHandler {
     @observeEvent(EventConst.event2, ObservationStage.committed)
     @observeEvent(EventConst.event2, ObservationStage.final)
     _event2Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
     }
     @observeEvent(EventConst.event3)
     @observeEvent(EventConst.event4)
     _event3And4Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
     }
 
     @observeEvent(EventConst.event5, polimerEventPredicate)
@@ -94,23 +114,35 @@ export class TestStateObjectHandler {
         if (ev.replacementState) {
             return ev.replacementState;
         }
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
     }
 
     @observeEvent(EventConst.event6)
     _event6Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
         this._router.publishEvent(model.modelId, EventConst.event5, <TestEvent>{ stateTakingAction: 'handlerObjectState' });
     }
 
     @observeEvent(EventConst.event7)
     _event7Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
     }
 
     @observeEvent(EventConst.event8)
     _event8Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
-        processEvent(draft, ev, model, eventContext);
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
+    }
+
+    @observeEvent(EventConst.event9)
+    _event9Handler(draft: TestState, ev: TestEvent, model: TestImmutableModel, eventContext: EventContext) {
+        updateDraftWithEventDetails(draft, ev, model, eventContext, this._stateHandlerName, this._entityKeyOfHandler);
+    }
+}
+
+export class TestStateObjectHandlerForMapState {
+    @observeEvent(EventConst.event1) // defaults to ObservationStage.normal
+    _event1Handler(draft: Map<string, TestState>, ev: any, model: TestImmutableModel, eventContext: EventContext) {
+        draft.set(ev.newKey, ev.testState);
     }
 }
 
@@ -118,6 +150,7 @@ export class TestStateObjectHandler {
 // it won't receive an immer based model to mutate state, rather state is maintained internally
 export class TestStateHandlerModel extends DisposableBase {
     private _currentState: OOModelTestState;
+    private _stateHandlerName = 'defaultModelStateHandler';
 
     constructor(private _modelId, private _router: Router) {
         super();
@@ -158,7 +191,7 @@ export class TestStateHandlerModel extends DisposableBase {
     @observeEvent(EventConst.event1, ObservationStage.final)
     _event1Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestImmutableModel>) {
         this._ensureModelStateMatchesLocal(model);
-        processEvent(this._currentState, ev, model.getImmutableModel(), eventContext);
+        updateDraftWithEventDetails(this._currentState, ev, model.getImmutableModel(), eventContext, this._stateHandlerName);
         this._replaceState();
     }
 
@@ -168,7 +201,7 @@ export class TestStateHandlerModel extends DisposableBase {
     @observeEvent(EventConst.event2, ObservationStage.final)
     _event2Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestImmutableModel>) {
         this._ensureModelStateMatchesLocal(model);
-        processEvent(this._currentState, ev, model.getImmutableModel(), eventContext);
+        updateDraftWithEventDetails(this._currentState, ev, model.getImmutableModel(), eventContext, this._stateHandlerName);
         this._replaceState();
     }
 
@@ -176,28 +209,28 @@ export class TestStateHandlerModel extends DisposableBase {
     @observeEvent(EventConst.event4)
     _event3And4Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestImmutableModel>) {
         this._ensureModelStateMatchesLocal(model);
-        processEvent(this._currentState, ev, model.getImmutableModel(), eventContext);
+        updateDraftWithEventDetails(this._currentState, ev, model.getImmutableModel(), eventContext, this._stateHandlerName);
         this._replaceState();
     }
 
     @observeEvent(EventConst.event5, observeEventPredicate)
     _event5Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestImmutableModel>) {
         this._ensureModelStateMatchesLocal(model);
-        processEvent(this._currentState, ev, model.getImmutableModel(), eventContext);
+        updateDraftWithEventDetails(this._currentState, ev, model.getImmutableModel(), eventContext, this._stateHandlerName);
         this._replaceState();
     }
 
     @observeEvent(EventConst.event7)
     _event7Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestImmutableModel>) {
         this._ensureModelStateMatchesLocal(model);
-        processEvent(this._currentState, ev, model.getImmutableModel(), eventContext);
+        updateDraftWithEventDetails(this._currentState, ev, model.getImmutableModel(), eventContext, this._stateHandlerName);
         this._replaceState();
     }
 
     @observeEvent(EventConst.event8)
     _event8Handler(ev: TestEvent, eventContext: EventContext, model: PolimerModel<TestImmutableModel>) {
         this._ensureModelStateMatchesLocal(model);
-        processEvent(this._currentState, ev, model.getImmutableModel(), eventContext);
+        updateDraftWithEventDetails(this._currentState, ev, model.getImmutableModel(), eventContext, this._stateHandlerName);
         this._replaceState();
     }
 

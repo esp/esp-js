@@ -10,6 +10,7 @@ const fileExclusions = [
     '.jpg',
     '.json',
     '.xml',
+    '.css',
     'webpack.config.js',
     'jest.config.js',
     '.yarnignore',

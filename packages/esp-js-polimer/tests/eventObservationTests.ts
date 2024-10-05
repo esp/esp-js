@@ -1,6 +1,8 @@
 import {ObservationStage} from 'esp-js';
-import {PolimerTestApi, PolimerTestApiBuilder} from './testApi/testApi';
-import {defaultTestStateFactory, EventConst} from './testApi/testModel';
+import {PolimerTestApi, PolimerTestApiBuilder, StateHandlerConfig} from './testApi/testApi';
+import {defaultTestStateFactory, EventConst, TestEvent, TestImmutableModel} from './testApi/testModel';
+import {TestStateObjectHandler} from './testApi/stateHandlers';
+import {EventEnvelope} from 'esp-js/src';
 
 describe('Event Observation', () => {
     let api: PolimerTestApi;
@@ -8,7 +10,7 @@ describe('Event Observation', () => {
     describe('handler objects', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
-                .withStateHandlerObject()
+                .withStateHandlers()
                 .build();
             api.asserts.handlerObjectState.captureCurrentState();
         });
@@ -118,7 +120,7 @@ describe('Event Observation', () => {
     describe('handler compositions', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
-                .withStateHandlerObject()
+                .withStateHandlers()
                 .withStateHandlerModel()
                 .build();
             api.asserts.handlerObjectState.captureCurrentState();
@@ -147,20 +149,24 @@ describe('Event Observation', () => {
         describe('handler objects', () => {
             beforeEach(() => {
                 api = PolimerTestApiBuilder.create()
-                    .withStateHandlerObject()
+                    .withStateHandlers()
                     .build();
             });
 
             it('can not cancel event within an event filter', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCancelsInEventFilter(EventConst.event5, 'handlerObjectState');},
+                    () => {
+                        api.actor.publishEventWhichCancelsInEventFilter(EventConst.event5, 'handlerObjectState');
+                    },
                     /You can't .* an event in an event filter\/predicate/
                 );
             });
 
             it('can not commit an event within an event filter', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCommitsInEventFilter(EventConst.event5, 'handlerObjectState');},
+                    () => {
+                        api.actor.publishEventWhichCommitsInEventFilter(EventConst.event5, 'handlerObjectState');
+                    },
                     /You can't .* an event in an event filter\/predicate/
                 );
             });
@@ -175,19 +181,25 @@ describe('Event Observation', () => {
 
             it('can not cancel an event at the normal stage', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCancelsAtNormalStage(EventConst.event1, 'handlerObjectState');}
+                    () => {
+                        api.actor.publishEventWhichCancelsAtNormalStage(EventConst.event1, 'handlerObjectState');
+                    }
                 );
             });
 
             it('can not cancel an event at the committed stage', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCancelsAtCommittedStage(EventConst.event1, 'handlerObjectState');}
+                    () => {
+                        api.actor.publishEventWhichCancelsAtCommittedStage(EventConst.event1, 'handlerObjectState');
+                    }
                 );
             });
 
             it('can not cancel an event at the final stage', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCancelsAtFinalStage(EventConst.event1, 'handlerObjectState');}
+                    () => {
+                        api.actor.publishEventWhichCancelsAtFinalStage(EventConst.event1, 'handlerObjectState');
+                    }
                 );
             });
 
@@ -202,20 +214,26 @@ describe('Event Observation', () => {
 
             it('can not commit an event at the preview stage', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCommitsAtPreviewStage(EventConst.event1, 'handlerObjectState');}
+                    () => {
+                        api.actor.publishEventWhichCommitsAtPreviewStage(EventConst.event1, 'handlerObjectState');
+                    }
                 );
             });
 
             it('can not commit an event at the committed stage', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCommitsAtCommittedStage(EventConst.event1, 'handlerObjectState');},
+                    () => {
+                        api.actor.publishEventWhichCommitsAtCommittedStage(EventConst.event1, 'handlerObjectState');
+                    },
                     /event .* for model .* is already committed/
                 );
             });
 
             it('can not commit an event at the final stage', () => {
                 api.asserts.throwsOnInvalidEventContextAction(
-                    () => { api.actor.publishEventWhichCommitsAtFinalStage(EventConst.event1, 'handlerObjectState');}
+                    () => {
+                        api.actor.publishEventWhichCommitsAtFinalStage(EventConst.event1, 'handlerObjectState');
+                    }
                 );
             });
         });
@@ -226,7 +244,7 @@ describe('Event Observation', () => {
         describe('handler objects', () => {
             beforeEach(() => {
                 api = PolimerTestApiBuilder.create()
-                    .withStateHandlerObject()
+                    .withStateHandlers()
                     .build();
                 api.asserts.handlerObjectState.captureCurrentState();
             });
@@ -341,18 +359,60 @@ describe('Event Observation', () => {
     });
 
     describe('Event Filters / Predicates', () => {
-        beforeEach(() => {
+        it('can filter event', () => {
             api = PolimerTestApiBuilder.create()
                 .withStateHandlerModel()
-                .withStateHandlerObject()
+                .withStateHandlers()
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
-        });
 
-        it('can filter event', () => {
             api.actor.publishEventWhichFiltersAtPreviewStage(EventConst.event5);
             api.asserts.handlerModelState.receivedEventsAll().eventCountIs(0);
             api.asserts.handlerObjectState.receivedEventsAll().eventCountIs(0);
+        });
+
+        it('can filter via registration predicated', () => {
+            let apiBuilder = PolimerTestApiBuilder.create();
+            const handlers1 = [new TestStateObjectHandler({router: apiBuilder.router, stateHandlerName: 'h1.1'}), new TestStateObjectHandler({router: apiBuilder.router, stateHandlerName: 'h1.2'})];
+            const handlers2 = [new TestStateObjectHandler({router: apiBuilder.router, stateHandlerName: 'h2.1'}), new TestStateObjectHandler({router: apiBuilder.router, stateHandlerName: 'h2.2'})];
+            // Register 2 groups of handlers with different filters.
+            const handlers: StateHandlerConfig[] = [
+                {
+                    state: 'handlerObjectState2',
+                    deliveryPredicate: (e: EventEnvelope<TestEvent, TestImmutableModel>) => e.event.data === 'filterForFirstGroup',
+                    stateHandlers: handlers1
+                },
+                {
+                    state: 'handlerObjectState3',
+                    deliveryPredicate: (e: EventEnvelope<TestEvent, TestImmutableModel>) => e.event.data === 'filterForSecondGroup',
+                    stateHandlers: handlers2
+                }
+            ];
+            api = apiBuilder
+                .withStateHandlers(...handlers)
+                .build();
+
+            api.actor.publishEvent(EventConst.event1, {eventKey: 'myEvent', data: 'filterForFirstGroup'});
+            // expect 2 events as each handler in group 1 will process the same event
+            api.asserts.handlerObjectState2.normalEvents().eventCountIs(2)
+                // make sure the right handlers did receive the event
+                .handlerProcessingEventIs(0, 'h1.1')
+                .handlerProcessingEventIs(1, 'h1.2');
+            api.asserts.handlerObjectState3.normalEvents().eventCountIs(0);
+
+            api.actor.publishEvent(EventConst.event1, {eventKey: 'myEvent', data: 'filterForSecondGroup'});
+            // no change
+            api.asserts.handlerObjectState2.normalEvents().eventCountIs(2);
+            // expect 2 events as each handler in group 2 will process the same event
+            api.asserts.handlerObjectState3.normalEvents().eventCountIs(2)
+                // make sure the right handlers did receive the event
+                .handlerProcessingEventIs(0, 'h2.1')
+                .handlerProcessingEventIs(1, 'h2.2');
+
+            // Publish something that doesn't match the filter, thus should not be delivered.
+            api.actor.publishEvent(EventConst.event1, {eventKey: 'myEvent', data: 'no-match'});
+            api.asserts.handlerObjectState2.normalEvents().eventCountIs(2);
+            api.asserts.handlerObjectState3.normalEvents().eventCountIs(2);
         });
     });
 
@@ -360,7 +420,7 @@ describe('Event Observation', () => {
         beforeEach(() => {
             api = PolimerTestApiBuilder.create()
                 .withStateHandlerModel()
-                .withStateHandlerObject()
+                .withStateHandlers()
                 .build();
             api.asserts.handlerModelState.captureCurrentState();
             api.asserts.handlerObjectState.captureCurrentState();
@@ -373,7 +433,7 @@ describe('Event Observation', () => {
         });
 
         it('can replace the state with a returned object', () => {
-            const nextState = defaultTestStateFactory('replacementState');
+            const nextState = defaultTestStateFactory({/*'replacementState'*/});
             api.actor.publishEvent(EventConst.event5, {replacementState: nextState});
             api.asserts.handlerObjectState.stateInstanceHasChanged(nextState);
             api.asserts.handlerModelState.stateInstanceHasChanged(); // doesn't support swapping of state, doesn't use immer

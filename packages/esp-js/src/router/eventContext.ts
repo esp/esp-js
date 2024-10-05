@@ -19,24 +19,52 @@
 import {ObservationStage} from './observationStage';
 
 export interface EventContext {
+    /**
+     * The model ID the event was delivered to.
+     */
+    modelId: string;
+    /**
+     * The current state in the dispatch loop
+     */
     readonly currentStage: ObservationStage;
+    /**
+     * The type of event.
+     */
     readonly eventType: string;
+    /**
+     * True if the event has been canceled.
+     */
     readonly isCanceled: boolean;
+    /**
+     * True if the event has been committed.
+     */
     readonly isCommitted: boolean;
+    /**
+     * If the event was published using an entityKey, this will be that key.
+     */
+    readonly entityKey: string;
+    /**
+     * Can be called to cancel further propagation of the event.
+     */
     cancel(): void;
+    /**
+     * Can be called to commit the event allowing handlers subscribed at the commit stage to receive it.
+     */
     commit(): void;
 }
 
 export class DefaultEventContext implements EventContext {
     private _modelId: string;
     private _eventType: string;
+    private _entityKey: string;
     private _isCanceled: boolean;
     private _isCommitted: boolean;
     private _currentStage: ObservationStage;
 
-    public constructor(modelId: string, eventType: string) {
+    public constructor(modelId: string, eventType: string, entityKey: string) {
         this._modelId = modelId;
         this._eventType = eventType;
+        this._entityKey = entityKey;
         this._isCanceled = false;
         this._isCommitted = false;
         this._currentStage = ObservationStage.preview; // initial state
@@ -48,6 +76,14 @@ export class DefaultEventContext implements EventContext {
 
     get eventType() {
         return this._eventType;
+    }
+
+    get modelId() {
+        return this._modelId;
+    }
+
+    get entityKey() {
+        return this._entityKey;
     }
 
     public updateCurrentState(newState: ObservationStage) {

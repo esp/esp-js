@@ -1,5 +1,6 @@
-import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, EventContext} from 'esp-js';
+import {EspDecoratorUtil, Guard, EspMetadata, ObservationStage, DecoratorTypes, EventContext, ModelAddress} from 'esp-js';
 import {Observable} from 'rxjs';
+import {EventEnvelopePredicate} from './eventEnvelopePredicate';
 
 /**
  * A decorator which can be used to declare an event transformation handler
@@ -19,30 +20,62 @@ export function eventTransformFor(eventType: string, observationStage = Observat
     };
 }
 
-export interface InputEvent<TModel, TEvent> {
-    readonly event: TEvent;
-    readonly model: TModel;
+export interface InputEvent<TModel, TEvent, TEntity = unknown> {
+    /**
+     * The type of event.
+     */
     readonly eventType: string;
+    /**
+     * The event published.
+     */
+    readonly event: TEvent;
+    /**
+     * The top level model the event was addressed to.
+     */
+    readonly model: TModel;
+    /**
+     * Contextual information regarding the event publication.
+     */
     readonly context: EventContext;
 }
 
-export type InputEventStream<TModel, TEvent> = Observable<InputEvent<TModel, TEvent>>;
+export type InputEventStream<TModel, TEvent, TEntity = unknown> = Observable<InputEvent<TModel, TEvent, TEntity>>;
 
 export type OutputEvent<TEvent> = {
     readonly eventType: string;
     /**
-     * The modelId to publish the event to, if omitted the current model's id will be used.
+     * @deprecated use address instead.
+     * The modelId to publish the event to, if omitted, the current model's id will be used.
      */
     readonly modelId?: string;
+    /**
+     * The modelId (string) or ModelAddress to publish the event to.
+     * Note, a partial (omitting modelId) ModelAddress can also be set.
+     * If modelId is, omitted, the current model's id will be used.
+     */
+    readonly address?: string | ModelAddress;
+    /**
+     * The event being dispatched.
+     */
     readonly event?: TEvent;
     /**
      * If true, the resultant event will be broadcast to all models.
      *
-     * Don't overuse this, if you really have state for all models you want to broadcast then great, but if you have specific state for a specific model use that models ID.
-     *
-     * Broadcast will enqueue the event onto each models event queue regardless of weather they are subscribed to it or not.
+     * Don't overuse this as broadcast is an expensive operation.
+     * Try to target specific models using their ID.
      */
     readonly broadcast?: boolean
 };
 
 export type OutputEventStream<TEvent> = Observable<OutputEvent<TEvent>>;
+
+export interface EventTransformConfiguration {
+    /**
+     * An object containing @eventTransformFor decorated functions
+     */
+    eventTransform: object;
+    /**
+     * An optional predicate which will be queried to see if the event applies to the handler.
+     */
+    deliveryPredicate: EventEnvelopePredicate;
+}

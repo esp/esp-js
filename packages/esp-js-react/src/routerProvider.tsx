@@ -19,14 +19,14 @@
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import { Router } from 'esp-js';
+import {useContext} from 'react';
 
 export interface RouterProviderProps {
     router: Router;
 }
 
 export const RouterContext = React.createContext<Router>(null);
-
-export const HooksRouterProvider = RouterContext.Provider;
+export const useRouter = () => useContext(RouterContext);
 
 export class RouterProvider extends React.Component<RouterProviderProps, any> {
     static childContextTypes = {
@@ -38,6 +38,6 @@ export class RouterProvider extends React.Component<RouterProviderProps, any> {
         };
     }
     render() {
-        return (<HooksRouterProvider value={this.props.router}>{this.props.children}</HooksRouterProvider>);
+        return (<RouterContext.Provider value={this.props.router}>{this.props.children}</RouterContext.Provider>);
     }
 }

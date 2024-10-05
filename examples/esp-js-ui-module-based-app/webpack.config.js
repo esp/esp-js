@@ -18,8 +18,6 @@
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const path = require('path');
-
 const baseConfig = require("../../webpack.config.base");
 
 module.exports = {
@@ -27,21 +25,28 @@ module.exports = {
     entry: {
         'esp-js-ui-module-based-app': './src/index.tsx'
     },
-    plugins:  [
+    module: {
+        rules: [
+            ...baseConfig.module.rules,
+            {
+                test: /\.css$/i,
+                use: ["style-loader", "css-loader"],
+            },
+        ]
+    },
+    plugins: [
         ...baseConfig.plugins,
         new HtmlWebpackPlugin({
-            template: __dirname +  '/src/index.template.html'
+            template: __dirname + '/src/index.template.html'
         }),
         new webpack.HotModuleReplacementPlugin()
     ],
+    // Some issues with source-map-loader not supporting webpackurls:
+    // https://github.com/webpack/webpack/discussions/17178#discussioncomment-5877003
+    ignoreWarnings: [/Failed to parse source map/],
     devServer: {
         port: 4000,
-        // contentBase: path.join(__dirname, './'),
-        stats: {
-            colors: true
-        },
-        noInfo: false,
-        quiet: false,
         hot: true
     }
 };
+

@@ -14,7 +14,6 @@
     "typings/custom.d.ts"
   ],
   "exclude": [
-    "node_modules",
-    "/Users/keith/dev/esp-js/__jest__/mocks/cryptoMock.js"
+    "node_modules"
   ]
 }

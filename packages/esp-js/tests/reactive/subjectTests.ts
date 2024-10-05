@@ -59,7 +59,6 @@ describe('subject', () => {
         }).toThrow(new Error('Boom'));
     });
 
-
     it('removes observers on dispose', () => {
         let publishCount = 0;
         let disposable = subject.subscribe(i => {

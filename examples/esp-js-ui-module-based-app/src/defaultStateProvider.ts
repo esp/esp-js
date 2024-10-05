@@ -1,7 +1,7 @@
 import {AppDefaultStateProvider, AppState, RegionState, RegionRecordState} from 'esp-js-ui';
 import {TradingModuleContainerConst} from './trading-module/tradingModuleContainerConst';
 import {RegionNames} from './shell/regionNames';
-import {CashTilePersistedState} from './trading-module/views/cash-tile/state/stateModel';
+import {CashTilePersistedState} from './trading-module/views/cash-tile/persistedState/persistedStateModel';
 import {BlotterModuleContainerConst} from './blotter-module/blotterModuleContainerConst';
 import {BlotterState} from './blotter-module/views/blotter/model/blotterState';
 
@@ -13,10 +13,14 @@ export const DefaultStateProvider: AppDefaultStateProvider = {
                     regionName: RegionNames.workspaceRegion,
                     stateVersion: 1,
                     regionRecordStates: [
-                        ...['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY', 'EURCAD', 'USDBRL'].map(symbol => ({
+                        ...['EURUSD', 'EURGBP', 'AUDUSD', 'CADJPY'].map(symbol => ({
                             viewFactoryKey: TradingModuleContainerConst.cashTileViewFactory,
                             viewState: {currencyPair: symbol}
-                        } as RegionRecordState<CashTilePersistedState> ))
+                        } as RegionRecordState<CashTilePersistedState> )),
+                        {
+                            viewFactoryKey: TradingModuleContainerConst.dynamicProductsViewFactory,
+                            viewState: {}
+                        } as RegionRecordState<{ }>
                     ]
                 } as RegionState,
                 {

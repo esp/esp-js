@@ -16,9 +16,9 @@
  */
 // notice_end
 
-import {EventContext, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
+import {DefaultModelAddress, ModelAddress, EventContext, EventRecord, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
-import {Guard, Health, HealthIndicator, Logger} from '../system';
+import {Guard, Health, HealthIndicator, Logger, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
 import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
@@ -149,16 +149,22 @@ export class Router extends DisposableBase implements HealthIndicator {
         return null;
     }
 
-    public publishEvent(modelId: string, eventType: string, event: any) {
-        Guard.isString(modelId, 'The modelId argument should be a string');
+    public publishEvent(modelId: string, eventType: string, event: any) : void;
+    public publishEvent(modelAddress: ModelAddress, eventType: string, event: any)  : void;
+    public publishEvent(...args: any[]): void {
+        this._throwIfHaltedOrDisposed();
+        const modelAddress: ModelAddress = utils.isObject(args[0]) && args[0] instanceof DefaultModelAddress
+            ? args[0]
+            : new DefaultModelAddress(args[0]);
+        const eventType = args[1];
+        const event = args[2];
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument must be defined');
-        this._throwIfHaltedOrDisposed();
         if (this._state.currentStatus === Status.EventExecution) {
-            throw new Error('You can not publish further events when performing an event execution. modelId1: [' + modelId + '], eventType:[' + eventType + ']');
+            throw new Error('You can not publish further events when performing an event execution. modelAddress: [' + modelAddress + '], eventType:[' + eventType + ']');
         }
-        this._diagnosticMonitor.publishEvent(modelId, eventType, event);
-        this._tryEnqueueEvent(modelId, eventType, event);
+        this._diagnosticMonitor.publishEvent(modelAddress, eventType, event);
+        this._tryEnqueueEvent(modelAddress, eventType, event);
     }
 
     public broadcastEvent(eventType: string, event: any) {
@@ -166,7 +172,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         Guard.isDefined(event, 'The event argument should be defined');
         this._diagnosticMonitor.broadcastEvent(eventType);
         for (let [key, value] of this._models) {
-            this._tryEnqueueEvent(value.modelId, eventType, event);
+            this._tryEnqueueEvent(new DefaultModelAddress(value.modelId), eventType, event);
         }
         try {
             this._purgeEventQueues();
@@ -183,6 +189,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         this._state.executeEvent(() => {
             this._dispatchEventToEventProcessors(
                 this._state.currentModelRecord,
+                null,
                 event,
                 eventType
             );
@@ -199,7 +206,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         if (!modelRecord) {
             throw new Error('Can not run action as model with id [' + modelId + '] not registered');
         } else {
-            modelRecord.eventQueue.push({eventType: RUN_ACTION_EVENT_NAME, action: action});
+            modelRecord.eventQueue.push({eventType: RUN_ACTION_EVENT_NAME, entityKey: null, event: null, action: action});
             try {
                 this._purgeEventQueues();
             } catch (err) {
@@ -392,17 +399,17 @@ export class Router extends DisposableBase implements HealthIndicator {
         return modelRecord;
     }
 
-    private _tryEnqueueEvent(modelId: string, eventType: string, event: any) {
+    private _tryEnqueueEvent(modelAddress: ModelAddress, eventType: string, event: any) {
         // we allow for lazy model registration, you can observe a model but then register it later,
         // this means at this point when publishing an event we need to ensure the actual model is there.
-        if (!this._models.has(modelId) || !this._models.get(modelId).model) {
-            throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelId + '] not registered');
+        if (!this._models.has(modelAddress.modelId) || !this._models.get(modelAddress.modelId).model) {
+            throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelAddress.modelId + '] not registered');
         } else {
             try {
-                if (this._models.has(modelId)) {
-                    let modelRecord = this._getOrCreateModelRecord(modelId);
-                    if (modelRecord.tryEnqueueEvent(eventType, event)) {
-                        this._diagnosticMonitor.eventEnqueued(modelId, eventType);
+                if (this._models.has(modelAddress.modelId)) {
+                    let modelRecord = this._getOrCreateModelRecord(modelAddress.modelId);
+                    if (modelRecord.tryEnqueueEvent(modelAddress.entityKey, eventType, event)) {
+                        this._diagnosticMonitor.eventEnqueued(modelAddress.modelId, modelAddress.entityKey, eventType);
                         this._purgeEventQueues();
                     }
                 }
@@ -418,8 +425,8 @@ export class Router extends DisposableBase implements HealthIndicator {
             let hasEvents = !!modelRecord;
             this._diagnosticMonitor.dispatchLoopStart();
             while (hasEvents) {
-                let eventRecord = modelRecord.eventQueue.shift();
-                this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.eventType);
+                let eventRecord: EventRecord = modelRecord.eventQueue.shift();
+                this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.entityKey, eventRecord.eventType);
                 this._state.moveToPreProcessing(modelRecord.modelId, modelRecord);
                 this._diagnosticMonitor.preProcessingModel();
                 modelRecord.preEventProcessor(modelRecord.model);
@@ -436,6 +443,7 @@ export class Router extends DisposableBase implements HealthIndicator {
                             this._state.eventsProcessed.push(eventRecord.eventType);
                             this._dispatchEventToEventProcessors(
                                 modelRecord,
+                                eventRecord.entityKey,
                                 eventRecord.event,
                                 eventRecord.eventType
                             );
@@ -470,32 +478,33 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
     }
 
-    private _dispatchEventToEventProcessors(modelRecord: ModelRecord, event, eventType): void {
+    private _dispatchEventToEventProcessors(modelRecord: ModelRecord, entityKey: string, event: any, eventType: string): void {
         let eventContext = new DefaultEventContext(
             modelRecord.modelId,
-            eventType
+            eventType,
+            entityKey
         );
-        this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.preview);
+        this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.preview);
         if (eventContext.isCommitted) {
             throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
         }
         if (!eventContext.isCanceled) {
             let wasCommittedAtNormalStage;
             eventContext.updateCurrentState(ObservationStage.normal);
-            this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.normal);
+            this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
             wasCommittedAtNormalStage = eventContext.isCommitted;
             if (wasCommittedAtNormalStage) {
                 eventContext.updateCurrentState(ObservationStage.committed);
-                this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.committed);
+                this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.committed);
                 if (eventContext.isCanceled) {
                     throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
                 }
             }
             eventContext.updateCurrentState(ObservationStage.final);
-            this._dispatchEvent(modelRecord, event, eventType, eventContext, ObservationStage.final);
+            this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.final);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
@@ -505,13 +514,14 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
     }
 
-    private _dispatchEvent(modelRecord: ModelRecord, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
+    private _dispatchEvent(modelRecord: ModelRecord, entityKey: string, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
         this._diagnosticMonitor.dispatchingEvent(eventType, stage);
         modelRecord.eventDispatchProcessor(modelRecord.model, eventType, event, stage);
         this._dispatchSubject.onNext({
             event: event,
             eventType: eventType,
             modelId: modelRecord.modelId,
+            entityKey: entityKey,
             model: modelRecord.model,
             context: context,
             observationStage: stage,

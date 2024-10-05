@@ -15,7 +15,7 @@
     "prompt": "1.0.0"
   },
   "devDependencies": {
-    "jest": "26.0.1",
+    "jest": "29.7.0",
     "ts-node": "^10.9.2",
     "typescript": "5.5.2",
     "webpack": "^5.92.1",

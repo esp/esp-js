@@ -32,6 +32,8 @@ export interface EventStreamsRegistration {
     final: AutoConnectedObservable<EventEnvelope<any, any>>;
 }
 
+export type EventRecord = {entityKey: string, eventType: string, event: any, action:  (model: any) => void};
+
 interface InternalEventStreamsRegistration {
     streams: EventStreamsRegistration;
 }
@@ -39,7 +41,7 @@ interface InternalEventStreamsRegistration {
 export class ModelRecord {
     private readonly _modelId: string;
     private readonly _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
-    private readonly _eventQueue: any[];
+    private readonly _eventQueue: EventRecord[];
     private _model: any;
     private _hasReceivedEvent: boolean;
     private _wasRemoved: boolean;
@@ -135,14 +137,14 @@ export class ModelRecord {
         }
         return eventStreamsRegistration.streams;
     }
-    public tryEnqueueEvent(eventType: string, event: any): boolean {
+    public tryEnqueueEvent(entityKey: string, eventType: string, event: any): boolean {
         if (!this._eventStreams.has(eventType)) {
             return false;
         }
         if (!this._eventQueueDirtyEpochMs) {
             this._eventQueueDirtyEpochMs = Date.now();
         }
-        this.eventQueue.push({eventType: eventType, event: event});
+        this.eventQueue.push({entityKey, eventType: eventType, event: event, action: null});
         return true;
     }
     public eventQueuePurged() {

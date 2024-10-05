@@ -2,6 +2,7 @@ import * as React from 'react';
 import {AppPreferencesModel} from '../model/appPreferencesModel';
 import {PublishModelEventContext, PublishModelEventDelegate, ViewBinder} from 'esp-js-react';
 import {ShellEvents} from '../../../events';
+import './appPreferencesView.css';
 
 export interface AppPreferencesViewProps {
     model: AppPreferencesModel;

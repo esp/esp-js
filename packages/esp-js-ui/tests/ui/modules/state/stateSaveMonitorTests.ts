@@ -5,6 +5,7 @@ describe('State Save Monitor', () => {
 
     beforeEach(() => {
         jest.useFakeTimers();
+        jest.spyOn(global, 'setInterval');
     });
 
     afterEach(() => {

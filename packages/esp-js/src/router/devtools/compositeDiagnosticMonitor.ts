@@ -20,6 +20,7 @@ import {DevToolsDiagnosticMonitor} from './devToolsDiagnosticMonitor';
 import {LoggingDiagnosticMonitor} from './loggingDiagnosticMonitor';
 import {NoopDiagnosticMonitor} from './noopDiagnosticMonitor';
 import {DiagnosticMonitor} from './diagnosticMonitor';
+import {ModelAddress} from '../modelAddress';
 
 export class CompositeDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
     private _devToolsDiagnostic: DiagnosticMonitor;
@@ -65,9 +66,9 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
         this._devToolsDiagnostic.removeModel(modelId);
     }
 
-    publishEvent(modelId, eventType, event) {
-        this._currentLoggingDiagnosticMonitor.publishEvent(modelId, eventType, event);
-        this._devToolsDiagnostic.publishEvent(modelId, eventType, event);
+    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType, event) {
+        this._currentLoggingDiagnosticMonitor.publishEvent(modelIdOrModelAddress, eventType, event);
+        this._devToolsDiagnostic.publishEvent(modelIdOrModelAddress, eventType, event);
     }
 
     broadcastEvent(eventType) {
@@ -85,9 +86,9 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
         this._devToolsDiagnostic.runAction(modelId);
     }
 
-    eventEnqueued(modelId, eventType) {
-        this._currentLoggingDiagnosticMonitor.eventEnqueued(modelId, eventType);
-        this._devToolsDiagnostic.eventEnqueued(modelId, eventType);
+    eventEnqueued(modelId, entityKey, eventType) {
+        this._currentLoggingDiagnosticMonitor.eventEnqueued(modelId, entityKey, eventType);
+        this._devToolsDiagnostic.eventEnqueued(modelId, entityKey, eventType);
     }
 
     dispatchLoopStart() {
@@ -95,9 +96,9 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
         this._devToolsDiagnostic.dispatchLoopStart();
     }
 
-    startingModelEventLoop(modelId, initiatingEventType) {
-        this._currentLoggingDiagnosticMonitor.startingModelEventLoop(modelId, initiatingEventType);
-        this._devToolsDiagnostic.startingModelEventLoop(modelId, initiatingEventType);
+    startingModelEventLoop(modelId, entityKey: string,  initiatingEventType) {
+        this._currentLoggingDiagnosticMonitor.startingModelEventLoop(modelId, entityKey, initiatingEventType);
+        this._devToolsDiagnostic.startingModelEventLoop(modelId, entityKey, initiatingEventType);
     }
 
     preProcessingModel() {
@@ -116,8 +117,8 @@ export class CompositeDiagnosticMonitor extends DisposableBase implements Diagno
     }
 
     dispatchingEvent(eventType, stage) {
-        this._currentLoggingDiagnosticMonitor.startingModelEventLoop(eventType, stage);
-        this._devToolsDiagnostic.startingModelEventLoop(eventType, stage);
+        this._currentLoggingDiagnosticMonitor.dispatchingEvent(eventType, stage);
+        this._devToolsDiagnostic.dispatchingEvent(eventType, stage);
     }
 
     dispatchingViaDirective(functionName) {

@@ -1,0 +1,8 @@
+.cashTileView {
+    width: 200px;
+
+    .price,
+    .status {
+        font-size: small;
+    }
+}

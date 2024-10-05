@@ -27,6 +27,10 @@ describe('Router', () => {
             let _router, _model1, _model2, _workflowActions;
 
             class TestModel {
+                private modelId: string;
+                private workflowActions: string[];
+                private _router: esp.Router;
+                private priceSubject: esp.Subject<any>;
                 constructor(id, router, workflowActions) {
                     this.modelId = id;
                     this.workflowActions = workflowActions || [];

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
 import {AggregateHealthIndicator, DefaultHealthIndicatorTrigger, EsNextFeatureDetectionLike, Health, HealthIndicator, HealthStatus, Logger} from '../../../src/system';
 
 class TestAggregateHealthIndicator extends AggregateHealthIndicator {
-    public updates: {oldHealth: Health, newHealth: Health}[] = [];
+    public updates: { oldHealth: Health, newHealth: Health }[] = [];
     protected healthStatusChanged = (oldHealth: Health, newHealth: Health) => {
         this.updates.push({oldHealth, newHealth});
     };
@@ -32,14 +32,18 @@ class TestAggregateHealthIndicator extends AggregateHealthIndicator {
 class TestHealthIndicator implements HealthIndicator {
     constructor(public healthIndicatorName: string) {
     }
+
     public currentHealth: Health;
+
     public health(): Health {
         return this.currentHealth;
     }
+
     public setHealth(health: Health) {
         this.currentHealth = health;
         return this;
     }
+
     public addReason(reason: string) {
         this.currentHealth = Health
             .builder(this.healthIndicatorName)
@@ -57,6 +61,7 @@ describe('AggregateHealthIndicator', () => {
     let indicator3: TestHealthIndicator;
     let wasStarted: boolean;
     let testEsNextFeatureDetection: EsNextFeatureDetectionLike;
+    let underlyingSetTimeout = setTimeout;
 
     beforeAll(() => {
         jest.useFakeTimers();
@@ -65,6 +70,7 @@ describe('AggregateHealthIndicator', () => {
 
     afterAll(() => {
         jest.useRealTimers();
+        jest.clearAllMocks();
     });
 
     beforeEach(() => {
@@ -199,7 +205,6 @@ describe('AggregateHealthIndicator', () => {
         });
 
         it('Indicators can be weak referenced', (done) => {
-            jest.useRealTimers();
             aggregateIndicator.addIndicator(indicator1);
             aggregateIndicator.addIndicator(indicator2);
             aggregateIndicator.addIndicator(indicator3, false);
@@ -207,17 +212,23 @@ describe('AggregateHealthIndicator', () => {
             expect(aggregateIndicator.activateIndicatorCount).toEqual(3);
             indicator1 = undefined;
             indicator3 = undefined;
-            // this is a bit of a cowboy test however given the AggregateHealthIndicator can hold WeakRef s to things it's required
+            // this is a bit of a cowboy test however given the AggregateHealthIndicator can hold WeakRef s to things, it's required
             if (global.gc) {
-                // it seems that we need to run the gc on the next tick after de-referencing the indicators
-                setTimeout(() => {
+                // It seems that we need to run the gc on the next tick after de-referencing the indicators
+                // We've captured the real setTimeout as we're currently using mocks (and trying to reset these and then re-enable them in the test is a nightmare).
+                underlyingSetTimeout(() => {
                     global.gc();
-                    jest.useFakeTimers();
                     jest.advanceTimersByTime(5000);
-                    // only indicator 1 should be removed, indicator 3 was added with useWeakReference=false
-                    expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
-                    expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
-                    expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
+                    // only indicator 1 should be removed, indicator 3 (while now dead) was added with useWeakReference=false
+                    try {
+                        expect(aggregateIndicator.activateIndicatorCount).toEqual(2);
+                        expect(aggregateIndicator.hasIndicatorByName('indicator2')).toBeTruthy();
+                        expect(aggregateIndicator.hasIndicatorByName('indicator3')).toBeTruthy();
+                    } catch (err) {
+                        // after the Jest upgrade I have to explicitly catch these failed asserts and pass the error to done(err);
+                        done(err);
+                        return;
+                    }
                     done();
                 }, 0);
             } else {

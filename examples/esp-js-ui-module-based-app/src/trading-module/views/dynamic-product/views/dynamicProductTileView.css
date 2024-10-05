@@ -1,0 +1,17 @@
+.dynamicProductTileView closeButton {
+
+}
+
+.dynamicGrid {
+    display: flex;
+    flex-direction: row;
+
+    div {
+        padding: .1em;
+    }
+
+    .structureHeader {
+        display: flex;
+        flex-direction: row;
+    }
+}

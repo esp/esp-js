@@ -1,5 +1,6 @@
 import {Region, SingleItemRegionView} from 'esp-js-ui';
 import * as React from 'react';
+import './modalView.css';
 
 export const ModalView = ({model}: { model: Region }) => {
     if (!model.selectedRecord) {

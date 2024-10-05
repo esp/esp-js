@@ -168,10 +168,9 @@ describe('Router', () => {
             expect(model1UpdateCount).toBe(2);
         });
 
-        it('should dispatch change to models if event if only one event was processed', () => {
+        it.skip('should dispatch change to models if event if only one event was processed', () => {
             // there is a condition whereby the first processors processes the event flagging the model as dirty,
             // but the second event doesn't get processed which un flags the prior event
-            pending();
         });
 
         it('should pump the last model on observation', () => {

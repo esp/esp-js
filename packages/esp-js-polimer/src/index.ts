@@ -1,17 +1,19 @@
 // import for side effects
-import './modelBuilder';
+import './modelBuilderUpdater';
+import './configImmer';
 
 export {PolimerEventHandler} from './stateEventHandlers';
 export {PolimerModel} from './polimerModel';
 export {ImmutableModel} from './immutableModel';
-export {PolimerModelBuilder} from './modelBuilder';
+export {PolimerModelBuilder, PolimerModelUpdater} from './modelBuilderUpdater';
 export {
     InputEvent,
     InputEventStream,
     OutputEvent,
     OutputEventStream,
-    eventTransformFor
+    eventTransformFor,
 } from './eventTransformations';
+export {EventEnvelopePredicate} from './eventEnvelopePredicate';
 export {PolimerEvents} from './polimerEvents';
 export {sendUpdateToDevTools, connectDevTools} from './reduxDevToolsConnector';
 export {StateHandlerModel} from './stateHandlerModel';

@@ -12,6 +12,7 @@ import {EspDiConsts} from 'esp-js-di';
 import * as uuid from 'uuid';
 
 LoggingConfig.defaultLoggerConfig.level = Level.verbose;
+LoggingConfig.defaultLoggerConfig.dumpAdditionalDetailsToConsole = true;
 
 const _log = Logger.create('AppShell');
 

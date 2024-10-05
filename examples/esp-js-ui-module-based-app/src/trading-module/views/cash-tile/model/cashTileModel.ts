@@ -1,4 +1,4 @@
-import {CashTilePersistedState} from '../state/stateModel';
+import {CashTilePersistedState} from '../persistedState/persistedStateModel';
 import {Quote, RfqStatus} from '../../../services/rfqService';
 import {DateSelectorInitialState} from './dateSelector/dateSelectorModel';
 

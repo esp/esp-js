@@ -18,6 +18,13 @@
 
 import * as esp from '../../src';
 
+type Model = {
+    id?: string;
+    counter?: number;
+    preProcessCount?: number
+    postProcessCount?: number
+};
+
 describe('Router', () => {
 
     let _router;
@@ -27,8 +34,8 @@ describe('Router', () => {
     });
 
     describe('.runAction()', () => {
-        let _model1 = { },
-            _model2 = {},
+        let _model1 : Model = { },
+            _model2: Model = {},
             _proto = {
                 init(id) {
                     this.id = id;
@@ -65,16 +72,16 @@ describe('Router', () => {
 
         it('throws if modelId not a string', () => {
             expect(() => {
-                _router.runAction(undefined, () =>{ });
+                _router.runAction(undefined, () => { });
             }).toThrow(new Error('modelId must be a string'));
             expect(() => {
-                _router.runAction(null, () =>{ });
+                _router.runAction(null, () => { });
             }).toThrow(new Error('modelId must be a string'));
             expect(() => {
-                _router.runAction({}, () =>{ });
+                _router.runAction({}, () => { });
             }).toThrow(new Error('modelId must be a string'));
             expect(() => {
-                _router.runAction('', () =>{ });
+                _router.runAction('', () => { });
             }).toThrow(new Error('modelId must not be empty'));
         });
 
@@ -91,7 +98,7 @@ describe('Router', () => {
         });
 
         it('runs action for target model', () => {
-            _router.runAction(_model1.id, () =>{
+            _router.runAction(_model1.id, () => {
                 // noop
             });
             expect(model1ReceivedCount).toBe(1);

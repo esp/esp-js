@@ -6,7 +6,7 @@ describe('State Handlers', () => {
 
     beforeEach(() => {
         api = PolimerTestApiBuilder.create()
-            .withStateHandlerObject()
+            .withStateHandlers()
             .build();
     });
 

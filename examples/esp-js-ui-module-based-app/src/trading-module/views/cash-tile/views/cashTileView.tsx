@@ -4,6 +4,8 @@ import {DateSelectorEvents, InputEvents, RfqEvents} from '../events';
 import {Logger} from 'esp-js-ui';
 import {PublishModelEventContext, PublishModelEventDelegate} from 'esp-js-react';
 import {useState} from 'react';
+import {TileContainerView} from '../../../../common/ui-components/tileContainerView';
+import './cashTileView.css';
 
 const _log: Logger = Logger.create('CashTileView');
 
@@ -33,9 +35,7 @@ export const CashTileView = ({model}: CashTileViewProps) => {
     }
     _log.info(`[${model.modelId}] Rendering, selected currency pair: ${inputs.ccyPair}`);
     return (
-        <div className='cashTileView'>
-            <div className='header'>Cash Tile</div>
-            <div className='modelId'>id: {model.modelId}</div>
+        <TileContainerView title='Cash Tile' modelId={model.modelId} classNames={'cashTileView'}>
             <select value={inputs.ccyPair} onChange={onCurrencyPairChanged}>
                 <option value='EURUSD'>EURUSD</option>
                 <option value='EURGBP'>EURGBP</option>
@@ -60,6 +60,6 @@ export const CashTileView = ({model}: CashTileViewProps) => {
             <div className='status'>Pricing Status: {requestForQuote.status}</div>
             <br/>
             {price}
-        </div>
+        </TileContainerView>
     );
 };

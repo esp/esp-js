@@ -8,7 +8,7 @@ import {map, switchAll} from 'rxjs/operators';
 
 const _log = Logger.create('CashTile-RequestForQuoteObservables');
 
-export class RequestForQuoteEventStreams {
+export class RequestForQuoteEventTransforms {
     constructor(public _rfqService: RfqService) {
     }
 

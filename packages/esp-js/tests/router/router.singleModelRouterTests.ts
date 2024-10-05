@@ -139,12 +139,12 @@ describe('Router', () => {
             describe('static  createWithModel', () => {
                 it('should throw if model undefined', () => {
                     expect(() => {
-                        esp.SingleModelRouter.createWithModel();
+                        esp.SingleModelRouter.createWithModel(undefined);
                     }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));
                 });
                 it('should throw if model undefined', () => {
                     expect(() => {
-                        esp.SingleModelRouter.createWithModel();
+                        esp.SingleModelRouter.createWithModel(undefined);
                     }).toThrow(new Error('Model passed to to createWithModel must not be undefined.'));
                 });
             });
@@ -152,13 +152,13 @@ describe('Router', () => {
             describe('static  createWithRouter', () => {
                 it('should throw if underlyingRouter is not a Router', () => {
                     expect(() => {
-                        esp.SingleModelRouter.createWithRouter({}, 'ID');
+                        esp.SingleModelRouter.createWithRouter(<any>{}, 'ID');
                     }).toThrow(new Error('underlyingRouter must be of type Router.'));
                 });
 
                 it('should throw if modelId is not a string', () => {
                     expect(() => {
-                        esp.SingleModelRouter.createWithRouter(_router, 1);
+                        esp.SingleModelRouter.createWithRouter(_router, <any>1);
                     }).toThrow(new Error('The modelId should be a string.'));
                 });
             });

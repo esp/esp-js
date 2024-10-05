@@ -17,9 +17,8 @@
 // notice_end
 
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import { createViewForModel } from './viewBindingDecorator';
-import { Router } from 'esp-js';
+import {useRouter} from './routerProvider';
 
 export interface SmartComponentProps {
     modelId: string;
@@ -37,10 +36,6 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
     private _currentObservingModelId = false;
     private _observationSubscription = null;
 
-    static contextTypes = {
-        router: PropTypes.instanceOf(Router).isRequired
-    };
-
     componentWillReceiveProps(nextProps: SmartComponentProps) {
         this._tryObserveModel(nextProps.modelId);
     }
@@ -57,7 +52,7 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
         } else if (modelId !== this._currentObservingModelId) {
             this._tryDisposeObservationSubscription();
             this._currentObservingModelId = modelId;
-            this._observationSubscription = this.context.router
+            this._observationSubscription = useRouter()
                 .getModelObservable(modelId)
                 .map(model => {
                     return this.props.modelSelector
@@ -86,7 +81,7 @@ export class SmartComponent extends React.Component<SmartComponentProps, SmartCo
         let {modelId, viewContext, view, modelSelector, ...other} = this.props;
         let newProps = {
             model: this.state.model,
-            router: this.context.router
+            router: useRouter()
         };
         return Object.assign({}, newProps, other);
     }

@@ -7,7 +7,7 @@ describe('Model disposal tests', () => {
 
     beforeEach(() => {
         api = PolimerTestApiBuilder.create()
-            .withStateHandlerObject()
+            .withStateHandlers()
             .build();
         api.asserts.polimerModelIsRegistered(true);
     });

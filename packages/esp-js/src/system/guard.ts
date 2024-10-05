@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // notice_end
+// notice_end
 
 import {utils} from './utils';
 
@@ -24,59 +24,69 @@ export class Guard {
             doThrow(message);
         }
     }
+
     public static isTruthy(check: boolean, message: string): void {
         if (!check) {
             doThrow(message);
         }
     }
+
     public static isFalsey(value: any, message: string): void {
         if (value) {
             doThrow(message);
         }
     }
+
     public static lengthIs(array: any[], length: number, message: string): void {
         if (array.length !== length) {
             doThrow(message);
         }
     }
+
     public static lengthGreaterThan(array: any[], length: number, message: string): void {
         if (array.length < length) {
             doThrow(message);
         }
     }
+
     public static lengthIsAtLeast(array: any[], length: number, message: string): void {
         if (array.length < length) {
             doThrow(message);
         }
     }
+
     public static stringIsNotEmpty(value: any, message: string): void {
         if (!utils.isString(value) || value.trim() === '') {
             doThrow(message);
         }
     }
+
     public static isString(value: any, message: string): void {
         if (!utils.isString(value)) {
             doThrow(message);
         }
     }
+
     public static isFunction(item: any, message: string): void {
         if (!utils.isFunction(item)) {
             doThrow(message);
         }
     }
+
     public static isNumber(value: any, message: string): void {
         if (isNaN(value)) {
             doThrow(message);
         }
     }
+
     public static isObject(value: any, message: string): void {
-        if(typeof value !== 'object' || value === null) {
+        if (typeof value !== 'object' || value === null) {
             doThrow(message);
         }
     }
 
     public static isBoolean(value: any, message: string): void {
-        if (typeof(value) !== 'boolean') {
+        if (typeof (value) !== 'boolean') {
             doThrow(message);
         }
     }
@@ -89,7 +99,7 @@ export class Guard {
 }
 
 function doThrow(message: string) {
-    if(typeof message === 'undefined' || message === '') {
+    if (typeof message === 'undefined' || message === '') {
         throw new Error('Argument error');
     }
     throw new Error(message);

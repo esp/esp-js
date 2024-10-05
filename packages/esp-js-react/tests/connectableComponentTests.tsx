@@ -2,11 +2,11 @@ import 'jest';
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import {configure, mount, ReactWrapper} from 'enzyme';
-import  ReactSixteenAdapter = require('enzyme-adapter-react-16');
+import ReactSixteenAdapter = require('enzyme-adapter-react-16');
 import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel} from '../src';
 import {Router} from 'esp-js';
 import {observeEvent} from 'esp-js/src/decorators/observeEvent';
-import {ConnectableComponentChildProps, PublishEvent, PublishModelEventContext, PublishModelEventDelegate} from '../src/connectableComponent';
+import {ConnectableComponentChildProps, PublishEvent} from '../src/connectableComponent';
 
 configure({adapter: new ReactSixteenAdapter()});
 
@@ -126,10 +126,10 @@ describe('ConnectableComponent', () => {
             modelId: 'model-id'
         };
         if (options.useMapModelToProps) {
-            mapModelToProps = (model: TestModel | MappedModel, publishEventProps: any) => {
+            mapModelToProps = (model: TestModel | MappedModel, publishEventProps1: any) => {
                 return {
                     foo: model.value,
-                    publishEventProps,
+                    publishEventProps: publishEventProps1,
                     ...model
                 };
             };
@@ -293,34 +293,34 @@ describe('ConnectableComponent', () => {
                 setup({useConnectFunction: false});
             });
 
-            // Cant test hooks yet, will test using state below
-            // https://github.com/enzymejs/enzyme/issues/2011
-            xit('Can publish event via context', () => {
-                const childViewContext = connectableComponentWrapper.context();
-                let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
-                publishEvent('test-event', 'the-event-value');
-                connectableComponentWrapper.update();
-                let props = getChidViewProps();
-                expect(props.foo).toBe('the-event-value');
-            });
+            // // Cant test hooks yet, will test using state below
+            // // https://github.com/enzymejs/enzyme/issues/2011
+            // xit('Can publish event via context', () => {
+            //     const childViewContext = connectableComponentWrapper.context();
+            //     let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
+            //     publishEvent('test-event', 'the-event-value');
+            //     connectableComponentWrapper.update();
+            //     let props = getChidViewProps();
+            //     expect(props.foo).toBe('the-event-value');
+            // });
 
-            // Note this is a a best effort to test the context hook created via state
+            // Note this is a best effort to test the context hook created via state
             it('publishEvent set', () => {
-                const state = connectableComponentWrapper.state();
+                const state: any = connectableComponentWrapper.state();
                 state.publishEvent('test-event', 'the-event-value');
                 connectableComponentWrapper.update();
                 let props = getChidViewProps();
                 expect(props.model.value).toBe('the-event-value');
             });
 
-            it('publishEvent recreated on modle change', () => {
+            it('publishEvent recreated on model change', () => {
                 const newProps = {
                     ...connectableComponentWrapper.props(),
                     modelId: 'model-id2',
                 };
                 connectableComponentWrapper.setProps(newProps);
                 connectableComponentWrapper.update();
-                const state = connectableComponentWrapper.state();
+                const state: any = connectableComponentWrapper.state();
                 state.publishEvent('test-event', 'the-event-value');
                 connectableComponentWrapper.update();
                 let props = getChidViewProps();

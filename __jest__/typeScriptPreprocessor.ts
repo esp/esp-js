@@ -17,7 +17,6 @@
 // notice_end
 
 const tsc = require('typescript');
-const npath = require ('path');
 const tsconfig = require('../tsconfig.json');
 // const tsconfig = require(path.resolve('.', 'tsconfig.json'));
 
@@ -38,13 +37,10 @@ compilerOptions.sourceMap = undefined;
 compilerOptions.inlineSourceMap = true;
 compilerOptions.declaration = false;
 
-// console.log('TS_CONFIG:' + JSON.stringify(tsconfig.compilerOptions));
-// console.log('PATH IS: ' + npath.resolve('.'));
-
 module.exports = {
     process(src, path) {
         if (path.endsWith('.js') || path.endsWith('.ts') || path.endsWith('.tsx')) {
-            let transpilerOptions =  {
+            let transpilerOptions = {
                 compilerOptions: compilerOptions,
                 fileName: path
             };
@@ -53,8 +49,12 @@ module.exports = {
                 transpilerOptions
             );
             // console.log('Path '+ path +' compiled to: ' + transpileOutput.outputText);
-            return transpileOutput.outputText;
+            return {
+                code: transpileOutput.outputText
+            };
         }
-        return src;
+        return {
+            code: src,
+        };
     }
 };

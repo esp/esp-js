@@ -1,6 +1,5 @@
 {
   "version": "6.5.1",
-  "useWorkspaces": true,
   "npmClient": "yarn",
   "command": {
     "publish": {
@@ -12,12 +11,7 @@
       "forcePublish": true,
       "npmClient": "yarn",
       "message": "chore(release): publish %s"
-    },
-    "version": "fixed"
+    }
   },
-  "packages": [
-    "packages/*",
-    "examples/*",
-    "docs/*"
-  ]
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }

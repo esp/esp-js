@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
   "devDependencies": {
-    "jest": "26.0.1",
+    "jest": "29.7.0",
     "typescript": "5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",

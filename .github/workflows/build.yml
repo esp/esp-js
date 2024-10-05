@@ -6,19 +6,23 @@
 name: Node.js CI
 
 on:
+  # Allows for manual triggering.
   workflow_dispatch:
+  # Trigger on a push.
   push:
-    branches: [ $default-branch ]
+    branches: [ $default-branch, 'feature/**' ]
+  # Trigger on default pull request events (created etc).
   pull_request:
-    branches: [ $default-branch ]
-  
+    branches: [ $default-branch, 'feature/**' ]
+
 jobs:
   build:
+    name: ci-build
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [ 22.x ]
 
     steps:
       - uses: actions/checkout@v4
@@ -30,10 +34,11 @@ jobs:
           cache: 'yarn'
 
       - name: Enable corepack
+        # yarn is part of corepack, so doing this means we don't need to install it separately.
         run: corepack enable
 
       - name: Install Dependencies
         run: yarn install
 
-      - name: Build
+      - name: Build and Test
         run: yarn build-dev

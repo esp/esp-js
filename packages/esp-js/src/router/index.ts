@@ -4,6 +4,7 @@ export * from './decoratorObservationRegister';
 export * from './envelopes';
 export * from './eventContext';
 export * from './eventProcessors';
+export * from './modelAddress';
 export * from './modelRecord';
 export * from './observationStage';
 export * from './router';

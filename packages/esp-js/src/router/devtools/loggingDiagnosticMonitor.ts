@@ -19,6 +19,7 @@
 import {DiagnosticMonitor} from './diagnosticMonitor';
 import {DisposableBase} from '../../system/disposables';
 import {Logger} from '../../system';
+import {ModelAddress} from '../modelAddress';
 
 let _log = Logger.create('LoggingDiagnosticMonitor');
 
@@ -47,8 +48,8 @@ export class LoggingDiagnosticMonitor extends DisposableBase implements Diagnost
     removeModel(modelId) {
     }
 
-    publishEvent(modelId, eventType) {
-        this._pushStep(`[PublishEvent]:${modelId}:${eventType}`);
+    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType) {
+        this._pushStep(`[PublishEvent]:${modelIdOrModelAddress}:${eventType}`);
     }
 
     broadcastEvent(eventType) {
@@ -63,9 +64,9 @@ export class LoggingDiagnosticMonitor extends DisposableBase implements Diagnost
         this._pushStep(`[RunAction]:${modelId}`);
     }
 
-    eventEnqueued(modelId, eventType) {
+    eventEnqueued(modelId, entityKey, eventType) {
         this._incrementDepth();
-        this._pushStep(`[EventEnqueued]:${modelId}:${eventType}`);
+        this._pushStep(`[EventEnqueued]:${modelId}:${this._tryFormatEntityKey(entityKey)}${eventType}`);
         this._decrementDepth();
     }
 
@@ -74,9 +75,9 @@ export class LoggingDiagnosticMonitor extends DisposableBase implements Diagnost
         this._pushStep(`[DispatchLoopStart]`);
     }
 
-    startingModelEventLoop(modelId, initiatingEventType) {
+    startingModelEventLoop(modelId, entityKey, initiatingEventType) {
         this._incrementDepth();
-        this._pushStep(`[StartingModelEventLoop]${modelId}, InitialEvent: ${initiatingEventType}`);
+        this._pushStep(`[StartingModelEventLoop]${modelId}, EntityKey:${entityKey}, InitialEvent: ${initiatingEventType}`);
     }
 
     preProcessingModel() {
@@ -162,5 +163,9 @@ export class LoggingDiagnosticMonitor extends DisposableBase implements Diagnost
             spaces += '  ';
         }
         return spaces;
+    }
+
+    _tryFormatEntityKey(entityKey: string) {
+        return entityKey ? `${entityKey}:` : '';
     }
 }

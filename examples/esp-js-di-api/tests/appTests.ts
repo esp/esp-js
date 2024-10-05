@@ -16,7 +16,7 @@ import {
 /**
  * This is a bit of a poor-mans catch all.
  *
- * We can't really tests API examples, but we can have a higher level integration tests that just runes each one.
+ * We can't really test API examples, but we can have a higher level integration tests that just runes each one.
  *
  * If there are any unhandled errors we'll be able to catch that.
  */

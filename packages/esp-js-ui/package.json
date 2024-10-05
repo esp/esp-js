@@ -17,7 +17,7 @@
     "dev": "nps dev"
   },
   "devDependencies": {
-    "jest": "26.0.1",
+    "jest": "29.7.0",
     "typescript": "5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",

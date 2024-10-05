@@ -5,6 +5,7 @@
   "main": "src/app.js",
   "private": true,
   "dependencies": {
+    "classnames": "2.2.6",
     "esp-js": "^6.5.1",
     "esp-js-di": "^6.5.1",
     "esp-js-polimer": "^6.5.1",
@@ -16,7 +17,7 @@
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "jest": "26.0.1",
+    "jest": "29.7.0",
     "typescript": "5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
@@ -29,6 +30,6 @@
     "test": "nps test",
     "test-ci": "nps test-ci",
     "dev": "nps dev",
-    "start": "cross-env NODE_ENV=dev && webpack-dev-server --debug --inline --watch --progress --colors"
+    "start": "cross-env NODE_ENV=dev && webpack-dev-server --progress"
   }
 }

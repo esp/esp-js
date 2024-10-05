@@ -6,6 +6,7 @@ import {SplashScreenState} from '../model/splashScreenModel';
 import {ShellEvents} from '../../../events';
 import {Region} from 'esp-js-ui';
 import { ModalView } from '../../modal/views/modal';
+import './workspaceView.css';
 
 export interface WorkspaceViewProps {
     model: WorkspaceModel;
@@ -29,7 +30,7 @@ export const WorkspaceView = ({model}: WorkspaceViewProps) => {
         publishEvent(ShellEvents.showPreferences, {});
     }, []);
     if (model.splashScreen.state === SplashScreenState.Default) {
-        mainContent = (<div className='main-content'>
+        mainContent = (<div>
             <div className='workspace'>
                 <ConnectableComponent
                     view={MultiItemRegionViewWrapped}

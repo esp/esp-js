@@ -28,16 +28,21 @@ const _defaultLog = Logger.create('AggregateHealthIndicator');
 class IndicatorRecord {
     private _weakRef?: WeakRef<HealthIndicator>;
     private _hardRef?: HealthIndicator;
+    private _name: string;
 
     constructor(
         indicator: HealthIndicator,
         private _useWeakReference: boolean = true,
     ) {
+        this._name = indicator.healthIndicatorName;
         if (_useWeakReference) {
             this._weakRef = new WeakRef<HealthIndicator>(indicator);
         } else {
             this._hardRef = indicator;
         }
+    }
+    public get name() {
+        return this._name;
     }
     public get reference() {
         return this._useWeakReference
@@ -232,10 +237,11 @@ export class AggregateHealthIndicator extends DisposableBase implements HealthIn
         const liveIndicators: HealthIndicator[] = [];
         let healthIndicatorLength = this._healthIndicators.length;
         for (let i = healthIndicatorLength - 1; i >= 0; i--) {
-            const current = this._healthIndicators[i].reference;
-            if (current) {
-                liveIndicators.push(current);
+            let indicatorRecord = this._healthIndicators[i];
+            if (indicatorRecord.reference) {
+                liveIndicators.push(indicatorRecord.reference);
             } else {
+                this._log.debug(`Health indicator ${indicatorRecord.name} is no longer referenced, removing`);
                 this._healthIndicators.splice(i, 1);
             }
         }

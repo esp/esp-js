@@ -1,6 +1,6 @@
 {
   "name": "esp-js-react",
-  "version": "7.0.0-next.0",
+  "version": "7.0.1-next.0",
   "description": "Evented State Processor (ESP) React Components",
   "keywords": [
     "esp",
@@ -24,8 +24,8 @@
     "dev": "nps dev"
   },
   "dependencies": {
-    "esp-js": "^7.0.0-next.0",
-    "esp-js-polimer": "^7.0.0-next.0",
+    "esp-js": "^7.0.1-next.0",
+    "esp-js-polimer": "^7.0.1-next.0",
     "prop-types": "^15.7.2",
     "react": "16.14.0"
   },

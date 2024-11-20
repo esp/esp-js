@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
-import {ConnectableComponentHooks} from './connectableComponentHooks';
+import {EspModelContext} from './espModelContext';
 
 export type PublishEvent = (eventType: string, event: any) => void;
 
@@ -144,7 +144,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
         let childProps = this._getChildProps();
         let view = createViewForModel(this.state.model, childProps, this.props.viewContext, this.props.view);
 
-        return (<ConnectableComponentHooks modelId={this.props.modelId} {...childProps}>{view}</ConnectableComponentHooks>);
+        return (<EspModelContext modelId={this.props.modelId} router={this.context.router} {...childProps}>{view}</EspModelContext>);
     }
 
     private _getChildProps(): ConnectableComponentChildProps<TModel> {

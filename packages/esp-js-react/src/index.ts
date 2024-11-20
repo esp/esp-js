@@ -52,4 +52,7 @@ export {
     PublishModelEventWithEntityKeyDelegate,
     PublishModelEventWithEntityKeyContext,
     usePublishModelEventWithEntityKey,
-} from './connectableComponentHooks';
+
+    EspModelContext,
+    EspModelContextProps
+} from './espModelContext';

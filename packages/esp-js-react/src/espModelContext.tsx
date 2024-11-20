@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {DefaultModelAddress, ModelAddress} from 'esp-js';
+import {DefaultModelAddress, ModelAddress, Router} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
-import {useRouter} from './routerProvider';
+import {RouterContext} from './routerProvider';
 
 export type GetModelIdDelegate = () => string;
 export const GetModelIdContext = createContext<GetModelIdDelegate>(null);
@@ -35,12 +35,12 @@ export const PublishModelEventWithEntityKeyContext = createContext<PublishModelE
  */
 export const usePublishModelEventWithEntityKey = () => useContext(PublishModelEventWithEntityKeyContext);
 
-export interface ConnectableComponentHooksProps {
+export interface EspModelContextProps {
     modelId: string;
+    router: Router;
 }
 
-export const ConnectableComponentHooks = ({modelId, children}: PropsWithChildren<ConnectableComponentHooksProps>) => {
-    const router = useRouter();
+export const EspModelContext = ({modelId, children, router}: PropsWithChildren<EspModelContextProps>) => {
     const getModelId: () => string = useCallback(() => {
         return modelId;
     }, [router, modelId]);
@@ -54,14 +54,16 @@ export const ConnectableComponentHooks = ({modelId, children}: PropsWithChildren
         router.publishEvent(new DefaultModelAddress(modelId, entityKey), eventType, event);
     }, [router, modelId]);
     return (
-        <GetModelIdContext.Provider value={getModelId}>
-            <PublishEventContext.Provider value={publishEvent}>
-                <PublishModelEventContext.Provider value={publishModelEvent}>
-                    <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
-                        {children}
-                    </PublishModelEventWithEntityKeyContext.Provider>
-                </PublishModelEventContext.Provider>
-            </PublishEventContext.Provider>
-        </GetModelIdContext.Provider>
+        <RouterContext.Provider value={router}>
+            <GetModelIdContext.Provider value={getModelId}>
+                <PublishEventContext.Provider value={publishEvent}>
+                    <PublishModelEventContext.Provider value={publishModelEvent}>
+                        <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
+                            {children}
+                        </PublishModelEventWithEntityKeyContext.Provider>
+                    </PublishModelEventContext.Provider>
+                </PublishEventContext.Provider>
+            </GetModelIdContext.Provider>
+        </RouterContext.Provider>
     );
 };

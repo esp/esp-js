@@ -23,6 +23,10 @@ import {useContext} from 'react';
 
 export interface RouterProviderProps {
     router: Router;
+    // React 18 Fix:
+    // The current codebase is React 16, it will work with React 18, but there were changes to the types in React 18.
+    // The `children` prop was removed from some React types that cause the RouterProvider to fail, this fixes that.
+    children: any;
 }
 
 export const RouterContext = React.createContext<Router>(null);

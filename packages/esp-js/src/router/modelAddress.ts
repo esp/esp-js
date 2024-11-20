@@ -13,8 +13,6 @@ export interface ModelAddress {
     entityKey?: string;
 }
 
-const invalidModelIdOrAddressError: string = 'Can not correctly construct an address to dispatch event. You must publish with a string modelId or valid ModelAddress shape';
-
 export class DefaultModelAddress implements ModelAddress {
     private readonly _modelId: string;
     private readonly _entityKey: string = undefined;
@@ -24,22 +22,24 @@ export class DefaultModelAddress implements ModelAddress {
         if (args.length === 2) {
             this._modelId = args[0];
             this._entityKey = args[1];
+            Guard.isString(this._modelId, `Invalid modelId provided, expected a string, received ${this._modelId}`);
+            if (this._entityKey) {
+                Guard.isString(this._entityKey, `Invalid entityKey provided, expected a string, received ${this._entityKey}`);
+            }
         } else {
             const modelIdOrModelAddress = args[0];
+            Guard.isDefined(modelIdOrModelAddress, `Invalid modelIdOrModelAddress provided, value was null or undefined`);
             if (utils.isString(modelIdOrModelAddress)) {
                 this._modelId = modelIdOrModelAddress;
             } else {
-                if (modelIdOrModelAddress.modelId) {
-                    this._modelId = modelIdOrModelAddress.modelId;
-                }
+                Guard.isObject(modelIdOrModelAddress, `Invalid modelIdOrModelAddress provided, expected an object conforming to 'string | ModelAddress'`);
+                this._modelId = modelIdOrModelAddress.modelId;
+                Guard.isString(this._modelId, `Invalid ModelAddress provided, expected modelId property to be defined, received ${this._modelId}`);
                 if (modelIdOrModelAddress.entityKey) {
                     this._entityKey = modelIdOrModelAddress.entityKey;
+                    Guard.isString(this._entityKey, `Invalid ModelAddress provided, expected entityKey property to be a string, received ${this._entityKey}`);
                 }
             }
-        }
-        Guard.isString(this._modelId, invalidModelIdOrAddressError);
-        if (this._entityKey) {
-            Guard.isString(this._entityKey, invalidModelIdOrAddressError);
         }
     }
     public get modelId() {

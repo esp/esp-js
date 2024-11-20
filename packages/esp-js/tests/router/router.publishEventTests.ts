@@ -31,8 +31,8 @@ describe('Router', () => {
             expect(() => {_router.publishEvent(undefined, 'Foo', 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', undefined, 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', 'Foo', undefined); }).toThrow();
-            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('Can not correctly construct an address to dispatch event. You must publish with a string modelId or valid ModelAddress shape');
-            expect(() => {_router.publishEvent({ entityKey: 'theKey' },'foo', 'foo'); }).toThrow('Can not correctly construct an address to dispatch event. You must publish with a string modelId or valid ModelAddress shape');
+            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
+            expect(() => {_router.publishEvent({ entityKey: 'theKey' },'foo', 'foo'); }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
         });
 
         it('queues and processes events received during event loop by model id', () => {

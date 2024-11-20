@@ -1,7 +1,6 @@
 import {DefaultModelAddress} from '../../src';
 
 describe('defaultModelAddressTests.ts', () => {
-    let expectedError = 'Can not correctly construct an address to dispatch event. You must publish with a string modelId or valid ModelAddress shape';
 
     it('Can set modelId only as string', () => {
         const ma = new DefaultModelAddress('the-id');
@@ -27,18 +26,18 @@ describe('defaultModelAddressTests.ts', () => {
     it('Throws if modelId not string', () => {
         expect(() => {
             let ma = new DefaultModelAddress(<any>1);
-        }).toThrow(expectedError);
+        }).toThrow('Invalid modelIdOrModelAddress provided, expected an object conforming to \'string | ModelAddress\'');
     });
 
-    it('Throws if eventKey not string', () => {
+    it('Throws if entityKey not string', () => {
         expect(() => {
             const ma = new DefaultModelAddress({ modelId: 'the-id', entityKey: <any>1 });
-        }).toThrow(expectedError);
+        }).toThrow('Invalid ModelAddress provided, expected entityKey property to be a string, received 1');
     });
 
     it('Throws if modelId not set via ModelAddress', () => {
         expect(() => {
             const ma = new DefaultModelAddress({ entityKey: 'the-key' });
-        }).toThrow(expectedError);
+        }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
     });
 });

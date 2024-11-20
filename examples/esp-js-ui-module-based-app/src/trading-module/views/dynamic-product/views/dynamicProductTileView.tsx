@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Logger} from 'esp-js-ui';
 import {DynamicProductTileModel} from '../model/dynamicProductTileModel';
-import {PublishModelEventContext, PublishModelEventDelegate} from 'esp-js-react';
+import {usePublishModelEvent} from 'esp-js-react';
 import {DynamicProductEvents} from '../events';
 import {Product, ProductType} from '../model';
 import {TileContainerView} from '../../../../common/ui-components/tileContainerView';
@@ -27,7 +27,7 @@ const getProductView = (product: Product) => {
 };
 
 export const DynamicProductTileView = ({model}: DynamicProductTileViewProps) => {
-    let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
+    let publishEvent = usePublishModelEvent();
     const removeProduct = (entityKey: string) => publishEvent(DynamicProductEvents.AddProduct.removeProduct_removed, {entityKey: entityKey} as DynamicProductEvents.AddProduct.RemoveProductEvent);
     return (
         <TileContainerView title='Dynamic Product' modelId={model.modelId} classNames='dynamicProductTileView'>

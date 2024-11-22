@@ -26,13 +26,13 @@
   "dependencies": {
     "esp-js": "^7.0.1-next.0",
     "esp-js-rx": "^7.0.1-next.0",
-    "rxjs": "6.6.6",
-    "rxjs-compat": "6.6.6"
-  },
-  "peerDependencies": {
-    "esp-js": "^6.0.0",
-    "esp-js-rx": "^6.0.0",
     "rxjs": "^6.6.6",
     "rxjs-compat": "^6.6.6"
+  },
+  "peerDependencies": {
+    "esp-js": "^7.0.0",
+    "esp-js-rx": "^7.0.0",
+    "rxjs": "^6.0.0",
+    "rxjs-compat": "^6.0.0"
   }
 }

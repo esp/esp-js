@@ -24,24 +24,24 @@
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
-    "classnames": "2.2.6",
+    "classnames": "^2.2.6",
     "esp-js": "^7.0.1-next.0",
     "esp-js-di": "^7.0.1-next.0",
     "esp-js-metrics": "^7.0.1-next.0",
     "esp-js-react": "^7.0.1-next.0",
     "esp-js-rx": "^7.0.1-next.0",
     "query-string": "6.13.1",
-    "react": "16.14.0",
-    "rxjs": "6.6.6",
-    "uuid": "8.3.2"
+    "react": "^16.14.0",
+    "rxjs": "^6.6.6",
+    "uuid": "^8.3.2"
   },
   "peerDependencies": {
-    "classnames": "^2.2.6",
-    "esp-js": "^6.0.0",
-    "esp-js-di": "^6.0.0",
-    "esp-js-react": "^6.0.0",
-    "esp-js-rx": "^6.0.0",
-    "react": "^16.14.0",
-    "rxjs": "^6.6.6"
+    "classnames": "^2.0.0",
+    "esp-js": "^7.0.0",
+    "esp-js-di": "^7.0.0",
+    "esp-js-react": "^7.0.0",
+    "esp-js-rx": "^7.0.0",
+    "react": "^16.0.0",
+    "rxjs": "^6.0.0"
   }
 }

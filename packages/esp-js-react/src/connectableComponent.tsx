@@ -1,10 +1,8 @@
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
 import {EspModelContext} from './espModelContext';
-import {useModelId} from './modelIdProvider';
 import {useRouter} from './routerProvider';
 
 export type PublishEvent = (eventType: string, event: any) => void;
@@ -85,7 +83,7 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
 
     private _getModelId(): string {
         // props override context
-        return this.props.modelId || useModelId();
+        return this.props.modelId;
     }
 
     private _tryObserveModel(modelId: string): void {

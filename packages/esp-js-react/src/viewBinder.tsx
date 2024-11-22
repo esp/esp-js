@@ -16,9 +16,7 @@
  */
 // notice_end
 
-import * as esp from 'esp-js';
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import {createViewForModel} from './viewBindingDecorator';
 import {useRouter} from './routerProvider';
 
@@ -28,10 +26,6 @@ export interface ViewBinderProps {
 }
 
 export class ViewBinder extends React.Component<ViewBinderProps> {
-
-    static contextTypes = {
-        router: PropTypes.instanceOf(esp.Router).isRequired
-    };
 
     render() {
         if (this.props.model) {

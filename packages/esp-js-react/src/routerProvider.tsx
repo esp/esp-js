@@ -20,10 +20,17 @@ import * as React from 'react';
 import { Router } from 'esp-js';
 import {PropsWithChildren, useContext} from 'react';
 
-// export type RouterProviderProps = PropsWithChildren<{ router: Router; }>;
-
 export const RouterContext = React.createContext<Router>(null);
 
+/**
+ * Get the esp Router from the RouterContext
+ *
+ * To use this, please ensure your V-DOM sets the RouterContext at a higher node:
+ *
+ * <RouterContext.Provider value={router}>
+ *     <YourComponents />
+ * </RouterContext.Provider>
+ */
 export const useRouter = () => {
     const context: Router = useContext(RouterContext);
     if (context === undefined) {
@@ -32,11 +39,24 @@ export const useRouter = () => {
     return context;
 };
 
-// /**
-//  * Used to set the router on the RouterContext making it available to components down the tree (via useRouter()).
-//  *
-//  * Legacy note: this is provided for backwards compatability, just use `<RouterContext.Provider router={theRouter}>{yourChildren}</RouterContext.Provider>` directly.
-//  */
-// export const RouterProvider = ({ router, children }: RouterProviderProps) => {
-//     return (<RouterContext.Provider value={router}>{children}</RouterContext.Provider>);
-// };
+/**
+ * Used to set the router on the RouterContext making it available to components down the tree (via useRouter()).
+ *
+ * @deprecated
+ *
+ * Legacy note: this is provided for backwards compatability.
+ * Please use `<RouterContext.Provider router={theRouter}>{yourChildren}</RouterContext.Provider>` directly.
+ */
+export const RouterProvider = ({ router, children }: RouterProviderProps) => {
+    return (<RouterContext.Provider value={router}>{children}</RouterContext.Provider>);
+};
+
+/**
+ * Props for RouterProvider
+ *
+ * @deprecated
+ *
+ * Legacy note: this is provided for backwards compatability.
+ * Please use `<RouterContext.Provider router={theRouter}>{yourChildren}</RouterContext.Provider>` directly.
+ */
+export type RouterProviderProps = PropsWithChildren<{ router: Router; }>;

@@ -7,5 +7,5 @@ let appShell = new AppShell();
 appShell.start();
 
 const container = document.getElementById('root');
-const root = createRoot(container!);
+const root = createRoot(container);
 root.render(appShell.rootElement);

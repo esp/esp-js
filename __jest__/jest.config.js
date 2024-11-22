@@ -26,4 +26,7 @@ module.exports = {
     "testEnvironmentOptions": {
         "url": "http://localhost/",
     },
+    "setupFilesAfterEnv": [
+        "<rootDir>/../../__jest__/mocks/setupReactTestingLib.js"
+    ]
 };

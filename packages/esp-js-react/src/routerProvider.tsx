@@ -17,31 +17,26 @@
 // notice_end
 
 import * as React from 'react';
-import * as PropTypes from 'prop-types';
 import { Router } from 'esp-js';
-import {useContext} from 'react';
+import {PropsWithChildren, useContext} from 'react';
 
-export interface RouterProviderProps {
-    router: Router;
-    // React 18 Fix:
-    // The current codebase is React 16, it will work with React 18, but there were changes to the types in React 18.
-    // The `children` prop was removed from some React types that cause the RouterProvider to fail, this fixes that.
-    children: any;
-}
+// export type RouterProviderProps = PropsWithChildren<{ router: Router; }>;
 
 export const RouterContext = React.createContext<Router>(null);
-export const useRouter = () => useContext(RouterContext);
 
-export class RouterProvider extends React.Component<RouterProviderProps, any> {
-    static childContextTypes = {
-        router: PropTypes.instanceOf(Router).isRequired
-    };
-    getChildContext() {
-        return {
-            router: this.props.router
-        };
+export const useRouter = () => {
+    const context: Router = useContext(RouterContext);
+    if (context === undefined) {
+        throw new Error('useRouter must be used within a RouterContext.Provider');
     }
-    render() {
-        return (<RouterContext.Provider value={this.props.router}>{this.props.children}</RouterContext.Provider>);
-    }
-}
+    return context;
+};
+
+// /**
+//  * Used to set the router on the RouterContext making it available to components down the tree (via useRouter()).
+//  *
+//  * Legacy note: this is provided for backwards compatability, just use `<RouterContext.Provider router={theRouter}>{yourChildren}</RouterContext.Provider>` directly.
+//  */
+// export const RouterProvider = ({ router, children }: RouterProviderProps) => {
+//     return (<RouterContext.Provider value={router}>{children}</RouterContext.Provider>);
+// };

@@ -1,23 +1,24 @@
 {
   "name": "esp-js-ui-module-based-app",
-  "version": "6.5.1",
+  "version": "7.0.2-next.0",
   "license": "MIT",
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "esp-js": "^6.5.1",
-    "esp-js-di": "^6.5.1",
-    "esp-js-polimer": "^6.5.1",
-    "esp-js-react": "^6.5.1",
-    "esp-js-ui": "^6.5.1",
-    "react": "16.14.0",
-    "react-dom": "16.14.0",
-    "rxjs": "6.6.6",
-    "uuid": "8.3.2"
+    "classnames": "^2.2.6",
+    "esp-js": "^7.0.2-next.0",
+    "esp-js-di": "^7.0.2-next.0",
+    "esp-js-polimer": "^7.0.2-next.0",
+    "esp-js-react": "^7.0.2-next.0",
+    "esp-js-ui": "^7.0.2-next.0",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "rxjs": "^6.6.6",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "jest": "26.0.1",
-    "typescript": "5.5.2",
+    "jest": "^29.7.0",
+    "typescript": "^5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
@@ -29,6 +30,6 @@
     "test": "nps test",
     "test-ci": "nps test-ci",
     "dev": "nps dev",
-    "start": "cross-env NODE_ENV=dev && webpack-dev-server --debug --inline --watch --progress --colors"
+    "start": "cross-env NODE_ENV=dev && webpack-dev-server --progress"
   }
 }

@@ -1,16 +1,17 @@
 import {Router} from 'esp-js';
 import {PolimerModel} from 'esp-js-polimer';
+import {Container} from 'esp-js-di';
 import {ViewFactoryBase, Logger, viewFactory, RegionRecordState} from 'esp-js-ui';
 import {CashTileView} from './views/cashTileView';
 import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
-import {RequestForQuoteEventStreams} from './model/rfq/requestForQuoteEventStreams';
+import {RequestForQuoteEventTransforms} from './model/rfq/requestForQuoteEventTransforms';
 import {RfqService} from '../../services/rfqService';
 import {TileEvents} from './events';
 import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../../tradingModuleContainerConst';
 import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
-import {CashTilePersistedState} from './state/stateModel';
+import {CashTilePersistedState} from './persistedState/persistedStateModel';
 import {CashTileModel, CashTileModelBuilder} from './model/cashTileModel';
 import {CurrencyPairRefDataService} from '../../services/currencyPairRefDataService';
 
@@ -25,7 +26,7 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
         super(container);
         this._router = router;
     }
-    _createView(childContainer, regionRecordState?: RegionRecordState<CashTilePersistedState>): PolimerModel<CashTileModel> {
+    _createView(childContainer: Container, regionRecordState?: RegionRecordState<CashTilePersistedState>): PolimerModel<CashTileModel> {
         _log.verbose('Creating cash tile model');
 
         const model = CashTileModelBuilder.createDefault(`cash-tile-${this._cashTileIdSeed++}`, regionRecordState.viewState);
@@ -43,13 +44,13 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
 
             // ***************************
             // Wire up state handlers.
-            .withStateHandlerObject('referenceData', new ReferenceDataStateHandlers(refDataService, model.modelId))
-            .withStateHandlerObject('inputs', new InputStateHandlers())
-            .withStateHandlerObject('requestForQuote', new RequestForQuoteStateHandlers())
+            .withStateHandlers('referenceData', new ReferenceDataStateHandlers(refDataService, model.modelId))
+            .withStateHandlers('inputs', new InputStateHandlers())
+            .withStateHandlers('requestForQuote', new RequestForQuoteStateHandlers())
 
             // ***************************
             // Wire up state event streams (i.e. async operations)
-            .withEventStreamsOn(new RequestForQuoteEventStreams(new RfqService()))
+            .withEventTransforms(new RequestForQuoteEventTransforms(new RfqService()))
 
             // ***************************
             // Wire up legacy OO model interactions (unlikely you'll need this):

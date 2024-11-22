@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
 import {createViewForModel } from './viewBindingDecorator';
 import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
+import {EspModelContext} from './espModelContext';
 
 export type PublishEvent = (eventType: string, event: any) => void;
 
@@ -44,10 +45,6 @@ interface ConnectableComponentContext {
 }
 
 export type PublishModelEventDelegate = (eventType: string, event: any) => void;
-
-export const PublishModelEventContext = React.createContext<PublishModelEventDelegate>(null);
-
-export const HooksPublishModelEventProvider = PublishModelEventContext.Provider;
 
 export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedToProps = {}> extends React.Component<ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, State> {
     private _isMounted = false;
@@ -146,7 +143,8 @@ export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedT
         }
         let childProps = this._getChildProps();
         let view = createViewForModel(this.state.model, childProps, this.props.viewContext, this.props.view);
-        return (<HooksPublishModelEventProvider value={this.state.publishEvent}>{view}</HooksPublishModelEventProvider>);
+
+        return (<EspModelContext modelId={this.props.modelId} router={this.context.router} {...childProps}>{view}</EspModelContext>);
     }
 
     private _getChildProps(): ConnectableComponentChildProps<TModel> {

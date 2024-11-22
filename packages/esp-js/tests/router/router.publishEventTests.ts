@@ -16,14 +16,14 @@
  */
 // notice_end
 
-import * as esp from '../../src';
+import {Router, EventEnvelope, DefaultModelAddress} from '../../src';
 
 describe('Router', () => {
 
-    let _router;
+    let _router: Router;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _router = new Router();
     });
 
     describe('.publishEvent()', () => {
@@ -31,7 +31,8 @@ describe('Router', () => {
             expect(() => {_router.publishEvent(undefined, 'Foo', 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', undefined, 'Foo'); }).toThrow();
             expect(() => {_router.publishEvent('Foo', 'Foo', undefined); }).toThrow();
-            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('The modelId argument should be a string');
+            expect(() => {_router.publishEvent({ },'foo', 'foo'); }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
+            expect(() => {_router.publishEvent({ entityKey: 'theKey' },'foo', 'foo'); }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
         });
 
         it('queues and processes events received during event loop by model id', () => {
@@ -97,6 +98,34 @@ describe('Router', () => {
             _router.publishEvent('fooModel', 'startEvent', 'start');
 
             expect(receivedEvents.length).toEqual(1);
+        });
+
+        it('can publish with ModelAddress and DefaultModelAddress', () => {
+            let receivedEnvelopes: EventEnvelope<unknown, unknown>[] = [];
+            _router.addModel('modelId1', {});
+            _router.getEventObservable('modelId1', 'startEvent').subscribe((e: EventEnvelope<unknown, unknown>) => {
+                receivedEnvelopes.push(e);
+            });
+            _router.publishEvent({ modelId: 'modelId1' }, 'startEvent', 'theEvent');
+            expect(receivedEnvelopes.length).toBe(1);
+            expect(receivedEnvelopes[0].entityKey).not.toBeDefined();
+            _router.publishEvent(new DefaultModelAddress('modelId1'), 'startEvent', 'theEvent');
+            expect(receivedEnvelopes.length).toBe(2);
+            expect(receivedEnvelopes[1].entityKey).not.toBeDefined();
+        });
+
+        it('can publish including entityKey', () => {
+            let receivedEnvelopes: EventEnvelope<unknown, unknown>[] = [];
+            _router.addModel('modelId1', {});
+            _router.getEventObservable('modelId1', 'startEvent').subscribe((e: EventEnvelope<unknown, unknown>) => {
+                receivedEnvelopes.push(e);
+            });
+            _router.publishEvent({ modelId: 'modelId1', entityKey: 'the-key-1' }, 'startEvent', 'theEvent');
+            expect(receivedEnvelopes.length).toBe(1);
+            expect(receivedEnvelopes[0].entityKey).toBe('the-key-1');
+            _router.publishEvent(new DefaultModelAddress('modelId1', 'the-key-2'), 'startEvent', 'theEvent');
+            expect(receivedEnvelopes.length).toBe(2);
+            expect(receivedEnvelopes[1].entityKey).toBe('the-key-2');
         });
     });
 });

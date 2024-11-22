@@ -17,6 +17,7 @@
 // notice_end
 
 import {DisposableBase} from '../../system/disposables';
+import {ModelAddress} from '../modelAddress';
 
 /**
  * hooks onto a global exposed by esp-js-devtools and forwards diagnostics to that
@@ -25,17 +26,17 @@ export interface DiagnosticMonitor extends DisposableBase {
     getSummary(): string;
     addModel(modelId: string): void;
     removeModel(modelId: string): void;
-    publishEvent(modelId: string, eventType, event): void;
+    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType, event): void;
     broadcastEvent(eventType): void;
     executingEvent(eventType): void;
     runAction(modelId: string): void;
-    eventEnqueued(modelId, eventType): void;
+    eventEnqueued(modelId: string, entityKey: string, eventType: string): void;
     dispatchLoopStart(): void;
-    startingModelEventLoop(modelId, initiatingEventType): void;
+    startingModelEventLoop(modelId, entityKey: string, initiatingEventType): void;
     preProcessingModel(): void;
     dispatchingEvents(): void;
     dispatchingAction(): void;
-    dispatchingEvent(eventType, stage): void;
+    dispatchingEvent(eventType: string, stage): void;
     dispatchingViaDirective(functionName): void;
     finishDispatchingEvent(): void;
     postProcessingModel(): void;

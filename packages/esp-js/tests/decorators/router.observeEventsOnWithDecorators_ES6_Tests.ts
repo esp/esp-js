@@ -301,7 +301,7 @@ describe('Decorators', () => {
     it('should throw if event name is omitted', () => {
         expect(() => {
             class Foo {
-                @observeEvent()
+                @observeEvent(undefined)
                 _anObserveFunction() {
                 }
             }
@@ -335,7 +335,7 @@ describe('Decorators', () => {
     it('should throw if event name is an invalid type', () => {
         expect(() => {
             class Foo {
-                @observeEvent({})
+                @observeEvent(<any>{})
                 _anObserveFunction() {
                 }
             }
@@ -483,13 +483,13 @@ describe('Decorators', () => {
 
     it('should allow multiple registrations for the same modelId against different objects', () => {
         _router.addModel('m1', {});
-        class e {
+        class E {
             @observeEvent('anEvent')
             _derivedEvent(event, context, model) {
             }
         }
-        let eventObserver1 = new e();
-        let eventObserver2 = new e();
+        let eventObserver1 = new E();
+        let eventObserver2 = new E();
         _router.observeEventsOn('m1', eventObserver1);
         expect(() => {
             _router.observeEventsOn('m1', eventObserver1);

@@ -64,7 +64,7 @@ describe('.subscribeOn', () => {
         esp.Observable.create(o => {
             let onCorrectDispatchLoop = _router.isOnDispatchLoopFor(_testModel1.modelId);
             receivedUpdates.push(onCorrectDispatchLoop);
-
+            return () => {};
         }).asRouterObservable(_router)
             .subscribeOn(_testModel1.modelId)
             .subscribe(i => {

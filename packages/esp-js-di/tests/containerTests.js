@@ -292,17 +292,11 @@ describe('Container', () =>  {
 
             });
 
-            it('should pass container to dependency resolver', () =>  {
-                pending();
-            });
+            it.skip('should pass container to dependency resolver', () =>  { });
 
-            it('should throw if register called with unknown plugin', () =>  {
-                pending();
-            });
+            it.skip('should throw if register called with unknown plugin', () =>  { });
 
-            it('should resolve from custom resolvers', () =>  {
-                pending();
-            });
+            it.skip('should resolve from custom resolvers', () =>  { });
         });
 
         describe('lifetime management', () =>  {
@@ -326,8 +320,8 @@ describe('Container', () =>  {
 
     describe('.createChildContainer()', () =>  {
 
-        it('should throw if called with arguments', () =>  {
-            pending();
+        it.skip('should throw if called with arguments', () =>  {
+            // pending
         });
 
         describe('.register()/.resolve() ', () =>  {

@@ -27,7 +27,7 @@ module.exports = {
     module: {
         ...baseConfig.module,
         // Tell webpack to skip this, this results in it not re-writing the global state in this file.
-        // Given this file itself proxies which global stat to use, this makes sense.
+        // Given this file itself proxies which global state to use, this makes sense.
         noParse: /\/setImplementation.ts$/,
     }
 };

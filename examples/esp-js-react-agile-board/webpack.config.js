@@ -35,13 +35,8 @@ module.exports = {
         new webpack.HotModuleReplacementPlugin()
     ],
     devServer: {
+        static: path.join(__dirname, './'),
         port: 4000,
-        contentBase: path.join(__dirname, './'),
-        stats: {
-            colors: true
-        },
-        noInfo: false,
-        quiet: false,
         hot: true
     }
 };

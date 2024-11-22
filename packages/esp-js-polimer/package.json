@@ -1,6 +1,6 @@
 {
   "name": "esp-js-polimer",
-  "version": "6.5.1",
+  "version": "7.0.2-next.0",
   "description": "Polimer adds redux-like reducers for esp-js",
   "keywords": [
     "state processor",
@@ -26,20 +26,20 @@
   "typings": ".dist/typings/index.d.ts",
   "license": "Apache-2.0",
   "dependencies": {
-    "esp-js": "^6.5.1",
-    "immer": "10.1.1",
-    "rxjs": "6.6.6"
+    "esp-js": "^7.0.2-next.0",
+    "immer": "^10.1.1",
+    "rxjs": "^6.6.6"
   },
   "devDependencies": {
-    "jest": "26.0.1",
-    "typescript": "5.5.2",
+    "jest": "^29.7.0",
+    "typescript": "^5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   },
   "peerDependencies": {
-    "esp-js": "^6.0.0",
-    "immer": "^9.0.3",
-    "rxjs": "^6.6.6"
+    "esp-js": "^7.0.0",
+    "immer": "^10.0.0",
+    "rxjs": "^6.0.0"
   }
 }

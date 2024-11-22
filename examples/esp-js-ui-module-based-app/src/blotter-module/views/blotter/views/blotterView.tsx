@@ -2,6 +2,7 @@ import * as React from 'react';
 import {BlotterModel} from '../model/blotterModel';
 import {BlotterEvents} from '../events';
 import {PublishModelEventDelegate, PublishModelEventContext} from 'esp-js-react';
+import './blotterView.css';
 
 export interface BlotterViewProps {
     model:BlotterModel;

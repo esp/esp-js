@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui-rxcompat",
-  "version": "6.5.1",
+  "version": "7.0.2-next.0",
   "description": "esp-js-ui-rxcompat Package",
   "main": ".dist/esp-js-ui-rxcompat.js",
   "types": "esp-js-ui-rxcompat.d.ts",
@@ -17,22 +17,22 @@
     "dev": "nps dev"
   },
   "devDependencies": {
-    "jest": "26.0.1",
-    "typescript": "5.5.2",
+    "jest": "^29.7.0",
+    "typescript": "^5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {
-    "esp-js": "^6.5.1",
-    "esp-js-rx": "^6.5.1",
-    "rxjs": "6.6.6",
-    "rxjs-compat": "6.6.6"
-  },
-  "peerDependencies": {
-    "esp-js": "^6.0.0",
-    "esp-js-rx": "^6.0.0",
+    "esp-js": "^7.0.2-next.0",
+    "esp-js-rx": "^7.0.2-next.0",
     "rxjs": "^6.6.6",
     "rxjs-compat": "^6.6.6"
+  },
+  "peerDependencies": {
+    "esp-js": "^7.0.0",
+    "esp-js-rx": "^7.0.0",
+    "rxjs": "^6.0.0",
+    "rxjs-compat": "^6.0.0"
   }
 }

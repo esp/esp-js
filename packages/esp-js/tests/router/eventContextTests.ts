@@ -21,8 +21,8 @@ import {DefaultEventContext} from '../../src';
 describe('EventContext', () => {
     let ec;
 
-    beforeEach(function(){
-        ec = new DefaultEventContext('modelId', 'eventType');
+    beforeEach(function() {
+        ec = new DefaultEventContext('modelId', 'eventType', undefined);
     });
 
     it('throws if canceled twice', () => {

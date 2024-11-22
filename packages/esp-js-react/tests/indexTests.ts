@@ -18,14 +18,28 @@
 
 import * as espReact from '../src/index';
 import {
-    RouterProvider,
-    RouterContext,
     SmartComponent,
     ViewBinder,
     viewBinding,
     getEspReactRenderModel,
     GetEspReactRenderModelConsts,
-    shouldUpdateMixin
+    shouldUpdateMixin,
+
+    useRouter,
+    RouterContext,
+    RouterProvider,
+
+    useGetModelId,
+    GetModelIdContext,
+
+    PublishEventContext,
+    usePublishEvent,
+
+    PublishModelEventContext,
+    usePublishModelEvent,
+
+    PublishModelEventWithEntityKeyContext,
+    usePublishModelEventWithEntityKey,
 } from '../src';
 
 describe('index exports', () => {
@@ -67,5 +81,48 @@ describe('index exports', () => {
     it('should export shouldUpdateMixin', () => {
         expect(espReact.shouldUpdateMixin).toBeDefined();
         expect(shouldUpdateMixin).toBeDefined();
+    });
+
+    describe('hooks', () => {
+
+        it('should export useRouter and related', () => {
+            expect(espReact.useRouter).toBeDefined();
+            expect(useRouter).toBeDefined();
+
+            expect(espReact.RouterContext).toBeDefined();
+            expect(RouterContext).toBeDefined();
+        });
+
+        it('should export useGetModelId and related', () => {
+            expect(espReact.useGetModelId).toBeDefined();
+            expect(useGetModelId).toBeDefined();
+
+            expect(espReact.GetModelIdContext).toBeDefined();
+            expect(GetModelIdContext).toBeDefined();
+        });
+
+        it('should export usePublishEvent and related', () => {
+            expect(espReact.usePublishEvent).toBeDefined();
+            expect(usePublishEvent).toBeDefined();
+
+            expect(espReact.PublishEventContext).toBeDefined();
+            expect(PublishEventContext).toBeDefined();
+        });
+
+        it('should export usePublishModelEvent and related', () => {
+            expect(espReact.usePublishModelEvent).toBeDefined();
+            expect(usePublishModelEvent).toBeDefined();
+
+            expect(espReact.PublishModelEventContext).toBeDefined();
+            expect(PublishModelEventContext).toBeDefined();
+        });
+
+        it('should export usePublishModelEventWithEntityKey and related', () => {
+            expect(espReact.usePublishModelEventWithEntityKey).toBeDefined();
+            expect(usePublishModelEventWithEntityKey).toBeDefined();
+
+            expect(espReact.PublishModelEventContext).toBeDefined();
+            expect(PublishModelEventWithEntityKeyContext).toBeDefined();
+        });
     });
 });

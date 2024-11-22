@@ -13,7 +13,7 @@ describe('State save handler tests', () => {
 
     beforeEach(() => {
         api = PolimerTestApiBuilder.create()
-            .withStateHandlerObject()
+            .withStateHandlers()
             .withStateSaveHandler(stateSaveHandler)
             .build();
         api.asserts.polimerModelIsRegistered(true);

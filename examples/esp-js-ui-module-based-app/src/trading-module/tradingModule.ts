@@ -14,6 +14,7 @@ import {CashTileViewFactory} from './views/cash-tile/cashTileViewFactory';
 import {CurrencyPairRefDataService} from './services/currencyPairRefDataService';
 import {PreferenceConsts} from '../common';
 import {TradingPreferences} from './views/preferences/model/tradingPreferences';
+import {DynamicProductTileViewFactory} from './views';
 
 let _log = Logger.create('TradingModule');
 
@@ -36,6 +37,13 @@ export class TradingModule extends ModuleBase {
         // Cash Tile
         this.container
             .register(TradingModuleContainerConst.cashTileViewFactory, CashTileViewFactory)
+            .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
+            .singleton()
+            .inGroup(this._viewFactoryGroupId);
+
+        // Dynamic Products
+        this.container
+            .register(TradingModuleContainerConst.dynamicProductsViewFactory, DynamicProductTileViewFactory)
             .inject(EspDiConsts.owningContainer, SystemContainerConst.router)
             .singleton()
             .inGroup(this._viewFactoryGroupId);

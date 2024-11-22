@@ -1,0 +1,12 @@
+.tileViewContainer {
+    padding: 1em;
+    border: solid 1px #aaaaaa;
+    margin: 1em;
+}
+
+.tileViewContainer .header {
+    font-size: x-large;
+}
+.tileViewContainer .modelId {
+    font-size: xx-small;
+}

@@ -1,8 +1,8 @@
 module.exports = {
     "transform": {
-        "^.+\\.js?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts",
-        "^.+\\.tsx?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts"
+        "^.+\\.[tj]sx?$": "<rootDir>/../../__jest__/typeScriptPreprocessor.ts"
     },
+    "transformIgnorePatterns": ["<rootDir>/node_modules/"],
     "testMatch": [
         "**/tests/**/*Tests.[jt]s?(x)"
     ],
@@ -17,13 +17,13 @@ module.exports = {
     },
     "setupFiles": [
         "<rootDir>/../../__jest__/disableJestConsoleWrapper.js",
-        "<rootDir>/../../__jest__/mocks/browserMocks.js"
+        "<rootDir>/../../__jest__/jest-fail-regression-fix.js",
     ],
     "modulePaths": [
         "<rootDir>"
     ],
-    "testURL": "http://localhost/",
-    "setupFilesAfterEnv": [
-        "<rootDir>/../../__jest__/mocks/cryptoMock.ts"
-    ]
+    "testEnvironment": "jsdom",
+    "testEnvironmentOptions": {
+        "url": "http://localhost/",
+    },
 };

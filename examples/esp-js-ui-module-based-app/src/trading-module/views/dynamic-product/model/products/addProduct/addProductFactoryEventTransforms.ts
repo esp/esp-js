@@ -10,7 +10,7 @@ import {SwapProductStateHandler} from '../product/swap';
 import {OptionProductEventTransforms, OptionProductStateHandler} from '../product/option';
 
 /**
- * An event stream that acts on side-effecting changes regarding the 'addProduct' state.
+ * An event transform that acts on side-effecting changes regarding the 'addProduct' state.
  *
  * The event transforms in this class expand and contract the model by adding new state handlers and event transforms
  */

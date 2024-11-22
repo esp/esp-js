@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "private": true,
   "dependencies": {
-    "classnames": "2.2.6",
+    "classnames": "^2.2.6",
     "esp-js": "^7.0.2-next.0",
     "esp-js-di": "^7.0.2-next.0",
     "esp-js-polimer": "^7.0.2-next.0",

@@ -1,5 +1,5 @@
 import * as uuid from 'uuid';
-import {DisplayOptions} from './regionManager';
+import {RegionItemOptions} from './regionManager';
 import {Guard} from 'esp-js';
 
 /**
@@ -8,18 +8,18 @@ import {Guard} from 'esp-js';
 export class RegionItem {
     private _modelId: string;
     private _regionRecordId: string;
-    private _displayOptions: DisplayOptions;
+    private _regionItemOptions: RegionItemOptions;
     private _regionRecordExists: boolean = false;
 
-    public static create(modelId: string, displayOptions?: DisplayOptions) {
+    public static create(modelId: string, regionItemOptions?: RegionItemOptions) {
         Guard.isString(modelId, `modelId must be a string`);
-        return new RegionItem(modelId, displayOptions);
+        return new RegionItem(modelId, regionItemOptions);
     }
 
-    public static createExisting(regionRecordId: string, modelId: string, displayOptions?: DisplayOptions) {
+    public static createExisting(regionRecordId: string, modelId: string, regionItemOptions?: RegionItemOptions) {
         Guard.isString(modelId, `regionRecordId must be a string`);
         Guard.isString(modelId, `modelId must be a string`);
-        const item = new RegionItem(modelId, displayOptions);
+        const item = new RegionItem(modelId, regionItemOptions);
         item._regionRecordId = regionRecordId;
         item._regionRecordExists = true;
         return item;
@@ -28,14 +28,14 @@ export class RegionItem {
     /**
      * @deprecated user the static creation factories `RegionItem.create()` and `RegionItem.createExisting()`
      */
-    constructor(modelId: string, displayOptions?: DisplayOptions) {
+    constructor(modelId: string, regionItemOptions?: RegionItemOptions) {
         Guard.isString(modelId, `modelId must be a string`);
-        if (displayOptions) {
-            Guard.isObject(displayOptions, `displayOptions must be a object`);
+        if (regionItemOptions) {
+            Guard.isObject(regionItemOptions, `regionItemOptions must be a object`);
         }
         this._modelId =  modelId;
         this._regionRecordId = uuid.v4();
-        this._displayOptions =  displayOptions;
+        this._regionItemOptions =  regionItemOptions;
         this._regionRecordExists = false;
     }
 
@@ -47,12 +47,19 @@ export class RegionItem {
         return this._modelId;
     }
 
-    public get displayOptions(): DisplayOptions {
-        return this._displayOptions;
+    /**
+     * @deprecated use regionItemOptions
+     */
+    public get displayOptions(): RegionItemOptions {
+        return this.regionItemOptions;
+    }
+
+    public get regionItemOptions(): RegionItemOptions {
+        return this._regionItemOptions;
     }
 
     public get title(): string {
-        return this._displayOptions ? this._displayOptions.title : '';
+        return this._regionItemOptions ? this._regionItemOptions.title : '';
     }
 
     /**
@@ -62,9 +69,17 @@ export class RegionItem {
         return this._regionRecordExists;
     }
 
+    public updateOptions(regionItemOptions: Partial<RegionItemOptions>) {
+        Guard.isDefined(regionItemOptions, `regionItemOptions required`);
+        this._regionItemOptions = {
+            ...this._regionItemOptions,
+            ...regionItemOptions
+        };
+    }
+
     public toString() {
-        if (this._displayOptions) {
-            return `RegionItem: Id:${this._regionRecordId}, ModelId:${this._modelId}. Display options: context:${this._displayOptions.displayContext}, title:${this._displayOptions.title}`;
+        if (this._regionItemOptions) {
+            return `RegionItem: Id:${this._regionRecordId}, ModelId:${this._modelId}. Display options: context:${this._regionItemOptions.displayContext}, title:${this._regionItemOptions.title}, tag:${this._regionItemOptions.tag}`;
         } else {
             return `RegionItem: Id:${this._regionRecordId}, ModelId:${this._modelId}. Display options: 'n/a'}`;
         }

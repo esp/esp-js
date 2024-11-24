@@ -1,197 +1,162 @@
 import * as React from 'react';
-import {Disposable, Router, EspDecoratorUtil, utils, DisposableBase} from 'esp-js';
-import {createViewForModel } from './viewBindingDecorator';
-import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
-import {EspModelContext} from './espModelContext';
 import {useRouter} from './routerProvider';
+import {useEffect, useState} from 'react';
+import {EspDecoratorUtil, Router, SerialDisposable, utils} from 'esp-js';
+import {EspModelContext, PublishModelEventDelegate, useGetModelId} from './espModelContext';
+import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
+import {createViewForModel} from './viewBindingDecorator';
 
-export type PublishEvent = (eventType: string, event: any) => void;
-
-export type CreatePublishEventProps<TPublishEventProps> = (publishEvent: PublishEvent) => TPublishEventProps;
+export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
 export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
-export type ViewComponentTypes = React.FunctionComponent | React.ClassType<any, any, any> | React.ComponentClass;
-
-export interface ConnectableComponentProps<TModel ={}, TPublishEventProps = {}, TModelMappedToProps = {}> {
+export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     modelId?: string;
     viewContext?: string;
-    view?: ViewComponentTypes;
+    view?: React.ComponentType;
     /**
      * Provides a means to create a serious of 'publish event' callbacks which will be passed as props to the child view.
      */
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
+
     [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
 }
 
-export interface ConnectableComponentChildProps<TModel> {
-    modelId: string;
-    model: TModel;
-    router: Router;
-    [key: string]: any; // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
-}
-
-export interface State {
+interface ConnectableComponentState {
     model?: any;
     currentModelId?: string;
     publishProps?: any;
     publishEvent?: PublishModelEventDelegate;
+    modelSubscriptionDisposable: SerialDisposable;
 }
 
-interface ConnectableComponentContext {
-    router: Router;
+interface ConnectableComponentChildProps<TModel> {
     modelId: string;
+    model: TModel;
+    router: Router;
+
+    [key: string]: any; // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
 }
 
-export type PublishModelEventDelegate = (eventType: string, event: any) => void;
-
-export class ConnectableComponent<TModel, TPublishEventProps = {}, TModelMappedToProps = {}> extends React.Component<ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, State> {
-    private _isMounted = false;
-    private _observationSubscription: Disposable;
-    context: ConnectableComponentContext;
-
-    constructor(props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, context: ConnectableComponentContext) {
-        super(props, context);
-        this.state = {model: null, currentModelId: null};
-    }
-
-    componentWillReceiveProps(nextProps: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>, nextContext: ConnectableComponentContext) {
-        const modelId = nextProps.modelId || nextContext.modelId;
-        const oldModelId = this._getModelId();
-
-        if (modelId === oldModelId) {
-            return;
-        }
-        
-        if(nextProps.modelId === oldModelId) {
-            return;
-        }
-
-        this._tryObserveModel(modelId);
-    }
-
-    componentDidMount() {
-        this._isMounted = true;
-        this._tryObserveModel(this._getModelId());
-    }
-
-    componentWillUnmount() {
-        this._isMounted = false;
-        this._tryDisposeModelSubscription();
-    }
-
-    private _getModelId(): string {
-        // props override context
-        return this.props.modelId;
-    }
-
-    private _tryObserveModel(modelId: string): void {
-        this._tryDisposeModelSubscription();
-
-        if (!modelId) {
-            return;
-        }
-
-        let stateChanged = modelId !== this.state.currentModelId;
-
-        let publishEvent = this.state.publishEvent;
-        if (stateChanged) {
-            publishEvent = this._publishEvent(useRouter(), modelId);
-        }
-
-        let publishProps = this.state.publishProps;
-        // We only map the publish props once, as for well behaving components these callbacks should never change
-        if (stateChanged && this.props.createPublishEventProps) {
-            publishProps = this.props.createPublishEventProps(publishEvent);
-        }
-
-        if (stateChanged) {
-            this.setState({
-                currentModelId: modelId,
-                publishEvent,
-                publishProps
-            });
-            this._observationSubscription = useRouter()
-                .getModelObservable(modelId)
-                .subscribe(model => {
-                    if (this._isMounted) {
-                        this.setState({model});
-                    }
-                });
-        }
-    }
-
-    private _tryDisposeModelSubscription() {
-        if(this._observationSubscription) {
-            this._observationSubscription.dispose();
-            this._observationSubscription = new DisposableBase();
-            this.setState({model: null, currentModelId: null, publishProps: null, publishEvent: null});
-        }
-    }
-
-    private _publishEvent = (router: Router, modelId: string) => (eventType: string, event: any) => router.publishEvent(modelId, eventType, event);
-
-    public render() {
-        if(this.state.model == null) {
-            return null;
-        }
-        let childProps = this._getChildProps();
-        let view = createViewForModel(this.state.model, childProps, this.props.viewContext, this.props.view);
-
-        return (<EspModelContext modelId={this.props.modelId} router={this.context.router} {...childProps}>{view}</EspModelContext>);
-    }
-
-    private _getChildProps(): ConnectableComponentChildProps<TModel> {
-        // consume what this component owns, and let the rest end up in `...rest`
-        const {children, createPublishEventProps, modelId, mapModelToProps, view, viewContext, ...rest} = this.props;
-        const model = this._getRenderModel(this.state.model);
-        let childProps = {
-            modelId,
-            router: useRouter(),
-            ...rest,
-            ...this.state.publishProps,
-            model
+const getChildProps = <TModel, >(
+    router: Router,
+    props: ConnectableComponentProps,
+    state: ConnectableComponentState
+): ConnectableComponentChildProps<TModel> => {
+    // consume what this component owns, and let the rest end up in `...rest`
+    const {
+        children,
+        createPublishEventProps,
+        modelId,
+        mapModelToProps,
+        view,
+        viewContext,
+        ...rest
+    } = props;
+    const model = getRenderModel(state.model);
+    let childProps = {
+        modelId,
+        router: router,
+        ...rest,
+        ...state.publishProps,
+        model
+    };
+    if (props.mapModelToProps) {
+        childProps = {
+            ...childProps,
+            ...(props.mapModelToProps(model, state.publishProps) as any)
         };
-        if (this.props.mapModelToProps) {
-            childProps = {
-                ...childProps,
-                ...(this.props.mapModelToProps(model, this.state.publishProps) as any)
-            };
-        }
-        return childProps;
     }
+    return childProps;
+};
 
-    /**
-     * Sees if there is a special selector function which can be invoked to return a render model rather than the top level model model itself
-     */
-    private _getRenderModel(model: any): TModel {
-        // does the given model have a decorated function we can invoke to get a different model to render?
-        if (EspDecoratorUtil.hasMetadata(model)) {
-            let metadata: GetEspReactRenderModelMetadata = EspDecoratorUtil.getCustomData(model, GetEspReactRenderModelConsts.CustomDataKey);
-            if (metadata) {
-                return model[metadata.functionName]();
-            }
+/**
+ * Returns the model which will be used to pluck state/props for the current view.
+ *
+ * This is basically a hock (not a react 'hook') to call a function on `model` and get a new sub graph to use as state.
+ */
+const getRenderModel = <TModel, >(model: any): TModel => {
+    // does the given model have a decorated function we can invoke to get a different model to render?
+    if (EspDecoratorUtil.hasMetadata(model)) {
+        let metadata: GetEspReactRenderModelMetadata = EspDecoratorUtil.getCustomData(model, GetEspReactRenderModelConsts.CustomDataKey);
+        if (metadata) {
+            return model[metadata.functionName]();
         }
-        // else see if there is a function with name GetEspReactRenderModelConsts.HandlerFunctionName we can invoke to get a different model to render?
-        let renderModelGetter = model[GetEspReactRenderModelConsts.HandlerFunctionName];
-        if (renderModelGetter && utils.isFunction(renderModelGetter)) {
-            return renderModelGetter.call(model);
-        }
-        // else just return the default model
-        return model;
     }
-}
+    // else see if there is a function with name GetEspReactRenderModelConsts.HandlerFunctionName we can invoke to get a different model to render?
+    let renderModelGetter = model[GetEspReactRenderModelConsts.HandlerFunctionName];
+    if (renderModelGetter && utils.isFunction(renderModelGetter)) {
+        return renderModelGetter.call(model);
+    }
+    // else return the initial model passed in
+    return model;
+};
 
-// Lifting 'ConnectableView' into it's own type so it can be exported, else tsc doesn't correctly generated declaration files
-export type ConnectableView = React.ComponentClass | React.FunctionComponent;
+const createPublishProps = (router: Router, modelId: string, props: ConnectableComponentProps) => {
+    if (utils.stringIsEmpty(modelId)) {
+        return null;
+    }
+    if (!props.createPublishEventProps) {
+        return null;
+    }
+    return props.createPublishEventProps(
+        (eventType: string, event: any) => router.publishEvent(modelId, eventType, event)
+    );
+};
 
-export const connect = function<TModel, TPublishEventProps, TModelMappedToProps = {}>(
+export const ConnectableComponent = (props: ConnectableComponentProps) => {
+    const router = useRouter();
+    const modelId = props.modelId || useGetModelId()();
+    const [state, setState] = useState<ConnectableComponentState>({
+        modelSubscriptionDisposable: new SerialDisposable(),
+        currentModelId: '',
+        model: null
+    });
+    if (state.currentModelId !== modelId) {
+        setState({
+            ...state,
+            currentModelId: modelId,
+            publishProps: createPublishProps(router, modelId, props)
+        });
+    }
+    useEffect(() => {
+        // If this callback is running it means either it's the firs time, or the router/modelId has changed
+        // Cancel (or noop) any existing subscription to the model
+        state.modelSubscriptionDisposable.setDisposable(null);
+        if (utils.stringIsEmpty(modelId)) {
+            return;
+        }
+        state.modelSubscriptionDisposable.setDisposable(router
+            .getModelObservable(props.modelId)
+            .subscribe((model: any) => {
+                setState({
+                    ...state,
+                    model
+                });
+            }));
+        return () => {
+            state.modelSubscriptionDisposable.dispose();
+        };
+    }, [router, modelId]);
+    if (state.model == null) {
+        return null;
+    }
+    let childProps = getChildProps(router, props, state);
+    let view = createViewForModel(state.model, childProps, props.viewContext, props.view);
+    return (
+        <EspModelContext modelId={props.modelId} router={router} {...childProps}>
+            {view}
+        </EspModelContext>
+    );
+};
+
+export const connect = function <TModel, TPublishEventProps, TModelMappedToProps = {}>(
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>
-): (view: ConnectableView) => (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) => JSX.Element {
-    return function(view: ConnectableView) {
-        return function(props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) {
+): (view: React.ComponentType) => (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) => JSX.Element {
+    return function (view: React.ComponentType) {
+        return function (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) {
             const {modelId, viewContext, ...rest} = props;
             return <ConnectableComponent
                 modelId={modelId}

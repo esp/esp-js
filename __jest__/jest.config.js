@@ -22,6 +22,7 @@ module.exports = {
     "modulePaths": [
         "<rootDir>"
     ],
+    "//": "testEnvironment -> see -> https://testing-library.com/docs/react-testing-library/setup#jest-28",
     "testEnvironment": "jsdom",
     "testEnvironmentOptions": {
         "url": "http://localhost/",

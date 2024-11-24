@@ -1,9 +1,20 @@
 import 'jest';
 import * as React from 'react';
-import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel, RouterContext} from '../src';
-import {Router, observeEvent} from 'esp-js';
-import {ConnectableComponentChildProps, PublishEvent, PublishModelEventContext, PublishModelEventDelegate} from '../src/connectableComponent';
-import {render, screen, RenderResult} from '@testing-library/react';
+import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel, PublishModelEventDelegate, RouterContext} from '../src';
+import {Router, observeEvent, utils} from 'esp-js';
+import {render, RenderResult} from '@testing-library/react';
+
+const getPropsAsDataAttributesWithMetadata = (props: any) => {
+    const propsAsDataAttributes: {[key: string]: string} = Object.keys(props).reduce((result: any, key: string) => {
+        let prop = props[key];
+        // need to lower case data-* attributes else React throws a warning
+        result[`data-${key.toLowerCase()}`] = utils.isString(prop)
+            ? prop
+            : typeof prop;
+        return result;
+    }, {});
+    return propsAsDataAttributes;
+};
 
 class TestModelView1 extends React.Component {
     constructor(props) {
@@ -12,7 +23,7 @@ class TestModelView1 extends React.Component {
 
     render() {
         return <div>
-            <span data-testid='props-container' {...this.props} />
+            <span data-testid='span-with-props-as-attributes' {...getPropsAsDataAttributesWithMetadata(this.props)} />
             <span data-testid='view-text'>View1</span>
         </div>;
     }
@@ -25,7 +36,7 @@ class TestModelView2 extends React.Component {
 
     render() {
         return <div>
-            <span data-testid='props-container' {...this.props} />
+            <span data-testid='span-with-props-as-attributes'  {...getPropsAsDataAttributesWithMetadata(this.props)} />
             <span data-testid='view-text'>View2</span>
         </div>;
     }
@@ -97,7 +108,7 @@ describe('ConnectableComponent', () => {
     let router,
         testModel: TestModel,
         testModel2: TestModel,
-        connectableComponentWrapper: RenderResult,
+        renderResult: RenderResult,
         connectableComponentProps: ConnectableComponentProps<TestModel>,
         mapModelToProps,
         createPublishEventProps,
@@ -140,24 +151,24 @@ describe('ConnectableComponent', () => {
                 publishEvent1: () => {
                 }
             };
-            createPublishEventProps = (publishEvent: PublishEvent) => publishEventProps;
+            createPublishEventProps = (publishEvent: PublishModelEventDelegate) => publishEventProps;
         }
         if (options.useAlternativeViewContext) {
             userAlternativeViewContext = 'alternative-view-context';
         }
         if (options.useConnectFunction) {
-            const HotView2 = connect(
+            const TestModelView2ConnectedComponent = connect(
                 mapModelToProps,
                 createPublishEventProps
             )(TestModelView2);
-            connectableComponentWrapper = render(
+            renderResult = render(
                 <RouterContext.Provider value={router} >
-                    <HotView2 {...otherProps}  {...connectableComponentProps}/>,
+                    <TestModelView2ConnectedComponent {...otherProps}  {...connectableComponentProps}/>,
                 </RouterContext.Provider>
             );
         } else {
-            connectableComponentWrapper = render(
-                <RouterContext.Provider value={router}>
+            renderResult = render(
+                <RouterContext.Provider value={router} >
                     <ConnectableComponent
                         {...connectableComponentProps}
                         mapModelToProps={mapModelToProps}
@@ -188,34 +199,33 @@ describe('ConnectableComponent', () => {
             setup({useConnectFunction: true, useMapModelToProps: true, useCreatePublishEventProps: true});
         });
 
-        const getChidViewProps = () => {
-            return connectableComponentWrapper.getByTestId('props-container');
-            // return connectableComponentWrapper.childAt(0).childAt(0).props() as ConnectableComponentChildProps<TestModel>;
+        const getSpanWithPropsAsAttributes = () => {
+            return renderResult.getByTestId('span-with-props-as-attributes');
         };
 
         describe('Child view props', () => {
             it('passes mapped props', () => {
-                let element = getChidViewProps();
-                expect(element).toHaveAttribute('foo', 'initial-value');
+                let span = getSpanWithPropsAsAttributes();
+                expect(span.getAttribute('data-foo')).toBe('initial-value');
             });
 
             // it('passes publishEventProps to props mapper', () => {
-            //     let props = getChidViewProps();
-            //     expect(props.publishEventProps).toBe(publishEventProps);
+            //     let span = getSpanWithPropsAsAttributes();
+            //     expect(span.getAttribute('publishEventProps')).toBe('function');
             // });
             //
             // it('passes model', () => {
-            //     let props = getChidViewProps();
+            //     let props = getSpanWithPropsAsAttributes();
             //     expect(props.model).toBe(testModel);
             // });
             //
             // it('passes publishEventProps', () => {
-            //     let props = getChidViewProps();
+            //     let props = getSpanWithPropsAsAttributes();
             //     expect(props.publishEvent1).toBeDefined();
             // });
             //
             // it('passes other props', () => {
-            //     let props = getChidViewProps();
+            //     let props = getSpanWithPropsAsAttributes();
             //     expect(props.other1).toEqual('other-value');
             // });
         });
@@ -229,7 +239,7 @@ describe('ConnectableComponent', () => {
     //
     // describe('ConnectableComponent directly', () => {
     //
-    //     const getChidViewProps = () => {
+    //     const getSpanWithPropsAsAttributes = () => {
     //         return connectableComponentWrapper.childAt(0).props() as ConnectableComponentChildProps<TestModel>;
     //     };
     //
@@ -239,22 +249,22 @@ describe('ConnectableComponent', () => {
     //         });
     //
     //         it('passes modelId', () => {
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.modelId).toEqual('model-id');
     //         });
     //
     //         it('passes router', () => {
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.router).toBe(router);
     //         });
     //
     //         it('passes model', () => {
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.model).toBe(testModel);
     //         });
     //
     //         it('passes other props', () => {
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.other1).toEqual('other-value');
     //         });
     //     });
@@ -266,7 +276,7 @@ describe('ConnectableComponent', () => {
     //
     //         it('Re-renders when model updates', () => {
     //             publishAnEventToModel1();
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.model.value).toBe('the-event-value');
     //         });
     //     });
@@ -283,7 +293,7 @@ describe('ConnectableComponent', () => {
     //             };
     //             connectableComponentWrapper.setProps(newProps);
     //             publishAnEventToModel2();
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.foo).toBe('the-event-value2');
     //         });
     //     });
@@ -299,7 +309,7 @@ describe('ConnectableComponent', () => {
     //             const childViewContext = connectableComponentWrapper.context();
     //             let publishEvent: PublishModelEventDelegate = React.useContext(PublishModelEventContext);
     //             publishEvent('test-event', 'the-event-value');
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.foo).toBe('the-event-value');
     //         });
     //
@@ -307,7 +317,7 @@ describe('ConnectableComponent', () => {
     //         it('publishEvent set', () => {
     //             const state = connectableComponentWrapper.state();
     //             state.publishEvent('test-event', 'the-event-value');
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.model.value).toBe('the-event-value');
     //         });
     //
@@ -319,7 +329,7 @@ describe('ConnectableComponent', () => {
     //             connectableComponentWrapper.setProps(newProps);
     //             const state = connectableComponentWrapper.state();
     //             state.publishEvent('test-event', 'the-event-value');
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.model.value).toBe('the-event-value');
     //             expect(testModel2.value).toBe('the-event-value');
     //         });
@@ -339,22 +349,22 @@ describe('ConnectableComponent', () => {
     //
     //     describe('Overriding model/state selector', () => {
     //         function testModelHasBeenReplacedWithMappedModel(expectedValue3) {
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             let mappedModel = props.model as any as MappedModel;
     //             expect(mappedModel.value2).toBe('initial-value');
     //             expect(mappedModel.value3).toBe(expectedValue3);
     //             publishAnEventToModel1();
-    //             props = getChidViewProps();
+    //             props = getSpanWithPropsAsAttributes();
     //             mappedModel = props.model as any as MappedModel;
     //             expect(mappedModel.value2).toBe('the-event-value');
     //         }
     //
     //         function testSwappedModelPassedToMapModelToPropsFunction(expectedValue3) {
-    //             let props = getChidViewProps();
+    //             let props = getSpanWithPropsAsAttributes();
     //             expect(props.value2).toBe('initial-value');
     //             expect(props.value3).toBe(expectedValue3);
     //             publishAnEventToModel1();
-    //             props = getChidViewProps();
+    //             props = getSpanWithPropsAsAttributes();
     //             expect(props.value2).toBe('the-event-value');
     //         }
     //

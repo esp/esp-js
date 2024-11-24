@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ConnectableComponent, RouterProvider} from 'esp-js-react';
+import {ConnectableComponent, RouterContext} from 'esp-js-react';
 import {AppDefaultStateProvider, Level, Logger, LoggingConfig, ModelBase, StatefulRegion, SystemContainerConst, ViewFactoryBase} from 'esp-js-ui';
 import {WorkspaceModel} from './views/workspace/model/workspaceModel';
 import {ShellModuleContainerConst} from './shellModuleContainerConst';
@@ -113,11 +113,11 @@ export class AppShell extends Shell {
         workspaceModel.observeEvents();
         _log.verbose('Displaying UI');
         return (
-            <RouterProvider router={router}>
-                <div>
+            <RouterContext.Provider value={router}>
+                <div role='app-root'>
                     <ConnectableComponent modelId={workspaceModel.modelId}/>
                 </div>
-            </RouterProvider>
+            </RouterContext.Provider>
         );
     }
 }

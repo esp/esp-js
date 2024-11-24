@@ -18,7 +18,6 @@
 
 import * as espReact from '../src/index';
 import {
-    SmartComponent,
     ViewBinder,
     viewBinding,
     getEspReactRenderModel,
@@ -51,11 +50,6 @@ describe('index exports', () => {
     it('should export RouterContext', () => {
         expect(espReact.RouterContext).toBeDefined();
         expect(RouterContext).toBeDefined();
-    });
-
-    it('should export SmartComponent', () => {
-        expect(espReact.SmartComponent).toBeDefined();
-        expect(SmartComponent).toBeDefined();
     });
 
     it('should export ViewBinder', () => {

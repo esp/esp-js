@@ -25,20 +25,17 @@ export interface ViewBinderProps {
     viewContext: string;
 }
 
-export class ViewBinder extends React.Component<ViewBinderProps> {
-
-    render() {
-        if (this.props.model) {
-            const {model, viewContext, ...other} = this.props;
-            const router = useRouter();
-            const newProps = Object.assign({}, {model: this.props.model, router: router}, other);
-            return createViewForModel(
-                this.props.model,
-                newProps,
-                this.props.viewContext,
-                null
-            );
-        }
-        return null;
+export const ViewBinder: React.FC<ViewBinderProps> = (props) => {
+    if (props.model) {
+        const {model, viewContext, ...other} = props;
+        const router = useRouter();
+        const newProps = Object.assign({}, {model: props.model, router: router}, other);
+        return createViewForModel(
+            props.model,
+            newProps,
+            props.viewContext,
+            null
+        );
     }
-}
+    return null;
+};

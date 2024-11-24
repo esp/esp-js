@@ -21,7 +21,6 @@
 import './polimer/polimerExtentsions';
 
 export {RouterProvider, RouterContext, useRouter} from './routerProvider';
-export {SmartComponent} from './smartComponent';
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export * from './getEspReactRenderModel';
@@ -33,8 +32,6 @@ export {
     ConnectableComponentProps,
     MapModelToProps,
     CreatePublishEventProps,
-    ConnectableView,
-    ConnectableComponentChildProps,
 } from './connectableComponent';
 export {
     useGetModelId,

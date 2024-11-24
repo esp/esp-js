@@ -18,7 +18,6 @@
 
 import * as React from 'react';
 import {Guard} from 'esp-js';
-import {ViewComponentTypes} from './connectableComponent';
 
 export const DEFAULT_VIEW_KEY = 'default-view-key';
 
@@ -41,8 +40,8 @@ function getMetadata(target) {
  * @param displayContext
  * @param view
  */
-export function createViewForModel(model: any, props, displayContext: string, view: ViewComponentTypes) {
-    let finalView: ViewComponentTypes = view; // default to that passed in, if any.
+export function createViewForModel(model: any, props, displayContext: string, view: React.ComponentType) {
+    let finalView: React.ComponentType = view; // default to that passed in, if any.
 
     // displayContext = displayContext || DEFAULT_VIEW_KEY;
     // the view decorator isn't on the instance, it's on the constructor function that created that instance

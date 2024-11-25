@@ -24,15 +24,16 @@ export {RouterProvider, RouterContext, useRouter} from './routerProvider';
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export * from './getEspReactRenderModel';
-export {shouldUpdateMixin} from './shouldUpdateMixin';
 export {createViewForModel} from './viewBindingDecorator';
 export {
     ConnectableComponent,
-    connect,
     ConnectableComponentProps,
     MapModelToProps,
     CreatePublishEventProps,
 } from './connectableComponent';
+export {
+    connect,
+} from './connect';
 export {
     useGetModelId,
     GetModelIdDelegate,

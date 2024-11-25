@@ -15,7 +15,7 @@ export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {},
     viewContext?: string;
     view?: React.ComponentType;
     /**
-     * Provides a means to create a serious of 'publish event' callbacks which will be passed as props to the child view.
+     * Provides means to create a serious of 'publish event' callbacks which will be passed as props to the child view.
      */
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
@@ -149,23 +149,4 @@ export const ConnectableComponent = (props: ConnectableComponentProps) => {
             {view}
         </EspModelContext>
     );
-};
-
-export const connect = function <TModel, TPublishEventProps, TModelMappedToProps = {}>(
-    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
-    createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>
-): (view: React.ComponentType) => (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) => JSX.Element {
-    return function (view: React.ComponentType) {
-        return function (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) {
-            const {modelId, viewContext, ...rest} = props;
-            return <ConnectableComponent
-                modelId={modelId}
-                view={view}
-                viewContext={viewContext}
-                createPublishEventProps={createPublishEventProps}
-                mapModelToProps={mapModelToProps}
-                {...rest}
-            />;
-        };
-    };
 };

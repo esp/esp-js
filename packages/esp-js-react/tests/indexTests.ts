@@ -22,7 +22,6 @@ import {
     viewBinding,
     getEspReactRenderModel,
     GetEspReactRenderModelConsts,
-    shouldUpdateMixin,
 
     useRouter,
     RouterContext,
@@ -70,11 +69,6 @@ describe('index exports', () => {
     it('should export GetEspReactRenderModelConsts', () => {
         expect(espReact.GetEspReactRenderModelConsts).toBeDefined();
         expect(GetEspReactRenderModelConsts).toBeDefined();
-    });
-
-    it('should export shouldUpdateMixin', () => {
-        expect(espReact.shouldUpdateMixin).toBeDefined();
-        expect(shouldUpdateMixin).toBeDefined();
     });
 
     describe('hooks', () => {

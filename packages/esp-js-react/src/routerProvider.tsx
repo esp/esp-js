@@ -18,9 +18,9 @@
 
 import * as React from 'react';
 import { Router } from 'esp-js';
-import {PropsWithChildren, useContext} from 'react';
+import {PropsWithChildren, createContext, useContext} from 'react';
 
-export const RouterContext = React.createContext<Router>(null);
+export const RouterContext = createContext<Router>(null);
 
 /**
  * Get the esp Router from the RouterContext

@@ -11,7 +11,7 @@ export const defaultConnectEqualityFn = <T>(a: T, b: T) => a === b; // reference
 export const connectWithSelector = <TModel = unknown, TSelected = unknown>(modelId: string, selector: (model: TModel) => TSelected, equalityFn: ConnectEqualityFn<TModel> = defaultConnectEqualityFn) => {
     Guard.isFunction(selector, 'You must pass a selector function to connectSelector');
     const router = useRouter();
-    modelId = modelId || useGetModelId()();
+    modelId = modelId || useGetModelId();
     const dependencies = useMemo(() => {
         // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
         // When the subscription receives the new state from the Router, it can't pass this directly onto getSnapshot, React calls that when it deems it needs to.

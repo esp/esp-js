@@ -1,21 +1,27 @@
 import * as React from 'react';
 import {ConnectableComponentProps, CreatePublishEventProps, MapModelToProps} from './connectableComponent';
-import {ConnectModelToRouterContainer} from './connectModelToRouterContainer';
+import {ConnectModelToRouterContainer, ConnectModelToRouterContainerChildProps, ConnectModelToRouterContainerProps} from './connectModelToRouterContainer';
 import {usePublishModelEvent} from './espModelContext';
 import {useCallback, useMemo} from 'react';
 
-const createConnectModelToRouterContainerAdapter = <TModel, TPublishEventProps, TModelMappedToProps = {}>(
+/**
+ * Wraps the given view in a component that is prop compatible with ConnectModelToRouterContainer
+ * @param view
+ * @param mapModelToProps
+ * @param createPublishEventProps
+ */
+const createConnectModelToRouterContainerAdapterForView = <TModel, TPublishEventProps, TModelMappedToProps = {}>(
     view: React.ComponentType,
     mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     createPublishEventProps: CreatePublishEventProps<TPublishEventProps>,
 ) => {
-    return ({model, modelId, ...rest}: { model: TModel, modelId: string, [key: string]: any }) => {
+    return ({modelId, model}: ConnectModelToRouterContainerChildProps<TModel>) => {
         const publishEventProps = useMemo(
             () => createPublishEventProps(usePublishModelEvent()),
             [modelId]
         );
         const childProps = mapModelToProps(model, publishEventProps);
-        return React.createElement(view, {...childProps, ...rest});
+        return React.createElement(view, childProps);
     };
 };
 
@@ -28,7 +34,7 @@ export const connect3 = function <TModel, TPublishEventProps, TModelMappedToProp
         return (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) => {
             const {modelId, viewContext, ...rest} = props;
             const routerContainerAdapter = useCallback(
-                createConnectModelToRouterContainerAdapter(view, mapModelToProps, createPublishEventProps),
+                createConnectModelToRouterContainerAdapterForView(view, mapModelToProps, createPublishEventProps),
                 [modelId]
             );
             return React.createElement(

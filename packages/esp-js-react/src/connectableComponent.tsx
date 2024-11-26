@@ -107,7 +107,7 @@ const createPublishProps = (router: Router, modelId: string, props: ConnectableC
 
 export const ConnectableComponent = (props: ConnectableComponentProps) => {
     const router = useRouter();
-    const modelId = props.modelId || useGetModelId()();
+    const modelId = props.modelId || useGetModelId();
     const [state, setState] = useState<ConnectableComponentState>({
         modelSubscriptionDisposable: new SerialDisposable(),
         currentModelId: '',

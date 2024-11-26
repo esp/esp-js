@@ -107,6 +107,10 @@ export class Router extends DisposableBase implements HealthIndicator {
         return this._models.has(modelId);
     }
 
+    public isModelDispatchStatus(modelId: string, status: Status): boolean {
+        return this._state.currentModelRecord?.modelId === modelId && this._state.currentStatus === status;
+    }
+
     /**
      * Exists for read only access to a model.
      *

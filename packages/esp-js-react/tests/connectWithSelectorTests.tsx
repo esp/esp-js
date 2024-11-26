@@ -1,11 +1,11 @@
 import 'jest';
 import * as React from 'react';
+import {act} from 'react';
 import {render, RenderResult} from '@testing-library/react';
-import {connectWithSelector, defaultConnectEqualityFn, EspModelContext} from '../src';
+import {connectWithSelector, EspModelContext} from '../src';
 import {observeEvent, Router} from 'esp-js';
 // import for extra asserts
 import '@testing-library/jest-dom';
-import {act} from 'react';
 
 class TestModel {
     public value: string;
@@ -20,15 +20,9 @@ class TestModel {
     }
 }
 
-const MyComponent = ({modelId}: { modelId: string }) => {
-    const modelValue = connectWithSelector<TestModel>(
-        model => model.value,
-        modelId,
-        defaultConnectEqualityFn,
-        // (a, b) => {
-        //     const e = a === b;
-        //     return e;
-        // }
+const MyComponent = () => {
+    const modelValue = connectWithSelector<TestModel, string>(
+        model => model.value
     );
     return (
         <div>
@@ -48,37 +42,24 @@ describe('connectWithSelector', () => {
         testModel = new TestModel();
         router.addModel(testModelId, testModel);
         router.observeEventsOn(testModelId, testModel);
-        doRender();
-    });
-
-    const doRender = (rerender = false) => {
-        const components = (
+        renderResult = render((
             <EspModelContext modelId={testModelId} router={router} >
-                <MyComponent modelId={testModelId} />,
+                <MyComponent />,
             </EspModelContext>
-        );
-        if (rerender) {
-            renderResult.rerender(components);
-        } else {
-            renderResult = render(components);
-        }
-    };
+        ));
+    });
 
     it('component is rendered', () => {
         let testElement = renderResult.getByTestId('valueDisplay');
-        expect(testElement).toBeInTheDocument();
         expect(testElement).toHaveTextContent('initial-value');
     });
 
-    it('model udpates are is rendered', () => {
+    it('model updates are rendered', () => {
         let testElement = renderResult.getByTestId('valueDisplay');
         expect(testElement).toHaveTextContent('initial-value');
-
         act(() => {
             router.publishEvent(testModelId, 'test-event', 'new-value');
         });
-
-        // doRender(true);
         expect(testElement).toHaveTextContent('new-value');
     });
 });

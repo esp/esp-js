@@ -2,9 +2,8 @@ import {useRouter} from './routerProvider';
 import {useGetModelId} from './espModelContext';
 import {useMemo, useSyncExternalStore} from 'react';
 import {Guard} from 'esp-js';
-import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector.js';
 
-export type ConnectEqualityFn<T> = (a: T, b: T) => boolean;
+export type ConnectEqualityFn<T> = (last: T, next: T) => boolean;
 
 export const defaultConnectEqualityFn = <TSelected>(a: TSelected, b: TSelected) => a === b; // reference equality
 
@@ -19,51 +18,44 @@ export const connectWithSelector = <TModel = unknown, TSelected = unknown>(selec
             // Given that, we need to cache the state which getSnapshot will return.
             //
             // It's not ideal but shouldn't be a problem as here we've wrapped all these dependent functions inside a single useMemo()
-            let cachedModel: TModel = null;
+            let snapshot: TSelected = null;
             return {
                 subscribe: (stateChanged: () => void) => {
                     const modelSubscriptionDisposable = router
                         .getModelObservable(modelId)
-                        .subscribe((model: any) => {
-                                cachedModel = model;
-                                stateChanged();
+                        .subscribe(
+                            (model: any) => {
+
+                                const nextSnapshot = selector(model);
+                                if (!equalityFn(snapshot, nextSnapshot)) {
+                                    snapshot = nextSnapshot;
+                                    stateChanged();
+                                }
                             }
                         );
                     return () => {
-                        cachedModel = null;
+                        snapshot = null;
                         modelSubscriptionDisposable.dispose();
                     };
                 },
                 getSnapshot: () => {
-                    // return selector(cachedModel);
-                    let snapshot = cachedModel
-                        ? selector(cachedModel)
-                        : null;
                     return snapshot;
                 },
-                // wrappedSelector: (snapshot: TModel) => {
-                //     // The first time this renders, react calls getSnapshot and the selector before the router has pushed a change.
-                //     // In that case, there is no state for any component to process, therefore, we return null;
-                //     let nextState = snapshot
-                //         ? selector(snapshot)
-                //         : null;
-                //     return nextState;
-                // }
             };
         },
         // don't cache check against 'selector' argument as that will likely change unless the caller memoize it.
         [router, modelId]
     );
-    // code for useSyncExternalStoreWithSelector: https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
+    // Note, originally I did this selection logic based on
+    // useSyncExternalStoreWithSelector: https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
+    // However, I couldn't get that to work.
+    // It seemed that it was ignoring the equalityFunction I passed in to it.
+    // If I generated a new equalityFunction each time (with same a === b implementation), it worked.
+    // I suspect there is some issues with it memo-ing something incorrectly, or perhaps in how I'm using it.
+    // It's not a documented React API, but it is what react-redux is using.
+    // All that said, I'm just doing a similar selection and equality checking above, it seems to be working as expected.
     return useSyncExternalStore(
         dependencies.subscribe,
         dependencies.getSnapshot,
     );
-    // return useSyncExternalStoreWithSelector(
-    //     dependencies.subscribe,
-    //     dependencies.getSnapshot,
-    //     null,
-    //     dependencies.wrappedSelector,
-    //     equalityFn
-    // );
 };

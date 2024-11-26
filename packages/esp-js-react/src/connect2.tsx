@@ -13,8 +13,8 @@ export const connect2 = function <TModel, TPublishEventProps, TModelMappedToProp
             const {modelId, viewContext, ...rest} = props;
             const publishEventProps = createPublishEventProps(usePublishModelEvent());
             const mappedProps = connectWithSelector<TModel>(
-                modelId,
-                model => mapModelToProps(model, publishEventProps)
+                model => mapModelToProps(model, publishEventProps),
+                modelId
             );
             return React.createElement(view, {... mappedProps, ...rest});
         };

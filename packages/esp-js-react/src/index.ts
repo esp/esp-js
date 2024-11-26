@@ -35,6 +35,11 @@ export {
     connect,
 } from './connect';
 export {
+    connectWithSelector,
+    ConnectEqualityFn,
+    defaultConnectEqualityFn
+} from './connectWithSelector';
+export {
     useGetModelId,
     GetModelIdDelegate,
     GetModelIdContext,
@@ -52,5 +57,5 @@ export {
     usePublishModelEventWithEntityKey,
 
     EspModelContext,
-    EspModelContextProps
+    EspModelContextProps,
 } from './espModelContext';

@@ -1,9 +1,8 @@
 import * as React from 'react';
-import {SmartComponent} from 'esp-js-react';
+import {ConnectableComponent, RouterContext} from 'esp-js-react';
 import {Workspace} from './models/workspace';
 import {Modal} from './models/modal';
 import {Router} from 'esp-js';
-import {RouterProvider} from 'esp-js-react';
 
 export class App extends React.PureComponent {
     private readonly router: Router;
@@ -28,12 +27,12 @@ export class App extends React.PureComponent {
 
     render() {
         return (
-            <RouterProvider router={this.router}>
-                <div>
-                    <SmartComponent modelId={this.workspaceModelId}/>
-                    <SmartComponent modelId={this.modalModelId}/>
+            <RouterContext.Provider value={this.router}>
+                <div role='app-root'>
+                    <ConnectableComponent modelId={this.workspaceModelId}/>
+                    <ConnectableComponent modelId={this.modalModelId}/>
                 </div>
-            </RouterProvider>
+            </RouterContext.Provider>
         );
     }
 }

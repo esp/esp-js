@@ -21,21 +21,24 @@
 import './polimer/polimerExtentsions';
 
 export {RouterProvider, RouterContext, useRouter} from './routerProvider';
-export {SmartComponent} from './smartComponent';
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export * from './getEspReactRenderModel';
-export {shouldUpdateMixin} from './shouldUpdateMixin';
 export {createViewForModel} from './viewBindingDecorator';
 export {
     ConnectableComponent,
-    connect,
     ConnectableComponentProps,
     MapModelToProps,
     CreatePublishEventProps,
-    ConnectableView,
-    ConnectableComponentChildProps,
 } from './connectableComponent';
+export {
+    connect,
+} from './connect';
+export {
+    connectWithSelector,
+    ConnectEqualityFn,
+    defaultConnectEqualityFn
+} from './connectWithSelector';
 export {
     useGetModelId,
     GetModelIdDelegate,
@@ -54,5 +57,5 @@ export {
     usePublishModelEventWithEntityKey,
 
     EspModelContext,
-    EspModelContextProps
+    EspModelContextProps,
 } from './espModelContext';

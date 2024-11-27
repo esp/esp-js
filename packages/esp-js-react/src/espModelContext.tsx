@@ -1,21 +1,23 @@
 import * as React from 'react';
-import {DefaultModelAddress, ModelAddress, Router} from 'esp-js';
+import {DefaultModelAddress, Router, Status, Logger} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
-import {RouterContext} from './routerProvider';
+import {useRouter} from './espRouterContext';
+
+const _log = Logger.create('EspModelContext');
 
 export type GetModelIdDelegate = () => string;
 export const GetModelIdContext = createContext<GetModelIdDelegate>(null);
 /**
  * Returns a function which will return the ID of the model currently being rendered.
  */
-export const useGetModelId = () => useContext(GetModelIdContext);
+export const useGetModelId = () => useContext(GetModelIdContext)();
 
-export type PublishEventDelegate = (modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any) => void;
-export const PublishEventContext = createContext<PublishEventDelegate>(null);
+export type GetModelDelegate = <TModel = any, >() => TModel;
+export const GetModelContext = createContext<GetModelDelegate>(null);
 /**
- * Returns a function which can be used to publish an event.
+ * Returns a function which will return the model set at last dispatch.
  */
-export const usePublishEvent = () => useContext(PublishEventContext);
+export const useGetModel = () => useContext(GetModelContext)();
 
 export type PublishModelEventDelegate = (eventType: string, event: any) => void;
 export const PublishModelEventContext = createContext<PublishModelEventDelegate>(null);
@@ -37,16 +39,18 @@ export const usePublishModelEventWithEntityKey = () => useContext(PublishModelEv
 
 export interface EspModelContextProps {
     modelId: string;
-    router: Router;
+    model?: unknown;
 }
 
-export const EspModelContext = ({modelId, children, router}: PropsWithChildren<EspModelContextProps>) => {
+export const EspModelContext = ({modelId, children, model}: PropsWithChildren<EspModelContextProps>) => {
+    const router = useRouter();
     const getModelId: () => string = useCallback(() => {
         return modelId;
     }, [router, modelId]);
-    const publishEvent: PublishEventDelegate = useCallback((modelIdOrModelAddress: string, eventType: string, event: any) => {
-        router.publishEvent(modelIdOrModelAddress, eventType, event);
-    }, [router]);
+    const getModel: () => any = useCallback(() => {
+        warnIfModelAccessedOutSideDispatchLoop(router, modelId, model);
+        return model;
+    }, [model, router, modelId]);
     const publishModelEvent: PublishModelEventDelegate = useCallback((eventType: string, event: any) => {
         router.publishEvent(modelId, eventType, event);
     }, [router, modelId]);
@@ -54,16 +58,38 @@ export const EspModelContext = ({modelId, children, router}: PropsWithChildren<E
         router.publishEvent(new DefaultModelAddress(modelId, entityKey), eventType, event);
     }, [router, modelId]);
     return (
-        <RouterContext.Provider value={router}>
-            <GetModelIdContext.Provider value={getModelId}>
-                <PublishEventContext.Provider value={publishEvent}>
-                    <PublishModelEventContext.Provider value={publishModelEvent}>
-                        <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
-                            {children}
-                        </PublishModelEventWithEntityKeyContext.Provider>
-                    </PublishModelEventContext.Provider>
-                </PublishEventContext.Provider>
-            </GetModelIdContext.Provider>
-        </RouterContext.Provider>
+        <GetModelIdContext.Provider value={getModelId}>
+            <PublishModelEventContext.Provider value={publishModelEvent}>
+                <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
+                    <GetModelContext.Provider value={getModel}>
+                        {children}
+                    </GetModelContext.Provider>
+                </PublishModelEventWithEntityKeyContext.Provider>
+            </PublishModelEventContext.Provider>
+        </GetModelIdContext.Provider>
     );
+};
+
+const warnIfModelAccessedOutSideDispatchLoop = (router: Router, modelId: string, model: any) => {
+    if (process.env.NODE_ENV === 'production') {
+        return;
+    }
+    if (!model) {
+        return;
+    }
+    let isDispatchModelUpdateStatus = router.isModelDispatchStatus(modelId, Status.DispatchModelUpdates);
+    if (!isDispatchModelUpdateStatus) {
+        let stack: string | undefined = undefined;
+        try {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error();
+        } catch (e) {
+            stack = (e as Error).stack;
+        }
+        _log.warn(
+            `EspModelContext useGetModelId has been invoked outside of the models (${modelId}) dispatch loop.` +
+            `This may have unknown state state issues.` +
+            stack
+        );
+    }
 };

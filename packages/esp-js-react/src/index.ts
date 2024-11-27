@@ -20,39 +20,56 @@
 // import for side effects
 import './polimer/polimerExtentsions';
 
-export {RouterProvider, RouterContext, useRouter} from './routerProvider';
-export {SmartComponent} from './smartComponent';
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
-export * from './getEspReactRenderModel';
-export {shouldUpdateMixin} from './shouldUpdateMixin';
+export {
+    GetEspReactRenderModelMetadata,
+    GetEspReactRenderModelConsts,
+    getEspReactRenderModel
+} from './getEspReactRenderModel';
 export {createViewForModel} from './viewBindingDecorator';
 export {
-    ConnectableComponent,
-    connect,
-    ConnectableComponentProps,
-    MapModelToProps,
     CreatePublishEventProps,
-    ConnectableView,
-    ConnectableComponentChildProps,
-} from './connectableComponent';
+    MapModelToProps,
+    ConnectableComponentProps,
+    ConnectableComponentLike,
+    ConnectableComponentFactory,
+    ConnectFn,
+    ConnectEqualityFn
+} from './connectApi/types';
+export {
+    connectLegacy,
+    ConnectableComponentLegacy,
+} from './connectLegacy';
+export {
+    connect,
+    ConnectableComponent
+} from './connectV2';
+export {
+    connectWithSelector,
+    defaultConnectEqualityFn
+} from './connectWithSelector';
+export {
+    RouterProvider,
+    RouterProviderProps,
+    EspRouterContext,
+    EspRouterContextProps,
+    RouterContext,
+    useRouter,
+    PublishEventDelegate,
+    PublishEventContext,
+    usePublishEvent,
+} from './espRouterContext';
 export {
     useGetModelId,
     GetModelIdDelegate,
     GetModelIdContext,
-
-    PublishEventDelegate,
-    PublishEventContext,
-    usePublishEvent,
-
     PublishModelEventDelegate,
     PublishModelEventContext,
     usePublishModelEvent,
-
     PublishModelEventWithEntityKeyDelegate,
     PublishModelEventWithEntityKeyContext,
     usePublishModelEventWithEntityKey,
-
     EspModelContext,
-    EspModelContextProps
+    EspModelContextProps,
 } from './espModelContext';

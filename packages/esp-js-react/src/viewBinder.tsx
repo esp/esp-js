@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {createViewForModel} from './viewBindingDecorator';
-import {useRouter} from './routerProvider';
+import {useRouter} from './espRouterContext';
 
 export interface ViewBinderProps {
     model: any;

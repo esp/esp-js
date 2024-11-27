@@ -1,7 +1,6 @@
 import * as React from 'react';
-import {DefaultModelAddress, ModelAddress, Router, Status, Logger} from 'esp-js';
+import {DefaultModelAddress, Router, Status, Logger} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
-import {RouterContext} from './routerProvider';
 
 const _log = Logger.create('EspModelContext');
 
@@ -12,19 +11,12 @@ export const GetModelIdContext = createContext<GetModelIdDelegate>(null);
  */
 export const useGetModelId = () => useContext(GetModelIdContext)();
 
-export type GetModelDelegate = <TModel = any,>() => TModel;
+export type GetModelDelegate = <TModel = any, >() => TModel;
 export const GetModelContext = createContext<GetModelDelegate>(null);
 /**
  * Returns a function which will return the model set at last dispatch.
  */
 export const useGetModel = () => useContext(GetModelContext)();
-
-export type PublishEventDelegate = (modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any) => void;
-export const PublishEventContext = createContext<PublishEventDelegate>(null);
-/**
- * Returns a function which can be used to publish an event.
- */
-export const usePublishEvent = () => useContext(PublishEventContext);
 
 export type PublishModelEventDelegate = (eventType: string, event: any) => void;
 export const PublishModelEventContext = createContext<PublishModelEventDelegate>(null);
@@ -58,9 +50,6 @@ export const EspModelContext = ({modelId, children, router, model}: PropsWithChi
         warnIfModelAccessedOutSideDispatchLoop(router, modelId, model);
         return model;
     }, [model, router, modelId]);
-    const publishEvent: PublishEventDelegate = useCallback((modelIdOrModelAddress: string, eventType: string, event: any) => {
-        router.publishEvent(modelIdOrModelAddress, eventType, event);
-    }, [router]);
     const publishModelEvent: PublishModelEventDelegate = useCallback((eventType: string, event: any) => {
         router.publishEvent(modelId, eventType, event);
     }, [router, modelId]);
@@ -68,19 +57,15 @@ export const EspModelContext = ({modelId, children, router, model}: PropsWithChi
         router.publishEvent(new DefaultModelAddress(modelId, entityKey), eventType, event);
     }, [router, modelId]);
     return (
-        <RouterContext.Provider value={router}>
-            <GetModelIdContext.Provider value={getModelId}>
-                <PublishEventContext.Provider value={publishEvent}>
-                    <PublishModelEventContext.Provider value={publishModelEvent}>
-                        <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
-                            <GetModelContext.Provider value={getModel}>
-                                {children}
-                            </GetModelContext.Provider>
-                        </PublishModelEventWithEntityKeyContext.Provider>
-                    </PublishModelEventContext.Provider>
-                </PublishEventContext.Provider>
-            </GetModelIdContext.Provider>
-        </RouterContext.Provider>
+        <GetModelIdContext.Provider value={getModelId}>
+            <PublishModelEventContext.Provider value={publishModelEvent}>
+                <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
+                    <GetModelContext.Provider value={getModel}>
+                        {children}
+                    </GetModelContext.Provider>
+                </PublishModelEventWithEntityKeyContext.Provider>
+            </PublishModelEventContext.Provider>
+        </GetModelIdContext.Provider>
     );
 };
 

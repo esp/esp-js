@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {useRouter} from './routerProvider';
+import {useRouter} from '../espRouterContext';
 import {useEffect, useState} from 'react';
-import {EspDecoratorUtil, Router, SerialDisposable, utils} from 'esp-js';
-import {EspModelContext, PublishModelEventDelegate, useGetModelId} from './espModelContext';
-import {GetEspReactRenderModelConsts, GetEspReactRenderModelMetadata} from './getEspReactRenderModel';
-import {createViewForModel} from './viewBindingDecorator';
+import {Router, SerialDisposable, utils} from 'esp-js';
+import {EspModelContext, PublishModelEventDelegate, useGetModelId} from '../espModelContext';
+import {createViewForModel} from '../viewBindingDecorator';
+import {getRenderModel} from './connectableComponentCommon';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
@@ -69,28 +69,6 @@ const getChildProps = <TModel, >(
         };
     }
     return childProps;
-};
-
-/**
- * Returns the model which will be used to pluck state/props for the current view.
- *
- * This is basically a hock (not a react 'hook') to call a function on `model` and get a new sub graph to use as state.
- */
-const getRenderModel = <TModel, >(model: any): TModel => {
-    // does the given model have a decorated function we can invoke to get a different model to render?
-    if (EspDecoratorUtil.hasMetadata(model)) {
-        let metadata: GetEspReactRenderModelMetadata = EspDecoratorUtil.getCustomData(model, GetEspReactRenderModelConsts.CustomDataKey);
-        if (metadata) {
-            return model[metadata.functionName]();
-        }
-    }
-    // else see if there is a function with name GetEspReactRenderModelConsts.HandlerFunctionName we can invoke to get a different model to render?
-    let renderModelGetter = model[GetEspReactRenderModelConsts.HandlerFunctionName];
-    if (renderModelGetter && utils.isFunction(renderModelGetter)) {
-        return renderModelGetter.call(model);
-    }
-    // else return the initial model passed in
-    return model;
 };
 
 const createPublishProps = (router: Router, modelId: string, props: ConnectableComponentProps) => {

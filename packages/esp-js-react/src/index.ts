@@ -20,7 +20,6 @@
 // import for side effects
 import './polimer/polimerExtentsions';
 
-export {RouterProvider, RouterContext, useRouter} from './routerProvider';
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export * from './getEspReactRenderModel';
@@ -30,23 +29,33 @@ export {
     ConnectableComponentProps,
     MapModelToProps,
     CreatePublishEventProps,
-} from './connectableComponent';
+} from './connectLegacy/connectableComponent';
 export {
     connect,
-} from './connect';
+} from './connectLegacy/connect';
 export {
     connectWithSelector,
     ConnectEqualityFn,
     defaultConnectEqualityFn
 } from './connectWithSelector';
 export {
-    useGetModelId,
-    GetModelIdDelegate,
-    GetModelIdContext,
+    RouterProvider,
+    RouterProviderProps,
+
+    EspRouterContext,
+    EspRouterContextProps,
+
+    RouterContext,
+    useRouter,
 
     PublishEventDelegate,
     PublishEventContext,
     usePublishEvent,
+} from './espRouterContext';
+export {
+    useGetModelId,
+    GetModelIdDelegate,
+    GetModelIdContext,
 
     PublishModelEventDelegate,
     PublishModelEventContext,

@@ -31,7 +31,7 @@ const MyComponent = () => {
     );
 };
 
-xdescribe('connectWithSelector', () => {
+describe('connectWithSelector', () => {
     let router: Router,
         testModel: TestModel,
         renderResult: RenderResult,

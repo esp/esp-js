@@ -1,14 +1,18 @@
 import * as React from 'react';
 import {ComponentType, useCallback, useMemo} from 'react';
-import {ConnectEqualityFn, ConnectableComponentFactory, ConnectableComponentProps, CreatePublishEventProps, MapModelToProps, ConnectFn} from '../connectApi/types';
-import {connectWithSelector, defaultConnectEqualityFn} from '../connectWithSelector';
+import {ConnectableComponentFactory, ConnectableComponentProps, CreatePublishEventProps, MapModelToProps, ConnectFn} from '../connectApi/types';
+import {connectWithSelector} from '../connectWithSelector';
 import {EspModelContext, PublishModelEventDelegate} from '../espModelContext';
 import {useRouter} from '../espRouterContext';
 
+/**
+ *
+ * @param mapModelToProps - this must return a new instance if the component needs to re-render
+ * @param createPublishEventProps
+ */
 export const connect = <TModel, TPublishEventProps, TModelMappedToProps = {}>(
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>,
-    mappedPropsEqualityFn: ConnectEqualityFn<TModelMappedToProps> = defaultConnectEqualityFn
 ): ConnectableComponentFactory<TModel, TPublishEventProps, TModelMappedToProps> => {
     return (view: ComponentType) => {
         return (props: ConnectableComponentProps) => {
@@ -24,7 +28,6 @@ export const connect = <TModel, TPublishEventProps, TModelMappedToProps = {}>(
             const mappedProps = connectWithSelector<TModel, TModelMappedToProps>(
                 model => mapModelToProps(model, publishEventProps),
                 modelId,
-                mappedPropsEqualityFn
             );
             const child = React.createElement(
                 view,

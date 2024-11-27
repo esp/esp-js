@@ -22,10 +22,13 @@ import './polimer/polimerExtentsions';
 
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
-export * from './getEspReactRenderModel';
+export {
+    GetEspReactRenderModelMetadata,
+    GetEspReactRenderModelConsts,
+    getEspReactRenderModel
+} from './getEspReactRenderModel';
 export {createViewForModel} from './viewBindingDecorator';
 export {
-    ConnectEqualityFn,
     CreatePublishEventProps,
     MapModelToProps,
     ConnectableComponentProps,
@@ -43,7 +46,6 @@ export {
 } from './connectV2';
 export {
     connectWithSelector,
-    defaultConnectEqualityFn
 } from './connectWithSelector';
 export {
     RouterProvider,

@@ -2,14 +2,10 @@ import {useRouter} from './espRouterContext';
 import {useGetModelId} from './espModelContext';
 import {useMemo, useSyncExternalStore} from 'react';
 import {Guard} from 'esp-js';
-import {ConnectEqualityFn} from './connectApi/types';
-
-export const defaultConnectEqualityFn = <TSelected>(a: TSelected, b: TSelected) => a === b; // reference equality
 
 export const connectWithSelector = <TModel = unknown, TSelected = unknown>(
     selector: (model: TModel) => TSelected,
-    modelId?: string,
-    equalityFn: ConnectEqualityFn<TSelected> = defaultConnectEqualityFn
+    modelId?: string
 ) => {
     Guard.isFunction(selector, 'You must pass a selector function to connectSelector');
     const router = useRouter();
@@ -21,44 +17,43 @@ export const connectWithSelector = <TModel = unknown, TSelected = unknown>(
             // Given that, we need to cache the state which getSnapshot will return.
             //
             // It's not ideal but shouldn't be a problem as here we've wrapped all these dependent functions inside a single useMemo()
-            let snapshot: TSelected = null;
+            let cachedSelected: TSelected = null;
             return {
                 subscribe: (stateChanged: () => void) => {
                     const modelSubscriptionDisposable = router
                         .getModelObservable(modelId)
                         .subscribe(
-                            (model: any) => {
-                                const nextSnapshot = selector(model);
-                                if (!equalityFn(snapshot, nextSnapshot)) {
-                                    snapshot = Object.create(<any>nextSnapshot);
-                                    stateChanged();
-                                }
+                            (nextModel: any) => {
+                                // The redux implementation of useSelector caches the store/model here.
+                                // Then later does the selection.
+                                // For esp, we don't do that as the model isn't immutable.
+                                // The selector must do the mutation.
+                                // While this isn't ideal, most of the implementations will use esp-js-polimer, which deals with immutable state.
+                                // Those selectors will be selecting immutable state from the model and not doing complex re-mappings.
+                                // For OO logic (i.e. ConnectableComponent only), the selector must mutate it.
+                                // If/when we get rid of ConnectableComponent we can clean this up further.
+                                cachedSelected = selector(nextModel);
+                                stateChanged();
                             }
                         );
                     return () => {
-                        snapshot = null;
+                        cachedSelected = null;
                         modelSubscriptionDisposable.dispose();
                     };
                 },
-                // React expects this state to be immutable, i.e. it'll only re-render if the instance changes
                 getSnapshot: () => {
-                    return snapshot;
+                    return cachedSelected;
                 },
             };
         },
-        // don't cache check against 'selector' argument as that will likely change unless the caller memoize it.
+        // Don't cache check against 'selector' argument as that will likely change unless the caller memoizes it.
         [router, modelId]
     );
-    // Note, originally I did this selection logic based on
-    // useSyncExternalStoreWithSelector: https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
-    // However, I couldn't get that to work.
-    // It seemed that it was ignoring the equalityFunction I passed in to it.
-    // If I generated a new equalityFunction each time (with same a === b implementation), it worked.
-    // I suspect there is some issues with it memo-ing something incorrectly, or perhaps in how I'm using it.
-    // It's not a documented React API, but it is what react-redux is using.
-    // All that said, I'm just doing a similar selection and equality checking above, it seems to be working as expected.
+    // Docs on useSyncExternalStore https://github.com/reactwg/react-18/discussions/86
+    // Redux's usage of this (uses useSyncExternalStoreWithSelector variant): https://github.com/reduxjs/react-redux/blob/master/src/hooks/useSelector.ts
+    // Code (useSyncExternalStoreWithSelector variant): https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
     return useSyncExternalStore(
         dependencies.subscribe,
-        dependencies.getSnapshot,
+        dependencies.getSnapshot
     );
 };

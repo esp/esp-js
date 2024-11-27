@@ -1,7 +1,5 @@
 import * as React from 'react';
 
-export type ConnectEqualityFn<T> = (last: T, next: T) => boolean;
-
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
 export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
@@ -31,5 +29,4 @@ export type ConnectableComponentFactory<TModel, TPublishEventProps, TModelMapped
 export type ConnectFn<TModel, TModelMappedToProps, TPublishEventProps> = (
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>,
-    mappedPropsEqualityFn?: ConnectEqualityFn<TModelMappedToProps>
 ) => ConnectableComponentFactory<TModel, TPublishEventProps, TModelMappedToProps>;

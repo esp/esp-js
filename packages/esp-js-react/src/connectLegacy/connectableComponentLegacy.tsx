@@ -4,8 +4,8 @@ import {useEffect, useState} from 'react';
 import {Router, SerialDisposable, utils} from 'esp-js';
 import {EspModelContext, PublishModelEventDelegate, useGetModelId} from '../espModelContext';
 import {createViewForModel} from '../viewBindingDecorator';
-import {getRenderModel} from '../connectApi/connectableComponentCommon';
 import {ConnectableComponentProps, ConnectableComponentLike} from '../connectApi/types';
+import {getRenderModel} from '../getEspReactRenderModel';
 
 interface ConnectableComponentState {
     model?: any;

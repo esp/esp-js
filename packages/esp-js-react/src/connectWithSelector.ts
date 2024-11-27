@@ -2,8 +2,7 @@ import {useRouter} from './espRouterContext';
 import {useGetModelId} from './espModelContext';
 import {useMemo, useSyncExternalStore} from 'react';
 import {Guard} from 'esp-js';
-
-export type ConnectEqualityFn<T> = (last: T, next: T) => boolean;
+import {ConnectEqualityFn} from './connectApi/types';
 
 export const defaultConnectEqualityFn = <TSelected>(a: TSelected, b: TSelected) => a === b; // reference equality
 

@@ -1,17 +1,11 @@
 import {useRouter} from '../espRouterContext';
 import {EspModelContext} from '../espModelContext';
-import {Router} from 'esp-js';
+import {Logger, Router} from 'esp-js';
 import * as React from 'react';
 import {connectWithSelector} from '../connectWithSelector';
 import {createViewForModel} from '../viewBindingDecorator';
 import {getRenderModel} from '../connectLegacy/connectableComponentCommon';
-
-export type ConnectableComponentProps = {
-    modelId?: string;
-    viewContext?: string;
-    view?: React.ComponentType;
-    [key: string]: any;
-};
+import {ConnectableComponentLike, ConnectableComponentProps} from '../connectApi/types';
 
 interface ConnectableComponentChildProps {
     modelId: string;
@@ -20,7 +14,10 @@ interface ConnectableComponentChildProps {
     [key: string]: any;
 }
 
-export const ConnectableComponent = ({modelId, viewContext, view,  ...rest}: ConnectableComponentProps) => {
+const _log = Logger.create('ConnectableComponent');
+
+export const ConnectableComponent: ConnectableComponentLike = ({modelId, viewContext, view, createPublishEventProps, mapModelToProps, ...rest}: ConnectableComponentProps) => {
+    warnIfUsingLegacyProps(createPublishEventProps, mapModelToProps);
     const router = useRouter();
     const model = connectWithSelector<unknown, unknown>(
         m => m,
@@ -52,4 +49,23 @@ export const ConnectableComponent = ({modelId, viewContext, view,  ...rest}: Con
             {viewElement}
         </EspModelContext>
     );
+};
+
+const warnIfUsingLegacyProps = (createPublishEventProps: any, mapModelToProps: any) => {
+    if (process.env.NODE_ENV === 'production') {
+        return;
+    }
+    if (mapModelToProps || createPublishEventProps) {
+        let stack: string | undefined = undefined;
+        try {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error();
+        } catch (e) {
+            stack = (e as Error).stack;
+        }
+        _log.warn(
+            `ConnectableComponent (new version) detected legacy props being passed, these will be ignored. ` +
+            stack
+        );
+    }
 };

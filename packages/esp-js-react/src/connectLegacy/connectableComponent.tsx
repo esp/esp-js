@@ -5,23 +5,7 @@ import {Router, SerialDisposable, utils} from 'esp-js';
 import {EspModelContext, PublishModelEventDelegate, useGetModelId} from '../espModelContext';
 import {createViewForModel} from '../viewBindingDecorator';
 import {getRenderModel} from './connectableComponentCommon';
-
-export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
-
-export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
-
-export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
-    modelId?: string;
-    viewContext?: string;
-    view?: React.ComponentType;
-    /**
-     * Provides means to create a serious of 'publish event' callbacks which will be passed as props to the child view.
-     */
-    createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
-    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
-
-    [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
-}
+import {ConnectableComponentProps, ConnectableComponentLike} from '../connectApi/types';
 
 interface ConnectableComponentState {
     model?: any;
@@ -83,7 +67,7 @@ const createPublishProps = (router: Router, modelId: string, props: ConnectableC
     );
 };
 
-export const ConnectableComponent = (props: ConnectableComponentProps) => {
+export const ConnectableComponent: ConnectableComponentLike = (props: ConnectableComponentProps) => {
     const router = useRouter();
     const modelId = props.modelId || useGetModelId();
     const [state, setState] = useState<ConnectableComponentState>({

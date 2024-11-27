@@ -1,10 +1,11 @@
 import * as React from 'react';
-import {ConnectableComponent, ConnectableComponentProps, CreatePublishEventProps, MapModelToProps} from './connectableComponent';
+import {ConnectableComponentFactory, ConnectableComponentProps, CreatePublishEventProps, MapModelToProps} from '../connectApi/types';
+import {ConnectableComponent} from './connectableComponent';
 
 export const connect = function <TModel, TPublishEventProps, TModelMappedToProps = {}>(
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>
-): (view: React.ComponentType) => (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) => JSX.Element {
+): ConnectableComponentFactory<TModel, TPublishEventProps, TModelMappedToProps> {
     return function (view: React.ComponentType) {
         return function (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) {
             const {modelId, viewContext, ...rest} = props;

@@ -25,29 +25,33 @@ export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export * from './getEspReactRenderModel';
 export {createViewForModel} from './viewBindingDecorator';
 export {
-    ConnectableComponent,
-    ConnectableComponentProps,
-    MapModelToProps,
+    ConnectEqualityFn,
     CreatePublishEventProps,
-} from './connectLegacy/connectableComponent';
+    MapModelToProps,
+    ConnectableComponentProps,
+    ConnectableComponentLike,
+    ConnectableComponentFactory,
+    ConnectFn
+} from './connectApi/types';
+export {
+    connectLegacy,
+    ConnectableComponentLegacy,
+} from './connectLegacy';
 export {
     connect,
-} from './connectLegacy/connect';
+    ConnectableComponent
+} from './connectV2';
 export {
     connectWithSelector,
-    ConnectEqualityFn,
     defaultConnectEqualityFn
 } from './connectWithSelector';
 export {
     RouterProvider,
     RouterProviderProps,
-
     EspRouterContext,
     EspRouterContextProps,
-
     RouterContext,
     useRouter,
-
     PublishEventDelegate,
     PublishEventContext,
     usePublishEvent,
@@ -56,15 +60,12 @@ export {
     useGetModelId,
     GetModelIdDelegate,
     GetModelIdContext,
-
     PublishModelEventDelegate,
     PublishModelEventContext,
     usePublishModelEvent,
-
     PublishModelEventWithEntityKeyDelegate,
     PublishModelEventWithEntityKeyContext,
     usePublishModelEventWithEntityKey,
-
     EspModelContext,
     EspModelContextProps,
 } from './espModelContext';

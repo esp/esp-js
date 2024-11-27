@@ -6,7 +6,11 @@ import {ConnectEqualityFn} from './connectApi/types';
 
 export const defaultConnectEqualityFn = <TSelected>(a: TSelected, b: TSelected) => a === b; // reference equality
 
-export const connectWithSelector = <TModel = unknown, TSelected = unknown>(selector: (model: TModel) => TSelected, modelId?: string, equalityFn: ConnectEqualityFn<TSelected> = defaultConnectEqualityFn) => {
+export const connectWithSelector = <TModel = unknown, TSelected = unknown>(
+    selector: (model: TModel) => TSelected,
+    modelId?: string,
+    equalityFn: ConnectEqualityFn<TSelected> = defaultConnectEqualityFn
+) => {
     Guard.isFunction(selector, 'You must pass a selector function to connectSelector');
     const router = useRouter();
     modelId = modelId || useGetModelId();
@@ -24,10 +28,9 @@ export const connectWithSelector = <TModel = unknown, TSelected = unknown>(selec
                         .getModelObservable(modelId)
                         .subscribe(
                             (model: any) => {
-
                                 const nextSnapshot = selector(model);
                                 if (!equalityFn(snapshot, nextSnapshot)) {
-                                    snapshot = nextSnapshot;
+                                    snapshot = Object.create(<any>nextSnapshot);
                                     stateChanged();
                                 }
                             }
@@ -37,6 +40,7 @@ export const connectWithSelector = <TModel = unknown, TSelected = unknown>(selec
                         modelSubscriptionDisposable.dispose();
                     };
                 },
+                // React expects this state to be immutable, i.e. it'll only re-render if the instance changes
                 getSnapshot: () => {
                     return snapshot;
                 },

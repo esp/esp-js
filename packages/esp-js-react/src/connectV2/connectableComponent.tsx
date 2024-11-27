@@ -4,8 +4,8 @@ import {Logger, Router} from 'esp-js';
 import * as React from 'react';
 import {connectWithSelector} from '../connectWithSelector';
 import {createViewForModel} from '../viewBindingDecorator';
-import {getRenderModel} from '../connectLegacy/connectableComponentCommon';
 import {ConnectableComponentLike, ConnectableComponentProps} from '../connectApi/types';
+import {getRenderModel} from '../connectApi/connectableComponentCommon';
 
 interface ConnectableComponentChildProps {
     modelId: string;

@@ -4,7 +4,7 @@ import {useEffect, useState} from 'react';
 import {Router, SerialDisposable, utils} from 'esp-js';
 import {EspModelContext, PublishModelEventDelegate, useGetModelId} from '../espModelContext';
 import {createViewForModel} from '../viewBindingDecorator';
-import {getRenderModel} from './connectableComponentCommon';
+import {getRenderModel} from '../connectApi/connectableComponentCommon';
 import {ConnectableComponentProps, ConnectableComponentLike} from '../connectApi/types';
 
 interface ConnectableComponentState {
@@ -67,7 +67,7 @@ const createPublishProps = (router: Router, modelId: string, props: ConnectableC
     );
 };
 
-export const ConnectableComponent: ConnectableComponentLike = (props: ConnectableComponentProps) => {
+export const ConnectableComponentLegacy: ConnectableComponentLike = (props: ConnectableComponentProps) => {
     const router = useRouter();
     const modelId = props.modelId || useGetModelId();
     const [state, setState] = useState<ConnectableComponentState>({

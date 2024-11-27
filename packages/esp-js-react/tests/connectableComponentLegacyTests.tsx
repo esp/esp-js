@@ -1,6 +1,14 @@
 import 'jest';
 import * as React from 'react';
-import {ConnectableComponent, ConnectableComponentProps, viewBinding, connect, getEspReactRenderModel, PublishModelEventDelegate, RouterContext} from '../src';
+import {
+    ConnectableComponentLegacy,
+    ConnectableComponentProps, viewBinding,
+    connectLegacy,
+    getEspReactRenderModel,
+    PublishModelEventDelegate,
+    RouterContext,
+    EspRouterContext
+} from '../src';
 import {Router, observeEvent, utils} from 'esp-js';
 import {render, RenderResult} from '@testing-library/react';
 
@@ -157,7 +165,7 @@ describe('ConnectableComponent', () => {
             userAlternativeViewContext = 'alternative-view-context';
         }
         if (options.useConnectFunction) {
-            const TestModelView2ConnectedComponent = connect(
+            const TestModelView2ConnectedComponent = connectLegacy(
                 mapModelToProps,
                 createPublishEventProps
             )(TestModelView2);
@@ -168,14 +176,14 @@ describe('ConnectableComponent', () => {
             );
         } else {
             renderResult = render(
-                <RouterContext.Provider value={router} >
-                    <ConnectableComponent
+                <EspRouterContext router={router} >
+                    <ConnectableComponentLegacy
                         {...connectableComponentProps}
                         mapModelToProps={mapModelToProps}
                         viewContext={userAlternativeViewContext}
                         {...otherProps}
                     />
-                </RouterContext.Provider>
+                </EspRouterContext>
             );
         }
     }

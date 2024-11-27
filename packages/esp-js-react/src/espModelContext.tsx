@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {DefaultModelAddress, Router, Status, Logger} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
+import {useRouter} from './espRouterContext';
 
 const _log = Logger.create('EspModelContext');
 
@@ -38,11 +39,11 @@ export const usePublishModelEventWithEntityKey = () => useContext(PublishModelEv
 
 export interface EspModelContextProps {
     modelId: string;
-    router: Router;
     model?: unknown;
 }
 
-export const EspModelContext = ({modelId, children, router, model}: PropsWithChildren<EspModelContextProps>) => {
+export const EspModelContext = ({modelId, children, model}: PropsWithChildren<EspModelContextProps>) => {
+    const router = useRouter();
     const getModelId: () => string = useCallback(() => {
         return modelId;
     }, [router, modelId]);

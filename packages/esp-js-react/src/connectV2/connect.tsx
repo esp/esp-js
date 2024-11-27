@@ -32,7 +32,7 @@ export const connect = <TModel, TPublishEventProps, TModelMappedToProps = {}>(
             );
             // Note, the 'model' in this case is the mapped version
             return (
-                <EspModelContext router={router} modelId={modelId} model={mappedProps}>
+                <EspModelContext modelId={modelId} model={mappedProps}>
                     {child}
                 </EspModelContext>
             );

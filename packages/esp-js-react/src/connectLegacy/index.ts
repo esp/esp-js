@@ -17,6 +17,5 @@
 // notice_end
 //
 
-import {connect as connectLegacy} from './connect';
-import {ConnectableComponent as ConnectableComponentLegacy} from './connectableComponent';
-export { connectLegacy, ConnectableComponentLegacy };
+export {connectLegacy} from './connectLegacy';
+export {ConnectableComponentLegacy} from './connectableComponentLegacy';

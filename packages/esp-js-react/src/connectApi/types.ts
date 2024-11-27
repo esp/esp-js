@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+export type ConnectEqualityFn<T> = (last: T, next: T) => boolean;
+
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
 export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;

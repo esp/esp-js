@@ -32,7 +32,7 @@ export function getEspReactRenderModel() {
  * This is basically a hook (not a React 'hook') to call a function on `model` and get a new sub graph to use as state.
  *
  */
-export const getRenderModel = (model: any): unknown => {
+export const tryGetRenderModel = (model: object): object => {
     // does the given model have a decorated function we can invoke to get a different model to render?
     if (EspDecoratorUtil.hasMetadata(model)) {
         let metadata: GetEspReactRenderModelMetadata = EspDecoratorUtil.getCustomData(model, GetEspReactRenderModelConsts.CustomDataKey);

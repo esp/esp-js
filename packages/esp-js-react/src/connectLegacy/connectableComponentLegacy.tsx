@@ -5,7 +5,7 @@ import {Router, SerialDisposable, utils} from 'esp-js';
 import {EspModelContext, PublishModelEventDelegate, useGetModelId} from '../espModelContext';
 import {createViewForModel} from '../viewBindingDecorator';
 import {ConnectableComponentProps, ConnectableComponentLike} from '../connectApi/types';
-import {getRenderModel} from '../getEspReactRenderModel';
+import {tryGetRenderModel} from '../getEspReactRenderModel';
 
 interface ConnectableComponentState {
     model?: any;
@@ -38,7 +38,7 @@ const getChildProps = <TModel, >(
         viewContext,
         ...rest
     } = props;
-    const model = getRenderModel(state.model);
+    const model = tryGetRenderModel(state.model);
     let childProps = {
         modelId,
         router: router,

@@ -1,11 +1,28 @@
+import {useMemo} from 'react';
+import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
+import {Guard} from 'esp-js';
 import {useRouter} from './espRouterContext';
 import {useGetModelId} from './espModelContext';
-import {useMemo, useSyncExternalStore} from 'react';
-import {Guard} from 'esp-js';
+import {ConnectEqualityFn} from './connectApi/types';
+import {tryGetRenderModel} from './getEspReactRenderModel';
 
+export const defaultConnectEqualityFn = <TSelected>(a: TSelected, b: TSelected) => a === b; // reference equality
+
+/**
+ * A hook which returns model state from the esp Router.
+ *
+ * This hooks wih observe updates and re-render the component if the model changes.
+ *
+ * @param selector
+ * @param modelId
+ * @param tryPreSelectPolimerImmutableModel
+ * @param equalityFn - Equality function which will be applied against TSelected, Defaults to instance equality (a === b).
+ */
 export const connectWithSelector = <TModel = unknown, TSelected = unknown>(
     selector: (model: TModel) => TSelected,
-    modelId?: string
+    modelId?: string,
+    tryPreSelectPolimerImmutableModel: boolean = true,
+    equalityFn: ConnectEqualityFn<TSelected> = defaultConnectEqualityFn
 ) => {
     Guard.isFunction(selector, 'You must pass a selector function to connectSelector');
     const router = useRouter();
@@ -17,43 +34,57 @@ export const connectWithSelector = <TModel = unknown, TSelected = unknown>(
             // Given that, we need to cache the state which getSnapshot will return.
             //
             // It's not ideal but shouldn't be a problem as here we've wrapped all these dependent functions inside a single useMemo()
-            let cachedSelected: TSelected = null;
+            let model: TModel = null;
             return {
                 subscribe: (stateChanged: () => void) => {
                     const modelSubscriptionDisposable = router
                         .getModelObservable(modelId)
                         .subscribe(
-                            (nextModel: any) => {
-                                // The redux implementation of useSelector caches the store/model here.
-                                // Then later does the selection.
-                                // For esp, we don't do that as the model isn't immutable.
-                                // The selector must do the mutation.
-                                // While this isn't ideal, most of the implementations will use esp-js-polimer, which deals with immutable state.
-                                // Those selectors will be selecting immutable state from the model and not doing complex re-mappings.
-                                // For OO logic (i.e. ConnectableComponent only), the selector must mutate it.
-                                // If/when we get rid of ConnectableComponent we can clean this up further.
-                                cachedSelected = selector(nextModel);
+                            (m: any) => {
+                                // try and get a submodel to render
+                                const nextModel = tryPreSelectPolimerImmutableModel
+                                    ? tryGetRenderModel(m)
+                                    : m;
+                                // if the above didn't manage to get a submodel,
+                                // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change
+                                model = nextModel === m
+                                    ? Object.create(nextModel)
+                                    : nextModel;
                                 stateChanged();
                             }
                         );
                     return () => {
-                        cachedSelected = null;
+                        model = null;
                         modelSubscriptionDisposable.dispose();
                     };
                 },
+                // React expects getSnapshot to be immutable, it'll only re-render if the instance changes
                 getSnapshot: () => {
-                    return cachedSelected;
+                    return model;
                 },
+                // While getSnapshot needs to model to be immutable,
+                // useSyncExternalStoreWithSelector builds on top of this so the TSelected can defer to an equality check to determine if the change is propagated.
+                // The selector here just maps the TSelected, useSyncExternalStoreWithSelector internally does the equality check.
+                wrappedSelector: (snapshot: TModel) => {
+                    // The first time this renders, react calls getSnapshot and the selector before the router has pushed a change.
+                    // In that case, there is no state for any component to process, therefore, we return null;
+                    return snapshot
+                        ? selector(snapshot)
+                        : null;
+                }
             };
         },
         // Don't cache check against 'selector' argument as that will likely change unless the caller memoizes it.
         [router, modelId]
     );
     // Docs on useSyncExternalStore https://github.com/reactwg/react-18/discussions/86
-    // Redux's usage of this (uses useSyncExternalStoreWithSelector variant): https://github.com/reduxjs/react-redux/blob/master/src/hooks/useSelector.ts
-    // Code (useSyncExternalStoreWithSelector variant): https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
-    return useSyncExternalStore(
+    // Redux's usage of this: https://github.com/reduxjs/react-redux/blob/master/src/hooks/useSelector.ts
+    // Code: https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
+    return useSyncExternalStoreWithSelector(
         dependencies.subscribe,
-        dependencies.getSnapshot
+        dependencies.getSnapshot,
+        undefined,
+        dependencies.wrappedSelector,
+        equalityFn,
     );
 };

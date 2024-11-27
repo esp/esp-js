@@ -34,7 +34,8 @@ export {
     ConnectableComponentProps,
     ConnectableComponentLike,
     ConnectableComponentFactory,
-    ConnectFn
+    ConnectFn,
+    ConnectEqualityFn
 } from './connectApi/types';
 export {
     connectLegacy,
@@ -46,6 +47,7 @@ export {
 } from './connectV2';
 export {
     connectWithSelector,
+    defaultConnectEqualityFn
 } from './connectWithSelector';
 export {
     RouterProvider,

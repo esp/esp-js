@@ -25,15 +25,14 @@ export interface ViewBinderProps {
     viewContext: string;
 }
 
-export const ViewBinder: React.FC<ViewBinderProps> = (props) => {
-    if (props.model) {
-        const {model, viewContext, ...other} = props;
+export const ViewBinder: React.FC<ViewBinderProps> = ({model, viewContext, ...rest}) => {
+    if (model) {
         const router = useRouter();
-        const newProps = Object.assign({}, {model: props.model, router: router}, other);
+        const newProps = Object.assign({}, {model, router}, rest);
         return createViewForModel(
-            props.model,
+            model,
             newProps,
-            props.viewContext,
+            viewContext,
             null
         );
     }

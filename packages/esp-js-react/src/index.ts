@@ -30,7 +30,7 @@ export {
     GetEspReactRenderModelMetadata,
     GetEspReactRenderModelConsts,
     getEspReactRenderModel
-} from './getEspReactRenderModel';
+} from './polimer/getEspReactRenderModel';
 export {createViewForModel} from './viewBindingDecorator';
 export {
     connect,

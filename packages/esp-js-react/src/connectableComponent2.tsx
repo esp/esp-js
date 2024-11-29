@@ -5,6 +5,7 @@ import {Router, SerialDisposable, utils} from 'esp-js';
 import {EspModelContext, PublishModelEventDelegate, useGetModelId} from './espModelContext';
 import {createViewForModel} from './viewBindingDecorator';
 import {tryGetRenderModel} from './polimer/getEspReactRenderModel';
+import {useModelSelector} from './useModelSelector';
 
 /**
  * @deprecated
@@ -48,12 +49,12 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
     router: Router,
     modelId: string,
     restProps: object,
-    state: ConnectableComponentState<TModel>,
+    initialModel: TModel,
     mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     publishEventProps: TPublishEventProps
 ): ConnectableComponentChildProps<TModel> => {
     // consume what this component owns, and let the rest end up in `...rest`
-    const model = tryGetRenderModel<TModel>(state.model);
+    const model = tryGetRenderModel<TModel>(initialModel);
     let childProps = {
         modelId,
         router: router,
@@ -88,10 +89,6 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
     if (utils.stringIsEmpty(modelId) || !router) {
         return null;
     }
-    const [state, setState] = useState<ConnectableComponentState<TModel>>({
-        modelSubscriptionDisposable: new SerialDisposable(),
-        model: null
-    });
     const publishEventProps: TPublishEventProps = useMemo(
         () => {
             if (createPublishEventProps) {
@@ -104,27 +101,18 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         },
         [router, modelId]
     );
-    useEffect(() => {
-        state.modelSubscriptionDisposable.setDisposable(router
-            .getModelObservable(modelId)
-            .subscribe((model: any) => {
-                setState({
-                    ...state,
-                    model
-                });
-            })
-        );
-        return () => {
-            state.modelSubscriptionDisposable.dispose();
-        };
-    }, [router, modelId]);
-    if (state.model == null) {
+    const model = useModelSelector<TModel, TModel>(
+        m => m,
+        modelId,
+        false
+    );
+    if (model == null) {
         return null;
     }
-    let childProps = getChildProps(router, modelId, rest, state, mapModelToProps, publishEventProps);
-    let viewElement = createViewForModel(state.model, childProps, viewContext, view);
+    let childProps = getChildProps(router, modelId, rest, model, mapModelToProps, publishEventProps);
+    let viewElement = createViewForModel(model, childProps, viewContext, view);
     return (
-        <EspModelContext modelId={modelId} model={state.model} router={router} {...childProps}>
+        <EspModelContext modelId={modelId} model={model} router={router} {...childProps}>
             {viewElement}
         </EspModelContext>
     );

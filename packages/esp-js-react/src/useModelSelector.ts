@@ -1,9 +1,9 @@
 import {useMemo} from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
-import {Guard, utils} from 'esp-js';
+import {Guard} from 'esp-js';
 import {useRouter} from './espRouterContext';
 import {useGetModelId} from './espModelContext';
-import {tryGetRenderModel} from './getEspReactRenderModel';
+import {tryGetRenderModel} from './polimer/getEspReactRenderModel';
 
 export const defaultConnectEqualityFn = <TSelected>(a: TSelected, b: TSelected) => a === b; // reference equality
 

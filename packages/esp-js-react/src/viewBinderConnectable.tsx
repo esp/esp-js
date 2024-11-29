@@ -1,10 +1,10 @@
 import {useRouter} from './espRouterContext';
-import {EspModelContext, PublishModelEventDelegate} from './espModelContext';
-import {Logger, Router, SerialDisposable} from 'esp-js';
+import {EspModelContext} from './espModelContext';
+import {Logger, Router} from 'esp-js';
 import * as React from 'react';
 import {useModelSelector} from './useModelSelector';
 import {createViewForModel} from './viewBindingDecorator';
-import {tryGetRenderModel} from './getEspReactRenderModel';
+import {tryGetRenderModel} from './polimer/getEspReactRenderModel';
 
 const _log = Logger.create('ViewBinderConnectable');
 
@@ -18,14 +18,6 @@ interface ViewBinderConnectableChildProps {
     modelId: string;
     model: object;
     router: Router;
-}
-
-interface ViewBinderConnectableState {
-    model?: any;
-    currentModelId?: string;
-    publishProps?: any;
-    publishEvent?: PublishModelEventDelegate;
-    modelSubscriptionDisposable: SerialDisposable;
 }
 
 export const ViewBinderConnectable = ({modelId, viewContext, view}: ViewBinderConnectableProps) => {

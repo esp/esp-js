@@ -20,6 +20,14 @@ interface ViewBinderConnectableChildProps {
     router: Router;
 }
 
+/**
+ * Dynamically binds a view found via @viewBinder(SomeJsXView) to a model managed by the Router.
+ * Optionally provide a view override and/or a viewContext
+ * @param modelId
+ * @param viewContext
+ * @param view
+ * @constructor
+ */
 export const ViewBinderConnectable = ({modelId, viewContext, view}: ViewBinderConnectableProps) => {
     const router = useRouter();
     const model = useModelSelector<object, object>(

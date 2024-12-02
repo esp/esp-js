@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DefaultModelAddress, Router, Status, Logger} from 'esp-js';
+import {DefaultModelAddress, Router, Status, Logger, utils} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
 import {useRouter} from './espRouterContext';
 
@@ -48,7 +48,7 @@ export const EspModelContext = ({modelId, children, model}: PropsWithChildren<Es
         return modelId;
     }, [router, modelId]);
     const getModel: () => any = useCallback(() => {
-        warnIfModelAccessedOutSideDispatchLoop(router, modelId, model);
+        warnIfModelAccessedOutSideDispatchLoop(router, modelId);
         return model;
     }, [model, router, modelId]);
     const publishModelEvent: PublishModelEventDelegate = useCallback((eventType: string, event: any) => {
@@ -70,11 +70,11 @@ export const EspModelContext = ({modelId, children, model}: PropsWithChildren<Es
     );
 };
 
-const warnIfModelAccessedOutSideDispatchLoop = (router: Router, modelId: string, model: any) => {
+const warnIfModelAccessedOutSideDispatchLoop = (router: Router, modelId: string) => {
     if (process.env.NODE_ENV === 'production') {
         return;
     }
-    if (!model) {
+    if (utils.stringIsEmpty(modelId)) {
         return;
     }
     let isDispatchModelUpdateStatus = router.isModelDispatchStatus(modelId, Status.DispatchModelUpdates);

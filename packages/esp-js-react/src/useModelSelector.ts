@@ -64,6 +64,9 @@ export const useModelSelector = <TModel = unknown, TSelected = unknown>(
                     return model;
                 },
                 // While getSnapshot needs to model to be immutable,
+
+                // TODO confirm this comment with a test:
+
                 // useSyncExternalStoreWithSelector builds on top of this so the TSelected can defer to an equality check to determine if the change is propagated.
                 // The selector here just maps the TSelected, useSyncExternalStoreWithSelector internally does the equality check.
                 wrappedSelector: (snapshot: TModel) => {

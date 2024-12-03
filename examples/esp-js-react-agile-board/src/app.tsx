@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Router} from 'esp-js';
-import {ConnectableComponent, EspRouterContext} from 'esp-js-react';
+import {ConnectableComponent, EspRouterContextProvider} from 'esp-js-react';
 import {Workspace} from './models/workspace';
 import {Modal} from './models/modal';
 
@@ -27,12 +27,12 @@ export class App extends React.PureComponent {
 
     render() {
         return (
-            <EspRouterContext router={this.router}>
+            <EspRouterContextProvider router={this.router}>
                 <div role='app-root'>
                     <ConnectableComponent modelId={this.workspaceModelId}/>
                     <ConnectableComponent modelId={this.modalModelId}/>
                 </div>
-            </EspRouterContext>
+            </EspRouterContextProvider>
         );
     }
 }

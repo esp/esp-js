@@ -44,21 +44,24 @@ export {
     ConnectableComponent,
 } from './connectableComponent';
 export {
+    UseModelSelector,
     useModelSelector,
-    ConnectEqualityFn,
-    defaultConnectEqualityFn
+    EditableModelSelectorOptions,
+    modelSelectorOptions,
+    ModelSelectorOptions,
+    ModelSelectorEqualityFn,
 } from './useModelSelector';
 export {
     RouterProvider,
     RouterProviderProps,
-    EspRouterContext,
-    EspRouterContextProps,
+    EspRouterContextProvider,
+    EspRouterContextProviderProps,
     RouterContext,
     useRouter,
     PublishEventDelegate,
     PublishEventContext,
     usePublishEvent,
-} from './espRouterContext';
+} from './espRouterContextProvider';
 export {
     useGetModelId,
     GetModelIdDelegate,
@@ -69,6 +72,6 @@ export {
     PublishModelEventWithEntityKeyDelegate,
     PublishModelEventWithEntityKeyContext,
     usePublishModelEventWithEntityKey,
-    EspModelContext,
-    EspModelContextProps,
-} from './espModelContext';
+    EspModelContextProvider,
+    EspModelContextProviderProps,
+} from './espModelContextProvider';

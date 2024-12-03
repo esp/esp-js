@@ -47,20 +47,20 @@ export const PublishEventContext = createContext<PublishEventDelegate>(null);
  *
  * To use this, please ensure your V-DOM has the EspRouterContext at a higher node:
  *
- * <EspRouterContext router={router}>
+ * <EspRouterContextProvider router={router}>
  *     <YourComponents />
- * </EspRouterContext>
+ * </EspRouterContextProvider>
  */
 export const usePublishEvent = () => useContext(PublishEventContext);
 
-export type EspRouterContextProps = PropsWithChildren<{ router: Router; }>;
+export type EspRouterContextProviderProps = PropsWithChildren<{ router: Router; }>;
 
 /**
  * Used to set the router on the RouterContext making it available to components down the tree via the useRouter() hook.
  *
  * Also sets up the usePublishEvent() hook so nested components can publish to the router.
  */
-export const EspRouterContext = ({children, router}: EspRouterContextProps) => {
+export const EspRouterContextProvider = ({children, router}: EspRouterContextProviderProps) => {
     const publishEvent: PublishEventDelegate = useCallback((modelIdOrModelAddress: string, eventType: string, event: any) => {
         router.publishEvent(modelIdOrModelAddress, eventType, event);
     }, [router]);
@@ -76,13 +76,13 @@ export const EspRouterContext = ({children, router}: EspRouterContextProps) => {
 /**
  * Used to set the router on the RouterContext making it available to components down the tree (via useRouter()).
  *
- * @deprecated use EspRouterContext
+ * @deprecated use EspRouterContextProvider
  */
-export const RouterProvider = EspRouterContext;
+export const RouterProvider = EspRouterContextProvider;
 
 /**
  * Props for RouterProvider
  *
- * @deprecated use EspRouterContextProps
+ * @deprecated use EspRouterContextProviderProps
  */
-export type RouterProviderProps = EspRouterContextProps;
+export type RouterProviderProps = EspRouterContextProviderProps;

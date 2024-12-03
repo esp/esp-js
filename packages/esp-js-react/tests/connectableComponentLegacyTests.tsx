@@ -8,7 +8,7 @@ import {
     getEspReactRenderModel,
     PublishModelEventDelegate,
     RouterContext,
-    EspRouterContext
+    EspRouterContextProvider
 } from '../src';
 import {Router, observeEvent, utils} from 'esp-js';
 import {render, RenderResult} from '@testing-library/react';
@@ -177,14 +177,14 @@ describe('ConnectableComponent', () => {
             );
         } else {
             renderResult = render(
-                <EspRouterContext router={router} >
+                <EspRouterContextProvider router={router} >
                     <ConnectableComponent
                         {...connectableComponentProps}
                         mapModelToProps={mapModelToProps}
                         viewContext={userAlternativeViewContext}
                         {...otherProps}
                     />
-                </EspRouterContext>
+                </EspRouterContextProvider>
             );
         }
     }

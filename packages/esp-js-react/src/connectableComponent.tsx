@@ -1,11 +1,11 @@
 import * as React from 'react';
-import {useRouter} from './espRouterContext';
+import {useRouter} from './espRouterContextProvider';
 import {useMemo} from 'react';
 import {Router, utils} from 'esp-js';
-import {EspModelContext, useGetModelId} from './espModelContext';
+import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
 import {createViewForModel} from './viewBindingDecorator';
 import {tryGetRenderModel} from './polimer/getEspReactRenderModel';
-import {useModelSelector} from './useModelSelector';
+import {modelSelectorOptions, useModelSelector} from './useModelSelector';
 
 /**
  * @deprecated
@@ -98,8 +98,9 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
     );
     const model = useModelSelector<TModel, TModel>(
         m => m,
-        modelId,
-        false
+        modelSelectorOptions()
+            .setModelId(modelId)
+            .setTryPreSelectPolimerImmutableModel(false)
     );
     if (model == null) {
         return null;
@@ -107,8 +108,8 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
     let childProps = getChildProps(router, modelId, rest, model, mapModelToProps, publishEventProps);
     let viewElement = createViewForModel(model, childProps, viewContext, view);
     return (
-        <EspModelContext modelId={modelId} model={model} router={router} {...childProps}>
+        <EspModelContextProvider modelId={modelId} model={model} router={router} {...childProps}>
             {viewElement}
-        </EspModelContext>
+        </EspModelContextProvider>
     );
 };

@@ -1,8 +1,8 @@
-import {useRouter} from './espRouterContext';
-import {EspModelContext} from './espModelContext';
+import {useRouter} from './espRouterContextProvider';
+import {EspModelContextProvider} from './espModelContextProvider';
 import {Logger, Router} from 'esp-js';
 import * as React from 'react';
-import {useModelSelector} from './useModelSelector';
+import {modelSelectorOptions, useModelSelector} from './useModelSelector';
 import {createViewForModel} from './viewBindingDecorator';
 import {tryGetRenderModel} from './polimer/getEspReactRenderModel';
 
@@ -32,8 +32,9 @@ export const ViewBinderConnectable = ({modelId, viewContext, view}: ViewBinderCo
     const router = useRouter();
     const model = useModelSelector<object, object>(
         m => m,
-        modelId,
-        false
+        modelSelectorOptions()
+            .setModelId(modelId)
+            .setTryPreSelectPolimerImmutableModel(false)
     );
     if (!model) {
         return null;
@@ -46,8 +47,8 @@ export const ViewBinderConnectable = ({modelId, viewContext, view}: ViewBinderCo
     };
     let viewElement = createViewForModel(model, childProps, viewContext, view);
     return (
-        <EspModelContext modelId={modelId} router={router} model={renderModel} {...childProps}>
+        <EspModelContextProvider modelId={modelId} router={router} model={renderModel} {...childProps}>
             {viewElement}
-        </EspModelContext>
+        </EspModelContextProvider>
     );
 };

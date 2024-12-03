@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {DefaultModelAddress, Router, Status, Logger, utils} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
-import {useRouter} from './espRouterContext';
+import {useRouter} from './espRouterContextProvider';
 
-const _log = Logger.create('EspModelContext');
+const _log = Logger.create('EspModelContextProvider');
 
 export type GetModelIdDelegate = () => string;
 export const GetModelIdContext = createContext<GetModelIdDelegate>(null);
@@ -37,12 +37,12 @@ export const PublishModelEventWithEntityKeyContext = createContext<PublishModelE
  */
 export const usePublishModelEventWithEntityKey = () => useContext(PublishModelEventWithEntityKeyContext);
 
-export interface EspModelContextProps {
+export interface EspModelContextProviderProps {
     modelId: string;
     model?: unknown;
 }
 
-export const EspModelContext = ({modelId, children, model}: PropsWithChildren<EspModelContextProps>) => {
+export const EspModelContextProvider = ({modelId, children, model}: PropsWithChildren<EspModelContextProviderProps>) => {
     const router = useRouter();
     const getModelId: () => string = useCallback(() => {
         return modelId;
@@ -87,7 +87,7 @@ const warnIfModelAccessedOutSideDispatchLoop = (router: Router, modelId: string)
             stack = (e as Error).stack;
         }
         _log.warn(
-            `EspModelContext useGetModelId has been invoked outside of the models (${modelId}) dispatch loop.` +
+            `EspModelContextProvider useGetModelId has been invoked outside of the models (${modelId}) dispatch loop.` +
             `This may have unknown state state issues.` +
             stack
         );

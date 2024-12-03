@@ -20,39 +20,61 @@
 // import for side effects
 import './polimer/polimerExtentsions';
 
-export {RouterProvider, RouterContext, useRouter} from './routerProvider';
-export {SmartComponent} from './smartComponent';
 export {ViewBinder} from './viewBinder';
+export {
+    ViewBinderConnectableProps,
+    ViewBinderConnectable
+} from './viewBinderConnectable';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
-export * from './getEspReactRenderModel';
-export {shouldUpdateMixin} from './shouldUpdateMixin';
+export {
+    GetEspReactRenderModelMetadata,
+    GetEspReactRenderModelConsts,
+    getEspReactRenderModel
+} from './polimer/getEspReactRenderModel';
 export {createViewForModel} from './viewBindingDecorator';
 export {
-    ConnectableComponent,
     connect,
-    ConnectableComponentProps,
-    MapModelToProps,
+    ConnectableComponentFactory
+} from './connect';
+export {
     CreatePublishEventProps,
-    ConnectableView,
+    MapModelToProps,
+    ConnectableComponentProps,
     ConnectableComponentChildProps,
+    ConnectableComponent,
 } from './connectableComponent';
+export {
+    UseModelSelector,
+    useModelSelector,
+    EditableModelSelectorOptions,
+    modelSelectorOptions,
+    ModelSelectorOptions,
+    ModelSelectorEqualityFn,
+} from './useModelSelector';
+export {
+    RouterProvider,
+    RouterProviderProps,
+    EspRouterContextProvider,
+    EspRouterContextProviderProps,
+    RouterContext,
+    useRouter,
+    PublishEventDelegate,
+    PublishEventContext,
+    usePublishEvent,
+} from './espRouterContextProvider';
 export {
     useGetModelId,
     GetModelIdDelegate,
     GetModelIdContext,
-
-    PublishEventDelegate,
-    PublishEventContext,
-    usePublishEvent,
-
+    useGetModel,
+    GetModelDelegate,
+    GetModelContext,
     PublishModelEventDelegate,
     PublishModelEventContext,
     usePublishModelEvent,
-
     PublishModelEventWithEntityKeyDelegate,
     PublishModelEventWithEntityKeyContext,
     usePublishModelEventWithEntityKey,
-
-    EspModelContext,
-    EspModelContextProps
-} from './espModelContext';
+    EspModelContextProvider,
+    EspModelContextProviderProps,
+} from './espModelContextProvider';

@@ -18,12 +18,10 @@
 
 import * as espReact from '../src/index';
 import {
-    SmartComponent,
     ViewBinder,
     viewBinding,
     getEspReactRenderModel,
     GetEspReactRenderModelConsts,
-    shouldUpdateMixin,
 
     useRouter,
     RouterContext,
@@ -53,11 +51,6 @@ describe('index exports', () => {
         expect(RouterContext).toBeDefined();
     });
 
-    it('should export SmartComponent', () => {
-        expect(espReact.SmartComponent).toBeDefined();
-        expect(SmartComponent).toBeDefined();
-    });
-
     it('should export ViewBinder', () => {
         expect(espReact.ViewBinder).toBeDefined();
         expect(ViewBinder).toBeDefined();
@@ -76,11 +69,6 @@ describe('index exports', () => {
     it('should export GetEspReactRenderModelConsts', () => {
         expect(espReact.GetEspReactRenderModelConsts).toBeDefined();
         expect(GetEspReactRenderModelConsts).toBeDefined();
-    });
-
-    it('should export shouldUpdateMixin', () => {
-        expect(espReact.shouldUpdateMixin).toBeDefined();
-        expect(shouldUpdateMixin).toBeDefined();
     });
 
     describe('hooks', () => {

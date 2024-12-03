@@ -29,7 +29,7 @@ export function getEspReactRenderModel() {
 /**
  * Returns the model which will be used to pluck state/props for the current view.
  *
- * This is basically a hook (not a React 'hook') to call a function on `model` and get a new sub graph to use as state.
+ * This is basically a hook (not a React 'hook') to call a function on `model` and get a new subgraph to use as state.
  *
  */
 export const tryGetRenderModel = <TRenderModel>(model: any): TRenderModel => {

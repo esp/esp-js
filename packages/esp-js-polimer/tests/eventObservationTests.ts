@@ -1,8 +1,7 @@
-import {ObservationStage} from 'esp-js';
+import {ObservationStage, EventEnvelope} from 'esp-js';
 import {PolimerTestApi, PolimerTestApiBuilder, StateHandlerConfig} from './testApi/testApi';
 import {defaultTestStateFactory, EventConst, TestEvent, TestImmutableModel} from './testApi/testModel';
 import {TestStateObjectHandler} from './testApi/stateHandlers';
-import {EventEnvelope} from 'esp-js/src';
 
 describe('Event Observation', () => {
     let api: PolimerTestApi;

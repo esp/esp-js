@@ -170,7 +170,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     /**
      * A convention-named function used by esp-js-react to select the model to pass to a view connected via ConnectableComponent.
      */
-    getEspReactRenderModel() {
+    getEspPolimerImmutableModel() {
         return this.getImmutableModel();
     }
 

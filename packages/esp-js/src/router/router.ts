@@ -107,6 +107,10 @@ export class Router extends DisposableBase implements HealthIndicator {
         return this._models.has(modelId);
     }
 
+    public isModelDispatchStatus(modelId: string, status: Status): boolean {
+        return this._state.currentModelRecord?.modelId === modelId && this._state.currentStatus === status;
+    }
+
     /**
      * Exists for read only access to a model.
      *
@@ -115,7 +119,7 @@ export class Router extends DisposableBase implements HealthIndicator {
      *
      * @param modelId
      */
-    public getModel(modelId: string): any {
+    public getModel<TModel = object>(modelId: string): TModel {
         Guard.isString(modelId, 'The modelId argument should be a string');
         if (this._models.get(modelId)) {
             let modelRecord = this._models.get(modelId);

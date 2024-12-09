@@ -28,8 +28,8 @@ describe('index exports', () => {
         expect(espReact.createViewForModel).toBeDefined();
         expect(espReact.connect).toBeDefined();
         expect(espReact.ConnectableComponent).toBeDefined();
-        expect(espReact.useModelSelector).toBeDefined();
-        expect(espReact.modelSelectorOptions).toBeDefined();
+        expect(espReact.useSyncModelWithSelector).toBeDefined();
+        expect(espReact.syncModelWithSelectorOptions).toBeDefined();
         expect(espReact.RouterProvider).toBeDefined();
         expect(espReact.EspRouterContextProvider).toBeDefined();
         expect(espReact.RouterContext).toBeDefined();

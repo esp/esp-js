@@ -40,13 +40,12 @@ export {
     ConnectableComponent,
 } from './connectableComponent';
 export {
-    UseModelSelector,
-    useModelSelector,
-    EditableModelSelectorOptions,
-    modelSelectorOptions,
-    ModelSelectorOptions,
-    ModelSelectorEqualityFn,
-} from './useModelSelector';
+    useSyncModelWithSelector,
+    SyncModelWithSelectorOptionsBuilder,
+    syncModelWithSelectorOptions,
+    SyncModelWithSelectorOptions,
+    SyncModelWithSelectorEqualityFn,
+} from './useSyncModelWithSelector';
 export {
     RouterProvider,
     RouterProviderProps,
@@ -60,10 +59,8 @@ export {
 } from './espRouterContextProvider';
 export {
     useGetModelId,
-    GetModelIdDelegate,
     GetModelIdContext,
     useGetModel,
-    GetModelDelegate,
     GetModelContext,
     PublishModelEventDelegate,
     PublishModelEventContext,

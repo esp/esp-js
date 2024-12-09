@@ -5,7 +5,7 @@ import {Router, utils} from 'esp-js';
 import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
 import {createViewForModel} from './viewBindingDecorator';
 import {tryGetPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
-import {modelSelectorOptions, useModelSelector} from './useModelSelector';
+import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
@@ -79,9 +79,9 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         },
         [router, modelId]
     );
-    const model = useModelSelector<TModel, TModel>(
+    const model = useSyncModelWithSelector<TModel, TModel>(
         m => m,
-        modelSelectorOptions()
+        syncModelWithSelectorOptions()
             .setModelId(modelId)
             .setTryPreSelectPolimerImmutableModel(false)
     );

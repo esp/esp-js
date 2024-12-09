@@ -5,27 +5,27 @@ import {useRouter} from './espRouterContextProvider';
 import {useGetModelId} from './espModelContextProvider';
 import {tryGetPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
 
-export type ModelSelectorEqualityFn<T> = (last: T, next: T) => boolean;
+export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
 
 /**
  * Options affecting the subscription of the model to the Router.
  *
- * Use modelSelectorOptions() to create an instance of this type with sensible defaults.
+ * Use syncModelWithSelectorOptions() to create an instance of this type with sensible defaults.
  *
  * @param modelId - the modelId of the model to be observed via the esp Router.
  * @param tryPreSelectPolimerImmutableModel - if true, and the esp model is an esp-js-polimer model, the immutable model will be used when calling the selector.
  * @param equalityFn - Equality function which will be applied against TSelected, defaults to instance equality (a === b).
  */
-export type ModelSelectorOptions<TSelected> = {
+export type SyncModelWithSelectorOptions<TSelected> = {
     modelId?: string,
     tryPreSelectPolimerImmutableModel: boolean,
-    equalityFn: ModelSelectorEqualityFn<TSelected>
+    equalityFn: SyncModelWithSelectorEqualityFn<TSelected>
 };
 
 /**
- * Convenience API to build ModelSelectorOptions<TSelected>, has sensible defaulting.
+ * Convenience API to build SyncModelWithSelectorOptions<TSelected>, has sensible defaulting.
  */
-export interface EditableModelSelectorOptions<TSelected> extends ModelSelectorOptions<TSelected> {
+export interface SyncModelWithSelectorOptionsBuilder<TSelected> extends SyncModelWithSelectorOptions<TSelected> {
     /**
      * Sets the model ID
      * @param modelId - default if unset: undefined
@@ -46,11 +46,11 @@ export interface EditableModelSelectorOptions<TSelected> extends ModelSelectorOp
 }
 
 /**
- * Convenience API to create ModelSelectorOptions
+ * Convenience API to create SyncModelWithSelectorOptions
  */
-export const modelSelectorOptions = <TSelected>() => {
+export const syncModelWithSelectorOptions = <TSelected>() => {
     let modelId = undefined;
-    let equalityFn: ModelSelectorEqualityFn<TSelected> = (a: TSelected, b: TSelected) => a === b;
+    let equalityFn: SyncModelWithSelectorEqualityFn<TSelected> = (a: TSelected, b: TSelected) => a === b;
     let tryPreSelectPolimerImmutableModel = true;
     return {
         get modelId() {
@@ -63,7 +63,7 @@ export const modelSelectorOptions = <TSelected>() => {
         get equalityFn() {
             return equalityFn;
         },
-        setEqualityFn(value: ModelSelectorEqualityFn<TSelected>) {
+        setEqualityFn(value: SyncModelWithSelectorEqualityFn<TSelected>) {
             equalityFn = value;
             return this;
         },
@@ -74,7 +74,19 @@ export const modelSelectorOptions = <TSelected>() => {
             tryPreSelectPolimerImmutableModel = value;
             return this;
         }
-    } as EditableModelSelectorOptions<TSelected>;
+    } as SyncModelWithSelectorOptionsBuilder<TSelected>;
+};
+
+const checkArguments = (selector: (model: any) => any, options: SyncModelWithSelectorOptions<any> ) => {
+    if (!utils.isFunction(selector)) {
+        throw new Error('You must pass a selector function to useSyncModelWithSelector');
+    }
+    if (!utils.isObject(options)) {
+        throw new Error('You must provide options when using useSyncModelWithSelector');
+    }
+    if (!utils.isFunction(options.equalityFn)) {
+        throw new Error('You must provide an equalityFn when using useSyncModelWithSelector');
+    }
 };
 
 /**
@@ -87,16 +99,11 @@ export const modelSelectorOptions = <TSelected>() => {
  * @param selector - a function to select a selection of the model - the selector does not need to be memoized, this selector will be cached against the modelId.
  * @param options
  */
-export type UseModelSelector = <TModel, TSelected>(
+export const useSyncModelWithSelector = <TModel, TSelected>(
     selector: (model: TModel) => TSelected,
-    options?: ModelSelectorOptions<TSelected>
-) => TSelected;
-
-export const useModelSelector: UseModelSelector = <TModel, TSelected>(
-    selector: (model: TModel) => TSelected,
-    options: ModelSelectorOptions<TSelected> = modelSelectorOptions<TSelected>()
-) => {
-    Guard.isFunction(selector, 'You must pass a selector function to connectSelector');
+    options: SyncModelWithSelectorOptions<TSelected> = syncModelWithSelectorOptions<TSelected>()
+): TSelected => {
+    checkArguments(selector, options);
     const router = useRouter();
     const modelId = options?.modelId || useGetModelId();
     const tryPreSelectPolimerImmutableModel = options?.tryPreSelectPolimerImmutableModel;

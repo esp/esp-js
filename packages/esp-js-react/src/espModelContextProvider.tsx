@@ -5,23 +5,21 @@ import {useRouter} from './espRouterContextProvider';
 
 const _log = Logger.create('EspModelContextProvider');
 
-export type GetModelIdDelegate = () => string;
-export const GetModelIdContext = createContext<GetModelIdDelegate>(null);
+export const GetModelIdContext = createContext<string>(null);
 /**
  * Returns a function to get the ID of the model connected at a higher point in the V-DOM.
  *
  * To use this, please ensure your V-DOM has the EspModelContextProvider at a higher node.
  */
-export const useGetModelId = () => useContext(GetModelIdContext)();
+export const useGetModelId = () => useContext(GetModelIdContext);
 
-export type GetModelDelegate = <TModel = any, >() => TModel;
-export const GetModelContext = createContext<GetModelDelegate>(null);
+export const GetModelContext = createContext<object>(null);
 /**
  * Returns a function which will return the model connected at a higher point in the V-DOM.
  *
  * To use this, please ensure your V-DOM has the EspModelContextProvider at a higher node.
  */
-export const useGetModel = <TModel,>() => useContext(GetModelContext)() as TModel;
+export const useGetModel = <TModel,>() => useContext(GetModelContext) as TModel;
 
 export type PublishModelEventDelegate = (eventType: string, event: any) => void;
 export const PublishModelEventContext = createContext<PublishModelEventDelegate>(null);
@@ -47,7 +45,7 @@ export const usePublishModelEventWithEntityKey = () => useContext(PublishModelEv
 
 export interface EspModelContextProviderProps {
     modelId: string;
-    model?: unknown;
+    model?: any;
 }
 
 /**
@@ -61,13 +59,6 @@ export interface EspModelContextProviderProps {
  */
 export const EspModelContextProvider = ({modelId, children, model}: PropsWithChildren<EspModelContextProviderProps>) => {
     const router = useRouter();
-    const getModelId: () => string = useCallback(() => {
-        return modelId;
-    }, [router, modelId]);
-    const getModel: () => any = useCallback(() => {
-        warnIfModelAccessedOutSideDispatchLoop(router, modelId);
-        return model;
-    }, [model, router, modelId]);
     const publishModelEvent: PublishModelEventDelegate = useCallback((eventType: string, event: any) => {
         router.publishEvent(modelId, eventType, event);
     }, [router, modelId]);
@@ -75,38 +66,14 @@ export const EspModelContextProvider = ({modelId, children, model}: PropsWithChi
         router.publishEvent(new DefaultModelAddress(modelId, entityKey), eventType, event);
     }, [router, modelId]);
     return (
-        <GetModelIdContext.Provider value={getModelId}>
+        <GetModelIdContext.Provider value={modelId}>
             <PublishModelEventContext.Provider value={publishModelEvent}>
                 <PublishModelEventWithEntityKeyContext.Provider value={publishModelEventWithEntityKey}>
-                    <GetModelContext.Provider value={getModel}>
+                    <GetModelContext.Provider value={model}>
                         {children}
                     </GetModelContext.Provider>
                 </PublishModelEventWithEntityKeyContext.Provider>
             </PublishModelEventContext.Provider>
         </GetModelIdContext.Provider>
     );
-};
-
-const warnIfModelAccessedOutSideDispatchLoop = (router: Router, modelId: string) => {
-    if (process.env.NODE_ENV === 'production') {
-        return;
-    }
-    if (utils.stringIsEmpty(modelId)) {
-        return;
-    }
-    let isDispatchModelUpdateStatus = router.isModelDispatchStatus(modelId, Status.DispatchModelUpdates);
-    if (!isDispatchModelUpdateStatus) {
-        let stack: string | undefined = undefined;
-        try {
-            // noinspection ExceptionCaughtLocallyJS
-            throw new Error();
-        } catch (e) {
-            stack = (e as Error).stack;
-        }
-        _log.warn(
-            `EspModelContextProvider useGetModelId has been invoked outside of the models (${modelId}) dispatch loop. ` +
-            `This may have unknown state issues.` +
-            stack
-        );
-    }
 };

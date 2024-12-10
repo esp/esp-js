@@ -5,8 +5,10 @@ import {RouterSpy} from './routerSpy';
 import {TestPropStore} from './useStoreReceivedProps';
 
 export type ViewAsserts = {
-    valueIs(expected: string): ViewAsserts;
     modelIdIs(expected: string): ViewAsserts
+    modelIdIsNotInDom(): ViewAsserts
+    valueIs(expected: string): ViewAsserts;
+    valueIsNotInDom(): ViewAsserts;
     propIs(propName: string, expected: string): ViewAsserts
     viewNameElementTextIs(viewName: string);
     htmlElementInnerTextIs(elementsTestId: string, expectedText: string): ViewAsserts
@@ -19,9 +21,19 @@ export const viewAsserts = (renderResult: RenderResult) => {
             expect(idElement).toHaveTextContent(expected);
             return this;
         },
+        modelIdIsNotInDom() {
+            let idElement = renderResult.queryByTestId('modelIdDisplay');
+            expect(idElement).not.toBeInTheDocument();
+            return this;
+        },
         valueIs(expected: string) {
             let valueElement = renderResult.getByTestId('valueDisplay');
             expect(valueElement).toHaveTextContent(expected);
+            return this;
+        },
+        valueIsNotInDom() {
+            let idElement = renderResult.queryByTestId('valueDisplay');
+            expect(idElement).not.toBeInTheDocument();
             return this;
         },
         propIs(propName: string, expected: string) {

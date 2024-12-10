@@ -32,11 +32,7 @@ export const RouterContext = createContext<Router>(null);
  * </EspRouterContextProvider>
  */
 export const useRouter = () => {
-    const context: Router = useContext(RouterContext);
-    if (context === undefined) {
-        throw new Error('useRouter must be used within a RouterContext.Provider');
-    }
-    return context;
+    return useContext(RouterContext);
 };
 
 export type PublishEventDelegate = (modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any) => void;
@@ -61,6 +57,9 @@ export type EspRouterContextProviderProps = PropsWithChildren<{ router: Router; 
  * Also sets up the usePublishEvent() hook so nested components can publish to the router.
  */
 export const EspRouterContextProvider = ({children, router}: EspRouterContextProviderProps) => {
+    // Router may have been set by a higher level version of this component, so we try and get it from context if it's not set by props.
+    let routerFromContext = useRouter();
+    router = router || routerFromContext;
     const publishEvent: PublishEventDelegate = useCallback((modelIdOrModelAddress: string, eventType: string, event: any) => {
         router.publishEvent(modelIdOrModelAddress, eventType, event);
     }, [router]);

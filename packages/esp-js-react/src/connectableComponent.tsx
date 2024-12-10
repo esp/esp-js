@@ -63,10 +63,9 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
     }: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>
 ) => {
     const router = useRouter();
-    modelId = modelId || useGetModelId();
-    if (utils.stringIsEmpty(modelId) || !router) {
-        return null;
-    }
+    // Note: we always need to render the hooks else react will complain about a different count.
+    let modelIdFromContext = useGetModelId();
+    modelId = modelId || modelIdFromContext;
     const publishEventProps: TPublishEventProps = useMemo(
         () => {
             if (createPublishEventProps) {

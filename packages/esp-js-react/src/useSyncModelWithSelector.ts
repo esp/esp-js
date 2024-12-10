@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
-import {Guard, utils} from 'esp-js';
+import {Router, utils} from 'esp-js';
 import {useRouter} from './espRouterContextProvider';
 import {useGetModelId} from './espModelContextProvider';
 import {tryGetPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
@@ -105,71 +105,21 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
 ): TSelected => {
     checkArguments(selector, options);
     const router = useRouter();
-    const modelId = options?.modelId || useGetModelId();
+    const modelIdFromContext = useGetModelId();
+    const modelId = options?.modelId || modelIdFromContext;
     const tryPreSelectPolimerImmutableModel = options?.tryPreSelectPolimerImmutableModel;
     const equalityFn = options?.equalityFn;
     const dependencies = useMemo(
         () => {
-            // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
-            // When the subscription receives the new state from the Router, it can't pass this directly onto getSnapshot, React calls that when it deems it needs to.
-            // Given that, we need to cache the state which getSnapshot will return.
-            //
-            // It's not ideal but shouldn't be a problem as here we've wrapped all these dependent functions inside a single useMemo()
-            let model: TModel = null;
-            return {
-                subscribe: (stateChanged: () => void) => {
-                    const modelSubscriptionDisposable = router
-                        .getModelObservable(modelId)
-                        .subscribe(
-                            (m: any) => {
-                                // try and get a submodel to render
-                                const nextModel = tryPreSelectPolimerImmutableModel
-                                    ? tryGetPolimerImmutableModel(m)
-                                    : m;
-                                // if the above didn't manage to get a submodel,
-                                // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change
-                                model = nextModel === m
-                                    ? Object.create(nextModel)
-                                    : nextModel;
-                                stateChanged();
-                            }
-                        );
-                    return () => {
-                        model = null;
-                        modelSubscriptionDisposable.dispose();
-                    };
-                },
-                // React expects getSnapshot to be immutable, it'll only re-render if the instance changes
-                getSnapshot: () => {
-                    return model;
-                },
-                // While getSnapshot needs to model to be immutable,
-                // useSyncExternalStoreWithSelector builds on top of this, so the TSelected can defer to an equality check to determine if the change is propagated.
-                // The selector here just maps the TSelected, useSyncExternalStoreWithSelector internally does the equality check.
-                wrappedSelector: (snapshot: TModel) => {
-                    // The first time this renders, react calls getSnapshot and the selector before the router has pushed a change.
-                    // In that case, there is no state for any component to process, therefore, we return null;
-                    return snapshot
-                        ? selector(snapshot)
-                        : null;
-                }
-            };
+            const canSubscribe = router && utils.isString(modelId) && router.isModelRegistered(modelId);
+            if (canSubscribe) {
+                return createSubscriptionState(router, modelId, selector, tryPreSelectPolimerImmutableModel);
+            }
+            return createNoopSubscriptionState();
         },
-        // Don't cache check against 'selector' argument as that will likely change unless the caller memoizes it.
+        // Don't add 'selector' to the dependency list as that will likely change unless the caller memoizes it.
         [router, modelId]
     );
-
-    // If we don't have a modelId, we still need to return a hook so React doesn't complain.
-    // Additionally, we need to let the above expiration (dependencies) run to unsubscribe from any previous subscription.
-    if (utils.stringIsEmpty(modelId)) {
-        return useSyncExternalStoreWithSelector(
-            noopSubscription.subscribe,
-            noopSubscription.getSnapshot,
-            undefined,
-            noopSubscription.wrappedSelector,
-            equalityFn
-        );
-    }
 
     // Docs on useSyncExternalStore https://github.com/reactwg/react-18/discussions/86
     // Redux's usage of this: https://github.com/reduxjs/react-redux/blob/master/src/hooks/useSelector.ts
@@ -179,12 +129,80 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
         dependencies.getSnapshot,
         undefined,
         dependencies.wrappedSelector,
+        // equalityFn can't be cached (needs to be a new fn each time)
+        // It seems that if it is, you get the last value regardless of if dependencies (and it's associated functions) changes.
         equalityFn,
     );
 };
 
-const noopSubscription = {
-    subscribe: () => { },
-    getSnapshot: () => null,
-    wrappedSelector: () => true
+const createSubscriptionState = <TModel, TSelected>(
+    router: Router,
+    modelId: string,
+    selector: (model: TModel) => TSelected,
+    tryPreSelectPolimerImmutableModel: boolean
+) => {
+    // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
+    // When the subscription receives the new state from the Router, it can't pass this directly onto getSnapshot,
+    // React calls that when it deems it needs to.
+    // Given that, we need to cache the state which getSnapshot will return.
+    //
+    // Another edge case with useSyncExternalStore:
+    // It will call getSnapshot before it calls subscribe, to account for this we need to fetch the model first.
+    // ESP will always dispatch the model when you initially observe it, because we pre-fetched it, the first updated is ignored below.
+    const selectModelOrPolimerModel = (m: any): TModel => {
+        // try use get the esp-js-polimer immutable model if possible.
+        const nextModel = tryPreSelectPolimerImmutableModel
+            ? tryGetPolimerImmutableModel(m)
+            : m;
+        // If the above didn't manage to get a polimer model,
+        // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change.
+        // This should only affect older style OO models.
+        let modelHasNotMutated = nextModel === m;
+        return modelHasNotMutated
+            ? Object.create(nextModel)
+            : nextModel;
+    };
+    let isFirstRun = true;
+    let model: TModel = selectModelOrPolimerModel(router.getModel(modelId));
+    return {
+        subscribe: (stateChanged: () => void) => {
+            const modelSubscriptionDisposable = router
+                .getModelObservable<TModel>(modelId)
+                .map(m => selectModelOrPolimerModel(m))
+                .subscribe(
+                    (m: any) => {
+                        if (isFirstRun) {
+                            isFirstRun = false;
+                            return;
+                        }
+                        model = m;
+                        stateChanged();
+                    }
+                );
+            return () => {
+                model = null;
+                modelSubscriptionDisposable.dispose();
+            };
+        },
+        // React expects getSnapshot to be immutable, it'll only re-render if the instance changes
+        getSnapshot: () => {
+            return model;
+        },
+        // While getSnapshot needs to model to be immutable,
+        // useSyncExternalStoreWithSelector builds on top of this, so the TSelected can defer to an equality check to determine if the change is propagated.
+        // The selector here just maps the TSelected, useSyncExternalStoreWithSelector internally does the equality check.
+        wrappedSelector: (snapshot: TModel) => {
+            return snapshot
+                ? selector(snapshot)
+                : null;
+        }
+    };
 };
+
+const createNoopSubscriptionState = () => ({
+    subscribe: () => {
+        return () => {};
+    },
+    getSnapshot: () => null,
+    wrappedSelector: () => null
+});

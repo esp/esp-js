@@ -1,9 +1,7 @@
 import * as React from 'react';
-import {DefaultModelAddress, Router, Status, Logger, utils} from 'esp-js';
+import {DefaultModelAddress} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
 import {useRouter} from './espRouterContextProvider';
-
-const _log = Logger.create('EspModelContextProvider');
 
 export const GetModelIdContext = createContext<string>(null);
 /**
@@ -59,6 +57,9 @@ export interface EspModelContextProviderProps {
  */
 export const EspModelContextProvider = ({modelId, children, model}: PropsWithChildren<EspModelContextProviderProps>) => {
     const router = useRouter();
+    // modelId may have been set by a higher level version of this component, so we try and get it from context if it's not set by props.
+    let modelIdFromContext = useGetModelId();
+    modelId = modelId || modelIdFromContext;
     const publishModelEvent: PublishModelEventDelegate = useCallback((eventType: string, event: any) => {
         router.publishEvent(modelId, eventType, event);
     }, [router, modelId]);

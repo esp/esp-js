@@ -2,7 +2,7 @@ import {useTestPropStore} from './useStoreReceivedProps';
 import * as React from 'react';
 
 export const viewFactory = (name: string) => {
-    return (props: { modelId: string; value: string, [key: string]: any }) => {
+    return (props: { modelId?: string; value?: string, [key: string]: any }) => {
         let testPropStore = useTestPropStore();
         testPropStore.pushProps(props);
         return (

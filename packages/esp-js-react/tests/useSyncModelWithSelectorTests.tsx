@@ -1,11 +1,12 @@
 import 'jest';
 import * as React from 'react';
 import {act} from 'react';
-import {syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
+import {EspModelContextProvider, EspRouterContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
 import {TestModel, TestModelImmutableState} from './testApi/testModel';
-import {ViewMetadata} from './testApi/viewFactory';
+import {viewFactory, ViewMetadata} from './testApi/viewFactory';
 import {routerAsserts} from './testApi/asserts';
 import {testApi, TestApi} from './testApi/testApi';
+import {TestPropStoreContext} from './testApi/useStoreReceivedProps';
 
 type SelectedObject = { id: string, value: string };
 
@@ -171,8 +172,8 @@ describe('useSyncModelWithSelector', () => {
                 .valueIs('initial-value');
             api.doReRender(View, undefined);
             api.asserts.view
-                .modelIdIs('')
-                .valueIs('');
+                .modelIdIsNotInDom()
+                .valueIsNotInDom();
             api.setupTestModel(modelId2);
             api.doReRender(View, modelId2);
             api.asserts.view
@@ -250,6 +251,48 @@ describe('useSyncModelWithSelector', () => {
             api.asserts.view
                 .modelIdIs(modelId)
                 .valueIs('updated');
+        });
+    });
+
+    describe('noop argument edge cases', () => {
+        const View = viewFactory('View1');
+
+        it('falsey router', () => {
+            api.doRender((
+                <TestPropStoreContext.Provider value={api.propStore}>
+                    <EspRouterContextProvider router={undefined}>
+                        <EspModelContextProvider modelId={'some-modelId'}>
+                            <View  />,
+                        </EspModelContextProvider>
+                    </EspRouterContextProvider>
+                </TestPropStoreContext.Provider>
+            ));
+            api.asserts.props
+                .receivedPropCountIs(1)
+                .propAtIndexHasModelId(0, undefined)
+                .propAtIndex(0, props => {
+                    expect(props.modelId).not.toBeDefined();
+                    expect(props.value).not.toBeDefined();
+                });
+        });
+
+        it('falsey modelId', () => {
+            api.doRender((
+                <TestPropStoreContext.Provider value={api.propStore}>
+                    <EspRouterContextProvider router={api.router}>
+                        <EspModelContextProvider modelId={undefined}>
+                            <View  />,
+                        </EspModelContextProvider>
+                    </EspRouterContextProvider>
+                </TestPropStoreContext.Provider>
+            ));
+            api.asserts.props
+                .receivedPropCountIs(1)
+                .propAtIndexHasModelId(0, undefined)
+                .propAtIndex(0, props => {
+                    expect(props.modelId).not.toBeDefined();
+                    expect(props.value).not.toBeDefined();
+                });
         });
     });
 

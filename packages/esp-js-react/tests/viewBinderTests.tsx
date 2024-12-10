@@ -1,6 +1,6 @@
 import {
     viewBinding,
-    ViewBinder, ViewBinderConnectable
+    ViewBinder,
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
 import * as React from 'react';

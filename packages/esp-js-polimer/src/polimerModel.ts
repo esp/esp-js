@@ -55,6 +55,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     private _disposablesKeyedOnObjectScannedAtWireup: Map<object, Disposable> = new Map();
     private _activeStateHandlerModels: { stateName: keyof TModel; model: StateHandlerModel<any> }[] = [];
     private _immutableModel: TModel;
+    private _hasChanged: boolean = true;
     private _modelPreEventProcessor: ModelPreEventProcessor<TModel>;
     private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
     private readonly _modelId: string;
@@ -121,11 +122,13 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     };
 
     preProcess() {
+        this._hasChanged = false;
         if (this._modelPreEventProcessor) {
             const newModel = this._modelPreEventProcessor(this._immutableModel);
             // has the model been replaced by the processor?
             if (newModel) {
                 this._immutableModel = newModel;
+                this._hasChanged = true;
             }
         }
         // run pre-processing for the OO/legacy type models which may be integrating with polimer models
@@ -133,6 +136,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             if (model.preProcess) {
                 model.preProcess(model);
                 this._immutableModel[stateName] = model.getEspPolimerState();
+                this._hasChanged = true;
             }
         });
     }
@@ -143,6 +147,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             // has the model been replaced by the processor?
             if (newModel) {
                 this._immutableModel = newModel;
+                this._hasChanged = true;
             }
         }
         // run post-processing for the OO/legacy type models which may be integrating with polimer models
@@ -151,8 +156,15 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 model.postProcess(model, eventsProcessed);
                 const nextState = model.getEspPolimerState();
                 this._immutableModel[stateName] = nextState;
+                this._hasChanged = true;
             }
         });
+        if (this._hasChanged) {
+            this._hasChanged = false;
+            this._immutableModel = {
+                ...this._immutableModel
+            };
+        }
     }
 
     /**
@@ -184,6 +196,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TModel>) => {
                 // Given an event processed by the model in question has just finished, we replace the relevant state on the immutable model
                 (<any>this._immutableModel[modelHandlerMetadata.stateName]) = modelHandlerMetadata.model.getEspPolimerState();
+                this._hasChanged = true;
             });
             sendUpdateToDevTools({eventType: eventType, event: event}, this._immutableModel, this._modelId);
         }
@@ -286,6 +299,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                                         logger.verbose(`State [${stateName}], eventType [${eventEnvelope.eventType}]: reducer invoked. After state logged to console.`, afterState);
                                     }
                                     stateReaderWriter.setState(eventEnvelope.entityKey, afterState);
+                                    this._hasChanged = true;
                                 } else {
                                     if (logger.isLevelEnabled(Level.verbose)) {
                                         logger.verbose(`Received "${eventEnvelope.eventType}" for "${stateName}" state, skipping as the handlers predicate returned false`, beforeState);

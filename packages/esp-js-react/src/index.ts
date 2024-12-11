@@ -22,11 +22,6 @@ import './polimer/polimerModelBuilderExtentsions';
 
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
-export {
-    GetEspPolimerImmutableModelMetadata,
-    GetEspPolimerImmutableModelConsts,
-    getEspPolimerImmutableModel
-} from './polimer/getEspPolimerImmutableModel';
 export {createViewForModel} from './viewBindingDecorator';
 export {
     connect,

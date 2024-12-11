@@ -1,5 +1,5 @@
 import {EventContext, observeEvent} from 'esp-js';
-import {GetEspPolimerImmutableModelConsts} from '../../src';
+import {GetEspPolimerImmutableModelFunctionName} from '../../src/polimer/getEspPolimerImmutableModel';
 
 export type TestModelImmutableState = { value: string, modelId: string, entityKey: string };
 
@@ -38,7 +38,7 @@ export class TestModel {
         };
     }
 
-    [GetEspPolimerImmutableModelConsts.HandlerFunctionName]: () => TestModelImmutableState = () => {
+    [GetEspPolimerImmutableModelFunctionName]: () => TestModelImmutableState = () => {
         return this._internalState;
     };
 }

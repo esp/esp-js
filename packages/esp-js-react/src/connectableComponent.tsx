@@ -4,7 +4,7 @@ import {useMemo} from 'react';
 import {Router, utils} from 'esp-js';
 import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
 import {createViewForModel} from './viewBindingDecorator';
-import {tryGetPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
+import {hasPolimerImmutableModel, getPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
 import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
@@ -35,7 +35,9 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
     mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     publishEventProps: TPublishEventProps
 ): ConnectableComponentChildProps<TModel> => {
-    const model = tryGetPolimerImmutableModel<TModel>(initialModel);
+    const model = hasPolimerImmutableModel(initialModel)
+        ? getPolimerImmutableModel<TModel>(initialModel)
+        : initialModel;
     let childProps = {
         modelId,
         router: router,

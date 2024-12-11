@@ -1,11 +1,13 @@
 import {useMemo} from 'react';
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
-import {Router, utils} from 'esp-js';
+import {Logger, Router, utils} from 'esp-js';
 import {useRouter} from './espRouterContextProvider';
 import {useGetModelId} from './espModelContextProvider';
-import {tryGetPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
+import {getPolimerImmutableModel, hasPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
 
 export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
+
+export const logger = Logger.create('useSyncModelWithSelector');
 
 /**
  * Options affecting the subscription of the model to the Router.
@@ -129,8 +131,6 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
         dependencies.getSnapshot,
         undefined,
         dependencies.wrappedSelector,
-        // equalityFn can't be cached (needs to be a new fn each time)
-        // It seems that if it is, you get the last value regardless of if dependencies (and it's associated functions) changes.
         equalityFn,
     );
 };
@@ -148,45 +148,38 @@ const createSubscriptionState = <TModel, TSelected>(
     //
     // Another edge case with useSyncExternalStore:
     // It will call getSnapshot before it calls subscribe, to account for this we need to fetch the model first.
-    // ESP will always dispatch the model when you initially observe it, because we pre-fetched it, the first updated is ignored below.
-    const selectModelOrPolimerModel = (m: any): TModel => {
-        // try use get the esp-js-polimer immutable model if possible.
-        const nextModel = tryPreSelectPolimerImmutableModel
-            ? tryGetPolimerImmutableModel(m)
-            : m;
-        // If the above didn't manage to get a polimer model,
-        // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change.
-        // This should only affect older style OO models.
-        let modelHasNotMutated = nextModel === m;
-        return modelHasNotMutated
-            ? Object.create(nextModel)
-            : nextModel;
-    };
-    let isFirstRun = true;
-    let model: TModel = selectModelOrPolimerModel(router.getModel(modelId));
+    let currentModel: TModel;
+    let onStateChanged: () => void = null;
+    const modelSubscriptionDisposable = router
+        .getModelObservable<TModel>(modelId)
+        .subscribe(
+            (m: any) => {
+                // try and get the esp-js-polimer immutable model if possible, this should mutate when any state changes
+                const nextModel = tryPreSelectPolimerImmutableModel && hasPolimerImmutableModel(m)
+                    ? getPolimerImmutableModel<TModel>(m)
+                    // If the above didn't manage to get a polimer model,
+                    // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change.
+                    // This should only affect older style OO models.
+                    : Object.create(m);
+                warnIfModelInstanceHasNotChanged(modelId, currentModel, nextModel);
+                currentModel = nextModel;
+                if (onStateChanged) {
+                    onStateChanged();
+                }
+            }
+        );
     return {
         subscribe: (stateChanged: () => void) => {
-            const modelSubscriptionDisposable = router
-                .getModelObservable<TModel>(modelId)
-                .map(m => selectModelOrPolimerModel(m))
-                .subscribe(
-                    (m: any) => {
-                        if (isFirstRun) {
-                            isFirstRun = false;
-                            return;
-                        }
-                        model = m;
-                        stateChanged();
-                    }
-                );
+            onStateChanged = stateChanged;
             return () => {
-                model = null;
+                onStateChanged = null;
+                currentModel = null;
                 modelSubscriptionDisposable.dispose();
             };
         },
         // React expects getSnapshot to be immutable, it'll only re-render if the instance changes
         getSnapshot: () => {
-            return model;
+            return currentModel;
         },
         // While getSnapshot needs to model to be immutable,
         // useSyncExternalStoreWithSelector builds on top of this, so the TSelected can defer to an equality check to determine if the change is propagated.
@@ -206,3 +199,25 @@ const createNoopSubscriptionState = () => ({
     getSnapshot: () => null,
     wrappedSelector: () => null
 });
+
+const warnIfModelInstanceHasNotChanged = (modelId: string, lastModel: any, nextModel: string) => {
+    if (process.env.NODE_ENV === 'production') {
+        return;
+    }
+    if (utils.stringIsEmpty(modelId)) {
+        return;
+    }
+    if (lastModel === nextModel) {
+        let stack: string | undefined = undefined;
+        try {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error();
+        } catch (e) {
+            stack = (e as Error).stack;
+        }
+        logger.warn(
+            `useSyncModelWithSelector had detected the latest model update hasn't mutated. This will cause odd render bugs. modelId: ${modelId}`,
+            stack
+        );
+    }
+};

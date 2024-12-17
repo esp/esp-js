@@ -17,3 +17,7 @@ export {EventEnvelopePredicate} from './eventEnvelopePredicate';
 export {PolimerEvents} from './polimerEvents';
 export {sendUpdateToDevTools, connectDevTools} from './reduxDevToolsConnector';
 export {StateHandlerModel} from './stateHandlerModel';
+export {
+    StrictMode,
+    StrictModeSettings,
+} from './strictMode';

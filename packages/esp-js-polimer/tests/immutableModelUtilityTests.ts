@@ -47,10 +47,6 @@ describe('ImmutableModelUtility tests', () => {
             }).toThrow("Cannot add property foo, object is not extensible");
         })
 
-        it('draft is null', () => {
-            expect(modelMutator.draftModel).toBeNull();
-        });
-
         describe('Mutations', () => {
             let immutableModelBeforeExpiration: TestState;
             let immutableModelInstanceBeforeExpiration: TestState;
@@ -62,7 +58,8 @@ describe('ImmutableModelUtility tests', () => {
             });
 
             it('props copied to draft', () => {
-                expect(modelMutator.draftModel).toEqual(immutableModelBeforeExpiration);
+                expect(modelMutator.immutableModel).toEqual(immutableModelInstanceBeforeExpiration);
+                expect(modelMutator.immutableModel).not.toBe(immutableModelInstanceBeforeExpiration)
             });
 
             it('old immutableModel still works, does not throw', () => {
@@ -75,47 +72,47 @@ describe('ImmutableModelUtility tests', () => {
             });
 
             it('draft can be updated', () => {
-                modelMutator.draftModel.i1 = 10;
-                modelMutator.draftModel.i2 = 10;
-                expect(modelMutator.draftModel.sumModelProps()).toEqual(20);
+                modelMutator.immutableModel.i1 = 10;
+                modelMutator.immutableModel.i2 = 10;
+                expect(modelMutator.immutableModel.sumModelProps()).toEqual(20);
             });
 
             it('changes to draft are tracked', () => {
-                expect(modelMutator.draftHasChanges).toEqual(false);
-                modelMutator.draftModel.i1 = 10;
-                expect(modelMutator.draftHasChanges).toEqual(true);
+                expect(modelMutator.hasChanges).toEqual(false);
+                modelMutator.immutableModel.i1 = 10;
+                expect(modelMutator.hasChanges).toEqual(true);
             });
 
             it('deletes changes to draft are tracked', () => {
-                expect(modelMutator.draftHasChanges).toEqual(false);
-                delete modelMutator.draftModel.i1;
-                expect(modelMutator.draftHasChanges).toEqual(true);
+                expect(modelMutator.hasChanges).toEqual(false);
+                delete modelMutator.immutableModel.i1;
+                expect(modelMutator.hasChanges).toEqual(true);
             });
 
             describe('endMutation()', () => {
                 let draftBeforeEndMutation: TestState;
+                let draftShallowCopyBeforeEndMutation: TestState;
 
                 beforeEach(() => {
-                    modelMutator.draftModel.i1 = 10;
-                    modelMutator.draftModel.i2 = 10;
-                    draftBeforeEndMutation = {...modelMutator.draftModel};
+                    modelMutator.immutableModel.i1 = 10;
+                    modelMutator.immutableModel.i2 = 10;
+                    draftBeforeEndMutation = modelMutator.immutableModel;
+                    // create a shallow copy so we can remove the proxy and later assert without it throwing an 'expired; error
+                    draftShallowCopyBeforeEndMutation = { ...modelMutator.immutableModel };
                     modelMutator.endMutation();
                 });
 
-                it('props from draft to immutablemodel', () => {
-                    expect(modelMutator.immutableModel).toEqual(draftBeforeEndMutation);
+                it('props from draft copied to latest immutablemodel', () => {
+                    expect(modelMutator.immutableModel).not.toBe(draftBeforeEndMutation);
+                    expect(modelMutator.immutableModel).toEqual(draftShallowCopyBeforeEndMutation);
                 });
 
                 it('updates immutableModel', () => {
                     expect(modelMutator.immutableModel.sumModelProps()).toEqual(20);
                 });
 
-                it('nulls draft', () => {
-                    expect(modelMutator.draftModel).toBeNull();
-                });
-
                 it('draft has changes is false', () => {
-                    expect(modelMutator.draftHasChanges).toEqual(false);
+                    expect(modelMutator.hasChanges).toEqual(false);
                 });
             });
         });
@@ -141,26 +138,21 @@ describe('ImmutableModelUtility tests', () => {
             expect(modelMutator.immutableModel.sumModelProps()).toEqual(3);
         });
 
-        it('draft is null', () => {
-            expect(modelMutator.draftModel).toBeNull();
-        });
-
         describe('Mutations', () => {
-            let immutableModelCopyBeforeExpiration: TestState;
             let immutableModelInstanceBeforeExpiration: TestState;
 
             beforeEach(() => {
-                immutableModelCopyBeforeExpiration = {...modelMutator.immutableModel};
                 immutableModelInstanceBeforeExpiration = modelMutator.immutableModel;
                 modelMutator.beginMutation();
             });
 
             it('props copied to draft', () => {
-                expect(modelMutator.draftModel).toEqual(immutableModelCopyBeforeExpiration);
+                expect(modelMutator.immutableModel).not.toBe(immutableModelInstanceBeforeExpiration);
+                expect(modelMutator.immutableModel).toEqual(immutableModelInstanceBeforeExpiration);
             });
 
             it('immutableModel marked as expired after mutation ends and prop access throws error', () => {
-                modelMutator.draftModel.i1 = 100;
+                modelMutator.immutableModel.i1 = 100;
                 modelMutator.endMutation();
 
                 expect(() => {
@@ -185,47 +177,47 @@ describe('ImmutableModelUtility tests', () => {
             });
 
             it('draft can be updated', () => {
-                modelMutator.draftModel.i1 = 10;
-                modelMutator.draftModel.i2 = 10;
-                expect(modelMutator.draftModel.sumModelProps()).toEqual(20);
+                modelMutator.immutableModel.i1 = 10;
+                modelMutator.immutableModel.i2 = 10;
+                expect(modelMutator.immutableModel.sumModelProps()).toEqual(20);
             });
 
             it('setter changes to draft are tracked', () => {
-                expect(modelMutator.draftHasChanges).toEqual(false);
-                modelMutator.draftModel.i1 = 10;
-                expect(modelMutator.draftHasChanges).toEqual(true);
+                expect(modelMutator.hasChanges).toEqual(false);
+                modelMutator.immutableModel.i1 = 10;
+                expect(modelMutator.hasChanges).toEqual(true);
             });
 
             it('deletes changes to draft are tracked', () => {
-                expect(modelMutator.draftHasChanges).toEqual(false);
-                delete modelMutator.draftModel.i1;
-                expect(modelMutator.draftHasChanges).toEqual(true);
+                expect(modelMutator.hasChanges).toEqual(false);
+                delete modelMutator.immutableModel.i1;
+                expect(modelMutator.hasChanges).toEqual(true);
             });
 
             describe('endMutation()', () => {
                 let draftBeforeEndMutation: TestState;
+                let draftShallowCopyBeforeEndMutation: TestState;
 
                 beforeEach(() => {
-                    modelMutator.draftModel.i1 = 10;
-                    modelMutator.draftModel.i2 = 10;
-                    draftBeforeEndMutation = {...modelMutator.draftModel};
+                    modelMutator.immutableModel.i1 = 10;
+                    modelMutator.immutableModel.i2 = 10;
+                    draftBeforeEndMutation = modelMutator.immutableModel;
+                    // create a shallow copy so we can remove the proxy and later assert without it throwing an 'expired; error
+                    draftShallowCopyBeforeEndMutation = { ...modelMutator.immutableModel };
                     modelMutator.endMutation();
                 });
 
-                it('props from draft to immutablemodel', () => {
-                    expect(modelMutator.immutableModel).toEqual(draftBeforeEndMutation);
+                it('props from draft copied to latest immutablemodel', () => {
+                    expect(modelMutator.immutableModel).not.toBe(draftBeforeEndMutation);
+                    expect(modelMutator.immutableModel).toEqual(draftShallowCopyBeforeEndMutation);
                 });
 
                 it('updates immutableModel', () => {
                     expect(modelMutator.immutableModel.sumModelProps()).toEqual(20);
                 });
 
-                it('nulls draft', () => {
-                    expect(modelMutator.draftModel).toBeNull();
-                });
-
                 it('draft has changes is false', () => {
-                    expect(modelMutator.draftHasChanges).toEqual(false);
+                    expect(modelMutator.hasChanges).toEqual(false);
                 });
             });
         });
@@ -241,8 +233,8 @@ describe('ImmutableModelUtility tests', () => {
             modelMutator = createImmutableModelUtility('model-id1', initialState);
             let oldModel = modelMutator.immutableModel;
             modelMutator.beginMutation();
-            modelMutator.draftModel.i1 = 30;
-            modelMutator.draftModel.i2 = 20;
+            modelMutator.immutableModel.i1 = 30;
+            modelMutator.immutableModel.i2 = 20;
             modelMutator.endMutation();
             expect(oldModel.sumModelProps()).toEqual(3);
             expect(modelMutator.immutableModel.sumModelProps()).toEqual(50);
@@ -275,21 +267,21 @@ describe('ImmutableModelUtility tests', () => {
         it('throws if utility  not in mutation mode', () => {
             let replacement = createTestModel(1, 2);
             expect(() => {
-                modelMutator.replaceDraft(replacement);
+                modelMutator.replaceModel(replacement);
             }).toThrow(`Model model-id1 currently in draft/mutation mode. Can not replace.`);
         });
 
         it('can replace model', () => {
             modelMutator.beginMutation();
-            expect(modelMutator.draftHasChanges).toEqual(false);
-            expect(modelMutator.draftModel.sumModelProps()).toEqual(3);
-            modelMutator.replaceDraft(createTestModel(10, 20));
-            expect(modelMutator.draftHasChanges).toEqual(true);
-            expect(modelMutator.draftModel.i1).toEqual(10);
-            expect(modelMutator.draftModel.i2).toEqual(20);
-            expect(modelMutator.draftModel.sumModelProps()).toEqual(30);
+            expect(modelMutator.hasChanges).toEqual(false);
+            expect(modelMutator.immutableModel.sumModelProps()).toEqual(3);
+            modelMutator.replaceModel(createTestModel(10, 20));
+            expect(modelMutator.hasChanges).toEqual(true);
+            expect(modelMutator.immutableModel.i1).toEqual(10);
+            expect(modelMutator.immutableModel.i2).toEqual(20);
+            expect(modelMutator.immutableModel.sumModelProps()).toEqual(30);
             modelMutator.endMutation();
-            expect(modelMutator.draftHasChanges).toEqual(false);
+            expect(modelMutator.hasChanges).toEqual(false);
             expect(modelMutator.immutableModel.i1).toEqual(10);
             expect(modelMutator.immutableModel.i2).toEqual(20);
             expect(modelMutator.immutableModel.sumModelProps()).toEqual(30);
@@ -308,14 +300,14 @@ describe('ImmutableModelUtility tests', () => {
         let modelV1 = modelMutator.immutableModel;
 
         modelMutator.beginMutation();
-        modelMutator.draftModel.i1 = 3;
-        modelMutator.draftModel.i2 = 4;
+        modelMutator.immutableModel.i1 = 3;
+        modelMutator.immutableModel.i2 = 4;
         modelMutator.endMutation();
         let modelV2 = modelMutator.immutableModel;
 
         modelMutator.beginMutation();
-        modelMutator.draftModel.i1 = 5;
-        modelMutator.draftModel.i2 = 6;
+        modelMutator.immutableModel.i1 = 5;
+        modelMutator.immutableModel.i2 = 6;
         modelMutator.endMutation();
         let modelV3 = modelMutator.immutableModel;
 

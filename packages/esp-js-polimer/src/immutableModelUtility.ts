@@ -93,10 +93,9 @@ const createDraftableModelProxy = <TModel>(modelId: string, baseModel: TModel, d
 
 export type ImmutableModelUtility<TModel> = {
     readonly immutableModel: TModel;
-    readonly draftModel: TModel;
-    readonly draftHasChanges: boolean;
+    readonly hasChanges: boolean;
     beginMutation(): void
-    replaceDraft(draft: TModel): void
+    replaceModel(other: TModel): void
     endMutation(): void;
 }
 
@@ -105,27 +104,28 @@ export const createImmutableModelUtility = <TModel>(modelId: string, initialDraf
     let draftableModel: DraftableModelProxy<TModel> = null;
     return {
         get immutableModel() {
-            return expireableModel ? expireableModel.model : null;
+            if (draftableModel) {
+                // we expose draftProxy, not draftModel, so we can track changes to it.
+                return draftableModel.draftProxy;
+            }
+            return expireableModel.model;
         },
-        get draftModel() {
-            // we expose draftProxy, not draftModel, so we can track changes to it.
-            return draftableModel ? draftableModel.draftProxy : null;
-        },
-        get draftHasChanges() {
+        get hasChanges() {
             return draftableModel ? draftableModel.hasChanges : false;
         },
         beginMutation() {
             draftableModel = createDraftableModelProxy(modelId, expireableModel.model);
         },
-        replaceDraft(otherDraft: TModel) {
+        replaceModel(other: TModel) {
             if (!draftableModel) {
                 throw new Error(`Model ${modelId} currently in draft/mutation mode. Can not replace.`);
             }
-            draftableModel = createDraftableModelProxy(modelId, otherDraft, true);
+            draftableModel = createDraftableModelProxy(modelId, other, true);
         },
         endMutation() {
             if (draftableModel.hasChanges) {
                 expireableModel.setExpired();
+                // we create the next expireableModel using draftModel, not draftProxy, we can expire the draft proxy now.
                 expireableModel = createExpireableModelProxy(modelId, draftableModel.draftModel);
             }
             draftableModel.setExpired();

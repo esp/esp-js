@@ -80,7 +80,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         }
         this._router.addModel(this._modelId, this);
         connectDevTools(this._router, this._modelId, this, this._modelId);
-        sendUpdateToDevTools('@@INIT', this._immutableModelUtility.immutableModel, this._modelId);
+        sendUpdateToDevTools('@@INIT', this._immutableModelUtility.model, this._modelId);
         this._wireUpStateHandlerModels(initialConfig.stateHandlerModelsConfig);
         this._wireUpStateHandlers(initialConfig.stateHandlersConfig);
         this._wireUpEventTransforms(initialConfig.eventTransformConfig);
@@ -124,7 +124,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     preProcess() {
         this._immutableModelUtility.beginMutation();
         if (this._modelPreEventProcessor) {
-            const newModel = this._modelPreEventProcessor(this._immutableModelUtility.immutableModel);
+            const newModel = this._modelPreEventProcessor(this._immutableModelUtility.model);
             // has the entire model been replaced by the processor?
             if (newModel) {
                 this._immutableModelUtility.replaceModel(newModel);
@@ -135,14 +135,14 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         this._activeStateHandlerModels.forEach(({model, stateName}) => {
             if (model.preProcess) {
                 model.preProcess(model);
-                this._immutableModelUtility.immutableModel[stateName] = model.getEspPolimerState();
+                this._immutableModelUtility.model[stateName] = model.getEspPolimerState();
             }
         });
     }
 
     postProcess(eventsProcessed: string[]) {
         if (this._modelPostEventProcessor) {
-            const newModel = this._modelPostEventProcessor(this._immutableModelUtility.immutableModel, eventsProcessed);
+            const newModel = this._modelPostEventProcessor(this._immutableModelUtility.model, eventsProcessed);
             // has the model been replaced by the processor?
             if (newModel) {
                 this._immutableModelUtility.replaceModel(newModel);
@@ -153,7 +153,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             if (model.postProcess) {
                 model.postProcess(model, eventsProcessed);
                 const nextState = model.getEspPolimerState();
-                this._immutableModelUtility.immutableModel[stateName] = nextState;
+                this._immutableModelUtility.model[stateName] = nextState;
             }
         });
         this._immutableModelUtility.endMutation();
@@ -168,7 +168,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         if (!this._stateSaveHandler) {
             return null;
         }
-        return this._stateSaveHandler(this._immutableModelUtility.immutableModel);
+        return this._stateSaveHandler(this._immutableModelUtility.model);
     }
 
     /**
@@ -187,9 +187,9 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         if (handlers) {
             handlers.forEach((modelHandlerMetadata: ModelHandlerMetadata<TModel>) => {
                 // Given an event processed by the model in question has just finished, we replace the relevant state on the immutable model
-                (<any>this._immutableModelUtility.immutableModel[modelHandlerMetadata.stateName]) = modelHandlerMetadata.model.getEspPolimerState();
+                (<any>this._immutableModelUtility.model[modelHandlerMetadata.stateName]) = modelHandlerMetadata.model.getEspPolimerState();
             });
-            sendUpdateToDevTools({eventType: eventType, event: event}, this._immutableModelUtility.immutableModel, this._modelId);
+            sendUpdateToDevTools({eventType: eventType, event: event}, this._immutableModelUtility.model, this._modelId);
         }
     }
 
@@ -266,7 +266,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                             .getEventObservable(this._modelId, decoratorMetadata.eventType, decoratorMetadata.observationStage)
                             .filter(eventEnvelope => eventIsForThisSpecificHandlerPredicate(eventEnvelope))
                             .subscribe((eventEnvelope: EventEnvelope<any, any>) => {
-                                const model = <any>this._immutableModelUtility.immutableModel;
+                                const model = <any>this._immutableModelUtility.model;
                                 let stateReaderWriter: StateReaderWriter = getStateReaderWriter(eventEnvelope.entityKey);
                                 const beforeState = stateReaderWriter.getState(eventEnvelope.entityKey);
                                 let processEvent = true;
@@ -433,7 +433,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     public getImmutableModel = (): TModel => {
-        return this._immutableModelUtility.immutableModel;
+        return this._immutableModelUtility.model;
     };
 
     public setImmutableModel = (value: TModel) => {
@@ -456,11 +456,11 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         // While we can know at event subscription if the state on the model is a Map, we don't know if an event will want to target an item in the map, or the entire map.
         // Which of the two will be known if the event is published with an 'entityKey', which is an addressing property the esp router supports.
         // At this point, we can create an API which works with both cases.
-        const stateTypeIsMap = this._immutableModelUtility.immutableModel[stateName] instanceof Map;
+        const stateTypeIsMap = this._immutableModelUtility.model[stateName] instanceof Map;
         const mapReaderWriter: StateReaderWriter = stateTypeIsMap
-            ? new MapReaderWriter(() => this._immutableModelUtility.immutableModel, stateName)
+            ? new MapReaderWriter(() => this._immutableModelUtility.model, stateName)
             : undefined;
-        const directStateReaderWriter: StateReaderWriter = new DirectStateReaderWriter(() => this._immutableModelUtility.immutableModel, stateName);
+        const directStateReaderWriter: StateReaderWriter = new DirectStateReaderWriter(() => this._immutableModelUtility.model, stateName);
         return (entityKey: string) => {
             return stateTypeIsMap && utils.isString(entityKey)
                 ? mapReaderWriter

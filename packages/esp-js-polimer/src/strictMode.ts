@@ -18,4 +18,4 @@ export const StrictModeSettings = {
     modeIsThrowError() {
         return _strictModeOn === 'ThrowError';
     },
-}
+};

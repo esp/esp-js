@@ -11,7 +11,7 @@ describe('OO models interop', () => {
             api.asserts.handlerModelState.preProcessInvokeCountIs(1);
         });
 
-        it.only('preProcess updates the model for the state in question', () => {
+        it('preProcess updates the model for the state in question', () => {
             // the preProcess hook will mutate the state (increments a count), that latest state should then be on
             // the model by the time the event handler executes.
             api.actor.publishEvent(EventConst.event7);

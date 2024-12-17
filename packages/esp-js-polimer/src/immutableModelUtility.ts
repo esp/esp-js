@@ -2,7 +2,7 @@ import {StrictModeSettings} from './strictMode';
 import {logger} from './logger';
 import { Guard } from 'esp-js';
 
-const isExpireableModelProxy = Symbol("__isProxy__")
+const isExpireableModelProxy = Symbol('__isProxy__');
 
 type ExpirableModelProxy<TModel> = {
     model: TModel,
@@ -13,7 +13,7 @@ type ExpirableModelProxy<TModel> = {
  * When 'expired', depending on StrictModeSettings settings, model access may result in an error or warning.
  */
 const createExpireableModelProxy =  <TModel>(modelId: string, draftModel: TModel): ExpirableModelProxy<TModel> => {
-    Guard.isFalsey(draftModel[isExpireableModelProxy], 'The draftModel can not be a proxy')
+    Guard.isFalsey(draftModel[isExpireableModelProxy], 'The draftModel can not be a proxy');
     let expired = false;
     const traps = {
         get(target: any, prop: any) {
@@ -49,7 +49,7 @@ type DraftableModelProxy<TModel> = {
      */
     draftModel: TModel,
     readonly hasChanges: boolean;
-    setExpired: () => void
+    setExpired: () => void;
 };
 
 const createDraftableModelProxy = <TModel>(modelId: string, baseModel: TModel, defaultHasChanges = false): DraftableModelProxy<TModel> => {
@@ -88,22 +88,27 @@ const createDraftableModelProxy = <TModel>(modelId: string, baseModel: TModel, d
         setExpired() {
             expired = true;
         },
-    }
+    };
 };
 
 export type ImmutableModelUtility<TModel> = {
-    readonly immutableModel: TModel;
+    readonly model: TModel;
     readonly hasChanges: boolean;
     beginMutation(): void
     replaceModel(other: TModel): void
     endMutation(): void;
-}
+};
 
+/**
+ * Creates a utility object which helps manage mutations to an underlying model.
+ *
+ * This has support for StrictModeSettings whereby when that's on, it will cause cached versions of old/expired models to throw or warn if accessed.
+ */
 export const createImmutableModelUtility = <TModel>(modelId: string, initialDraft: TModel): ImmutableModelUtility<TModel> => {
     let expireableModel: ExpirableModelProxy<TModel> = createExpireableModelProxy<TModel>(modelId, initialDraft);
     let draftableModel: DraftableModelProxy<TModel> = null;
     return {
-        get immutableModel() {
+        get model() {
             if (draftableModel) {
                 // we expose draftProxy, not draftModel, so we can track changes to it.
                 return draftableModel.draftProxy;

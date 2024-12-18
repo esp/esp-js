@@ -172,10 +172,27 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     /**
-     * A convention-named function used by esp-js-react to select the model to pass to a view connected via ConnectableComponent.
+     * @deprecated
+     * Previously this returns a non changing instance, hence it now points to getEspPolimerImmutableModelProxy().
+     */
+    public getImmutableModel = (): TModel => {
+        return this.getEspPolimerImmutableModelProxy();
+    };
+
+    /**
+     * Returns a Proxy which always backs onto the latest PolimerModel.getEspPolimerImmutableModel();
+     * The returned Proxy instance won't chant.
+     */
+    getEspPolimerImmutableModelProxy() {
+        return this._immutableModelUtility.modelProxy;
+    }
+
+    /**
+     * Returns the latest model state.
+     * This instance will change when the esp Router has finished processing events against this model.
      */
     getEspPolimerImmutableModel() {
-        return this.getImmutableModel();
+        return this._immutableModelUtility.model;
     }
 
     // called by the router when it's finished dispatching an event
@@ -423,22 +440,14 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     };
 
     private _mapEventEnvelopToInputEvent(eventEnvelope: EventEnvelope<any, PolimerModel<TModel>>): InputEvent<TModel, any> {
-        const immutableModel: TModel = eventEnvelope.model.getImmutableModel();
+        const modelProxy: TModel = eventEnvelope.model.getEspPolimerImmutableModelProxy();
         return <InputEvent<TModel, any>>{
             event: eventEnvelope.event,
             eventType: eventEnvelope.eventType,
-            model: immutableModel,
+            model: modelProxy,
             context: eventEnvelope.context
         };
     }
-
-    public getImmutableModel = (): TModel => {
-        return this._immutableModelUtility.model;
-    };
-
-    public setImmutableModel = (value: TModel) => {
-        throw new Error(`Not supported`);
-    };
 
     private _getDisposableForObject = (trackedObject: any) => {
         Guard.isFalsey(this._disposablesKeyedOnObjectScannedAtWireup.has(trackedObject), 'Object already registered. Using the same object instance for multiple esp-js-polimer registrations (be it state handlers or event transforms) is not supported.');
@@ -471,6 +480,6 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
 
 export namespace PolimerModel {
     export const isPolimerModel = (obj: any): obj is PolimerModel<any> => {
-        return 'getImmutableModel' in obj;
+        return 'getEspPolimerImmutableModel' in obj;
     };
 }

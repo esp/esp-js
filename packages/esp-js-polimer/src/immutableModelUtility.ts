@@ -93,6 +93,7 @@ const createDraftableModelProxy = <TModel>(modelId: string, baseModel: TModel, d
 
 export type ImmutableModelUtility<TModel> = {
     readonly model: TModel;
+    readonly modelProxy: TModel;
     readonly hasChanges: boolean;
     beginMutation(): void
     replaceModel(other: TModel): void
@@ -107,6 +108,15 @@ export type ImmutableModelUtility<TModel> = {
 export const createImmutableModelUtility = <TModel>(modelId: string, initialDraft: TModel): ImmutableModelUtility<TModel> => {
     let expireableModel: ExpirableModelProxy<TModel> = createExpireableModelProxy<TModel>(modelId, initialDraft);
     let draftableModel: DraftableModelProxy<TModel> = null;
+    // modelProxy: a non changing instance which always backs onto latest state, be it the draft or the model.
+    const modelProxy = new Proxy({}, {
+        get(target: any, prop: any) {
+            const t = draftableModel
+                ? draftableModel.draftModel
+                : expireableModel.model;
+            return t[prop];
+        }
+    });
     return {
         get model() {
             if (draftableModel) {
@@ -114,6 +124,9 @@ export const createImmutableModelUtility = <TModel>(modelId: string, initialDraf
                 return draftableModel.draftProxy;
             }
             return expireableModel.model;
+        },
+        get modelProxy() {
+            return modelProxy;
         },
         get hasChanges() {
             return draftableModel ? draftableModel.hasChanges : false;

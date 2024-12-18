@@ -3,7 +3,7 @@ import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-sel
 import {Logger, Router, utils} from 'esp-js';
 import {useRouter} from './espRouterContextProvider';
 import {useGetModelId} from './espModelContextProvider';
-import {getPolimerImmutableModel, hasPolimerImmutableModel} from './polimer/getEspPolimerImmutableModel';
+import {PolimerModel} from 'esp-js-polimer';
 
 export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
 
@@ -155,8 +155,8 @@ const createSubscriptionState = <TModel, TSelected>(
         .subscribe(
             (m: any) => {
                 // try and get the esp-js-polimer immutable model if possible, this should mutate when any state changes
-                const nextModel = tryPreSelectPolimerImmutableModel && hasPolimerImmutableModel(m)
-                    ? getPolimerImmutableModel<TModel>(m)
+                const nextModel = tryPreSelectPolimerImmutableModel && PolimerModel.isPolimerModel(m)
+                    ? m.getEspPolimerImmutableModel()
                     // If the above didn't manage to get a polimer model,
                     // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change.
                     // This should only affect older style OO models.

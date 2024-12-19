@@ -25,10 +25,19 @@ const createExpireableModelProxy =  <TModel>(modelId: string, draftModel: TModel
             }
             return target[prop];
         },
+        set(target:any, prop: any) {
+            throw new Error(`Can not set prop ${prop} on readonly model ${modelId}`);
+        },
+        ownKeys(target: any) {
+            return Object.keys(target);
+        },
+        getOwnPropertyDescriptor(target: any, prop: any) {
+            return Object.getOwnPropertyDescriptor(target, prop);
+        }
     };
     const model = StrictModeSettings.modeIsOff()
-        ? Object.freeze(draftModel)
-        : new Proxy(Object.freeze(draftModel), traps);
+        ? draftModel
+        : new Proxy(draftModel, traps);
     return {
         get model() {
             return model;
@@ -78,6 +87,12 @@ const createDraftableModelProxy = <TModel>(modelId: string, baseModel: TModel, d
             delete target[prop];
             return target;
         },
+        ownKeys(target: any) {
+            return Object.keys(target);
+        },
+        getOwnPropertyDescriptor(target: any, prop: any) {
+            return Object.getOwnPropertyDescriptor(target, prop);
+        }
     };
     return {
         draftProxy: new Proxy(draftModel, traps),
@@ -93,6 +108,7 @@ const createDraftableModelProxy = <TModel>(modelId: string, baseModel: TModel, d
 
 export type ImmutableModelUtility<TModel> = {
     readonly model: TModel;
+    readonly modelProxy: TModel;
     readonly hasChanges: boolean;
     beginMutation(): void
     replaceModel(other: TModel): void
@@ -107,6 +123,28 @@ export type ImmutableModelUtility<TModel> = {
 export const createImmutableModelUtility = <TModel>(modelId: string, initialDraft: TModel): ImmutableModelUtility<TModel> => {
     let expireableModel: ExpirableModelProxy<TModel> = createExpireableModelProxy<TModel>(modelId, initialDraft);
     let draftableModel: DraftableModelProxy<TModel> = null;
+    // modelProxy: a non changing instance which always backs onto latest state, be it the draft or the model.
+    const getCurrentModel = () => {
+        if (draftableModel) {
+            // we expose draftProxy, not draftModel, so we can track changes to it.
+            return draftableModel.draftProxy;
+        }
+        return expireableModel.model;
+    };
+    const modelProxy = new Proxy({}, {
+        get(target: any, prop: any) {
+            const current = getCurrentModel();
+            return current[prop];
+        },
+        ownKeys(target: any) {
+            const current = getCurrentModel();
+            return Object.keys(current);
+        },
+        getOwnPropertyDescriptor(target: any, prop: any) {
+            const current = getCurrentModel();
+            return Object.getOwnPropertyDescriptor(current, prop);
+        }
+    });
     return {
         get model() {
             if (draftableModel) {
@@ -114,6 +152,9 @@ export const createImmutableModelUtility = <TModel>(modelId: string, initialDraf
                 return draftableModel.draftProxy;
             }
             return expireableModel.model;
+        },
+        get modelProxy() {
+            return modelProxy;
         },
         get hasChanges() {
             return draftableModel ? draftableModel.hasChanges : false;

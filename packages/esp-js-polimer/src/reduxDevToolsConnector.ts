@@ -33,8 +33,7 @@ const onDevToolsMessage = <T extends ImmutableModel>(router: Router, modelId: st
                 case 'JUMP_TO_STATE':
                 case 'JUMP_TO_ACTION':
                     const state = JSON.parse(message.state);
-
-                    router.runAction(modelId, () => model.setImmutableModel(state));
+                    throw new Error(`Not supported`);
                     break;
                 default:
                     break;

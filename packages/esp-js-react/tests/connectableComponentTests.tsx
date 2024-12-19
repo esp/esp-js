@@ -13,7 +13,6 @@ import {
 import {testApi, TestApi} from './testApi/testApi';
 import {observeEvent} from 'esp-js';
 import {viewFactory} from './testApi/viewFactory';
-import {GetEspPolimerImmutableModelFunctionName} from '../src/polimer/getEspPolimerImmutableModel';
 
 interface TestModelState {
     value: string;
@@ -63,9 +62,10 @@ class TestModel2 extends TestModel {
         });
     }
 
-    [GetEspPolimerImmutableModelFunctionName] = () => {
+    // this isn't ideal, but here we're pretending to be a PolimerModel
+    public getEspPolimerImmutableModel() {
         return this._state;
-    };
+    }
 }
 
 interface ConnectedComponentElementCreationProperties {

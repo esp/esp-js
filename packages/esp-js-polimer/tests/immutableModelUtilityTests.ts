@@ -40,13 +40,6 @@ describe('ImmutableModelUtility tests', () => {
             expect(modelMutator.model).toBe(initialState);
         });
 
-        it('model is frozen', () => {
-            let anyModel = <any>modelMutator.model;
-            expect(() => {
-                anyModel.foo = 'foo-here';
-            }).toThrow("Cannot add property foo, object is not extensible");
-        })
-
         describe('Mutations', () => {
             let modelBeforeExpiration: TestState;
             let modelInstanceBeforeExpiration: TestState;
@@ -260,7 +253,6 @@ describe('ImmutableModelUtility tests', () => {
     describe('Draft Replacement', () => {
         beforeEach(() => {
             StrictModeSettings.setStrictMode('ThrowError');
-            let state1 = createTestModel(1, 2);
             modelMutator = createImmutableModelUtility('model-id1', initialState);
         });
 
@@ -285,6 +277,28 @@ describe('ImmutableModelUtility tests', () => {
             expect(modelMutator.model.i1).toEqual(10);
             expect(modelMutator.model.i2).toEqual(20);
             expect(modelMutator.model.sumModelProps()).toEqual(30);
+        });
+    });
+
+    describe('Proxy can be spread', () => {
+
+        it('can ...spread model - non draft case ', () => {
+            let utility = createImmutableModelUtility('model-id1', initialState);
+            const modelCopy = {
+                ...utility.model,
+            };
+            expect(utility.model).toEqual(modelCopy);
+        });
+
+        it('can ...spread model - draft case ', () => {
+            let utility = createImmutableModelUtility('model-id1', initialState);
+            utility.beginMutation();
+            const modelCopy = {
+                ...utility.model,
+            };
+            expect(utility.model).toEqual(modelCopy);
+            utility.endMutation();
+            expect(utility.model).toEqual(modelCopy);
         });
     });
 

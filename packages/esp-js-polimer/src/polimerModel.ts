@@ -1,5 +1,5 @@
 import {PolimerEventHandler} from './stateEventHandlers';
-import {connectDevTools, sendUpdateToDevTools} from './reduxDevToolsConnector';
+import {connectDevTools, sendUpdateToDevTools, devToolsDetected} from './reduxDevToolsConnector';
 import {CompositeDisposable, DefaultModelAddress, DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, Level, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {EventTransformConfiguration, InputEvent, OutputEvent} from './eventTransformations';
 import {logger} from './logger';
@@ -16,6 +16,20 @@ import {StateReaderWriter, MapReaderWriter, DirectStateReaderWriter} from './sta
 import {EventEnvelopePredicate} from './eventEnvelopePredicate';
 import {createImmutableModelUtility, ImmutableModelUtility} from './immutableModelUtility';
 
+/**
+ * Sets options for how a PolimerModel will interact with Redux dev tools.
+ *
+ * SendFullModel: Sends the full ImmutableModel, this may crash Redux dev tools with very large models.
+ * MapUsingStateSaveHandler: uses the stateSaveHandler provided, if any, when constructing PolimerModel, this will result in a new object graph each time.
+ * Custom function: map your own view of the ImmutableModel.
+ */
+export type DevToolsStateSelector<TModel extends ImmutableModel> = 'SendFullModel' | 'MapUsingStateSaveHandler' | ((model: TModel) => object);
+
+export interface DevToolsConfig<TModel extends ImmutableModel> {
+    enabled: boolean;
+    devToolsStateSelector: DevToolsStateSelector<TModel>;
+}
+
 export interface PolimerModelConfig<TModel extends ImmutableModel> {
     initialModel: TModel;
     modelPreEventProcessor: ModelPreEventProcessor<TModel>;
@@ -24,6 +38,7 @@ export interface PolimerModelConfig<TModel extends ImmutableModel> {
     stateHandlerModelsConfig: Map<string, StateHandlerModelMetadata>;
     stateHandlersConfig: Map<string, StateHandlerConfiguration[]>;
     eventTransformConfig: EventTransformConfiguration[];
+    devToolsConfig: DevToolsConfig<TModel>;
 }
 
 export interface PolimerModelConfigUpdate {
@@ -60,6 +75,10 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
     private readonly _modelId: string;
     private _stateSaveHandler: (model: TModel) => any;
+    private _devToolsConfig: {
+        enabled: boolean,
+        devToolsStateMapper: (model: TModel) => object,
+    };
 
     constructor(private readonly _router: Router, initialConfig: PolimerModelConfig<TModel>) {
         super();
@@ -79,12 +98,11 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
             this._modelPostEventProcessor = initialConfig.modelPostEventProcessor;
         }
         this._router.addModel(this._modelId, this);
-        connectDevTools(this._router, this._modelId, this, this._modelId);
-        sendUpdateToDevTools('@@INIT', this._immutableModelUtility.model, this._modelId);
         this._wireUpStateHandlerModels(initialConfig.stateHandlerModelsConfig);
         this._wireUpStateHandlers(initialConfig.stateHandlersConfig);
         this._wireUpEventTransforms(initialConfig.eventTransformConfig);
         this.addDisposable(this._router.observeEventsOn(this._modelId, this));
+        this._setDevToolsConfig(initialConfig.devToolsConfig);
     }
 
     public get modelId() {
@@ -164,12 +182,12 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
      * Polimer doesn't have a hard dependency on esp-js-ui, however if your models are created using esp-js-ui then this hook will be used to save state.
      *
      * */
-    getEspUiModelState(): any {
+    public getEspUiModelState = (): any => {
         if (!this._stateSaveHandler) {
             return null;
         }
         return this._stateSaveHandler(this._immutableModelUtility.model);
-    }
+    };
 
     /**
      * @deprecated
@@ -206,8 +224,8 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 // Given an event processed by the model in question has just finished, we replace the relevant state on the immutable model
                 (<any>this._immutableModelUtility.model[modelHandlerMetadata.stateName]) = modelHandlerMetadata.model.getEspPolimerState();
             });
-            sendUpdateToDevTools({eventType: eventType, event: event}, this._immutableModelUtility.model, this._modelId);
         }
+        this._trySendDevToolsUpdate(eventType, event);
     }
 
     @observeEvent(PolimerEvents.disposeModel)
@@ -475,6 +493,54 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 ? mapReaderWriter
                 : directStateReaderWriter;
         };
+    };
+
+    private _setDevToolsConfig(devToolsConfig: DevToolsConfig<TModel>) {
+        if (!devToolsConfig || !devToolsConfig.enabled) {
+            this._devToolsConfig = {
+                enabled: false,
+                devToolsStateMapper: null
+            };
+            return;
+        }
+        if (devToolsConfig.devToolsStateSelector === 'SendFullModel') {
+            this._devToolsConfig = {
+                enabled: true,
+                devToolsStateMapper: (m) => m
+            };
+        } else if (devToolsConfig.devToolsStateSelector === 'MapUsingStateSaveHandler') {
+            Guard.isFunction(this._stateSaveHandler, `DevTools enabled for ${this._modelId} and state mapping configured as MapUsingStateSaveHandler, however the state handler was not set or not a function.`);
+            this._devToolsConfig = {
+                enabled: true,
+                devToolsStateMapper: this._stateSaveHandler
+            };
+        } else {
+            Guard.isFunction(devToolsConfig.devToolsStateSelector, `DevTools enabled for ${this._modelId} and configured to use a custom state mapper, however [${devToolsConfig.devToolsStateSelector}] is not set or not a function`);
+            this._devToolsConfig = {
+                enabled: true,
+                devToolsStateMapper: devToolsConfig.devToolsStateSelector
+            };
+        }
+        const unsubscribe = connectDevTools(this._router, this._modelId, this, this._modelId);
+        this.addDisposable(() => {
+            unsubscribe();
+        });
+        this._trySendDevToolsUpdate('@@INIT', null);
+    }
+
+    private _trySendDevToolsUpdate = (eventType: string, event: any) => {
+        if (!this._devToolsConfig.enabled) {
+            return;
+        }
+        if (!devToolsDetected()) {
+            return;
+        }
+        let state = this._devToolsConfig.devToolsStateMapper(this._immutableModelUtility.model);
+        sendUpdateToDevTools(
+            {eventType: eventType, event: event},
+            state,
+            this._modelId
+        );
     };
 }
 

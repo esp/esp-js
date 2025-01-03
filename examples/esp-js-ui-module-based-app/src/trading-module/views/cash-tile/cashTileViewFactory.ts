@@ -43,6 +43,11 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             .withInitialModel(model)
 
             // ***************************
+            // Enable Redux Devtools (if the Browser extension is installed)
+            // This will use the default settings which send the entire CashTileModel to Redux DevTools
+            .enableReduxDevTools(/* can pass options here */)
+
+            // ***************************
             // Wire up state handlers.
             .withStateHandlers('referenceData', new ReferenceDataStateHandlers(refDataService, model.modelId))
             .withStateHandlers('inputs', new InputStateHandlers())

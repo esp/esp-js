@@ -29,6 +29,13 @@ export class DynamicProductTileViewFactory extends ViewFactoryBase<PolimerModel<
         let polimerModel = this._router
             .modelBuilder<DynamicProductTileModel, DynamicProductPersistedState>()
             .withInitialModel(model)
+            .enableReduxDevTools(
+                // Shows how you can customize the shape of state sent to dev tools
+                immutableModel => ({
+                    ...immutableModel,
+                    SomeCustomProperty: `DateNow ${Date.now()}`
+                })
+            )
             .withViewBindings(DynamicProductTileView)
             .withStateHandlers('addProduct', new AddProductStateHandler())
             // AddProductFactoryEventTransforms:

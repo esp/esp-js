@@ -1,5 +1,5 @@
 import {Router, Guard, isEspDecoratedObject, utils} from 'esp-js';
-import {PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './polimerModel';
+import {DevToolsStateSelector, PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './polimerModel';
 import {ImmutableModel} from './immutableModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {StateHandlerModel} from './stateHandlerModel';
@@ -11,6 +11,8 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     protected _stateHandlerModelsConfig: Map<string, StateHandlerModelMetadata> = new Map();
     protected _stateHandlerConfig: Map<string, StateHandlerConfiguration[]> = new Map();
     protected _eventTransformConfig: EventTransformConfiguration[] = [];
+    protected _enableDevTools: boolean = false;
+    protected _devToolsStateSelector: DevToolsStateSelector<TModel> = 'SendFullModel';
 
     /**
      * @deprecated use withStateHandlers()
@@ -107,6 +109,19 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
         });
         return this;
     }
+
+    /**
+     * Enables Redux dev tools support (if the extension is on the browser).
+     *
+     * @param devToolsStateSelector optionally specify which state is sent to the dev tools extension.
+     *
+     * For large models, you likely can't send the entire model as it'll hang dev tools.
+     */
+    enableReduxDevTools(devToolsStateSelector?: DevToolsStateSelector<TModel>): this {
+        this._enableDevTools = true;
+        this._devToolsStateSelector = devToolsStateSelector || 'SendFullModel';
+        return this;
+    }
 }
 
 export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelState = {}> extends PolimerModelBuilderUpdaterBase<TModel> {
@@ -181,6 +196,10 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
                 modelPreEventProcessor: this._modelPreEventProcessor,
                 modelPostEventProcessor: this._modelPostEventProcessor,
                 stateSaveHandler: this._stateSaveHandler,
+                devToolsConfig: {
+                    enabled: this._enableDevTools,
+                    devToolsStateSelector: this._devToolsStateSelector
+                }
             }
         );
     }

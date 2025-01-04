@@ -95,7 +95,6 @@ export class AppShell extends Shell {
     start() {
         super.start();
         _log.verbose('Starting');
-        this.router.enableDiagnosticLogging = true;
         let workspaceModel = this.container.resolve<WorkspaceModel>(ShellModuleContainerConst.workspace_model, this);
         workspaceModel.observeEvents();
         this._workspaceModelId = workspaceModel.modelId;

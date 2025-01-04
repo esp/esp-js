@@ -111,7 +111,7 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     }
 
     /**
-     * Enables Redux dev tools support (if the extension is on the browser).
+     * Enables Redux dev tools support (if the extension is on the browser and it's enabled for esp-js via ?enableReduxDevToolsForEsp).
      *
      * @param devToolsStateSelector optionally specify which state is sent to the dev tools extension.
      *

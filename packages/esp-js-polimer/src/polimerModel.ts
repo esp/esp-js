@@ -1,5 +1,5 @@
 import {PolimerEventHandler} from './stateEventHandlers';
-import {connectDevTools, sendUpdateToDevTools, devToolsDetected} from './reduxDevToolsConnector';
+import {connectReduxDevTools, sendUpdateToReduxDevTools, reduxDevToolsDetectedAndEnabledInEsp} from 'esp-js';
 import {CompositeDisposable, DefaultModelAddress, DisposableBase, EspDecoratorUtil, EventEnvelope, EventObservationMetadata, Guard, Level, ObservationStage, observeEvent, PolimerEventPredicate, Router} from 'esp-js';
 import {EventTransformConfiguration, InputEvent, OutputEvent} from './eventTransformations';
 import {logger} from './logger';
@@ -521,7 +521,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
                 devToolsStateMapper: devToolsConfig.devToolsStateSelector
             };
         }
-        const unsubscribe = connectDevTools(this._router, this._modelId, this, this._modelId);
+        const unsubscribe = connectReduxDevTools(this._modelId);
         this.addDisposable(() => {
             unsubscribe();
         });
@@ -532,11 +532,11 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
         if (!this._devToolsConfig.enabled) {
             return;
         }
-        if (!devToolsDetected()) {
+        if (!reduxDevToolsDetectedAndEnabledInEsp()) {
             return;
         }
         let state = this._devToolsConfig.devToolsStateMapper(this._immutableModelUtility.model);
-        sendUpdateToDevTools(
+        sendUpdateToReduxDevTools(
             {eventType: eventType, event: event},
             state,
             this._modelId

@@ -22,12 +22,12 @@ import {Guard, Health, HealthIndicator, Logger, utils} from '../system';
 import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
 import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
 import {DecoratorObservationRegister} from './decoratorObservationRegister';
-import {CompositeDiagnosticMonitor} from './devtools';
 import {EventProcessors} from './eventProcessors';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext} from './eventContext';
 import {DecoratorTypes} from '../decorators';
+import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor, reduxDevToolsDetectedAndEnabledInEsp} from './devtools';
 
 let _log = Logger.create('Router');
 
@@ -35,13 +35,15 @@ type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
 const RUN_ACTION_EVENT_NAME = '__runAction';
 
+let routerInstanceId = 1;
+
 export class Router extends DisposableBase implements HealthIndicator {
     private _models: Map<string, ModelRecord>;
     private _dispatchSubject: Subject<Envelope>;
     private _haltingException: Error;
     private _state: State;
     private _onErrorHandlers: Array<(error: Error) => void>;
-    private _diagnosticMonitor: CompositeDiagnosticMonitor;
+    private _diagnosticMonitor: DiagnosticMonitor;
     private _decoratorObservationRegister: DecoratorObservationRegister;
     private _currentHealth = Health.builder(this.healthIndicatorName).isHealthy().build();
 
@@ -52,12 +54,14 @@ export class Router extends DisposableBase implements HealthIndicator {
         this._dispatchSubject = new Subject<Envelope>();
         this._onErrorHandlers = [];
 
-        this._diagnosticMonitor = new CompositeDiagnosticMonitor();
-        this.addDisposable(this._diagnosticMonitor);
-
-        this._state = new State(this._diagnosticMonitor);
+        this._state = new State();
 
         this._decoratorObservationRegister = new DecoratorObservationRegister();
+
+        this._diagnosticMonitor = reduxDevToolsDetectedAndEnabledInEsp()
+            ? new ReduxDevToolsDiagnosticMonitor(`Router_${routerInstanceId++}`)
+            : new NoopDiagnosticMonitor();
+        this.addDisposable(this._diagnosticMonitor);
     }
 
     public get currentStatus(): Status {
@@ -368,18 +372,6 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
     }
 
-    public getDispatchLoopDiagnostics() {
-        return this._diagnosticMonitor.getLoggingDiagnosticSummary();
-    }
-
-    public get enableDiagnosticLogging() {
-        return this._diagnosticMonitor.enableDiagnosticLogging;
-    }
-
-    public set enableDiagnosticLogging(isEnabled: boolean) {
-        this._diagnosticMonitor.enableDiagnosticLogging = isEnabled;
-    }
-
     public isOnDispatchLoopFor(modelId: string) {
         Guard.isString(modelId, 'modelId must be a string');
         Guard.isFalsey(modelId === '', 'modelId must not be empty');
@@ -413,7 +405,7 @@ export class Router extends DisposableBase implements HealthIndicator {
                 if (this._models.has(modelAddress.modelId)) {
                     let modelRecord = this._getOrCreateModelRecord(modelAddress.modelId);
                     if (modelRecord.tryEnqueueEvent(modelAddress.entityKey, eventType, event)) {
-                        this._diagnosticMonitor.eventEnqueued(modelAddress.modelId, modelAddress.entityKey, eventType);
+                        this._diagnosticMonitor.eventEnqueued(modelAddress.modelId, modelAddress.entityKey, eventType, event);
                         this._purgeEventQueues();
                     }
                 }
@@ -544,7 +536,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
         for (let i = 0, len = updates.length; i < len; i++) {
             let modelRecord: ModelRecord = updates[i];
-            this._diagnosticMonitor.dispatchingModelUpdates(modelRecord.modelId);
+            this._diagnosticMonitor.dispatchingModelUpdates(modelRecord.modelId, modelRecord.model);
             this._dispatchSubject.onNext({
                 modelId: modelRecord.modelId,
                 model: modelRecord.model,
@@ -619,7 +611,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
     }
 
-    private _halt(err) {
+    private _halt(err: any) {
         let isInitialHaltingError = this._state.currentStatus !== Status.Halted;
 
         this._state.moveToHalted();

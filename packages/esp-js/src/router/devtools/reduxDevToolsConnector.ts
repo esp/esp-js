@@ -73,7 +73,7 @@ const _countObjectKeys = (obj: any, stopAt: number, lastCount = 0) => {
         return count;
     }
     for (const key of keys) {
-        count += _countObjectKeys(obj[key], stopAt, lastCount);
+        count += _countObjectKeys(obj[key], stopAt, count);
     }
     return count;
 };

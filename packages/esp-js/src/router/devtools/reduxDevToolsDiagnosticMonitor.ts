@@ -34,8 +34,11 @@ interface DevToolsState {
     top20NoisyModelsEventCount: { [modelId: string]: number };
 }
 
+const DEV_TOOLS_STATE_UPDATE_INTERVAL_MS = 10_000;
+
 export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
     private _state: DevToolsState;
+    private _lastSentState: DevToolsState;
     private _noisyModelMap: Map<string, number> = new Map();
 
     constructor(private _routerName: string) {
@@ -47,6 +50,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
         };
         const disconnectDevTools = connectReduxDevTools(this._routerName);
         this.addDisposable(() => disconnectDevTools());
+        this._startStateUpdateTrigger();
         this._sendDevToolsUpdate('@@INIT', null);
     }
 
@@ -195,10 +199,21 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
     private _sendDevToolsUpdate = (eventType: string, event: any) => {
         sendUpdateToReduxDevTools(
             {eventType: eventType, event: event},
-            this._state,
+            // We don't always send the latest else to avoid smashing dev tools
+            // This gets updated on a timer elsewhere in this class.
+            this._lastSentState,
             this._routerName
         );
     };
+
+    private _startStateUpdateTrigger = () => {
+        if (this.isDisposed) {
+            return;
+        }
+        this._lastSentState = this._state;
+        this._sendDevToolsUpdate('router:state_update', null);
+        setTimeout(this._startStateUpdateTrigger, DEV_TOOLS_STATE_UPDATE_INTERVAL_MS);
+    }
 
     private _findTop20NoisyModels() {
         const entriesArray = Array.from(this._noisyModelMap.entries());

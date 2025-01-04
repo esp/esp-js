@@ -59,13 +59,35 @@ type Update = {
     payload: any
 };
 
+const MAX_EVENT_NODE_SIZE = 50;
+// This isn't a great 'size' check, but it's at least some protection against sending huge objects to dev tools
+const EVENT_TO_LARGE_CONST = 'EventToBigToSend_MoreThan' + MAX_EVENT_NODE_SIZE + 'Nodes';
+
+const _countObjectKeys = (obj: any, stopAt: number, lastCount = 0) => {
+    if (typeof obj !== 'object' || obj === null) {
+        return 0;
+    }
+    const keys = Object.keys(obj);
+    let count = lastCount + keys.length;
+    if (count >= stopAt) {
+        return count;
+    }
+    for (const key of keys) {
+        count += _countObjectKeys(obj[key], stopAt, lastCount);
+    }
+    return count;
+};
+
 /**
  * This is an internal ESP API for Redux Dev Tools Connectivity
  */
 export const sendUpdateToReduxDevTools = (event: { eventType: string, event: any }, state: any, instanceId: string) => {
     if (_reduxDevToolsDetectedAndEnabledInEsp) {
         const options = {name: instanceId};
-        const update: Update = {type: event.eventType, payload: event.event};
+        const eventToForward = _countObjectKeys(event.event, MAX_EVENT_NODE_SIZE) >= MAX_EVENT_NODE_SIZE
+            ? EVENT_TO_LARGE_CONST
+            : event.event;
+        const update: Update = {type: event.eventType, payload: eventToForward};
         devToolsExtension.send(update, state, options, instanceId);
     }
 };

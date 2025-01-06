@@ -13,9 +13,9 @@ const _reduxDevToolsDetectedAndEnabledInEsp = (() => {
             return false;
         }
         const url = new URL(window.location.href);
-        if (url.searchParams.has('enableReduxDevToolsForEsp')) {
-            let enableReduxDevToolsForEsp = url.searchParams.get('enableReduxDevToolsForEsp').toLowerCase().trim();
-            if (enableReduxDevToolsForEsp === '' || enableReduxDevToolsForEsp === 'true') {
+        if (url.searchParams.has('espReduxDevToolsEnabled')) {
+            let espReduxDevToolsEnabled = url.searchParams.get('espReduxDevToolsEnabled').toLowerCase().trim();
+            if (espReduxDevToolsEnabled === '' || espReduxDevToolsEnabled === 'true') {
                 return true;
             }
         }

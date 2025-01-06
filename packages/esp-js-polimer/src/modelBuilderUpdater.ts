@@ -1,5 +1,5 @@
 import {Router, Guard, isEspDecoratedObject, utils} from 'esp-js';
-import {DevToolsStateSelector, PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './polimerModel';
+import {DevToolsConfig, DevToolsStateSelector, PolimerModel, PolimerModelConfig, StateHandlerModelMetadata} from './polimerModel';
 import {ImmutableModel} from './immutableModel';
 import {ModelPostEventProcessor, ModelPreEventProcessor} from './eventProcessors';
 import {StateHandlerModel} from './stateHandlerModel';
@@ -11,8 +11,7 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     protected _stateHandlerModelsConfig: Map<string, StateHandlerModelMetadata> = new Map();
     protected _stateHandlerConfig: Map<string, StateHandlerConfiguration[]> = new Map();
     protected _eventTransformConfig: EventTransformConfiguration[] = [];
-    protected _enableDevTools: boolean = false;
-    protected _devToolsStateSelector: DevToolsStateSelector<TModel> = 'SendFullModel';
+    protected _devToolsConfig: DevToolsConfig<TModel>;
 
     /**
      * @deprecated use withStateHandlers()
@@ -111,15 +110,11 @@ export class PolimerModelBuilderUpdaterBase<TModel extends ImmutableModel> {
     }
 
     /**
-     * Enables Redux dev tools support (if the extension is on the browser and it's enabled for esp-js via ?enableReduxDevToolsForEsp).
+     * Enables Redux dev tools support (if the extension is on the browser and it's enabled for esp-js via ?espReduxDevToolsEnabled).
      *
-     * @param devToolsStateSelector optionally specify which state is sent to the dev tools extension.
-     *
-     * For large models, you likely can't send the entire model as it'll hang dev tools.
      */
-    enableReduxDevTools(devToolsStateSelector?: DevToolsStateSelector<TModel>): this {
-        this._enableDevTools = true;
-        this._devToolsStateSelector = devToolsStateSelector || 'SendFullModel';
+    enableReduxDevTools(config: DevToolsConfig<TModel>): this {
+        this._devToolsConfig = config;
         return this;
     }
 }
@@ -196,10 +191,7 @@ export class PolimerModelBuilder<TModel extends ImmutableModel, TPersistedModelS
                 modelPreEventProcessor: this._modelPreEventProcessor,
                 modelPostEventProcessor: this._modelPostEventProcessor,
                 stateSaveHandler: this._stateSaveHandler,
-                devToolsConfig: {
-                    enabled: this._enableDevTools,
-                    devToolsStateSelector: this._devToolsStateSelector
-                }
+                devToolsConfig: this._devToolsConfig
             }
         );
     }

@@ -59,7 +59,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         this._decoratorObservationRegister = new DecoratorObservationRegister();
 
         this._diagnosticMonitor = reduxDevToolsDetectedAndEnabledInEsp()
-            ? new ReduxDevToolsDiagnosticMonitor(`Router_${routerInstanceId++}`)
+            ? new ReduxDevToolsDiagnosticMonitor(`Router_${Date.now()}`)
             : new NoopDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
     }

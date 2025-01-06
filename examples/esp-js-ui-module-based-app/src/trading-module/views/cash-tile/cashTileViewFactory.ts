@@ -7,7 +7,7 @@ import {InputStateHandlers} from './model/inputs/inputsState';
 import {RequestForQuoteStateHandlers} from './model/rfq/requestForQuoteState';
 import {RequestForQuoteEventTransforms} from './model/rfq/requestForQuoteEventTransforms';
 import {RfqService} from '../../services/rfqService';
-import {TileEvents} from './events';
+import {RfqEvents, TileEvents} from './events';
 import {DateSelectorModel} from './model/dateSelector/dateSelectorModel';
 import {TradingModuleContainerConst} from '../../tradingModuleContainerConst';
 import {ReferenceDataStateHandlers} from './model/refData/referenceDataState';
@@ -45,7 +45,11 @@ export class CashTileViewFactory extends ViewFactoryBase<PolimerModel<CashTileMo
             // ***************************
             // Enable Redux Devtools (if the Browser extension is installed)
             // This will use the default settings which send the entire CashTileModel to Redux DevTools
-            .enableReduxDevTools(/* can pass options here */)
+            .enableReduxDevTools({
+                // it's ok for small models to send the full model, if they get big it'll crash dev tools
+                devToolsStateSelector: immutableModel => immutableModel,
+                ignoredEvents: [RfqEvents.rfqUpdate] // too noisy
+            })
 
             // ***************************
             // Wire up state handlers.

@@ -30,23 +30,30 @@ interface RegisteredModel {
 
 interface DevToolsState {
     routerName: string;
+    totalEventCount: number;
+    stateTimestamp: Date;
     registeredModelsMap: { [modelId: string]: RegisteredModel };
     top20NoisyModelsEventCount: { [modelId: string]: number };
+    top20NoisyEventsCount: { [eventName: string]: number };
 }
 
-const DEV_TOOLS_STATE_UPDATE_INTERVAL_MS = 10_000;
+const DEV_TOOLS_STATE_UPDATE_INTERVAL_MS = 30_000;
 
 export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
     private _state: DevToolsState;
     private _lastSentState: DevToolsState;
     private _noisyModelMap: Map<string, number> = new Map();
+    private _noisyEventMap: Map<string, number> = new Map();
 
     constructor(private _routerName: string) {
         super();
         this._state = {
             routerName: this._routerName,
+            totalEventCount: 0,
+            stateTimestamp: new Date(),
             registeredModelsMap: {},
-            top20NoisyModelsEventCount: {}
+            top20NoisyModelsEventCount: {},
+            top20NoisyEventsCount: {},
         };
         const disconnectDevTools = connectReduxDevTools(this._routerName);
         this.addDisposable(() => disconnectDevTools());
@@ -103,11 +110,15 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
     }
 
     eventEnqueued(modelId: string, entityKey: string, eventType: string, event: any): void {
-        let eventCount = this._noisyModelMap.get(modelId);
-        this._noisyModelMap.set(modelId, eventCount + 1);
-        this._updateRegisteredModelAndSendDevToolsUpdate(
-            `router_eventEnqueued:${eventType}${entityKey ? ':' + entityKey : ''}`,
-            event,
+        let modelEventCount = this._noisyModelMap.get(modelId);
+        this._noisyModelMap.set(modelId, modelEventCount + 1);
+        let noisyEventCount = this._noisyEventMap.get(eventType) || 0;
+        this._noisyEventMap.set(eventType, noisyEventCount + 1);
+        this._state = {
+            ...this._state,
+            totalEventCount: this._state.totalEventCount + 1
+        };
+        this._updateRegisteredModel(
             modelId,
             rm => {
                 return {
@@ -160,9 +171,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
     }
 
     dispatchingModelUpdates(modelId: string, model: any): void {
-        this._updateRegisteredModelAndSendDevToolsUpdate(
-            'router:model_updated',
-            null,
+        this._updateRegisteredModel(
             modelId,
             rm => {
                 return {
@@ -181,19 +190,35 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    private _updateRegisteredModelAndSendDevToolsUpdate = (eventType: string, event: any, modelId: string, modelModifier: (rm: RegisteredModel) => RegisteredModel): void => {
+    private _updateRegisteredModel = (modelId: string, modelModifier: (rm: RegisteredModel) => RegisteredModel): void => {
         const registeredModelUpdate = modelModifier(this._state.registeredModelsMap[modelId]);
         const registeredModelsMap = {
             ...this._state.registeredModelsMap,
             [modelId]: registeredModelUpdate
         };
-        const top20NoisyModelsEventCount = this._findTop20NoisyModels();
         this._state = {
             ...this._state,
-            registeredModelsMap,
-            top20NoisyModelsEventCount
+            registeredModelsMap
         };
-        this._sendDevToolsUpdate(eventType, event);
+    };
+
+    private _startStateUpdateTrigger = () => {
+        if (this.isDisposed) {
+            return;
+        }
+        if (this._lastSentState !== this._state) {
+            const top20NoisyModelsEventCount = this._findTop20NoisyItems(this._noisyModelMap);
+            const top20NoisyEventsCount = this._findTop20NoisyItems(this._noisyEventMap);
+            this._state = {
+                ...this._state,
+                stateTimestamp: new Date(),
+                top20NoisyModelsEventCount,
+                top20NoisyEventsCount
+            };
+            this._lastSentState = this._state;
+            this._sendDevToolsUpdate('router:state_update', null);
+        }
+        setTimeout(this._startStateUpdateTrigger, DEV_TOOLS_STATE_UPDATE_INTERVAL_MS);
     };
 
     private _sendDevToolsUpdate = (eventType: string, event: any) => {
@@ -206,17 +231,8 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
         );
     };
 
-    private _startStateUpdateTrigger = () => {
-        if (this.isDisposed) {
-            return;
-        }
-        this._lastSentState = this._state;
-        this._sendDevToolsUpdate('router:state_update', null);
-        setTimeout(this._startStateUpdateTrigger, DEV_TOOLS_STATE_UPDATE_INTERVAL_MS);
-    }
-
-    private _findTop20NoisyModels() {
-        const entriesArray = Array.from(this._noisyModelMap.entries());
+    private _findTop20NoisyItems(map: Map<string, number>) {
+        const entriesArray = Array.from(map.entries());
         return entriesArray
             .sort((a, b) => b[1] - a[1])
             .slice(0, 20)

@@ -16,17 +16,20 @@ import {StateReaderWriter, MapReaderWriter, DirectStateReaderWriter} from './sta
 import {EventEnvelopePredicate} from './eventEnvelopePredicate';
 import {createImmutableModelUtility, ImmutableModelUtility} from './immutableModelUtility';
 
-/**
- * Sets options for how a PolimerModel will interact with Redux dev tools.
- *
- * SendFullModel: Sends the full ImmutableModel, this may crash Redux dev tools with very large models.
- * MapUsingStateSaveHandler: uses the stateSaveHandler provided, if any, when constructing PolimerModel, this will result in a new object graph each time.
- * Custom function: map your own view of the ImmutableModel.
- */
-export type DevToolsStateSelector<TModel extends ImmutableModel> = 'SendFullModel' | 'MapUsingStateSaveHandler' | ((model: TModel) => object);
+export type DevToolsStateSelector<TModel extends ImmutableModel> = (model: TModel) => object;
 
 export interface DevToolsConfig<TModel extends ImmutableModel> {
-    enabled: boolean;
+    /**
+     * A list of events which won't be forwarded to dev tools.
+     * This is useful for noisy events which ultimately slow dev tools.
+     */
+    ignoredEvents: string[];
+    /**
+     * A mapper to create state to send to dev tools.
+     * For smaller models you can return the given model sent to the mapper,
+     * for larger models you need to map to a smaller structure to void killing dev tools.
+     * You can also return 'null/undefined' to send no sate (just the event will be sent).
+     */
     devToolsStateSelector: DevToolsStateSelector<TModel>;
 }
 
@@ -75,10 +78,7 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     private _modelPostEventProcessor: ModelPostEventProcessor<TModel>;
     private readonly _modelId: string;
     private _stateSaveHandler: (model: TModel) => any;
-    private _devToolsConfig: {
-        enabled: boolean,
-        devToolsStateMapper: (model: TModel) => object,
-    };
+    private _devToolsConfig: DevToolsConfig<TModel>;
 
     constructor(private readonly _router: Router, initialConfig: PolimerModelConfig<TModel>) {
         super();
@@ -496,31 +496,14 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     };
 
     private _setDevToolsConfig(devToolsConfig: DevToolsConfig<TModel>) {
-        if (!devToolsConfig || !devToolsConfig.enabled) {
-            this._devToolsConfig = {
-                enabled: false,
-                devToolsStateMapper: null
-            };
+        if (!devToolsConfig) {
             return;
         }
-        if (devToolsConfig.devToolsStateSelector === 'SendFullModel') {
-            this._devToolsConfig = {
-                enabled: true,
-                devToolsStateMapper: (m) => m
-            };
-        } else if (devToolsConfig.devToolsStateSelector === 'MapUsingStateSaveHandler') {
-            Guard.isFunction(this._stateSaveHandler, `DevTools enabled for ${this._modelId} and state mapping configured as MapUsingStateSaveHandler, however the state handler was not set or not a function.`);
-            this._devToolsConfig = {
-                enabled: true,
-                devToolsStateMapper: this._stateSaveHandler
-            };
-        } else {
-            Guard.isFunction(devToolsConfig.devToolsStateSelector, `DevTools enabled for ${this._modelId} and configured to use a custom state mapper, however [${devToolsConfig.devToolsStateSelector}] is not set or not a function`);
-            this._devToolsConfig = {
-                enabled: true,
-                devToolsStateMapper: devToolsConfig.devToolsStateSelector
-            };
-        }
+        Guard.isFunction(devToolsConfig.devToolsStateSelector, `DevTools enabled for ${this._modelId}, however [${devToolsConfig.devToolsStateSelector}] is not set or not a function`);
+        this._devToolsConfig = {
+            ignoredEvents: devToolsConfig.ignoredEvents || [],
+            devToolsStateSelector: devToolsConfig.devToolsStateSelector,
+        };
         const unsubscribe = connectReduxDevTools(this._modelId);
         this.addDisposable(() => {
             unsubscribe();
@@ -529,13 +512,16 @@ export class PolimerModel<TModel extends ImmutableModel> extends DisposableBase 
     }
 
     private _trySendDevToolsUpdate = (eventType: string, event: any) => {
-        if (!this._devToolsConfig.enabled) {
+        if (!this._devToolsConfig) {
             return;
         }
         if (!reduxDevToolsDetectedAndEnabledInEsp()) {
             return;
         }
-        let state = this._devToolsConfig.devToolsStateMapper(this._immutableModelUtility.model);
+        if (this._devToolsConfig.ignoredEvents.includes(eventType)) {
+            return;
+        }
+        let state = this._devToolsConfig.devToolsStateSelector(this._immutableModelUtility.model);
         sendUpdateToReduxDevTools(
             {eventType: eventType, event: event},
             state,

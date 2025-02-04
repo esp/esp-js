@@ -1,18 +1,19 @@
 import {Logger} from '../../system/logging/logger';
+import {GlobalState} from '../../system/globalState';
 
 // Redux Dev Tools API Docs:
 // https://github.com/reduxjs/redux-devtools/blob/main/extension/docs/API/Methods.md
 
 export const logger = Logger.create('EspDevToolsConnector');
 
-const devToolsExtension = (<any>window).__REDUX_DEVTOOLS_EXTENSION__; //tslint:disable-line
+const devToolsExtension = GlobalState.__REDUX_DEVTOOLS_EXTENSION__; //tslint:disable-line
 
 const _reduxDevToolsDetectedAndEnabledInEsp = (() => {
     try {
         if (devToolsExtension == null) {
             return false;
         }
-        const url = new URL(window.location.href);
+        const url = new URL(GlobalState.location.href);
         if (url.searchParams.has('espReduxDevToolsEnabled')) {
             let espReduxDevToolsEnabled = url.searchParams.get('espReduxDevToolsEnabled').toLowerCase().trim();
             if (espReduxDevToolsEnabled === '' || espReduxDevToolsEnabled === 'true') {

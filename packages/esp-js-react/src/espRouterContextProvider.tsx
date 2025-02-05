@@ -35,7 +35,19 @@ export const useRouter = () => {
     return useContext(RouterContext);
 };
 
-export type PublishEventDelegate = (modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any) => void;
+export type PublishEventDelegate = {(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any): void; (eventData: { address: string | ModelAddress, eventType: string, event: any }): void; };
+const createPublishEvent = (router: Router) => {
+    function publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any): void;
+    function publishEvent(eventData: { address: string | ModelAddress, eventType: string, event: any }): void;
+    function publishEvent(...args: any[]): void {
+        if (args.length === 1) {
+            router.publishEvent(args[0].address, args[0].eventType, args[0].event);
+        } else {
+            router.publishEvent(args[0], args[1], args[2]);
+        }
+    }
+    return publishEvent;
+};
 export const PublishEventContext = createContext<PublishEventDelegate>(null);
 
 /**
@@ -60,9 +72,7 @@ export const EspRouterContextProvider = ({children, router}: EspRouterContextPro
     // Router may have been set by a higher level version of this component, so we try and get it from context if it's not set by props.
     let routerFromContext = useRouter();
     router = router || routerFromContext;
-    const publishEvent: PublishEventDelegate = useCallback((modelIdOrModelAddress: string, eventType: string, event: any) => {
-        router.publishEvent(modelIdOrModelAddress, eventType, event);
-    }, [router]);
+    const publishEvent: PublishEventDelegate = useCallback(createPublishEvent(router), [router]);
     return (
         <RouterContext.Provider value={router}>
             <PublishEventContext.Provider value={publishEvent}>

@@ -50,5 +50,7 @@ describe('EspRouterContextProvider tests', () => {
         expect(testModel.state.value).toBe('initial-value');
         result.current('model-id', 'test-event', 'updated');
         expect(testModel.state.value).toBe('updated');
+        result.current({ address: 'model-id', eventType: 'test-event', event: 'updated2'});
+        expect(testModel.state.value).toBe('updated2');
     });
 });

@@ -103,12 +103,16 @@ describe('EspModelContextProviderTests tests', () => {
         expect(testModel1.state.value).toBe('initial-value');
         result.current('test-event', 'updated');
         expect(testModel1.state.value).toBe('updated');
+        result.current({eventType: 'test-event', event: 'updated2' });
+        expect(testModel1.state.value).toBe('updated2');
 
         rerender();
 
         expect(testModel2.state.value).toBe('initial-value');
         result.current('test-event', 'updated');
         expect(testModel2.state.value).toBe('updated');
+        result.current({eventType: 'test-event', event: 'updated2' });
+        expect(testModel2.state.value).toBe('updated2');
     });
 
     it('publishModelEventWithEntityKey publishes to correct model and changes on re-render', () => {
@@ -130,6 +134,8 @@ describe('EspModelContextProviderTests tests', () => {
         result.current('the-entity-key', 'test-event-with-entity-key', 'updated');
         expect(testModel1.state.value).toBe('updated');
         expect(testModel1.state.entityKey).toBe('the-entity-key');
+        result.current({ entityKey: 'the-entity-key', eventType: 'test-event-with-entity-key', event: 'updated2'});
+        expect(testModel1.state.value).toBe('updated2');
 
         rerender();
 
@@ -138,5 +144,7 @@ describe('EspModelContextProviderTests tests', () => {
         result.current('the-entity-key', 'test-event-with-entity-key', 'updated');
         expect(testModel2.state.value).toBe('updated');
         expect(testModel2.state.entityKey).toBe('the-entity-key');
+        result.current({ entityKey: 'the-entity-key', eventType: 'test-event-with-entity-key', event: 'updated2'});
+        expect(testModel2.state.value).toBe('updated2');
     });
 });

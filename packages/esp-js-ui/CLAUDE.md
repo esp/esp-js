@@ -13,10 +13,10 @@ The composite application framework for ESP. Provides the `Shell` bootstrapper, 
 ## Build and Test
 
 ```bash
-yarn build-dev
-yarn build-prod
-yarn test
-yarn test-ci
+npm run build-dev
+npm run build-prod
+npm test
+npm run test-ci
 ```
 
 Output: `.dist/esp-js-ui.js`, `.dist/typings/index.d.ts`.

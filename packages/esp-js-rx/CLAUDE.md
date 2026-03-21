@@ -13,10 +13,10 @@ RxJS operator utilities and reactive primitives for use with ESP. Provides custo
 ## Build and Test
 
 ```bash
-yarn build-dev
-yarn build-prod
-yarn test
-yarn test-ci
+npm run build-dev
+npm run build-prod
+npm test
+npm run test-ci
 ```
 
 Output: `.dist/esp-js-rx.js`, `.dist/typings/index.d.ts`.

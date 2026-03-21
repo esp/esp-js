@@ -13,10 +13,10 @@ React bindings for ESP. Provides two complementary integration approaches: the `
 ## Build and Test
 
 ```bash
-yarn build-dev
-yarn build-prod     # output: .dist/esp-react.js  (note: filename is esp-react, not esp-js-react)
-yarn test           # jest --watchAll
-yarn test-ci        # jest (CI)
+npm run build-dev
+npm run build-prod  # output: .dist/esp-react.js  (note: filename is esp-react, not esp-js-react)
+npm test            # jest --watchAll
+npm run test-ci     # jest (CI)
 ```
 
 Output: `.dist/esp-react.js`, `.dist/typings/index.d.ts`.

@@ -31,14 +31,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-
-      - name: Enable corepack
-        # yarn is part of corepack, so doing this means we don't need to install it separately.
-        run: corepack enable
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Build and Test
-        run: yarn build-dev
+        run: npm run build-dev

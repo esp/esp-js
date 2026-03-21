@@ -48,7 +48,7 @@ esp-js          (no esp deps)
 
 ## Monorepo Tooling
 
-- **Package manager**: Yarn (workspaces)
+- **Package manager**: npm (workspaces)
 - **Monorepo orchestration**: Lerna 8 (`lerna.json`)
 - **Per-package build scripts**: delegated to `nps` (`package-scripts.js` at root defines shared scripts)
 - **Versioning**: Lerna fixed-mode — all packages share the same version (`8.1.0`)
@@ -57,22 +57,22 @@ esp-js          (no esp deps)
 ### Key root commands
 
 ```bash
-yarn bootstrap          # lerna bootstrap — link workspace packages
-yarn build-dev          # clean + build all packages in dependency order (dev mode)
-yarn build-prod         # clean + build all packages in dependency order (prod mode)
-yarn test               # run tests in all packages (sorted, streamed)
-yarn clean              # clean all .dist and .tsbuild directories
-yarn build-pack         # build prod then create .tgz files for each package
-yarn trash              # nuclear clean: removes node_modules too (macOS/Linux only)
-yarn start-sample       # start esp-js-ui-module-based-app example
+npm run bootstrap       # npm install — link workspace packages
+npm run build-dev       # clean + build all packages in dependency order (dev mode)
+npm run build-prod      # clean + build all packages in dependency order (prod mode)
+npm test                # run tests in all packages (sorted, streamed)
+npm run clean           # clean all .dist and .tsbuild directories
+npm run build-pack      # build prod then create .tgz files for each package
+npm run trash           # nuclear clean: removes node_modules too (macOS/Linux only)
+npm run start-sample    # start esp-js-ui-module-based-app example
 ```
 
 ### Release commands
 
 ```bash
-yarn release-patch      # build-prod then lerna publish patch
-yarn release-minor      # build-prod then lerna publish minor
-yarn pre-release-minor  # build-prod then lerna publish preminor --preid next --dist-tag next
+npm run release-patch      # build-prod then lerna publish patch
+npm run release-minor      # build-prod then lerna publish minor
+npm run pre-release-minor  # build-prod then lerna publish preminor --preid next --dist-tag next
 ```
 
 ## Build System
@@ -88,9 +88,9 @@ yarn pre-release-minor  # build-prod then lerna publish preminor --preid next --
 ### Per-package build
 
 ```bash
-yarn build-dev   # from inside a package directory
-yarn build-prod
-yarn dev         # webpack --watch
+npm run build-dev   # from inside a package directory
+npm run build-prod
+npm run dev         # webpack --watch
 ```
 
 ## Test Commands
@@ -102,21 +102,21 @@ yarn dev         # webpack --watch
 
 ```bash
 # From repo root:
-yarn test                    # run all packages, sorted by dependency order
+npm test                     # run all packages, sorted by dependency order
 
 # From inside a package:
-yarn test                    # jest --watchAll
-yarn test-ci                 # jest (no watch, CI mode)
+npm test                     # jest --watchAll  (note: use "npm test -- --watchAll" to pass flags)
+npm run test-ci              # jest (no watch, CI mode)
 ```
 
 ## Development Workflow
 
-1. `yarn bootstrap` — link packages after clone or after adding new inter-package dependencies
-2. `yarn build-dev` — full build (required before tests can find compiled output in sibling packages)
+1. `npm install` — link packages after clone or after adding new inter-package dependencies
+2. `npm run build-dev` — full build (required before tests can find compiled output in sibling packages)
 3. Make changes to source in `packages/<pkg>/src/`
-4. `yarn dev` from inside a package for watch-mode webpack rebuild
-5. `yarn test` from inside a package for watch-mode tests
-6. `yarn build-prod && yarn test` from root before committing
+4. `npm run dev` from inside a package for watch-mode webpack rebuild
+5. `npm test` from inside a package for watch-mode tests
+6. `npm run build-prod && npm test` from root before committing
 
 **Adding a new package**: use `yarn create-package` (invokes `nps create-package`).
 

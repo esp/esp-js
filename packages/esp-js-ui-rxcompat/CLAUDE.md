@@ -15,10 +15,10 @@ Legacy RxJS 5/6 compatibility shims for `esp-js-rx`. Patches RxJS observables (v
 ## Build and Test
 
 ```bash
-yarn build-dev
-yarn build-prod
-yarn test
-yarn test-ci
+npm run build-dev
+npm run build-prod
+npm test
+npm run test-ci
 ```
 
 Output: `.dist/esp-js-ui-rxcompat.js`, `.dist/typings/index.d.ts`.

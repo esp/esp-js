@@ -13,11 +13,11 @@ The core Evented State Processor library. Provides the `Router`, all event dispa
 ## Build and Test
 
 ```bash
-yarn build-dev      # webpack (dev mode) → .dist/esp-js.js
-yarn build-prod     # webpack (prod mode) → .dist/esp-js.js + .dist/esp-js.min.js
-yarn test           # jest --watchAll
-yarn test-ci        # jest (CI)
-yarn dev            # webpack --watch
+npm run build-dev      # webpack (dev mode) → .dist/esp-js.js
+npm run build-prod     # webpack (prod mode) → .dist/esp-js.js + .dist/esp-js.min.js
+npm test               # jest --watchAll
+npm run test-ci        # jest (CI)
+npm run dev            # webpack --watch
 ```
 
 Output: `.dist/esp-js.js` (UMD bundle), `.dist/typings/index.d.ts` (type declarations).

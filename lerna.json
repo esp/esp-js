@@ -1,6 +1,6 @@
 {
   "version": "8.1.0",
-  "npmClient": "yarn",
+  "npmClient": "npm",
   "command": {
     "publish": {
       "allowBranch": "**/*",
@@ -9,7 +9,7 @@
         "**/*.md"
       ],
       "forcePublish": true,
-      "npmClient": "yarn",
+      "npmClient": "npm",
       "message": "chore(release): publish %s"
     }
   },

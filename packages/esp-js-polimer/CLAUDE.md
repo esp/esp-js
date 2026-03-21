@@ -13,10 +13,10 @@ Adds immutable, Redux-style model support to ESP. A `PolimerModel` is an immutab
 ## Build and Test
 
 ```bash
-yarn build-dev
-yarn build-prod
-yarn test           # jest --watchAll
-yarn test-ci        # jest (CI)
+npm run build-dev
+npm run build-prod
+npm test            # jest --watchAll
+npm run test-ci     # jest (CI)
 ```
 
 Output: `.dist/esp-js-polimer.js`, `.dist/typings/index.d.ts`.

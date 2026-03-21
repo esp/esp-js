@@ -13,10 +13,10 @@ A thin pluggable metrics abstraction layer. Defines `Counter`, `Gauge`, `Histogr
 ## Build and Test
 
 ```bash
-yarn build-dev
-yarn build-prod
-yarn test
-yarn test-ci
+npm run build-dev
+npm run build-prod
+npm test
+npm run test-ci
 ```
 
 Output: `.dist/esp-js-metrics.js` (UMD bundle), `.dist/typings/index.d.ts`.

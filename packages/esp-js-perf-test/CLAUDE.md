@@ -13,8 +13,8 @@ Internal performance benchmarks for `esp-js` and `esp-js-polimer`. Not published
 ## Build and Run
 
 ```bash
-yarn build-dev    # webpack build (for bundled benchmarks)
-yarn start        # ts-node src/index.ts  — run benchmarks directly
+npm run build-dev    # webpack build (for bundled benchmarks)
+npm start            # ts-node src/index.ts  — run benchmarks directly
 ```
 
 No `build-pack` or publish scripts.
@@ -31,11 +31,11 @@ src/
 **Run the benchmarks:**
 ```bash
 cd packages/esp-js-perf-test
-yarn start
+npm start
 ```
 
 ## Gotchas
 
 - Version is pinned to `^8.1.1-next.0` (pre-release) while published packages are at `8.1.0` — this is expected; the perf test package tracks the cutting edge of the monorepo
-- No test files — `yarn test-ci` is a no-op
-- Not included in the root `yarn test` run for the same reason
+- No test files — `npm run test-ci` is a no-op
+- Not included in the root `npm test` run for the same reason

@@ -14,10 +14,10 @@ A standalone IoC (Inversion of Control) dependency injection container. Supports
 ## Build and Test
 
 ```bash
-yarn build-dev      # webpack → .dist/esp-js-di.js
-yarn build-prod     # webpack → .dist/esp-js-di.js + .dist/esp-js-di.min.js
-yarn test           # jest --watchAll
-yarn test-ci        # jest (CI)
+npm run build-dev      # webpack → .dist/esp-js-di.js
+npm run build-prod     # webpack → .dist/esp-js-di.js + .dist/esp-js-di.min.js
+npm test               # jest --watchAll
+npm run test-ci        # jest (CI)
 ```
 
 Output: `.dist/esp-js-di.js` (UMD bundle). No TypeScript declarations generated (JavaScript source).

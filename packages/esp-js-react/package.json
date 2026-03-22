@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "esp-js": "^8.1.0",
-    "esp-js-polimer": "^8.1.0",
     "prop-types": "^15.7.2",
     "react": "^18.3.1",
     "use-sync-external-store": "^1.2.2"
@@ -39,7 +38,6 @@
   },
   "peerDependencies": {
     "esp-js": "^7.0.0",
-    "esp-js-polimer": "^7.0.0",
     "prop-types": "^15.0.0",
     "react": "^18.0.0 || ^19.0.0"
   },

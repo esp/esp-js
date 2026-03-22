@@ -1,43 +1,22 @@
-import {EventContext, observeEvent} from 'esp-js';
+import {EventContext, Router} from 'esp-js';
+import {ModelBuilder} from 'esp-js';
 
-export type TestModelImmutableState = { value: string, modelId: string, entityKey: string };
+export type TestModelState = { value: string, modelId: string, entityKey: string };
 
-export class TestModel {
-
-    private _internalState: TestModelImmutableState;
-
-    constructor(modelId: string) {
-        this._internalState = {
-            value: 'initial-value',
-            entityKey: '',
-            modelId: modelId,
-        };
-    }
-
-    public get state(): TestModelImmutableState {
-        return this._internalState;
-    }
-
-    @observeEvent('test-event')
-    _onTestEvent(ev: string) {
-        // mimic some immutable logic that would be provided by a lib such as immer in a real app.
-        this._internalState = {
-            ...this._internalState,
-            value: ev
-        };
-    }
-
-    @observeEvent('test-event-with-entity-key')
-    _onTestEventWithEntityKey(ev: string, eventContext: EventContext) {
-        // mimic some immutable logic that would be provided by a lib such as immer in a real app.
-        this._internalState = {
-            ...this._internalState,
-            entityKey: eventContext.entityKey,
-            value: ev
-        };
-    }
-
-    public getEspPolimerImmutableModel() {
-        return this._internalState;
-    }
-}
+export const createTestModel = (router: Router, modelId: string): TestModelState => {
+    const initialState: TestModelState = {
+        value: 'initial-value',
+        entityKey: '',
+        modelId,
+    };
+    new ModelBuilder<TestModelState>(router, modelId, initialState)
+        .withEventHandler('test-event', (draft, ev: string) => {
+            draft.value = ev;
+        })
+        .withEventHandler('test-event-with-entity-key', (draft, ev: string, ctx: EventContext) => {
+            draft.entityKey = ctx.entityKey;
+            draft.value = ev;
+        })
+        .registerWithRouter();
+    return initialState;
+};

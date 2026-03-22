@@ -1,4 +1,4 @@
-import {TestModel} from './testModel';
+import {createTestModel, TestModelState} from './testModel';
 import {RouterSpy} from './routerSpy';
 import {render, RenderResult} from '@testing-library/react';
 import * as React from 'react';
@@ -6,6 +6,7 @@ import {EspModelContextProvider, EspRouterContextProvider} from '../../src';
 import {PropAsserts, propAsserts, RouterAsserts, routerAsserts, ViewAsserts, viewAsserts} from './asserts';
 import {isValidElement, ReactElement} from 'react';
 import {TestPropStore, TestPropStoreContext} from './useStoreReceivedProps';
+import {ModelBuilder} from 'esp-js';
 
 export type TestApi = {
     router: RouterSpy;
@@ -16,7 +17,7 @@ export type TestApi = {
         props: PropAsserts,
     };
     setupModel<TModel>(modelId: string, model: TModel): TModel;
-    setupTestModel(modelId: string): TestModel;
+    setupTestModel(modelId: string): TestModelState;
     setupModelAndRender(modelId: string, Component: React.ComponentType): TestApi;
     doRender(Component: React.ComponentType, modelIdForContext?: string): TestApi
     doRender(Component: React.JSX.Element, modelIdForContext?: string): TestApi
@@ -48,15 +49,11 @@ export const testApi = ()=> {
             return this;
         },
         setupModel<TModel>(modelId: string, model: TModel): TModel {
-            router.addModel(modelId, model);
-            router.observeEventsOn(modelId, model);
+            new ModelBuilder<TModel>(router, modelId, model).registerWithRouter();
             return model;
         },
-        setupTestModel(modelId: string): TestModel {
-            const testModel = new TestModel(modelId);
-            router.addModel(modelId, testModel);
-            router.observeEventsOn(modelId, testModel);
-            return testModel;
+        setupTestModel(modelId: string): TestModelState {
+            return createTestModel(router, modelId);
         },
         doRender(ComponentOrElement: any, modelIdForContext?: string, nextProps?: any) {
             let element: React.JSX.Element;

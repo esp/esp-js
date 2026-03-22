@@ -2,11 +2,11 @@
 
 ## Package Purpose
 
-React bindings for ESP. Provides two complementary integration approaches: the `ConnectableComponent`/`connect()` HOC pattern (class-based or functional) and the `useSyncModelWithSelector` hook. Also provides `@viewBinding` decorator for declarative model-to-view mapping, React context providers for the `Router`, and polimer model builder extensions.
+React bindings for ESP. Provides two complementary integration approaches: the `ConnectableComponent`/`connect()` HOC pattern (class-based or functional) and the `useSyncModelWithSelector` hook. Also provides `@viewBinding` decorator for declarative model-to-view mapping and React context providers for the `Router`.
 
 ## Role in Monorepo
 
-- **Depends on**: `esp-js`, `esp-js-polimer`, `react`, `prop-types`, `use-sync-external-store`
+- **Depends on**: `esp-js`, `react`, `prop-types`, `use-sync-external-store`
 - Depended on by: `esp-js-ui`
 - Published as `esp-js-react` on npm
 
@@ -35,8 +35,6 @@ src/
   useSyncModelWithSelector.ts   # useSyncModelWithSelector hook + SyncModelWithSelectorOptions
   viewBinder.tsx                # ViewBinder component — renders view for a model using @viewBinding metadata
   viewBindingDecorator.ts       # @viewBinding decorator + createViewForModel utility
-  polimer/
-    polimerModelBuilderExtentsions.ts  # Side-effect import: extends Router.getModelObservable for PolimerModel unwrapping
 ```
 
 ## Key Concepts and Patterns
@@ -87,7 +85,7 @@ const orders = useSyncModelWithSelector<OrdersState>(
 );
 ```
 
-If the model is a `PolimerModel`, `tryPreSelectPolimerImmutableModel: true` (default) automatically calls `getImmutableModel()` before passing to the selector.
+If the model exposes a `getEspPolimerImmutableModel()` method, `tryPreSelectPolimerImmutableModel: true` (default) automatically calls it before passing the result to the selector.
 
 ### EspModelContextProvider
 
@@ -116,10 +114,6 @@ class MyModel extends ModelBase { ... }
 ```
 
 `createViewForModel(model, props, displayContext, fallbackView)` resolves the right component. `ViewBinder` renders it.
-
-### Polimer extensions (side effect)
-
-Importing `esp-js-react` triggers `polimer/polimerModelBuilderExtentsions.ts` which patches the `Router`'s model observation to automatically unwrap `PolimerModel` instances — model observers receive the `ImmutableModel` directly rather than the `PolimerModel` wrapper.
 
 ## Public API
 
@@ -191,7 +185,6 @@ class MyModel extends ModelBase { ... }
 ## Gotchas
 
 - The output bundle is named `esp-react.js` (not `esp-js-react.js`) — this is intentional and matches the `main` field in `package.json`
-- The polimer builder extensions in `polimer/polimerModelBuilderExtentsions.ts` are applied as a **side effect on import** — if you import only specific named exports and tree-shaking removes this module, polimer model observation may not work correctly; import from the package index to be safe
 - `useSyncModelWithSelector` uses `useSyncExternalStoreWithSelector` from React 18 — requires React 18 or the `use-sync-external-store` shim
 - `ConnectableComponent` re-renders on every model update regardless of selector — for performance-sensitive cases prefer `useSyncModelWithSelector` with an equality function
 - `@viewBinding` metadata is stored on the **constructor function**, not the instance — `createViewForModel` must receive the model instance (it reads `model.constructor`)

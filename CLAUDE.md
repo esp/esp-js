@@ -12,7 +12,7 @@ The monorepo contains the core router, dependency injection container, React int
 packages/
   esp-js              # Core event router — foundational, no dependencies on other esp-* packages
   esp-js-di           # Standalone IoC container (JavaScript, not TypeScript)
-  esp-js-react        # React bindings (ConnectableComponent, hooks); depends on esp-js + esp-js-polimer
+  esp-js-react        # React bindings (ConnectableComponent, hooks); depends on esp-js
 ```
 
 ### Package CLAUDE.md files
@@ -25,13 +25,8 @@ packages/
 
 ```
 esp-js-di       (no esp deps)
-esp-js-metrics  (no esp deps)
 esp-js          (no esp deps)
-  └── esp-js-rx
-  └── esp-js-polimer
-        └── esp-js-react
-              └── esp-js-ui  (also depends on esp-js-di, esp-js-metrics, esp-js-rx)
-  └── esp-js-ui-rxcompat  (also depends on esp-js-rx)
+  └── esp-js-react
 ```
 
 ## Monorepo Tooling
@@ -127,13 +122,6 @@ npm run test-ci              # jest (no watch, CI mode)
 - Extend `ModelBase` (from `esp-js`, re-exported by `esp-js-ui`)
 - Decorate handler methods with `@observeEvent(eventType)` or `@observeEvent(eventType, ObservationStage.preview)`
 - Call `this.observeEvents()` in the constructor to register the model and wire decorators
-
-### Immutable model pattern (esp-js-polimer)
-
-- Define a plain `ImmutableModel` interface (nested state slices)
-- Use `PolimerModelBuilder` to construct a `PolimerModel` registered with the router
-- Decorate handler methods with `@observeEvent` on state handler objects; immer's `produce` applies mutations as drafts
-- Use `@eventTransformFor` on observable-returning methods for async side-effects that produce new events
 
 ### React integration (esp-js-react)
 

@@ -17,9 +17,6 @@
 // notice_end
 //
 
-// import for side effects
-import './polimer/polimerModelBuilderExtentsions';
-
 export {ViewBinder} from './viewBinder';
 export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
 export {createViewForModel} from './viewBindingDecorator';

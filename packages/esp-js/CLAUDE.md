@@ -140,7 +140,7 @@ Convenience wrapper when working with a single model. Use `SingleModelRouter.cre
 
 ### ESP Observable vs RxJS
 
-The `Observable` in `esp-js` is **not** RxJS. It is a lightweight, synchronous observable designed for the router's internal event streams. For async/RxJS pipelines use `esp-js-rx` or `/esp-js-polimer`'s event transforms.
+The `Observable` in `esp-js` is **not** RxJS. It is a lightweight, synchronous observable designed for the router's internal event streams. For async/RxJS pipelines use `esp-js-rx`.
 
 ### Redux DevTools
 

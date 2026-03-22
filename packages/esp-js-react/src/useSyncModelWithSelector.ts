@@ -3,7 +3,6 @@ import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-sel
 import {Logger, Router, utils} from 'esp-js';
 import {useRouter} from './espRouterContextProvider';
 import {useGetModelId} from './espModelContextProvider';
-import {PolimerModel} from 'esp-js-polimer';
 
 export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
 
@@ -15,12 +14,10 @@ export const logger = Logger.create('useSyncModelWithSelector');
  * Use syncModelWithSelectorOptions() to create an instance of this type with sensible defaults.
  *
  * @param modelId - the modelId of the model to be observed via the esp Router.
- * @param tryPreSelectPolimerImmutableModel - if true, and the esp model is an esp-js-polimer model, the immutable model will be used when calling the selector.
  * @param equalityFn - Equality function which will be applied against TSelected, defaults to instance equality (a === b).
  */
 export type SyncModelWithSelectorOptions<TSelected> = {
     modelId?: string,
-    tryPreSelectPolimerImmutableModel: boolean,
     equalityFn: SyncModelWithSelectorEqualityFn<TSelected>
 };
 
@@ -35,12 +32,6 @@ export interface SyncModelWithSelectorOptionsBuilder<TSelected> extends SyncMode
     setModelId(modelId: string): this;
 
     /**
-     * If the model is a PolimerModel and this set true, PolimerModel.getImmutableModel() will be selected by default.
-     * @param value - default if unset: true
-     */
-    setTryPreSelectPolimerImmutableModel(value: boolean): this;
-
-    /**
      * Equality function used when comparing the last TSelected with the next.
      * @param fn - default if unset: obj instance equality (e.g. a===b)
      */
@@ -53,7 +44,6 @@ export interface SyncModelWithSelectorOptionsBuilder<TSelected> extends SyncMode
 export const syncModelWithSelectorOptions = <TSelected>() => {
     let modelId = undefined;
     let equalityFn: SyncModelWithSelectorEqualityFn<TSelected> = (a: TSelected, b: TSelected) => a === b;
-    let tryPreSelectPolimerImmutableModel = true;
     return {
         get modelId() {
             return modelId;
@@ -67,13 +57,6 @@ export const syncModelWithSelectorOptions = <TSelected>() => {
         },
         setEqualityFn(value: SyncModelWithSelectorEqualityFn<TSelected>) {
             equalityFn = value;
-            return this;
-        },
-        get tryPreSelectPolimerImmutableModel() {
-            return tryPreSelectPolimerImmutableModel;
-        },
-        setTryPreSelectPolimerImmutableModel(value: boolean) {
-            tryPreSelectPolimerImmutableModel = value;
             return this;
         }
     } as SyncModelWithSelectorOptionsBuilder<TSelected>;
@@ -109,13 +92,12 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
     const router = useRouter();
     const modelIdFromContext = useGetModelId();
     const modelId = options?.modelId || modelIdFromContext;
-    const tryPreSelectPolimerImmutableModel = options?.tryPreSelectPolimerImmutableModel;
     const equalityFn = options?.equalityFn;
     const dependencies = useMemo(
         () => {
             const canSubscribe = router && utils.isString(modelId) && router.isModelRegistered(modelId);
             if (canSubscribe) {
-                return createSubscriptionState(router, modelId, selector, tryPreSelectPolimerImmutableModel);
+                return createSubscriptionState(router, modelId, selector);
             }
             return createNoopSubscriptionState();
         },
@@ -139,7 +121,6 @@ const createSubscriptionState = <TModel, TSelected>(
     router: Router,
     modelId: string,
     selector: (model: TModel) => TSelected,
-    tryPreSelectPolimerImmutableModel: boolean
 ) => {
     // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
     // When the subscription receives the new state from the Router, it can't pass this directly onto getSnapshot,
@@ -153,16 +134,11 @@ const createSubscriptionState = <TModel, TSelected>(
     const modelSubscriptionDisposable = router
         .getModelObservable<TModel>(modelId)
         .subscribe(
-            (m: any) => {
-                // try and get the esp-js-polimer immutable model if possible, this should mutate when any state changes
-                const nextModel = tryPreSelectPolimerImmutableModel && PolimerModel.isPolimerModel(m)
-                    ? m.getEspPolimerImmutableModel()
-                    // If the above didn't manage to get a polimer model,
-                    // we need to mutate to force useSyncExternalStoreWithSelector to pick up the change.
-                    // This should only affect older style OO models.
-                    : Object.create(m);
-                warnIfModelInstanceHasNotChanged(modelId, currentModel, nextModel);
-                currentModel = nextModel;
+            (m: TModel) => {
+                // The model is a frozen immutable snapshot produced by immer after each dispatch cycle.
+                // Each update is a new object reference, so useSyncExternalStoreWithSelector will detect the change naturally.
+                warnIfModelInstanceHasNotChanged(modelId, currentModel, m as any);
+                currentModel = m;
                 if (onStateChanged) {
                     onStateChanged();
                 }

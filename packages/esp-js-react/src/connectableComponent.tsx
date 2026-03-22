@@ -5,7 +5,6 @@ import {Router} from 'esp-js';
 import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
 import {createViewForModel} from './viewBindingDecorator';
 import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
-import {PolimerModel} from 'esp-js-polimer';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
@@ -31,13 +30,10 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
     router: Router,
     modelId: string,
     restProps: object,
-    initialModel: TModel,
+    model: TModel,
     mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     publishEventProps: TPublishEventProps
 ): ConnectableComponentChildProps<TModel> => {
-    const model = PolimerModel.isPolimerModel(initialModel)
-        ? initialModel.getEspPolimerImmutableModel()
-        : initialModel;
     let childProps = {
         modelId,
         router: router,
@@ -84,7 +80,6 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         m => m,
         syncModelWithSelectorOptions()
             .setModelId(modelId)
-            .setTryPreSelectPolimerImmutableModel(false)
     );
     if (model == null) {
         return null;

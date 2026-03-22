@@ -11,7 +11,8 @@ import {
     CreatePublishEventProps,
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
-import {observeEvent} from 'esp-js';
+import {ModelBuilder} from 'esp-js';
+import {immerable} from 'immer';
 import {viewFactory} from './testApi/viewFactory';
 
 interface TestModelState {
@@ -24,48 +25,17 @@ interface TestModelState {
 @viewBinding(viewFactory('View1'))
 @viewBinding(viewFactory('View3'), 'alternative-view-context')
 class TestModel {
-    protected _state: TestModelState = {
-        value: 'initial-value',
-        value2: undefined,
-        value3: undefined,
-        foo: undefined
-    };
-
-    public get value(): string {
-        return this._state.value;
-    }
-
-    @observeEvent('test-event')
-    _onTestEvent(ev: string) {
-        this._updateState({
-            value: ev
-        });
-    }
-
-    protected _updateState = (partialState: Partial<TestModelState>) => {
-        this._state = {
-            ...this._state,
-            ...partialState
-        };
-    }
+    [immerable] = true;
+    value: string = 'initial-value';
+    value2: string = undefined;
+    value3: string = undefined;
+    foo: string = undefined;
 }
 
 class TestModel2 extends TestModel {
-
-    constructor() {
-        super();
-        this._updateState({
-            value: this._state.value,
-            value2: this._state.value,
-            value3: 'value-3',
-            foo: 'the-foo'
-        });
-    }
-
-    // this isn't ideal, but here we're pretending to be a PolimerModel
-    public getEspPolimerImmutableModel() {
-        return this._state;
-    }
+    value2: string = 'initial-value';
+    value3: string = 'value-3';
+    foo: string = 'the-foo';
 }
 
 interface ConnectedComponentElementCreationProperties {
@@ -88,8 +58,12 @@ describe('ConnectableComponentTests', () => {
         api = testApi();
         testModel = new TestModel();
         testModel2 = new TestModel2();
-        api.setupModel('model-id1', testModel);
-        api.setupModel('model-id2', testModel2);
+        new ModelBuilder<TestModel>(api.router, 'model-id1', testModel)
+            .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
+            .registerWithRouter();
+        new ModelBuilder<TestModel2>(api.router, 'model-id2', testModel2)
+            .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
+            .registerWithRouter();
     });
 
     const createConnectedComponentElement = (options: ConnectedComponentElementCreationProperties): React.JSX.Element => {
@@ -109,11 +83,11 @@ describe('ConnectableComponentTests', () => {
         let publishEventProps: { publishEvent1: () => void };
         let userAlternativeViewContext: string;
         if (options.useMapModelToProps) {
-            mapModelToProps = (model: TestModel | TestModelState, publishEventProps2: any) => {
+            mapModelToProps = (model: TestModel, publishEventProps2: any) => {
                 return {
+                    ...model,
                     foo: model.value,
                     publishEventPropsPassedMapModelToProps: publishEventProps2 && typeof publishEventProps2.publishEvent1 === 'function',
-                    ...model
                 };
             };
         }
@@ -448,30 +422,5 @@ describe('ConnectableComponentTests', () => {
             });
         });
 
-        describe('Overriding model/state selector with @getEspPolimerImmutableModel', () => {
-            it('will select esp-js-polimer model based on const', () => {
-                api.doRender(
-                    (
-                        <ConnectableComponent />
-                    ),
-                    'model-id2'
-                );
-                api.asserts.props
-                    .receivedPropCountIs(1)
-                    .propAtIndex(0, props => {
-                        expect(props.model.value).toBe('initial-value');
-                        expect(props.model.foo).toBe('the-foo');
-                    });
-                act(() => {
-                    api.router.publishEvent('model-id2', 'test-event', 'changed-value');
-                });
-                api.asserts.props
-                    .receivedPropCountIs(2)
-                    .propAtIndex(1, props => {
-                        expect(props.model.value).toBe('changed-value');
-                        expect(props.model.foo).toBe('the-foo');
-                    });
-            });
-        });
     });
 });

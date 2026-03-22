@@ -5,7 +5,7 @@ import {
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
 import {renderHook} from '@testing-library/react';
-import {TestModel} from './testApi/testModel';
+import {TestModelState} from './testApi/testModel';
 import * as React from 'react';
 import {Router} from 'esp-js';
 
@@ -46,11 +46,10 @@ describe('EspRouterContextProvider tests', () => {
                 wrapper: createEspRouterContextProviderWrapper(api.router),
             }
         );
-        let testModel = api.router.getModel<TestModel>('model-id');
-        expect(testModel.state.value).toBe('initial-value');
+        expect(api.router.getModel<TestModelState>('model-id').value).toBe('initial-value');
         result.current('model-id', 'test-event', 'updated');
-        expect(testModel.state.value).toBe('updated');
+        expect(api.router.getModel<TestModelState>('model-id').value).toBe('updated');
         result.current({ address: 'model-id', eventType: 'test-event', event: 'updated2'});
-        expect(testModel.state.value).toBe('updated2');
+        expect(api.router.getModel<TestModelState>('model-id').value).toBe('updated2');
     });
 });

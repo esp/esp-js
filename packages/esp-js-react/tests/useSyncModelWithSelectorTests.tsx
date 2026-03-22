@@ -2,7 +2,7 @@ import 'jest';
 import * as React from 'react';
 import {act} from 'react';
 import {EspModelContextProvider, EspRouterContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
-import {TestModel, TestModelImmutableState} from './testApi/testModel';
+import {TestModelState} from './testApi/testModel';
 import {viewFactory, ViewMetadata} from './testApi/viewFactory';
 import {routerAsserts} from './testApi/asserts';
 import {testApi, TestApi} from './testApi/testApi';
@@ -21,7 +21,7 @@ describe('useSyncModelWithSelector', () => {
         const modelId = 'modelId';
 
         const View = () => {
-            const valuesObj = useSyncModelWithSelector<TestModelImmutableState, SelectedObject>(
+            const valuesObj = useSyncModelWithSelector<TestModelState, SelectedObject>(
                 model => {
                     return {id: model.modelId, value: model.value};
                 },
@@ -58,7 +58,7 @@ describe('useSyncModelWithSelector', () => {
         const modelId = 'modelId';
 
         const View = () => {
-            const values: string[] = useSyncModelWithSelector<TestModelImmutableState, string[]>(
+            const values: string[] = useSyncModelWithSelector<TestModelState, string[]>(
                 model => [model.modelId, model.value],
                 syncModelWithSelectorOptions().setModelId(modelId)
             );
@@ -86,7 +86,7 @@ describe('useSyncModelWithSelector', () => {
         const modelId = 'modelId';
 
         const View = () => {
-            const values = useSyncModelWithSelector<TestModelImmutableState, SelectedObject>(
+            const values = useSyncModelWithSelector<TestModelState, SelectedObject>(
                 model => ({id: model.modelId, value: model.value}),
                 syncModelWithSelectorOptions<SelectedObject>()
                     .setEqualityFn((a, b) => {
@@ -140,7 +140,7 @@ describe('useSyncModelWithSelector', () => {
         const modelId2 = 'modelId2';
 
         const View = (props: {modelId: string}) => {
-            const values = useSyncModelWithSelector<TestModelImmutableState, SelectedObject>(
+            const values = useSyncModelWithSelector<TestModelState, SelectedObject>(
                 model => ({id: model.modelId, value: model.value}),
                 syncModelWithSelectorOptions().setModelId(props.modelId)
             );
@@ -184,72 +184,6 @@ describe('useSyncModelWithSelector', () => {
             });
             api.asserts.view
                 .modelIdIs(modelId2)
-                .valueIs('updated');
-        });
-    });
-
-    describe('non immutable model cases #1 - selector receives then maps model subset', () => {
-        const modelId = 'modelId';
-
-        const View = () => {
-            const values: string[] = useSyncModelWithSelector<TestModel, string[]>(
-                model => {
-                    // here we're expecting to receive a TestModel, not testModelInstance[GetEspPolimerImmutableModelConsts.HandlerFunctionName]()
-                    return [model.state.modelId, model.state.value];
-                },
-                syncModelWithSelectorOptions().setTryPreSelectPolimerImmutableModel(false)
-            );
-            if (!values) {
-                return;
-            }
-            return (
-                <ViewMetadata modelId={values[0]} modelValue={values[1]} />
-            );
-        };
-
-        beforeEach(() => {
-           api.setupModelAndRender(modelId, View);
-        });
-
-        it('selector passes router root model to selector', () => {
-            api.asserts.view
-                .modelIdIs(modelId)
-                .valueIs('initial-value');
-        });
-    });
-
-    describe('non immutable model cases - selector maps root model', () => {
-        const modelId = 'modelId';
-
-        const View = () => {
-            const model: TestModel = useSyncModelWithSelector<TestModel, TestModel>(
-                m => m,
-                syncModelWithSelectorOptions().setTryPreSelectPolimerImmutableModel(false)
-            );
-            if (!model) {
-                return;
-            }
-            return (
-                <ViewMetadata modelId={model.state.modelId} modelValue={model.state.value} />
-            );
-        };
-
-        beforeEach(() => {
-           api.setupModelAndRender(modelId, View);
-        });
-
-        it('view renders correct data', () => {
-            api.asserts.view
-                .modelIdIs(modelId)
-                .valueIs('initial-value');
-        });
-
-        it('Updates propagated', () => {
-            act(() => {
-                api.router.publishEvent(modelId, 'test-event', 'updated');
-            });
-            api.asserts.view
-                .modelIdIs(modelId)
                 .valueIs('updated');
         });
     });
@@ -322,7 +256,6 @@ describe('useSyncModelWithSelector', () => {
                     {
                         modelId: '',
                         equalityFn: null,
-                        tryPreSelectPolimerImmutableModel: true
                  });
             }).toThrow(new Error('You must provide an equalityFn when using useSyncModelWithSelector'));
         });

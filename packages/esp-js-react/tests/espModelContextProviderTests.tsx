@@ -10,12 +10,12 @@ import {testApi, TestApi} from './testApi/testApi';
 import {renderHook} from '@testing-library/react';
 import * as React from 'react';
 import {Router} from 'esp-js';
-import {TestModel} from './testApi/testModel';
+import {TestModelState} from './testApi/testModel';
 
 describe('EspModelContextProviderTests tests', () => {
     let api: TestApi,
-        testModel1: TestModel,
-        testModel2: TestModel;
+        testModel1: TestModelState,
+        testModel2: TestModelState;
 
     beforeEach(() => {
         api = testApi();
@@ -27,7 +27,7 @@ describe('EspModelContextProviderTests tests', () => {
     // https://testing-library.com/docs/react-testing-library/api/#renderhook-options-initialprops
     const createEspRouterContextProviderWrapper = (
         router: Router,
-        modelsForContextPerRender: TestModel[],
+        modelsForContextPerRender: TestModelState[],
         modelIdForContextPerRender: string[]
     ) => {
 
@@ -71,7 +71,7 @@ describe('EspModelContextProviderTests tests', () => {
     it('useGetModel returns model and changes on re-render', () => {
         const {result, rerender} = renderHook(
             props => {
-                return useGetModel<TestModel>();
+                return useGetModel<TestModelState>();
             },
             {
                 wrapper: createEspRouterContextProviderWrapper(
@@ -100,19 +100,19 @@ describe('EspModelContextProviderTests tests', () => {
             }
         );
 
-        expect(testModel1.state.value).toBe('initial-value');
+        expect(api.router.getModel<TestModelState>('model-id1').value).toBe('initial-value');
         result.current('test-event', 'updated');
-        expect(testModel1.state.value).toBe('updated');
+        expect(api.router.getModel<TestModelState>('model-id1').value).toBe('updated');
         result.current({eventType: 'test-event', event: 'updated2' });
-        expect(testModel1.state.value).toBe('updated2');
+        expect(api.router.getModel<TestModelState>('model-id1').value).toBe('updated2');
 
         rerender();
 
-        expect(testModel2.state.value).toBe('initial-value');
+        expect(api.router.getModel<TestModelState>('model-id2').value).toBe('initial-value');
         result.current('test-event', 'updated');
-        expect(testModel2.state.value).toBe('updated');
+        expect(api.router.getModel<TestModelState>('model-id2').value).toBe('updated');
         result.current({eventType: 'test-event', event: 'updated2' });
-        expect(testModel2.state.value).toBe('updated2');
+        expect(api.router.getModel<TestModelState>('model-id2').value).toBe('updated2');
     });
 
     it('publishModelEventWithEntityKey publishes to correct model and changes on re-render', () => {
@@ -129,22 +129,22 @@ describe('EspModelContextProviderTests tests', () => {
             }
         );
 
-        expect(testModel1.state.value).toBe('initial-value');
-        expect(testModel1.state.entityKey).toBe('');
+        expect(api.router.getModel<TestModelState>('model-id1').value).toBe('initial-value');
+        expect(api.router.getModel<TestModelState>('model-id1').entityKey).toBe('');
         result.current('the-entity-key', 'test-event-with-entity-key', 'updated');
-        expect(testModel1.state.value).toBe('updated');
-        expect(testModel1.state.entityKey).toBe('the-entity-key');
+        expect(api.router.getModel<TestModelState>('model-id1').value).toBe('updated');
+        expect(api.router.getModel<TestModelState>('model-id1').entityKey).toBe('the-entity-key');
         result.current({ entityKey: 'the-entity-key', eventType: 'test-event-with-entity-key', event: 'updated2'});
-        expect(testModel1.state.value).toBe('updated2');
+        expect(api.router.getModel<TestModelState>('model-id1').value).toBe('updated2');
 
         rerender();
 
-        expect(testModel2.state.value).toBe('initial-value');
-        expect(testModel2.state.entityKey).toBe('');
+        expect(api.router.getModel<TestModelState>('model-id2').value).toBe('initial-value');
+        expect(api.router.getModel<TestModelState>('model-id2').entityKey).toBe('');
         result.current('the-entity-key', 'test-event-with-entity-key', 'updated');
-        expect(testModel2.state.value).toBe('updated');
-        expect(testModel2.state.entityKey).toBe('the-entity-key');
+        expect(api.router.getModel<TestModelState>('model-id2').value).toBe('updated');
+        expect(api.router.getModel<TestModelState>('model-id2').entityKey).toBe('the-entity-key');
         result.current({ entityKey: 'the-entity-key', eventType: 'test-event-with-entity-key', event: 'updated2'});
-        expect(testModel2.state.value).toBe('updated2');
+        expect(api.router.getModel<TestModelState>('model-id2').value).toBe('updated2');
     });
 });

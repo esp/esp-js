@@ -73,7 +73,7 @@ const MyConnectedView = connect<MyModel, MyPublishProps>(
 
 ### useSyncModelWithSelector
 
-Hook-based approach using React 18's `useSyncExternalStore`:
+Hook-based approach using React 18's `useSyncExternalStore`. The model emitted by the router is always a frozen immutable snapshot (produced by immer via `ModelBuilder`) — no unwrapping required.
 
 ```tsx
 const orders = useSyncModelWithSelector<OrdersState>(
@@ -84,8 +84,6 @@ const orders = useSyncModelWithSelector<OrdersState>(
         .build()
 );
 ```
-
-If the model exposes a `getEspPolimerImmutableModel()` method, `tryPreSelectPolimerImmutableModel: true` (default) automatically calls it before passing the result to the selector.
 
 ### EspModelContextProvider
 
@@ -139,10 +137,13 @@ export { EspModelContextProvider, useGetModelId, useGetModel, usePublishModelEve
 - Test files: `tests/**/*Tests.tsx`
 - Uses `@testing-library/react` for rendering and interaction
 - `tests/testApi/` — shared test fixtures including mock router and model helpers
+  - `testModel.ts` — `createTestModel(router, modelId)` registers a model via `ModelBuilder`
+  - `testApi.tsx` — `setupTestModel(modelId)` and `setupModel(modelId, model)` helpers
+  - `routerSpy.ts` — `RouterSpy extends Router`, wraps `getModelObservable()` to count subscriptions (does **not** use `Observable.create` — reactive module is internal)
 - Notable test files:
-  - `connectableComponentTests.tsx` — HOC subscription and re-render behaviour
+  - `connectableComponentTests.tsx` — HOC subscription and re-render behaviour; models use `[immerable] = true`
   - `useSyncModelWithSelectorTests.tsx` — hook selector and equality function behaviour
-  - `espModelContextProviderTests.tsx`, `espRouterContextProviderTests.tsx` — context hook tests
+  - `espModelContextProviderTests.tsx`, `espRouterContextProviderTests.tsx` — context hook tests; use `router.getModel()` to read current snapshot after events
   - `viewBinderTests.tsx` — `@viewBinding` resolution logic
 
 ## Common Tasks
@@ -188,3 +189,5 @@ class MyModel extends ModelBase { ... }
 - `useSyncModelWithSelector` uses `useSyncExternalStoreWithSelector` from React 18 — requires React 18 or the `use-sync-external-store` shim
 - `ConnectableComponent` re-renders on every model update regardless of selector — for performance-sensitive cases prefer `useSyncModelWithSelector` with an equality function
 - `@viewBinding` metadata is stored on the **constructor function**, not the instance — `createViewForModel` must receive the model instance (it reads `model.constructor`)
+- The model received by hooks and `ConnectableComponent` is always a **frozen immutable snapshot** from immer — never mutate it directly, and do not hold references across dispatches (the reference becomes stale)
+- Class instances used as model state must include `[immerable] = true` from `immer`; subclasses inherit `@viewBinding` metadata via ES6 prototype chain (`class B extends A` means `B._viewMetadata` resolves via `Object.getPrototypeOf(B) === A`)

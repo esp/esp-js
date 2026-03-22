@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `Router` sits between event publishers and models: publishers call `router.publishEvent(modelId, eventType, event)`, the router queues and dispatches events through ordered observation stages, and the mutated model is then pushed to model observers. The framework supports both OO and immutable (Redux-like) modeling patterns and is designed for complex composite single-page applications.
+ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `Router` sits between event publishers and models: publishers call `router.publishEvent(modelId, eventType, event)`, the router queues and dispatches events through ordered observation stages, and a frozen immutable snapshot of the mutated model is then pushed to model observers. The framework uses an immer-based functional modeling pattern (`ModelBuilder`) and is designed for complex composite single-page applications.
 
-The monorepo contains the core router, dependency injection container, React integration, immutable model support, RxJS utilities, a composite-app UI framework, and supporting packages.
+The monorepo contains the core router, dependency injection container, and React integration.
 
 ## Monorepo Structure
 
@@ -34,7 +34,7 @@ esp-js          (no esp deps)
 - **Package manager**: npm (workspaces)
 - **Monorepo orchestration**: Lerna 8 (`lerna.json`)
 - **Per-package build scripts**: delegated to `nps` (`package-scripts.js` at root defines shared scripts)
-- **Versioning**: Lerna fixed-mode — all packages share the same version (`8.1.0`)
+- **Versioning**: Lerna fixed-mode — all packages share the same version (`8.1.0`; next release targets `9.0.0`)
 - **Publishing**: `forcePublish: true` — every package is always published together
 
 ### Key root commands
@@ -101,9 +101,9 @@ npm run test-ci              # jest (no watch, CI mode)
 5. `npm test` from inside a package for watch-mode tests
 6. `npm run build-prod && npm test` from root before committing
 
-**Adding a new package**: use `yarn create-package` (invokes `nps create-package`).
+**Adding a new package**: invoke `nps create-package` from the repo root.
 
-**Local linking**: Yarn workspaces handle symlinking automatically — no `yarn link` required.
+**Local linking**: npm workspaces handle symlinking automatically — no manual linking required.
 
 ## Key Architectural Patterns
 
@@ -115,13 +115,15 @@ npm run test-ci              # jest (no watch, CI mode)
    - `normal` — primary mutation stage
    - `committed` — only fires if `eventContext.commit()` was called during `normal`
    - `final` — fires regardless of commit; observe after all mutation
-3. After all events for a model are processed, the model is pushed to model observers (`router.getModelObservable(modelId)`)
+3. After all events for a model are processed, a frozen immutable snapshot of the model is pushed to model observers (`router.getModelObservable(modelId)`)
 
-### OO model pattern (esp-js core)
+### Functional model pattern (esp-js core)
 
-- Extend `ModelBase` (from `esp-js`, re-exported by `esp-js-ui`)
-- Decorate handler methods with `@observeEvent(eventType)` or `@observeEvent(eventType, ObservationStage.preview)`
-- Call `this.observeEvents()` in the constructor to register the model and wire decorators
+- Create a plain object or class instance as the initial state
+- Register with `ModelBuilder`: `new ModelBuilder(router, modelId, initialState).withEventHandler(...).registerWithRouter()`
+- Event handlers receive an immer `draft` — mutate it directly; the router produces a new frozen snapshot after all handlers run
+- Preview handlers and effect handlers receive `Readonly<TModel>` (no draft)
+- Class instances used as model state must include `[immerable] = true` (from `immer`) for immer to handle them
 
 ### React integration (esp-js-react)
 
@@ -129,13 +131,6 @@ npm run test-ci              # jest (no watch, CI mode)
 - `ConnectableComponent` / `connect()` — subscribes to a model by `modelId`, re-renders on model updates
 - `useSyncModelWithSelector` — hook-based subscription with selector and equality function
 - `@viewBinding(MyView)` decorator on model class — declaratively binds a React component to the model
-
-### Composite app (esp-js-ui)
-
-- `Shell` — bootstraps the container, router, RegionManager, ViewRegistryModel; loads modules
-- `ModuleBase` — abstract base for feature modules; decorated with `@espModule(key, name)`; each module gets a child DI container
-- `ViewFactoryBase` — abstract base for view factories; decorated with `@viewFactory(viewKey, shortName)`; creates model+view pairs
-- `RegionManager` — manages named regions; views are added/removed dynamically via `regionManager.addRegionItem(regionName, item)`
 
 ## Coding Conventions
 
@@ -156,6 +151,4 @@ npm run test-ci              # jest (no watch, CI mode)
 | `__jest__/jest.config.js` | Shared Jest configuration |
 | `__jest__/typeScriptPreprocessor.ts` | Jest TypeScript transform |
 | `tslint.json` | Lint rules applied during webpack build |
-| `packages/esp-js-ui/src/ui/dependencyInjection/systemContainerConst.ts` | Well-known DI container key constants |
-| `packages/esp-js-ui/src/ui/dependencyInjection/systemContainerConfiguration.ts` | Registers all framework services into the root container |
 | `webpack/peerDepsExternalsPlugin.js` | Auto-externalizes peer dependencies in webpack bundles |

@@ -18,7 +18,6 @@
 
 import * as esp from '../../src';
 import {ModelBuilder} from '../../src/model/modelBuilder';
-import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -40,6 +39,12 @@ describe('Router', () => {
             _model5PostProcessCount = 0,
             _model5EventsProcessed: string[] = [];
 
+        // Counts for the 'calls a models post processors in order' test
+        let _model1Event1Count = 0;
+        let _model2Event1Count = 0;
+        let _model3Event1Count = 0;
+        let _model1PreEventPreProcessingLen = 0;
+
         beforeEach(() => {
             _model1 = { };
             _model2 = { };
@@ -51,41 +56,48 @@ describe('Router', () => {
             _model5PreProcessCount = 0;
             _model5PostProcessCount = 0;
             _model5EventsProcessed = [];
+            _model1Event1Count = 0;
+            _model2Event1Count = 0;
+            _model3Event1Count = 0;
+            _model1PreEventPreProcessingLen = 0;
 
             new ModelBuilder(_router, 'modelId1', _model1)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({model, eventsProcessed}); })
+                .withEventHandler('startEvent', () => {
+                    _router.publishEvent('modelId3', 'Event1', 'theEvent');
+                    _router.publishEvent('modelId2', 'Event1', 'theEvent');
+                    _router.publishEvent('modelId1', 'Event1', 'theEvent');
+                })
+                .withEventHandler('Event1', () => {
+                    _model1Event1Count++;
+                    _model1PreEventPreProcessingLen = _modelsSentForPreProcessing.length;
+                })
                 .registerWithRouter();
             new ModelBuilder(_router, 'modelId2', _model2)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({model, eventsProcessed}); })
+                .withEventHandler('Event1', () => {
+                    _model2Event1Count++;
+                })
                 .registerWithRouter();
             new ModelBuilder(_router, 'modelId3', _model3)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({model, eventsProcessed}); })
+                .withEventHandler('Event1', () => {
+                    _model3Event1Count++;
+                })
                 .registerWithRouter();
             new ModelBuilder(_router, 'modelId5', _model5)
                 .withPreEventProcessor(() => { _model5PreProcessCount++; })
                 .withPostEventProcessor((model, eventsProcessed) => { _model5PostProcessCount++; _model5EventsProcessed = eventsProcessed; })
+                .withEventHandler('startEvent', () => { /* noop */ })
                 .registerWithRouter();
             new ModelBuilder(_router, 'modelId6', _model6)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({model, eventsProcessed}); })
+                .withEventHandler('startEvent', () => { /* noop */ })
                 .registerWithRouter();
-
-            _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
-                _router.publishEvent('modelId3', 'Event1', 'theEvent');
-                _router.publishEvent('modelId2', 'Event1', 'theEvent');
-                _router.publishEvent('modelId1', 'Event1', 'theEvent');
-            });
-
-            _router.getEventObservable('modelId5', 'startEvent').subscribe(() => {
-                /* noop */
-            });
-
-            _router.getEventObservable('modelId6', 'startEvent').subscribe(() => {
-                /* noop */
-            });
         });
 
         it('calls pre processor before processing the first event (via withPreEventProcessor)', () => {
@@ -126,52 +138,86 @@ describe('Router', () => {
         });
 
         it('calls a models post processors in order before processing the next models events', () => {
-            let passed = true, callbackCount = 0;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                callbackCount++;
-            });
-            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
-                callbackCount++;
-                passed = passed && _modelsSentForPostProcessing.length === 2 && _modelsSentForPostProcessing[1].model === _model3;
-            });
-            _router.getEventObservable('modelId3', 'Event1').subscribe(() => {
-                callbackCount++;
-                passed = passed && _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].model === _model1;
-            });
-            _router.publishEvent('modelId1', 'startEvent', 'theEvent');
-            passed = passed && _modelsSentForPostProcessing.length === 3 && _modelsSentForPostProcessing[2].model === _model2;
+            let passed = true;
+            // modelId3's Event1 handler checks that modelId1's postProcessor ran before modelId3's
+            new ModelBuilder(_router, 'modelId3Check', _model3)
+                .withEventHandler('Event1', () => {
+                    passed = passed && _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].model === _model1;
+                })
+                .registerWithRouter();
+
+            // We need to verify the ordering — reuse the _model3Event1Count to detect
+            // When model3 processes Event1: postProcessing should have only model1's postProcessor called
+            // When model2 processes Event1: postProcessing should have model1's + model3's postProcessors called
+            // This is checked via the _modelsSentForPostProcessing array
+
+            // Actually the beforeEach already sets up event handlers for model1, 2, 3 with appropriate callbacks.
+            // The startEvent handler on modelId1 publishes to modelId3, modelId2, modelId1 in that order.
+            // After model1 processes startEvent: postProcessor for model1 fires → _modelsSentForPostProcessing[0].model === _model1
+            // Then model3 processes Event1: at that point _modelsSentForPostProcessing has 1 entry (model1)
+            // Then model2 processes Event1: at that point _modelsSentForPostProcessing has 2 entries (model1, model3)
+            // Then model1 processes Event1: at that point _modelsSentForPostProcessing has 3 entries (model1, model3, model2)
+
+            let model3Passed = false;
+            let model2Passed = false;
+
+            // Rebuild using fresh router since models are already registered
+            const router2 = new esp.Router();
+            const m1 = {}, m2 = {}, m3 = {};
+            const postProcessors = [];
+
+            new ModelBuilder(router2, 'modelId1', m1)
+                .withPreEventProcessor((model) => {})
+                .withPostEventProcessor((model, eventsProcessed) => { postProcessors.push({model, eventsProcessed}); })
+                .withEventHandler('startEvent', () => {
+                    router2.publishEvent('modelId3', 'Event1', 'theEvent');
+                    router2.publishEvent('modelId2', 'Event1', 'theEvent');
+                    router2.publishEvent('modelId1', 'Event1', 'theEvent');
+                })
+                .withEventHandler('Event1', () => {})
+                .registerWithRouter();
+            new ModelBuilder(router2, 'modelId2', m2)
+                .withPostEventProcessor((model, eventsProcessed) => { postProcessors.push({model, eventsProcessed}); })
+                .withEventHandler('Event1', () => {
+                    model2Passed = postProcessors.length === 2 && postProcessors[1].model === m3;
+                })
+                .registerWithRouter();
+            new ModelBuilder(router2, 'modelId3', m3)
+                .withPostEventProcessor((model, eventsProcessed) => { postProcessors.push({model, eventsProcessed}); })
+                .withEventHandler('Event1', () => {
+                    model3Passed = postProcessors.length === 1 && postProcessors[0].model === m1;
+                })
+                .registerWithRouter();
+            router2.publishEvent('modelId1', 'startEvent', 'theEvent');
+            passed = passed && model3Passed && model2Passed;
+            passed = passed && postProcessors.length === 3 && postProcessors[2].model === m2;
             expect(passed).toBe(true);
-            expect(callbackCount).toBe(3);
         });
 
         it('calls a models pre processors before dispatching to processors', () => {
             let passed = false;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                passed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
-            });
+            // modelId1 already has a pre-event-processor registered that adds to _modelsSentForPreProcessing
+            // The Event1 handler on modelId1 checks the length
+            // Re-use the counter captured during Event1 dispatch
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
+            // When Event1 fires on modelId1, preProcessor should have been called (adding model1)
+            passed = _model1PreEventPreProcessingLen === 1 && _modelsSentForPreProcessing[0] === _model1;
             expect(passed).toBe(true);
         });
 
         it('only calls the pre event processor for the model the event was targeted at', () => {
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-            });
             _router.publishEvent('modelId1', 'Event1', 'theEvent');
             const passed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === _model1;
             expect(passed).toBe(true);
         });
 
         it('should allow a preEventProcessor to publish an event', () => {
+            let wasPublished = false;
             new ModelBuilder(_router, 'modelId4', _model1)
                 .withPreEventProcessor(() => { _router.publishEvent('modelId4', 'Event2', 'theEvent'); })
+                .withEventHandler('Event1', () => { /* noop */ })
+                .withEventHandler('Event2', () => { wasPublished = true; })
                 .registerWithRouter();
-            let wasPublished = false;
-            _router.getEventObservable('modelId4', 'Event2').subscribe(() => {
-                wasPublished = true;
-            });
-            _router.getEventObservable('modelId4', 'Event1').subscribe(() => {
-                /* noop */
-            });
             _router.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(wasPublished).toEqual(true);
         });
@@ -189,13 +235,9 @@ describe('Router', () => {
                         _router.publishEvent('modelId4', 'Event2', 'theEvent2');
                     }
                 })
+                .withEventHandler('Event1', () => { eventReceived = true; })
+                .withEventHandler('Event2', () => { /* observe Event2 so it can be enqueued when postProcessor publishes it */ })
                 .registerWithRouter();
-            _router.getEventObservable('modelId4', 'Event1').subscribe(({event, context, model}: any) => {
-                eventReceived = true;
-            });
-            _router.getEventObservable('modelId4', 'Event2').subscribe(() => {
-                /* observe Event2 so it can be enqueued when postProcessor publishes it */
-            });
             _router.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(eventReceived).toBe(true);
             // preProcessor was called twice (once for Event1, once for Event2)

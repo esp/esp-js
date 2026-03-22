@@ -31,7 +31,6 @@ describe('Router', () => {
 
         let _preProcessorReceivedCount = 0;
         let _eventReceivedCount1 = 0;
-        let _eventReceivedCount2 = 0;
         let _postProcessorReceivedCount = 0;
         let _updateReceivedCount1 = 0;
         let _updateReceivedCount2 = 0;
@@ -63,16 +62,13 @@ describe('Router', () => {
                         _router.removeModel('modelId1');
                     }
                 })
+                .withEventHandler('Event1', () => {
+                    _eventReceivedCount1++;
+                    if (_flags.removeAtDispatch) {
+                        _router.removeModel('modelId1');
+                    }
+                })
                 .registerWithRouter();
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                _eventReceivedCount1++;
-                if (_flags.removeAtDispatch) {
-                    _router.removeModel('modelId1');
-                }
-            });
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                _eventReceivedCount2++;
-            });
             _router.getModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount1++;
                 if (_flags.removeAtUpdate) {
@@ -84,25 +80,14 @@ describe('Router', () => {
             });
             // the model gets pumped on initial observe so reset these here
             _preProcessorReceivedCount = 0;
-            _eventReceivedCount1 =0;
-            _eventReceivedCount2 =0;
-            _postProcessorReceivedCount  =0;
+            _eventReceivedCount1 = 0;
+            _postProcessorReceivedCount = 0;
             _updateReceivedCount1 = 0;
             _updateReceivedCount2 = 0;
         });
 
         it('throws if arguments incorrect', () => {
             expect(() => {_router.removeModel(); }).toThrow(new Error('The modelId argument should be a string'));
-        });
-
-        it('should onComplete all event streams when the model is removed', () => {
-            let didComplete = false;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(
-                () => {},
-                () => didComplete = true
-            );
-            _router.removeModel('modelId1');
-            expect(didComplete).toEqual(true);
         });
 
         it('should onComplete all update streams when the model is removed', () => {
@@ -120,7 +105,6 @@ describe('Router', () => {
             function expectReceived(options) {
                 expect(_preProcessorReceivedCount).toEqual(options.atPre);
                 expect(_eventReceivedCount1).toEqual(options.atEvent1);
-                expect(_eventReceivedCount2).toEqual(options.atEvent2);
                 expect(_postProcessorReceivedCount).toEqual(options.atPost);
                 expect(_updateReceivedCount1).toEqual(options.atUpdate1);
                 expect(_updateReceivedCount2).toEqual(options.atUpdate2);
@@ -132,7 +116,6 @@ describe('Router', () => {
                 expectReceived({
                     atPre: 1,
                     atEvent1: 0,
-                    atEvent2: 0,
                     atPost: 0,
                     atUpdate1: 0,
                     atUpdate2: 0
@@ -145,7 +128,6 @@ describe('Router', () => {
                 expectReceived({
                     atPre: 1,
                     atEvent1: 1,
-                    atEvent2: 0,
                     atPost: 0,
                     atUpdate1: 0,
                     atUpdate2: 0
@@ -158,7 +140,6 @@ describe('Router', () => {
                 expectReceived({
                     atPre: 1,
                     atEvent1: 1,
-                    atEvent2: 1,
                     atPost: 1,
                     atUpdate1: 0,
                     atUpdate2: 0
@@ -171,7 +152,6 @@ describe('Router', () => {
                 expectReceived({
                     atPre: 1,
                     atEvent1: 1,
-                    atEvent2: 1,
                     atPost: 1,
                     atUpdate1: 1,
                     atUpdate2: 0

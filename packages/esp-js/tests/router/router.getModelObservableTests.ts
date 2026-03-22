@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
@@ -30,8 +31,12 @@ describe('Router', () => {
     describe('.getModelObservable()', () => {
 
         beforeEach(() => {
-            registerModel(_router, 'modelId1', {number:0});
-            registerModel(_router, 'modelId2', {number:0});
+            new ModelBuilder(_router, 'modelId1', {number:0})
+                .withEventHandler('Event1', () => {})
+                .registerWithRouter();
+            new ModelBuilder(_router, 'modelId2', {number:0})
+                .withEventHandler('Event1', () => {})
+                .registerWithRouter();
         });
 
         it('throws if arguments incorrect', () => {
@@ -41,7 +46,7 @@ describe('Router', () => {
 
         it('dispatches model once registered', () => {
             let model3UpdateCount = 0;
-            registerModel(_router, 'modelId3', {number:0});
+            new ModelBuilder(_router, 'modelId3', {number:0}).registerWithRouter();
             _router.getModelObservable('modelId1').subscribe(() => {
                 model3UpdateCount++;
             });
@@ -50,11 +55,9 @@ describe('Router', () => {
 
         it('dispatches model updates to observers by modelid', () => {
             let model1UpdateCount = 0, model2UpdateCount = 0;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
-            _router.getEventObservable('modelId2', 'Event1').subscribe(() => { /*noop*/  });
             _router.getModelObservable('modelId2').subscribe(() => {
                 model2UpdateCount++;
             });
@@ -66,7 +69,6 @@ describe('Router', () => {
 
         it('doesn\'t dispatch to disposed update observers', () => {
             let model1UpdateCount = 0;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
             let disposable = _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
@@ -92,81 +94,101 @@ describe('Router', () => {
             });
             expect(model1UpdateCount).toBe(1);
             expect(model2UpdateCount).toBe(1);
-            _router.getEventObservable('modelId1', 'StartEvent').subscribe(() => {
-                _router.publishEvent('modelId1', 'Event1', 1);
-                _router.publishEvent('modelId2', 'Event1', 2);
-                _router.publishEvent('modelId1', 'Event1', 3);
-                _router.publishEvent('modelId2', 'Event1', 4);
-            });
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                model1EventCount++;
-                // each model should have only had an initial update dispatched by this time
-                check1 = model1UpdateCount === 1 && model2UpdateCount ===1;
-            });
-            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
-                // by the time we process this event for model 2, model 1
-                // should have processed both it's events AND have dispatched it's model
-                model2EventCount++;
-                check2 = model1UpdateCount === 2 && model2UpdateCount === 1 && model1EventCount === 2;
-            });
-            _router.publishEvent('modelId1', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toEqual(2);
-            expect(model1EventCount).toEqual(2);
-            expect(model2UpdateCount).toEqual(2);
-            expect(model2EventCount).toEqual(2);
-            expect(check1).toEqual(true);
-            expect(check2).toEqual(true);
+
+            // We need a new model setup for this test since modelId1/2 are already registered
+            const router2 = new esp.Router();
+            let m1UpdateCount = 0, m2UpdateCount = 0, m1EventCount = 0, m2EventCount = 0;
+            let c1 = false, c2 = false;
+            new ModelBuilder(router2, 'modelId1', {number: 0})
+                .withEventHandler('StartEvent', () => {
+                    router2.publishEvent('modelId1', 'Event1', 1);
+                    router2.publishEvent('modelId2', 'Event1', 2);
+                    router2.publishEvent('modelId1', 'Event1', 3);
+                    router2.publishEvent('modelId2', 'Event1', 4);
+                })
+                .withEventHandler('Event1', () => {
+                    m1EventCount++;
+                    c1 = m1UpdateCount === 1 && m2UpdateCount === 1;
+                })
+                .registerWithRouter();
+            new ModelBuilder(router2, 'modelId2', {number: 0})
+                .withEventHandler('Event1', () => {
+                    m2EventCount++;
+                    c2 = m1UpdateCount === 2 && m2UpdateCount === 1 && m1EventCount === 2;
+                })
+                .registerWithRouter();
+            router2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
+            router2.getModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
+            expect(m1UpdateCount).toBe(1);
+            expect(m2UpdateCount).toBe(1);
+            router2.publishEvent('modelId1', 'StartEvent', 'payload');
+            expect(m1UpdateCount).toEqual(2);
+            expect(m1EventCount).toEqual(2);
+            expect(m2UpdateCount).toEqual(2);
+            expect(m2EventCount).toEqual(2);
+            expect(c1).toEqual(true);
+            expect(c2).toEqual(true);
         });
 
         it('processes events published during model dispatch', () => {
             let event2Received = false;
             let publishedEvent2 = false;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /* noop */ });
-            _router.getEventObservable('modelId1', 'Event2').subscribe(() => {
-                event2Received = true;
-            });
-            _router.getModelObservable('modelId1').subscribe(() => {
-                if(!publishedEvent2) {
+            // modelId1 already has Event1 handler registered in beforeEach
+            // Need a new router for this test to add Event2 handler
+            const router2 = new esp.Router();
+            new ModelBuilder(router2, 'modelId1', {number: 0})
+                .withEventHandler('Event1', () => {})
+                .withEventHandler('Event2', () => {
+                    event2Received = true;
+                })
+                .registerWithRouter();
+            router2.getModelObservable('modelId1').subscribe(() => {
+                if (!publishedEvent2) {
                     publishedEvent2 = true;
-                    _router.publishEvent('modelId1', 'Event2', 1);
+                    router2.publishEvent('modelId1', 'Event2', 1);
                 }
             });
-            _router.publishEvent('modelId1', 'Event1', 'payload');
+            router2.publishEvent('modelId1', 'Event1', 'payload');
             expect(event2Received).toBe(true);
         });
 
         it('only dispatches changes for models which processed an event', () => {
-            let model1UpdateCount = 0, model2UpdateCount = 0;
-            _router.getEventObservable('modelId2', 'StartEvent').subscribe(() => {
-                _router.publishEvent('modelId2', 'Event1', 'payload');
-            });
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
-            _router.getModelObservable('modelId1').subscribe(() => {
-                model1UpdateCount++;
-            });
-            expect(model1UpdateCount).toBe(1);
-            _router.getEventObservable('modelId2', 'Event1').subscribe(() => { /*noop*/  });
-            _router.getModelObservable('modelId2').subscribe(() => {
-                model2UpdateCount++;
-            });
-            expect(model2UpdateCount).toBe(1);
-            _router.publishEvent('modelId2', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toBe(1);
-            expect(model2UpdateCount).toBe(2);
+            // Uses fresh router to avoid conflicts with beforeEach registered models
+            const router2 = new esp.Router();
+            let m1UpdateCount = 0, m2UpdateCount = 0;
+            new ModelBuilder(router2, 'modelId1', {number: 0})
+                .withEventHandler('Event1', () => {})
+                .registerWithRouter();
+            new ModelBuilder(router2, 'modelId2', {number: 0})
+                .withEventHandler('StartEvent', () => {
+                    router2.publishEvent('modelId2', 'Event1', 'payload');
+                })
+                .withEventHandler('Event1', () => {})
+                .registerWithRouter();
+            router2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
+            expect(m1UpdateCount).toBe(1);
+            router2.getModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
+            expect(m2UpdateCount).toBe(1);
+            router2.publishEvent('modelId2', 'StartEvent', 'payload');
+            expect(m1UpdateCount).toBe(1);
+            expect(m2UpdateCount).toBe(2);
         });
 
         it('does not dispatches changes when publishing to a model that is not listening to said event', () => {
-            let model1UpdateCount = 0, model2UpdateCount = 0;
-            _router.getModelObservable('modelId1').subscribe(() => {
-                model1UpdateCount++;
-            });
-            expect(model1UpdateCount).toBe(1);
-            _router.publishEvent('modelId1', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toBe(1);
-            // now observe and publish again
-            _router.getEventObservable('modelId1', 'StartEvent').subscribe(() => { /*noop*/  });
-            _router.publishEvent('modelId1', 'StartEvent', 'payload');
-            expect(model1UpdateCount).toBe(2);
+            // Uses a fresh router since we need a model without any Event1 handler
+            const router2 = new esp.Router();
+            let m1UpdateCount = 0;
+            new ModelBuilder(router2, 'modelId1', {number: 0})
+                .withEventHandler('StartEvent', () => {})
+                .registerWithRouter();
+            router2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
+            expect(m1UpdateCount).toBe(1);
+            // publish an event the model does NOT listen to — no model update
+            router2.publishEvent('modelId1', 'NotObservedEvent', 'payload');
+            expect(m1UpdateCount).toBe(1);
+            // now publish an event the model DOES listen to
+            router2.publishEvent('modelId1', 'StartEvent', 'payload');
+            expect(m1UpdateCount).toBe(2);
         });
 
         it.skip('should dispatch change to models if event if only one event was processed', () => {
@@ -176,7 +198,6 @@ describe('Router', () => {
 
         it('should pump the last model on observation', () => {
             let model1UpdateCount = 0, model1UpdateCount2 = 0;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
             _router.getModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
@@ -194,8 +215,7 @@ describe('Router', () => {
             // this is a different edge case to the 'should pump the last model on observation'
             // it appears that there was a bug whereby if there are no model observers and an event loop completes,
             // the router/subject doesn't set the streams model as there are no observers.
-            let model1UpdateCount = 0, model1UpdateCount2 = 0;
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => { /*noop*/  });
+            let model1UpdateCount = 0;
             expect(model1UpdateCount).toBe(0);
             _router.publishEvent('modelId1', 'Event1', 'payload');
             _router.getModelObservable('modelId1').subscribe(() => {

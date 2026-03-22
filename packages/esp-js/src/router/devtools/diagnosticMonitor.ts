@@ -31,7 +31,6 @@ export interface DiagnosticMonitor extends DisposableBase {
     preProcessingModel(): void;
     dispatchingEvents(): void;
     dispatchingEvent(eventType: string, stage: string): void;
-    dispatchingViaDirective(functionName: string): void;
     finishDispatchingEvent(): void;
     postProcessingModel(): void;
     endingModelEventLoop(): void;

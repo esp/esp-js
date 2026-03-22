@@ -39,7 +39,7 @@ export interface EventStreamsRegistration {
     final: AutoConnectedObservable<EventEnvelope<any, any>>;
 }
 
-export type EventRecord = {entityKey: string, eventType: string, event: any, action?: (model: any) => void};
+export type EventRecord = {entityKey: string, eventType: string, event: any};
 
 interface InternalEventStreamsRegistration {
     streams: EventStreamsRegistration;

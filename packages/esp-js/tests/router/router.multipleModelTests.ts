@@ -36,20 +36,35 @@ describe('Router', () => {
             _model2OptionsHelper,
             _model3OptionsHelper;
 
+        // Track which model received the event and what event was received
+        let _receivedModel2 = null;
+        let _receivedEvent2 = null;
+        let _model1ReceivedEvent = false;
+
         beforeEach(() => {
             _model1 = { id: 'model1'  };
             _model2 = { id: ' model2' };
             _model3 = { id: ' model3' };
+            _receivedModel2 = null;
+            _receivedEvent2 = null;
+            _model1ReceivedEvent = false;
             _model1OptionsHelper = createOptionsHelper();
             _model2OptionsHelper = createOptionsHelper();
             _model3OptionsHelper = createOptionsHelper();
             new ModelBuilder(_router, _model1.id, _model1)
                 .withPreEventProcessor(_model1OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model1OptionsHelper.options.postEventProcessor)
+                .withEventHandler('fooEvent', () => {
+                    _model1ReceivedEvent = true;
+                })
                 .registerWithRouter();
             new ModelBuilder(_router, _model2.id, _model2)
                 .withPreEventProcessor(_model2OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model2OptionsHelper.options.postEventProcessor)
+                .withEventHandler<number>('fooEvent', (draft, event, ctx) => {
+                    _receivedModel2 = _model2;
+                    _receivedEvent2 = event;
+                })
                 .registerWithRouter();
             new ModelBuilder(_router, _model3.id, _model3)
                 .withPreEventProcessor(_model3OptionsHelper.options.preEventProcessor)
@@ -74,27 +89,16 @@ describe('Router', () => {
         }
 
         it('should deliver correct model and event to target event observers', () => {
-            let receivedModel2, receivedEvent2, model1ReceivedEvent = false;
-            _router.getEventObservable(_model1.id, 'fooEvent').subscribe(() => {
-                model1ReceivedEvent = true;
-            });
-            _router.getEventObservable(_model2.id, 'fooEvent').subscribe(({event, context, model}) => {
-                receivedModel2 = model;
-                receivedEvent2 = event;
-            });
             _router.publishEvent(_model2.id, 'fooEvent', 1);
-            expect(receivedModel2).toBeDefined();
-            expect(receivedModel2).toBe(_model2);
-            expect(receivedEvent2).toBeDefined();
-            expect(receivedEvent2).toEqual(1);
-            expect(model1ReceivedEvent).toBe(false);
-
+            expect(_receivedModel2).toBeDefined();
+            expect(_receivedModel2).toBe(_model2);
+            expect(_receivedEvent2).toBeDefined();
+            expect(_receivedEvent2).toEqual(1);
+            expect(_model1ReceivedEvent).toBe(false);
         });
 
         it('should dispatch updates for the child model only', () => {
             let model1UpdateCount = 0, model2UpdateCount = 0;
-            _router.getEventObservable(_model1.id, 'fooEvent').subscribe(({event, context, model}) => { /* noop */});
-            _router.getEventObservable(_model2.id, 'fooEvent').subscribe(({event, context, model}) => { /* noop */});
             _router.getModelObservable(_model1.id).subscribe(() => {
                 model1UpdateCount++;
             });

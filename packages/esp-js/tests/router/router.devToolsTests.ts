@@ -17,7 +17,7 @@
 // notice_end
 
 import {Router} from '../../src';
-import {registerModel} from '../testApi/testHelpers';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router Dev Tools', () => {
 
@@ -25,9 +25,9 @@ describe('Router Dev Tools', () => {
 
     const setup = () => {
         _router = new Router();
-        registerModel(_router, 'modelId1', {});
-        _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
-        });
+        new ModelBuilder(_router, 'modelId1', {})
+            .withEventHandler('startEvent', () => {})
+            .registerWithRouter();
         _router.getModelObservable('modelId1').subscribe(m => {
         });
     };

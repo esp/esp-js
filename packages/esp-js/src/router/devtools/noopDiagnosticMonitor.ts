@@ -52,10 +52,7 @@ export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticM
         
     }
     dispatchingEvent(eventType: string, stage: string): void {
-        
-    }
-    dispatchingViaDirective(functionName: string): void {
-        
+
     }
     finishDispatchingEvent(): void {
         

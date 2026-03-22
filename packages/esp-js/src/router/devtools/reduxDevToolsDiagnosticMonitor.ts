@@ -146,10 +146,6 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    dispatchingViaDirective(functionName: string): void {
-
-    }
-
     finishDispatchingEvent(): void {
 
     }

@@ -1,4 +1,4 @@
-// Auto-generated 
+// Internal only — not part of the public API
 export * from './diagnosticMonitor';
 export * from './noopDiagnosticMonitor';
 export * from './reduxDevToolsConnector';

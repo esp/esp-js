@@ -16,31 +16,30 @@
  */
 // notice_end
 
-import {DefaultModelAddress, ModelAddress, EventContext, EventRecord, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
-import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
-import {Guard, Health, HealthIndicator, Logger, utils} from '../system';
+import {DefaultModelAddress, ModelAddress, EventContext, ObservationStage, Status} from './';
+import {State} from './state';
+import {Observable, Subject} from '../reactive';
+import {Guard, Logger, utils} from '../system';
 import {DisposableBase} from '../system/disposables';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
-import {EventStreamsRegistration} from './modelRecord';
+import {EventRecord, ModelRecord} from './modelRecord';
 import {DefaultEventContext} from './eventContext';
 import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor, reduxDevToolsDetectedAndEnabledInEsp} from './devtools';
 import {ModelConfig, PublishDelegate} from '../model/types';
+import {Subscribable} from '../model/subscribable';
 import {produce, freeze} from 'immer';
 
 let _log = Logger.create('Router');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
-const _RUN_ACTION_EVENT_NAME = '__runAction';
-
-export class Router extends DisposableBase implements HealthIndicator {
+export class Router extends DisposableBase {
     private _models: Map<string, ModelRecord>;
     private _dispatchSubject: Subject<Envelope>;
     private _haltingException: Error;
     private _state: State;
     private _onErrorHandlers: Array<(error: Error) => void>;
     private _diagnosticMonitor: DiagnosticMonitor;
-    private _currentHealth = Health.builder(this.healthIndicatorName).isHealthy().build();
 
     public constructor() {
         super();
@@ -59,14 +58,6 @@ export class Router extends DisposableBase implements HealthIndicator {
 
     public get currentStatus(): Status {
         return this._state.currentStatus;
-    }
-
-    public get healthIndicatorName(): string {
-        return 'Router';
-    }
-
-    public health(): Health {
-        return this._currentHealth;
     }
 
     public addModel<TModel>(modelId: string, initialModel: TModel, config: ModelConfig<TModel>): void {
@@ -130,24 +121,6 @@ export class Router extends DisposableBase implements HealthIndicator {
             this._models.delete(modelId);
             modelRecord.dispose();
             this._dispatchSubject.onNext({modelId: modelId, model: undefined, dispatchType: DispatchType.ModelDelete});
-        }
-    }
-
-    /** @internal Used by reactive utilities (subscribeOn, streamFor) to schedule callbacks on the dispatch loop. Not public API.
-     * @deprecated */
-    public _runAction<TModel>(modelId: string, action: (model: TModel) => void) {
-        this._throwIfHaltedOrDisposed();
-        Guard.isString(modelId, 'modelId must be a string');
-        Guard.isFunction(action, 'action must be a function');
-        let modelRecord = this._models.get(modelId);
-        if (!modelRecord || !modelRecord.hasModel) {
-            throw new Error('Can not run action as model with id [' + modelId + '] not registered');
-        }
-        modelRecord.eventQueue.push({entityKey: null, eventType: _RUN_ACTION_EVENT_NAME, event: null, action: action});
-        try {
-            this._purgeEventQueues();
-        } catch (err) {
-            this._halt(err);
         }
     }
 
@@ -250,99 +223,7 @@ export class Router extends DisposableBase implements HealthIndicator {
         });
     }
 
-    public getEventObservable<TEvent, TModel>(modelId: string, eventType: string, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
-        return Observable.create<EventEnvelope<TEvent, TModel>>(o => {
-            this._throwIfHaltedOrDisposed();
-            Guard.isString(modelId, 'The modelId argument should be a string');
-            Guard.isString(eventType, 'The eventType must be a string');
-            Guard.isDefined(modelId, 'The modelId argument should be defined');
-            stage = this._tryDefaultObservationStage(stage);
-            let modelRecord = this._getOrCreateModelRecord(modelId);
-            let eventStreamDetails: EventStreamsRegistration = modelRecord.getOrCreateEventStreamsRegistration(
-                eventType,
-                <Observable<EventEnvelope<any, any>>>this._dispatchSubject
-            );
-            switch (stage) {
-                case ObservationStage.preview:
-                    return eventStreamDetails.preview.subscribe(o);
-                case ObservationStage.normal:
-                    return eventStreamDetails.normal.subscribe(o);
-                case ObservationStage.committed:
-                    return eventStreamDetails.committed.subscribe(o);
-                case ObservationStage.final:
-                    return eventStreamDetails.final.subscribe(o);
-                case ObservationStage.all:
-                    return eventStreamDetails.all.subscribe(o);
-                default:
-                    throw new Error(`Unknown stage '${stage}' requested for eventType ${eventType} and modelId: ${modelId}`);
-            }
-        });
-    }
-
-    /**
-     * Provides a fat pipe of all events sent to models.
-     *
-     * Note: If an event is published to a model, and that model is not explicitly observing the event, it will get dropped, this won't yield those.
-     * @param stage
-     */
-    public getAllEventsObservable<TModel>(stage?: ObservationStage): Observable<EventEnvelope<any, TModel>>;
-    /**
-     * Provides a fat pipe of the given events sent to models.
-     *
-     * Note: If an event is published to a model, and that model is not explicitly observing the event, it will get dropped, this won't yield those.
-     * @param stage
-     */
-    public getAllEventsObservable<TModel>(eventTypes: string[], stage?: ObservationStage): Observable<EventEnvelope<any, TModel>>;
-    public getAllEventsObservable<TModel>(...args: any[]): Observable<EventEnvelope<any, TModel>> {
-        let eventFilter: (eventType?: string) => boolean;
-        let stage: ObservationStage;
-        const buildFilter = (eventTypes: string[]) => {
-            Guard.lengthIsAtLeast(eventTypes, 1, 'eventTypes.length must be > 0');
-            let set = new Set(eventTypes);
-            return eventType => set.has(eventType);
-        };
-        // try figure out which overload was used
-        if (!args || args.length === 0) {
-            stage = ObservationStage.normal;
-            eventFilter = () => true;
-        } else if (args.length === 1) {
-            // first param could be an array or an observation stage
-            if (ObservationStage.isObservationStage(args[0])) {
-                stage = this._tryDefaultObservationStage(args[0]);
-                eventFilter = () => true;
-            } else {
-                // else assume it's an array
-                stage = ObservationStage.normal;
-                eventFilter = buildFilter(args[0]);
-            }
-        } else if (args.length === 2) {
-            // with this overload, the first param should be an event array
-            eventFilter = buildFilter(args[0]);
-            stage = this._tryDefaultObservationStage(args[1]);
-
-        } else {
-            throw new Error(`unsupported overload called for getAllEventsObservable. Received ${args}.`);
-        }
-        stage = this._tryDefaultObservationStage(stage);
-        return Observable.create(o => {
-            this._throwIfHaltedOrDisposed();
-            return this._dispatchSubject
-                .filter(envelope => envelope.dispatchType === DispatchType.Event)
-                .cast<EventEnvelope<any, any>>()
-                .filter(envelope => {
-                    if (ObservationStage.isAll(stage)) {
-                        return true;
-                    } else {
-                        return envelope.observationStage === stage;
-                    }
-                })
-                .cast<EventEnvelope<any, any>>()
-                .filter(envelope => eventFilter(envelope.eventType))
-                .subscribe(o);
-        });
-    }
-
-    public getModelObservable<TModel>(modelId: string): Observable<TModel> {
+    public getModelObservable<TModel>(modelId: string): Subscribable<TModel> {
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
             Guard.isString(modelId, 'The modelId should be a string');
@@ -351,32 +232,6 @@ export class Router extends DisposableBase implements HealthIndicator {
                 .map(envelope => envelope.model)
                 .subscribe(o);
         });
-    }
-
-    public getAllModelsObservable(): Observable<ModelEnvelope<any>> {
-        return Observable.create(o => {
-            this._throwIfHaltedOrDisposed();
-            return this._dispatchSubject
-                .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate || envelope.dispatchType === DispatchType.ModelDelete)
-                .cast<ModelEnvelope<any>>()
-                .subscribe(o);
-        });
-    }
-
-    public createObservableFor<TModel>(modelId: string, observer): RouterObservable<TModel> {
-        return Observable
-            .create<TModel>(observer)
-            .asRouterObservable(this)
-            .subscribeOn(modelId);
-    }
-
-    public createSubject<T>(): RouterSubject<T> {
-        return new RouterSubject<T>(this);
-    }
-
-    public createModelRouter<TModel>(targetModelId: string) {
-        Guard.isString(targetModelId, 'The targetModelId argument should be a string');
-        return SingleModelRouter.createWithRouter<TModel>(this, targetModelId);
     }
 
     public addOnErrorHandler(handler: (error: Error) => void) {
@@ -391,7 +246,6 @@ export class Router extends DisposableBase implements HealthIndicator {
             throw new Error('Unknown error handler.');
         }
     }
-
 
     public isOnDispatchLoopFor(modelId: string) {
         Guard.isString(modelId, 'modelId must be a string');
@@ -458,17 +312,13 @@ export class Router extends DisposableBase implements HealthIndicator {
                     this._state.moveToEventDispatch();
                     this._diagnosticMonitor.dispatchingEvents();
                     while (hasEvents) {
-                        if (eventRecord.eventType === _RUN_ACTION_EVENT_NAME) {
-                            eventRecord.action(modelRecord.model);
-                        } else {
-                            this._state.eventsProcessed.push(eventRecord.eventType);
-                            this._dispatchEventToEventProcessors(
-                                modelRecord,
-                                eventRecord.entityKey,
-                                eventRecord.event,
-                                eventRecord.eventType
-                            );
-                        }
+                        this._state.eventsProcessed.push(eventRecord.eventType);
+                        this._dispatchEventToEventProcessors(
+                            modelRecord,
+                            eventRecord.entityKey,
+                            eventRecord.event,
+                            eventRecord.eventType
+                        );
                         if (modelRecord.wasRemoved) {
                             break;
                         }
@@ -608,16 +458,6 @@ export class Router extends DisposableBase implements HealthIndicator {
         return candidate;
     }
 
-    private _tryDefaultObservationStage(stage?: ObservationStage) {
-        if (stage) {
-            Guard.isString(stage, 'The stage argument should be a string');
-            Guard.isTruthy(ObservationStage.isObservationStage(stage), 'The stage argument value of [' + stage + '] is incorrect. It should be ObservationStage.preview, ObservationStage.normal, ObservationStage.committed or ObservationStage.all.');
-            return stage;
-        } else {
-            return ObservationStage.normal;
-        }
-    }
-
     private _throwIfHaltedOrDisposed() {
         if (this._state.currentStatus === Status.Halted) {
             throw new Error(`ESP router halted due to previous unhandled error [${this._haltingException}]`);
@@ -641,10 +481,6 @@ export class Router extends DisposableBase implements HealthIndicator {
         // We run the onErrorHandlers after the
         // router has had time to set it's own state
         if (isInitialHaltingError) {
-            this._currentHealth = Health.builder(this.healthIndicatorName)
-                .isTerminal()
-                .addReason(`${errorMessage} - ${err}`)
-                .build();
             this._onErrorHandlers.forEach(handler => {
                 try {
                     handler(err);

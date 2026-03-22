@@ -64,14 +64,12 @@ describe('Router', () => {
                         throw new Error('Boom:Post');
                     }
                 })
-                .registerWithRouter();
-            _router.getEventObservable('modelId1', 'Event1').subscribe(
-                ({event, context, model}: any) => {
+                .withEventHandler('Event1', (draft, event, ctx) => {
                     if (_flags.throwADispatch) {
                         throw new Error('Boom:Dispatch');
                     }
-                }
-            );
+                })
+                .registerWithRouter();
             _router.getModelObservable('modelId1').subscribe(
                 (model: any) => {
                     if (_flags.throwAtUpdate) {
@@ -148,7 +146,7 @@ describe('Router', () => {
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
-            it('should not call onErrorHandler on getEventObservable()', () => {
+            it('should not call onErrorHandler on getModelObservable subscribe', () => {
                 ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
@@ -179,7 +177,7 @@ describe('Router', () => {
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
-            it('should not call onErrorHandler getEventObservable()', () => {
+            it('should not call onErrorHandler on getModelObservable subscribe', () => {
                 ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });

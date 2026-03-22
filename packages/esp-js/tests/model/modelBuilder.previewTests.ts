@@ -33,17 +33,16 @@ describe('ModelBuilder', () => {
 
     describe('preview handlers (withPreviewHandler)', () => {
 
-        it('preview handler is called before event dispatch, receives readonly model', () => {
+        it('preview handler is called before event dispatch, normal handler fires after', () => {
             const calls: string[] = [];
             new ModelBuilder<SimpleModel>(_router, 'model', { value: 0 })
                 .withPreviewHandler('AnEvent', (model, event, ctx) => {
                     calls.push('preview');
                 })
+                .withEventHandler('AnEvent', () => { calls.push('normal'); })
                 .registerWithRouter();
-            _router.getEventObservable('model', 'AnEvent', esp.ObservationStage.preview).subscribe(() => { calls.push('preview-stream'); });
-            _router.getEventObservable('model', 'AnEvent').subscribe(() => { calls.push('normal-stream'); });
             _router.publishEvent('model', 'AnEvent', {});
-            expect(calls).toEqual(['preview', 'preview-stream', 'normal-stream']);
+            expect(calls).toEqual(['preview', 'normal']);
         });
 
         it('preview handler can cancel the event', () => {
@@ -52,8 +51,8 @@ describe('ModelBuilder', () => {
                 .withPreviewHandler('AnEvent', (model, event, ctx) => {
                     ctx.cancel();
                 })
+                .withEventHandler('AnEvent', () => { normalCalled = true; })
                 .registerWithRouter();
-            _router.getEventObservable('model', 'AnEvent').subscribe(() => { normalCalled = true; });
             _router.publishEvent('model', 'AnEvent', {});
             expect(normalCalled).toBe(false);
         });
@@ -65,7 +64,6 @@ describe('ModelBuilder', () => {
                     receivedModel = model;
                 })
                 .registerWithRouter();
-            _router.getEventObservable('model', 'AnEvent', esp.ObservationStage.preview).subscribe(() => {});
             _router.publishEvent('model', 'AnEvent', {});
             expect(receivedModel).toBeDefined();
             expect(receivedModel.value).toEqual(42);
@@ -78,7 +76,6 @@ describe('ModelBuilder', () => {
                 .withPreviewHandler('AnEvent', () => { calls.push('preview1'); })
                 .withPreviewHandler('AnEvent', () => { calls.push('preview2'); })
                 .registerWithRouter();
-            _router.getEventObservable('model', 'AnEvent', esp.ObservationStage.preview).subscribe(() => {});
             _router.publishEvent('model', 'AnEvent', {});
             expect(calls).toEqual(['preview1', 'preview2']);
         });

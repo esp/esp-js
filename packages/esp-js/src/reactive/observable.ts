@@ -19,8 +19,6 @@
 import {Guard} from '../system';
 import {Observer} from './observer';
 import {Subscribe} from './subscribeDelegate';
-import {RouterObservable} from './routerObservable';
-import {Router} from '../router';
 import {Disposable, DisposableWrapper} from '../system/disposables';
 import {DictionaryDisposable} from '../system/disposables';
 import {DisposableOrFunction} from '../system/disposables/disposable';
@@ -95,5 +93,4 @@ export class Observable<T> {
     public takeUntil?(predicate: (item: T) => boolean, inclusive: boolean): Observable<T>;
     public filter?(predicate: (item: T) => boolean): Observable<T>;
     public share?(cacheLastValue?: boolean): AutoConnectedObservable<T>;
-    public asRouterObservable?(router: Router): RouterObservable<T>;
 }

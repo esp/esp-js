@@ -42,7 +42,6 @@ describe('ModelBuilder', () => {
                     receivedEvent = event;
                 })
                 .registerWithRouter();
-            _router.getEventObservable('counter', 'Increment').subscribe(() => {});
             _router.publishEvent('counter', 'Increment', { amount: 5 });
             expect(receivedEvent).toEqual({ amount: 5 });
         });
@@ -90,7 +89,6 @@ describe('ModelBuilder', () => {
                 .withEventHandler('AnEvent', () => { calls.push('handler1'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler2'); })
                 .registerWithRouter();
-            _router.getEventObservable('counter', 'AnEvent').subscribe(() => {});
             _router.publishEvent('counter', 'AnEvent', {});
             expect(calls).toEqual(['handler1', 'handler2']);
         });
@@ -101,8 +99,6 @@ describe('ModelBuilder', () => {
                 .withEventHandler('EventA', () => { calls.push('A'); })
                 .withEventHandler('EventB', () => { calls.push('B'); })
                 .registerWithRouter();
-            _router.getEventObservable('counter', 'EventA').subscribe(() => {});
-            _router.getEventObservable('counter', 'EventB').subscribe(() => {});
             _router.publishEvent('counter', 'EventA', {});
             _router.publishEvent('counter', 'EventB', {});
             expect(calls).toEqual(['A', 'B']);
@@ -129,8 +125,8 @@ describe('ModelBuilder', () => {
             const calls: string[] = [];
             new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
                 .withPreEventProcessor(() => { calls.push('pre'); })
+                .withEventHandler('AnEvent', () => { calls.push('handler'); })
                 .registerWithRouter();
-            _router.getEventObservable('counter', 'AnEvent').subscribe(() => { calls.push('handler'); });
             _router.publishEvent('counter', 'AnEvent', {});
             expect(calls).toEqual(['pre', 'handler']);
         });
@@ -139,8 +135,8 @@ describe('ModelBuilder', () => {
             const calls: string[] = [];
             new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
                 .withPostEventProcessor(() => { calls.push('post'); })
+                .withEventHandler('AnEvent', () => { calls.push('handler'); })
                 .registerWithRouter();
-            _router.getEventObservable('counter', 'AnEvent').subscribe(() => { calls.push('handler'); });
             _router.publishEvent('counter', 'AnEvent', {});
             expect(calls).toEqual(['handler', 'post']);
         });
@@ -149,8 +145,8 @@ describe('ModelBuilder', () => {
             let processedEvents: string[] = null;
             new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
                 .withPostEventProcessor((model, events) => { processedEvents = events; })
+                .withEventHandler('Foo', () => {})
                 .registerWithRouter();
-            _router.getEventObservable('counter', 'Foo').subscribe(() => {});
             _router.publishEvent('counter', 'Foo', {});
             expect(processedEvents).toEqual(['Foo']);
         });

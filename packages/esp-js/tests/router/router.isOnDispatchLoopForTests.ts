@@ -17,7 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
-import {registerModel} from '../testApi/testHelpers';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -40,16 +40,18 @@ describe('Router', () => {
                 model1EventHandler_isOnModel2DispatchLoop = null,
                 model2EventHandler_isOnModel1DispatchLoop = null,
                 model2EventHandler_isOnModel2DispatchLoop = null;
-            registerModel(_router, 'modelId1', {});
-            registerModel(_router, 'modelId2', {});
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                model1EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
-                model1EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
-            });
-            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
-                model2EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
-                model2EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
-            });
+            new ModelBuilder(_router, 'modelId1', {})
+                .withEventHandler('Event1', () => {
+                    model1EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
+                    model1EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
+                })
+                .registerWithRouter();
+            new ModelBuilder(_router, 'modelId2', {})
+                .withEventHandler('Event1', () => {
+                    model2EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
+                    model2EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
+                })
+                .registerWithRouter();
             expect(_router.isOnDispatchLoopFor('modelId1')).toEqual(false);
             expect(_router.isOnDispatchLoopFor('modelId2')).toEqual(false);
             _router.publishEvent('modelId1', 'Event1', {payload:'theEventPayload'});

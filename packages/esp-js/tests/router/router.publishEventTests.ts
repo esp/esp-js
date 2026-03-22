@@ -16,7 +16,8 @@
  */
 // notice_end
 
-import {Router, EventEnvelope, DefaultModelAddress} from '../../src';
+import {Router, DefaultModelAddress, EventContext} from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
@@ -38,19 +39,21 @@ describe('Router', () => {
 
         it('queues and processes events received during event loop by model id', () => {
             let model1ProcessorReceived = 0, testPassed = false;
-            registerModel(_router, 'modelId1', {});
-            registerModel(_router, 'modelId2', {});
-            _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
-                // publish an event for modelId2 while processing modelId1, thus queuing them
-                _router.publishEvent('modelId2', 'Event1', 'theEvent'); // should be processed second
-                _router.publishEvent('modelId1', 'Event1', 'theEvent'); // should be processed first
-            });
-            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
-                model1ProcessorReceived++;
-            });
-            _router.getEventObservable('modelId2', 'Event1').subscribe(() => {
-                testPassed = model1ProcessorReceived === 1;
-            });
+            new ModelBuilder(_router, 'modelId1', {})
+                .withEventHandler('startEvent', () => {
+                    // publish events for other models while processing modelId1
+                    _router.publishEvent('modelId2', 'Event1', 'theEvent'); // should be processed second
+                    _router.publishEvent('modelId1', 'Event1', 'theEvent'); // should be processed first
+                })
+                .withEventHandler('Event1', () => {
+                    model1ProcessorReceived++;
+                })
+                .registerWithRouter();
+            new ModelBuilder(_router, 'modelId2', {})
+                .withEventHandler('Event1', () => {
+                    testPassed = model1ProcessorReceived === 1;
+                })
+                .registerWithRouter();
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
             expect(testPassed).toBe(true);
         });
@@ -58,25 +61,26 @@ describe('Router', () => {
         it('should reset the EventContext for each event', () => {
             let testPassed = false;
             let lastEventDelivered = false;
-            registerModel(_router, 'modelId1', {});
-            _router.getEventObservable('modelId1', 'startEvent').subscribe(({event, context}) => {
-                context.commit();
-                _router.publishEvent('modelId1', 'Event1', 'theEvent1');
-                _router.publishEvent('modelId1', 'Event2', 'theEvent2');
-                _router.publishEvent('modelId1', 'Event3', 'theEvent3');
-            });
-            _router.getEventObservable('modelId1', 'Event1').subscribe(({event, context}) => {
-                testPassed = context.isCommitted === false;
-                context.commit();
-            });
-            _router.getEventObservable('modelId1', 'Event2').subscribe(({event, context}) => {
-                testPassed = testPassed && context.isCommitted === false;
-                context.commit();
-            });
-            _router.getEventObservable('modelId1', 'Event3').subscribe(({event, context}) => {
-                testPassed = testPassed && context.isCommitted === false;
-                lastEventDelivered = true;
-            });
+            new ModelBuilder(_router, 'modelId1', {})
+                .withEventHandler('startEvent', (draft, event, ctx) => {
+                    ctx.commit();
+                    _router.publishEvent('modelId1', 'Event1', 'theEvent1');
+                    _router.publishEvent('modelId1', 'Event2', 'theEvent2');
+                    _router.publishEvent('modelId1', 'Event3', 'theEvent3');
+                })
+                .withEventHandler('Event1', (draft, event, ctx) => {
+                    testPassed = ctx.isCommitted === false;
+                    ctx.commit();
+                })
+                .withEventHandler('Event2', (draft, event, ctx) => {
+                    testPassed = testPassed && ctx.isCommitted === false;
+                    ctx.commit();
+                })
+                .withEventHandler('Event3', (draft, event, ctx) => {
+                    testPassed = testPassed && ctx.isCommitted === false;
+                    lastEventDelivered = true;
+                })
+                .registerWithRouter();
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
             expect(testPassed).toBe(true);
             expect(lastEventDelivered).toBe(true);
@@ -87,46 +91,40 @@ describe('Router', () => {
                 _router.publishEvent('fooModel', 'startEvent', 'start');
             }).toThrow();
 
-            let receivedEvents = [];
-            // cause a lazy model registration
-            _router.getEventObservable('fooModel', 'startEvent').subscribe(ee => receivedEvents.push(ee));
+            let receivedEvents: any[] = [];
+            new ModelBuilder(_router, 'fooModel', {})
+                .withEventHandler('startEvent', (draft, event) => { receivedEvents.push(event); })
+                .registerWithRouter();
 
-            expect(() => {
-                _router.publishEvent('fooModel', 'startEvent', 'start');
-            }).toThrow();
-
-            registerModel(_router, 'fooModel', {});
             _router.publishEvent('fooModel', 'startEvent', 'start');
 
             expect(receivedEvents.length).toEqual(1);
         });
 
         it('can publish with ModelAddress and DefaultModelAddress', () => {
-            let receivedEnvelopes: EventEnvelope<unknown, unknown>[] = [];
-            registerModel(_router, 'modelId1', {});
-            _router.getEventObservable('modelId1', 'startEvent').subscribe((e: EventEnvelope<unknown, unknown>) => {
-                receivedEnvelopes.push(e);
-            });
+            let handlerCallCount = 0;
+            new ModelBuilder(_router, 'modelId1', {})
+                .withEventHandler('startEvent', () => { handlerCallCount++; })
+                .registerWithRouter();
             _router.publishEvent({ modelId: 'modelId1' }, 'startEvent', 'theEvent');
-            expect(receivedEnvelopes.length).toBe(1);
-            expect(receivedEnvelopes[0].entityKey).not.toBeDefined();
+            expect(handlerCallCount).toBe(1);
             _router.publishEvent(new DefaultModelAddress('modelId1'), 'startEvent', 'theEvent');
-            expect(receivedEnvelopes.length).toBe(2);
-            expect(receivedEnvelopes[1].entityKey).not.toBeDefined();
+            expect(handlerCallCount).toBe(2);
         });
 
         it('can publish including entityKey', () => {
-            let receivedEnvelopes: EventEnvelope<unknown, unknown>[] = [];
-            registerModel(_router, 'modelId1', {});
-            _router.getEventObservable('modelId1', 'startEvent').subscribe((e: EventEnvelope<unknown, unknown>) => {
-                receivedEnvelopes.push(e);
-            });
+            let receivedEntityKeys: (string | undefined)[] = [];
+            new ModelBuilder(_router, 'modelId1', {})
+                .withEventHandler('startEvent', (draft, event, ctx) => {
+                    receivedEntityKeys.push(ctx.entityKey);
+                })
+                .registerWithRouter();
             _router.publishEvent({ modelId: 'modelId1', entityKey: 'the-key-1' }, 'startEvent', 'theEvent');
-            expect(receivedEnvelopes.length).toBe(1);
-            expect(receivedEnvelopes[0].entityKey).toBe('the-key-1');
+            expect(receivedEntityKeys.length).toBe(1);
+            expect(receivedEntityKeys[0]).toBe('the-key-1');
             _router.publishEvent(new DefaultModelAddress('modelId1', 'the-key-2'), 'startEvent', 'theEvent');
-            expect(receivedEnvelopes.length).toBe(2);
-            expect(receivedEnvelopes[1].entityKey).toBe('the-key-2');
+            expect(receivedEntityKeys.length).toBe(2);
+            expect(receivedEntityKeys[1]).toBe('the-key-2');
         });
     });
 });

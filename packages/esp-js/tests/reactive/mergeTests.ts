@@ -17,7 +17,8 @@
 // notice_end
 
 import * as reactive from '../../src/reactive/index';
-import {SingleModelRouter} from '../../src/router/singleModelRouter';
+import {Router} from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('.merge', () => {
     let subject1,
@@ -92,22 +93,30 @@ describe('.merge', () => {
     });
 
     it('test with router', () => {
-        let receivedEvents = [];
-        let router = SingleModelRouter.createWithModel({});
-        let mergedEventStream = reactive.Observable.merge(
-            router.getEventObservable('myEvent1'),
-            router.getEventObservable('myEvent2'),
-            router.getEventObservable('myEvent3'),
-        );
-        mergedEventStream.subscribe(({event}) => receivedEvents.push(event));
+        const receivedEvents: number[] = [];
+        const router = new Router();
+        const modelId = 'testModel';
+        const receivedByHandler: { [key: string]: number[] } = {
+            myEvent1: [],
+            myEvent2: [],
+            myEvent3: [],
+        };
 
-        router.publishEvent('myEvent1', 1);
-        expect(receivedEvents).toEqual([1]);
+        new ModelBuilder<{}>(router, modelId, {})
+            .withEventHandler<number>('myEvent1', (draft, event) => { receivedByHandler.myEvent1.push(event); })
+            .withEventHandler<number>('myEvent2', (draft, event) => { receivedByHandler.myEvent2.push(event); })
+            .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })
+            .registerWithRouter();
 
-        router.publishEvent('myEvent2', 2);
-        expect(receivedEvents).toEqual([1, 2]);
+        router.getModelObservable(modelId).subscribe(() => {});
 
-        router.publishEvent('myEvent3', 3);
-        expect(receivedEvents).toEqual([1, 2, 3]);
+        router.publishEvent(modelId, 'myEvent1', 1);
+        expect(receivedByHandler.myEvent1).toEqual([1]);
+
+        router.publishEvent(modelId, 'myEvent2', 2);
+        expect(receivedByHandler.myEvent2).toEqual([2]);
+
+        router.publishEvent(modelId, 'myEvent3', 3);
+        expect(receivedByHandler.myEvent3).toEqual([3]);
     });
 });

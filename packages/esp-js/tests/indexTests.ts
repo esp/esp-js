@@ -2,18 +2,14 @@ import * as esp from '../src';
 import {
     Router,
     ObservationStage,
-    SingleModelRouter,
     DefaultEventContext,
     CompositeDisposable,
     DictionaryDisposable,
     DisposableBase,
-    Observable,
-    Subject,
-    RouterObservable,
-    RouterSubject,
     DisposableWrapper,
     Guard,
     ModelBuilder,
+    Subscribable,
 } from '../src';
 
 describe('index exports', () => {
@@ -25,11 +21,6 @@ describe('index exports', () => {
     it('should export ObservationStage', () => {
         expect(esp.ObservationStage).toBeDefined();
         expect(ObservationStage).toBeDefined();
-    });
-
-    it('should export SingleModelRouter', () => {
-        expect(esp.SingleModelRouter).toBeDefined();
-        expect(SingleModelRouter).toBeDefined();
     });
 
     it('should export DefaultEventContext', () => {
@@ -57,26 +48,6 @@ describe('index exports', () => {
         expect(DisposableWrapper).toBeDefined();
     });
 
-    it('should export Observable', () => {
-        expect(esp.Observable).toBeDefined();
-        expect(Observable).toBeDefined();
-    });
-
-    it('should export Subject', () => {
-        expect(esp.Subject).toBeDefined();
-        expect(Subject).toBeDefined();
-    });
-
-    it('should export RouterSubject', () => {
-        expect(esp.RouterSubject).toBeDefined();
-        expect(RouterSubject).toBeDefined();
-    });
-
-    it('should export RouterObservable', () => {
-        expect(esp.RouterObservable).toBeDefined();
-        expect(RouterObservable).toBeDefined();
-    });
-
     it('should export Guard', () => {
         expect(Guard).toBeDefined();
     });
@@ -86,4 +57,11 @@ describe('index exports', () => {
         expect(ModelBuilder).toBeDefined();
     });
 
+    it('should export Subscribable type', () => {
+        // Subscribable is a type/interface, verify it is usable as a type annotation
+        const router = new Router();
+        new ModelBuilder(router, 'test', { value: 0 }).registerWithRouter();
+        const s: Subscribable<{ value: number }> = router.getModelObservable('test');
+        expect(s).toBeDefined();
+    });
 });

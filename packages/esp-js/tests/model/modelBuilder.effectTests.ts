@@ -37,6 +37,7 @@ describe('ModelBuilder', () => {
         it('effect handler receives the publish delegate and can publish a follow-up event', () => {
             const publishedEvents: string[] = [];
             let effectModelSnapshot: Readonly<OrderModel> = null;
+            let effectEventReceived: any = null;
 
             new ModelBuilder<OrderModel>(_router, 'orders', { orderId: 'o1', status: 'new' })
                 .withEventHandler<{ newStatus: string }>('StatusChanged', (draft, event) => {
@@ -47,13 +48,10 @@ describe('ModelBuilder', () => {
                     publishedEvents.push(`effect-for-${event.newStatus}`);
                     publish('StatusEffect', { triggeredBy: event.newStatus });
                 })
+                .withEventHandler<{ triggeredBy: string }>('StatusEffect', (draft, event) => {
+                    effectEventReceived = event;
+                })
                 .registerWithRouter();
-
-            _router.getEventObservable('orders', 'StatusChanged').subscribe(() => {});
-            let effectEventReceived: any = null;
-            _router.getEventObservable('orders', 'StatusEffect').subscribe(({event}: any) => {
-                effectEventReceived = event;
-            });
 
             _router.publishEvent('orders', 'StatusChanged', { newStatus: 'confirmed' });
 
@@ -68,7 +66,6 @@ describe('ModelBuilder', () => {
                     effectModel = model;
                 })
                 .registerWithRouter();
-            _router.getEventObservable('orders', 'AnEvent', esp.ObservationStage.final).subscribe(() => {});
             _router.publishEvent('orders', 'AnEvent', {});
             expect(effectModel).toBeDefined();
             expect(() => { (effectModel as any).status = 'mutated'; }).toThrow();
@@ -80,7 +77,6 @@ describe('ModelBuilder', () => {
                 .withEffect<any>('AnEvent', () => { calls.push('effect1'); })
                 .withEffect<any>('AnEvent', () => { calls.push('effect2'); })
                 .registerWithRouter();
-            _router.getEventObservable('orders', 'AnEvent', esp.ObservationStage.final).subscribe(() => {});
             _router.publishEvent('orders', 'AnEvent', {});
             expect(calls).toEqual(['effect1', 'effect2']);
         });
@@ -95,7 +91,6 @@ describe('ModelBuilder', () => {
                     effectSawStatus = model.status;
                 })
                 .registerWithRouter();
-            _router.getEventObservable('orders', 'StatusChanged').subscribe(() => {});
             _router.publishEvent('orders', 'StatusChanged', { newStatus: 'shipped' });
             // The effect runs after normal dispatch, so model.status should already be 'shipped'
             expect(effectSawStatus).toEqual('shipped');

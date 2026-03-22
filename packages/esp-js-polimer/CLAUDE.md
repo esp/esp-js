@@ -1,7 +1,5 @@
 # esp-js-polimer
 
-> **DEPRECATED as of v9** — Immer integration and the functional model builder have moved into `esp-js` core. Use `ModelBuilder<TModel>` from `esp-js` directly. This package remains for backwards compatibility but will not receive new features.
-
 ## Package Purpose
 
 Adds immutable, Redux-style model support to ESP. A `PolimerModel` is an immutable top-level model (implementing `ImmutableModel`) registered with the `Router`. State mutations are applied via [immer](https://immerjs.github.io/immer/) drafts, making each event handler a pure "produce" function. Also provides `eventTransformFor` for async side-effects that produce new events via RxJS observables, and `StateHandlerModel` for interop with OO-style sub-models.

@@ -54,11 +54,12 @@ describe('ModelBuilder', () => {
             expect(disposeCalled).toBe(true);
         });
 
-        it('lazy registration: getEventObservable before registerWithRouter works', () => {
+        it('event handler registered via withEventHandler fires on publishEvent', () => {
             let received = false;
-            _router.getEventObservable('lazyModel', 'AnEvent').subscribe(() => { received = true; });
-            new ModelBuilder<SimpleModel>(_router, 'lazyModel', { value: 0 }).registerWithRouter();
-            _router.publishEvent('lazyModel', 'AnEvent', {});
+            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 })
+                .withEventHandler('AnEvent', () => { received = true; })
+                .registerWithRouter();
+            _router.publishEvent('myModel', 'AnEvent', {});
             expect(received).toBe(true);
         });
 

@@ -6,7 +6,6 @@ import {
     ConnectableComponent,
     ConnectableComponentProps,
     PublishModelEventDelegate,
-    viewBinding,
     MapModelToProps,
     CreatePublishEventProps,
 } from '../src';
@@ -22,8 +21,6 @@ interface TestModelState {
     foo: string;
 }
 
-@viewBinding(viewFactory('View1'))
-@viewBinding(viewFactory('View3'), 'alternative-view-context')
 class TestModel {
     [immerable] = true;
     value: string = 'initial-value';
@@ -43,10 +40,7 @@ interface ConnectedComponentElementCreationProperties {
     useConnectFunction?: boolean;
     useMapModelToProps?: boolean;
     useCreatePublishEventProps?: boolean;
-    useAlternativeViewContext?: boolean;
     passOtherProps?: boolean;
-    useImmutableModelSelectorDecorator?: boolean;
-    useImmutableModelSelectorFunction?: boolean;
 }
 
 describe('ConnectableComponentTests', () => {
@@ -81,7 +75,6 @@ describe('ConnectableComponentTests', () => {
         let createPublishEventProps: CreatePublishEventProps<any>;
         const otherProps = {other1: 'other-value'};
         let publishEventProps: { publishEvent1: () => void };
-        let userAlternativeViewContext: string;
         if (options.useMapModelToProps) {
             mapModelToProps = (model: TestModel, publishEventProps2: any) => {
                 return {
@@ -98,9 +91,6 @@ describe('ConnectableComponentTests', () => {
             };
             createPublishEventProps = (publishEvent: PublishModelEventDelegate) => publishEventProps;
         }
-        if (options.useAlternativeViewContext) {
-            userAlternativeViewContext = 'alternative-view-context';
-        }
         let viewElement: React.JSX.Element;
         if (options.useConnectFunction) {
             const TestModelView2ConnectedComponent = connect(
@@ -112,8 +102,8 @@ describe('ConnectableComponentTests', () => {
             viewElement = (
                 <ConnectableComponent
                     {...connectableComponentProps}
+                    view={viewFactory('View1')}
                     mapModelToProps={mapModelToProps}
-                    viewContext={userAlternativeViewContext}
                     {...otherProps}
                 />
             );
@@ -268,7 +258,7 @@ describe('ConnectableComponentTests', () => {
         it('arbitrary props are passed down to the child', () => {
             api.doRender(
                 (
-                    <ConnectableComponent className={'foo-bar'} />
+                    <ConnectableComponent view={viewFactory('View1')} className={'foo-bar'} />
                 ),
                 'model-id1'
             );
@@ -309,7 +299,7 @@ describe('ConnectableComponentTests', () => {
             it('subscribes to modelId via props', () => {
                 api.doRender(
                     (
-                        <ConnectableComponent modelId={'model-id1'} />
+                        <ConnectableComponent view={viewFactory('View1')} modelId={'model-id1'} />
                     )
                 );
                 api.asserts.props
@@ -320,7 +310,7 @@ describe('ConnectableComponentTests', () => {
             it('subscribes to modelId via context', () => {
                 api.doRender(
                     (
-                        <ConnectableComponent />
+                        <ConnectableComponent view={viewFactory('View1')} />
                     ),
                     'model-id1'
                 );
@@ -366,35 +356,10 @@ describe('ConnectableComponentTests', () => {
         });
 
         describe('View rendering', () => {
-            it('Renders the view found via @viewBinding', () => {
-                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                    modelId: 'model-id1',
-                    useConnectFunction: false,
-                };
-                api.doRender(
-                    createConnectedComponentElement(elementCreationProperties),
-                    elementCreationProperties.modelId
-                );
-                api.asserts.view.viewNameElementTextIs('View1');
-            });
-
-            it('Renders alternative view found via @viewBinding', () => {
-                let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                    modelId: 'model-id1',
-                    useConnectFunction: false,
-                    useAlternativeViewContext: true
-                };
-                api.doRender(
-                    createConnectedComponentElement(elementCreationProperties),
-                    elementCreationProperties.modelId
-                );
-                api.asserts.view.viewNameElementTextIs('View3');
-            });
-
             it('re-renders the view when the model changes', () => {
                 api.doRender(
                     (
-                        <ConnectableComponent />
+                        <ConnectableComponent view={viewFactory('View1')} />
                     ),
                     'model-id1'
                 );

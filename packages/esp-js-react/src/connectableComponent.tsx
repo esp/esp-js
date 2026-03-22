@@ -3,7 +3,6 @@ import {useRouter} from './espRouterContextProvider';
 import {useMemo} from 'react';
 import {Router} from 'esp-js';
 import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
-import {createViewForModel} from './viewBindingDecorator';
 import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
@@ -12,7 +11,6 @@ export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}
 
 export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     modelId?: string;
-    viewContext?: string;
     view?: React.ComponentType;
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
@@ -56,7 +54,6 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         mapModelToProps,
         createPublishEventProps,
         view,
-        viewContext,
         ...rest
     }: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>
 ) => {
@@ -85,7 +82,7 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         return null;
     }
     let childProps = getChildProps(router, modelId, rest, model, mapModelToProps, publishEventProps);
-    let viewElement = createViewForModel(model, childProps, viewContext, view);
+    let viewElement = view ? React.createElement(view as React.ComponentType<any>, childProps) : null;
     return (
         <EspModelContextProvider modelId={modelId} model={model} router={router} {...childProps}>
             {viewElement}

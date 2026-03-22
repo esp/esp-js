@@ -321,13 +321,65 @@ new ModelBuilder<MyModel>(router, 'my-model', initialModel)
 
 ---
 
-## esp-js-polimer deprecation
+## esp-js-polimer removal
 
-`esp-js-polimer` is deprecated as of v9. It will not receive new features. Bug fixes may be applied on a best-effort basis.
+`esp-js-polimer` has been **deleted** from the monorepo. The package is no longer published.
 
-Polimer's concepts — immutable state, immer drafts, builder registration, event transforms — are the direct ancestors of the v9 `esp-js` API. Teams using polimer should migrate to the native `ModelBuilder` API. The functional shape is very similar; the main differences are:
+Polimer's concepts — immutable state, immer drafts, builder registration, event transforms — are the direct ancestors of the v9 `esp-js` API. The `ModelBuilder` in `esp-js` is the replacement.
 
-- `PolimerModelBuilder` → `ModelBuilder`
-- `withStateHandlers(key, handlers)` (per-slice) → `withEventHandler` on the full model
-- `@eventTransformFor` (RxJS observable transforms) → `withEffect` + `withEventSubscription`
-- `PolimerModel.getImmutableModel()` → `router.getModelObservable()` returns the POJO directly
+Migration reference:
+
+| esp-js-polimer | esp-js v9 |
+|---|---|
+| `PolimerModelBuilder` | `ModelBuilder` |
+| `withStateHandlers(key, handlers)` (per-slice) | `withEventHandler` on the full model |
+| `@eventTransformFor` (RxJS observable transforms) | `withEffect` + `withEventSubscription` |
+| `PolimerModel.getImmutableModel()` | `router.getModelObservable()` — emits the POJO directly |
+
+---
+
+## esp-js-react — polimer integration removed
+
+`esp-js-react` no longer depends on or integrates with `esp-js-polimer`. The model contract is now simple: `router.getModelObservable()` always emits a **frozen immutable POJO** (produced by immer via `ModelBuilder`). No unwrapping is needed.
+
+### `useSyncModelWithSelector` — removed option
+
+`tryPreSelectPolimerImmutableModel` has been removed from `SyncModelWithSelectorOptions`. This option previously called `model.getEspPolimerImmutableModel()` before applying the selector. Since the model is now the direct frozen snapshot, no pre-selection is necessary.
+
+**Before (v8 with polimer):**
+```typescript
+syncModelWithSelectorOptions<MyModel>()
+    .setModelId('my-model')
+    .setTryPreSelectPolimerImmutableModel(true) // removed
+    .build()
+```
+
+**After (v9):**
+```typescript
+syncModelWithSelectorOptions<MyModel>()
+    .setModelId('my-model')
+    .build()
+```
+
+### `ConnectableComponent` — duck-typing removed
+
+`ConnectableComponent` previously checked for `getEspPolimerImmutableModel` on the model and unwrapped it before passing to `mapModelToProps`. This duck-typing is removed. The raw frozen model is passed directly.
+
+### Reactive API internalized
+
+The `reactive/` module in `esp-js` is now internal-only and is not exported from `src/index.ts`. `Observable`, `Subject`, `RouterObservable`, and `RouterSubject` are no longer part of the public API.
+
+Code that previously used `Observable.create` to wrap `router.getModelObservable()` must be updated to wrap the `subscribe` method directly:
+
+```typescript
+// Before (broken — Observable is no longer exported):
+const wrapped = Observable.create<MyModel>(o => router.getModelObservable('id').subscribe(o));
+
+// After:
+const upstream = router.getModelObservable<MyModel>('id');
+const wrapped = {
+    subscribe(observer: any) {
+        return upstream.subscribe(observer);
+    }
+} as Subscribable<MyModel>;
+```

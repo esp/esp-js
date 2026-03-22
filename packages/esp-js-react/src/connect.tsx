@@ -13,11 +13,10 @@ export const connect = function <TModel, TPublishEventProps, TModelMappedToProps
 ): ConnectableComponentFactory<TModel, TPublishEventProps, TModelMappedToProps> {
     return function (view: React.ComponentType) {
         return function (props: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>) {
-            const {modelId, viewContext, ...rest} = props;
+            const {modelId, ...rest} = props;
             return <ConnectableComponent
                 modelId={modelId}
                 view={view}
-                viewContext={viewContext}
                 createPublishEventProps={createPublishEventProps}
                 mapModelToProps={mapModelToProps}
                 {...rest}

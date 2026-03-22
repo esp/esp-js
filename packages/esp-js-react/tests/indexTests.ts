@@ -20,10 +20,6 @@ import * as espReact from '../src/index';
 
 describe('index exports', () => {
     it('check exports', () => {
-        expect(espReact.viewBinding).toBeDefined();
-        expect(espReact.ViewBinder).toBeDefined();
-        expect(espReact.DEFAULT_VIEW_KEY).toBeDefined();
-        expect(espReact.createViewForModel).toBeDefined();
         expect(espReact.connect).toBeDefined();
         expect(espReact.ConnectableComponent).toBeDefined();
         expect(espReact.useSyncModelWithSelector).toBeDefined();

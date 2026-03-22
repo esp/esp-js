@@ -17,6 +17,8 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -30,45 +32,43 @@ describe('Router', () => {
 
         let _eventReceivedCount = 0;
         let _updateReceivedCount = 0;
-        let _model;
+        // Flags stored outside the model (which gets frozen by immer)
+        let _flags = {
+            throwAtPre: false,
+            throwAtUpdate: false,
+            throwAtPost: false,
+            throwADispatch: false
+        };
 
         beforeEach(()=> {
             _eventReceivedCount =0;
             _updateReceivedCount =0;
-            _model = {
-                throwAtPre: false,
-                throwAtUpdate: false,
-                throwAtPost: false,
-                throwADispatch: false
-            };
-            _router.addModel(
-                'modelId1',
-                _model,
-                {
-                    preEventProcessor: (model)  => {
-                        if (model.throwAtPre) {
-                            throw new Error('Boom:Pre');
-                        }
-                    },
-                    postEventProcessor: (model) => {
-                        if (model.throwAtPost) {
-                            throw new Error('Boom:Post');
-                        }
+            _flags = { throwAtPre: false, throwAtUpdate: false, throwAtPost: false, throwADispatch: false };
+            const model = {};
+            new ModelBuilder(_router, 'modelId1', model)
+                .withPreEventProcessor(() => {
+                    if (_flags.throwAtPre) {
+                        throw new Error('Boom:Pre');
                     }
-                }
-            );
+                })
+                .withPostEventProcessor(() => {
+                    if (_flags.throwAtPost) {
+                        throw new Error('Boom:Post');
+                    }
+                })
+                .registerWithRouter();
             _router.getEventObservable('modelId1', 'Event1').subscribe(
-                ({event, context, model}) => {
+                ({event, context, model}: any) => {
                     _eventReceivedCount++;
-                    if(model.throwADispatch) {
+                    if (_flags.throwADispatch) {
                         throw new Error('Boom:Dispatch');
                     }
                 }
             );
             _router.getModelObservable('modelId1').subscribe(
-                    model => {
+                    (model: any) => {
                     _updateReceivedCount++;
-                    if(model.throwAtUpdate) {
+                    if (_flags.throwAtUpdate) {
                         throw new Error('Boom:Update');
                     }
                 }
@@ -77,7 +77,7 @@ describe('Router', () => {
 
         it('should halt and rethrow if a pre processor errors', () => {
             // halt and rethrow
-            _model.throwAtPre = true;
+            _flags.throwAtPre = true;
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
             }).toThrow(new Error('Boom:Pre'));
@@ -88,7 +88,7 @@ describe('Router', () => {
         });
 
         it('should halt and rethrow if an event stream handler errors ', () => {
-            _model.throwADispatch = true;
+            _flags.throwADispatch = true;
             // halt and rethrow
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
@@ -100,7 +100,7 @@ describe('Router', () => {
         });
 
         it('should halt and rethrow if a post processor errors', () => {
-            _model.throwAtPost = true;
+            _flags.throwAtPost = true;
             // halt and rethrow
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
@@ -112,7 +112,7 @@ describe('Router', () => {
         });
 
         it('should halt and rethrow if an update stream handler errors', () => {
-            _model.throwAtUpdate = true;
+            _flags.throwAtUpdate = true;
             // halt and rethrow
             expect(() => {
                 _router.publishEvent('modelId1', 'Event1', { });
@@ -125,7 +125,7 @@ describe('Router', () => {
 
         describe('when isHalted', () => {
             beforeEach(()=> {
-                _model.throwAtPre = true;
+                _flags.throwAtPre = true;
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', { });
                 }).toThrow(new Error('Boom:Pre'));
@@ -151,7 +151,7 @@ describe('Router', () => {
 
             it('should throw on addModel()', () => {
                 expect(() => {
-                    _router.addModel('modelId2', {});
+                    registerModel(_router, 'modelId2', {});
                 }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
@@ -159,22 +159,6 @@ describe('Router', () => {
                 expect(() => {
                     _router.getModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: Boom:Pre]'));
-            });
-        });
-
-        describe('runAction errors should halt the router', () => {
-            beforeEach(()=> {
-                expect(() => {
-                    _router.runAction('modelId1', () => {
-                        throw new Error('RunActionError');
-                    });
-                }).toThrow(new Error('RunActionError'));
-            });
-
-            it('should throw on publish', () => {
-                expect(() => {
-                    _router.publishEvent('modelId1', 'Event1', 'payload');
-                }).toThrow(new Error('ESP router halted due to previous unhandled error [Error: RunActionError]'));
             });
         });
 
@@ -203,7 +187,7 @@ describe('Router', () => {
 
             it('should throw on addModel()', () => {
                 expect(() => {
-                    _router.addModel('modelId2', {});
+                    registerModel(_router, 'modelId2', {});
                 }).toThrow(new Error('ESP router has been disposed'));
             });
 

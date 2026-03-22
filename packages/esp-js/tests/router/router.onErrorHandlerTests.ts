@@ -17,6 +17,8 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -26,7 +28,7 @@ describe('Router', () => {
 
     const ignoreErrors = action => {
         try {
-            action()
+            action();
         } catch(e) {}
     };
 
@@ -41,41 +43,38 @@ describe('Router', () => {
 
     describe('onErrorHandler tests', function() {
 
-        let _model;
+        // Flags stored outside the model (which gets frozen by immer)
+        let _flags = {
+            throwAtPre: false,
+            throwAtUpdate: false,
+            throwAtPost: false,
+            throwADispatch: false
+        };
 
         beforeEach(()=> {
-            _model = {
-                throwAtPre: false,
-                throwAtUpdate: false,
-                throwAtPost: false,
-                throwADispatch: false
-            };
-            _router.addModel(
-                'modelId1',
-                _model,
-                {
-                    preEventProcessor: (model)  => {
-                        if (model.throwAtPre) {
-                            throw new Error('Boom:Pre');
-                        }
-                    },
-                    postEventProcessor: (model) => {
-                        if (model.throwAtPost) {
-                            throw new Error('Boom:Post');
-                        }
+            _flags = { throwAtPre: false, throwAtUpdate: false, throwAtPost: false, throwADispatch: false };
+            new ModelBuilder(_router, 'modelId1', {})
+                .withPreEventProcessor(() => {
+                    if (_flags.throwAtPre) {
+                        throw new Error('Boom:Pre');
                     }
-                }
-            );
+                })
+                .withPostEventProcessor(() => {
+                    if (_flags.throwAtPost) {
+                        throw new Error('Boom:Post');
+                    }
+                })
+                .registerWithRouter();
             _router.getEventObservable('modelId1', 'Event1').subscribe(
-                ({event, context, model}) => {
-                    if(model.throwADispatch) {
+                ({event, context, model}: any) => {
+                    if (_flags.throwADispatch) {
                         throw new Error('Boom:Dispatch');
                     }
                 }
             );
             _router.getModelObservable('modelId1').subscribe(
-                model => {
-                    if(model.throwAtUpdate) {
+                (model: any) => {
+                    if (_flags.throwAtUpdate) {
                         throw new Error('Boom:Update');
                     }
                 }
@@ -85,7 +84,7 @@ describe('Router', () => {
         describe('onErrorHandler mutation tests', () => {
             it('should not call an errorHandler once removed', () => {
                 _router.removeOnErrorHandler(_onErrorHandler);
-                _model.throwAtPre = true;
+                _flags.throwAtPre = true;
                 ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
@@ -105,44 +104,39 @@ describe('Router', () => {
                 _router.addOnErrorHandler(handler1);
                 _router.addOnErrorHandler(handler2);
 
-                _model.throwAtPre = true;
+                _flags.throwAtPre = true;
                 ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
                 expect(hasRun).toEqual(true);
-
-            })
+            });
         });
 
         it('should call onErrorHandler and rethrow if a pre processor errors', () => {
-            // halt and rethrow
-            _model.throwAtPre = true;
+            _flags.throwAtPre = true;
             ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         it('should call onErrorHandler and rethrow if an event stream handler errors ', () => {
-            _model.throwADispatch = true;
-            // halt and rethrow
+            _flags.throwADispatch = true;
             ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         it('should call onErrorHandler and rethrow if a post processor errors', () => {
-            _model.throwAtPost = true;
-            // halt and rethrow
+            _flags.throwAtPost = true;
             ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         it('should call onErrorHandler and rethrow if an update stream handler errors', () => {
-            _model.throwAtUpdate = true;
-            // halt and rethrow
+            _flags.throwAtUpdate = true;
             ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         describe('when isHalted', () => {
             beforeEach(()=> {
-                _model.throwAtPre = true;
+                _flags.throwAtPre = true;
                 expect(() => {
                     _router.publishEvent('modelId1', 'Event1', { });
                 }).toThrow(new Error('Boom:Pre'));
@@ -165,28 +159,12 @@ describe('Router', () => {
             });
 
             it('should not call onErrorHandler on addModel()', () => {
-                ignoreErrors(() => _router.addModel('modelId2', {}));
+                ignoreErrors(() => registerModel(_router, 'modelId2', {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on getModelObservable()', () => {
                 ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
-                expect(_onErrorHandlerCallCount).toEqual(0);
-            });
-        });
-
-        describe('runAction errors should halt the router', () => {
-            beforeEach(()=> {
-                expect(() => {
-                    _router.runAction('modelId1', () => {
-                        throw new Error('RunActionError');
-                    });
-                }).toThrow(new Error('RunActionError'));
-                _onErrorHandlerCallCount = 0;
-            });
-
-            it('should not call onErrorHandler on publish', () => {
-                ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', 'payload'));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });
@@ -212,7 +190,7 @@ describe('Router', () => {
             });
 
             it('should not call onErrorHandler on addModel()', () => {
-                ignoreErrors(() => _router.addModel('modelId2', {}));
+                ignoreErrors(() => registerModel(_router, 'modelId2', {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 

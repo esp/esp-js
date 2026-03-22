@@ -19,6 +19,7 @@
 import * as esp from '../../src';
 import {EventEnvelope} from '../../src/router/envelopes';
 import {ObservationStage} from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -32,9 +33,9 @@ describe('Router', () => {
         _model2 = {};
         _model3 = {};
         _receivedEvents = [];
-        _router.addModel('modelId1', _model1);
-        _router.addModel('modelId2', _model2);
-        _router.addModel('modelId3', _model3);
+        registerModel(_router, 'modelId1', _model1);
+        registerModel(_router, 'modelId2', _model2);
+        registerModel(_router, 'modelId3', _model3);
 
         // getAllEventsObservable won't yield events if the models are not actually observing them.
         // Given that, we subscribe the above models to the events used in these tests.

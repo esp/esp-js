@@ -17,6 +17,7 @@
 // notice_end
 
 import {Router, EventEnvelope, DefaultModelAddress} from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -37,8 +38,8 @@ describe('Router', () => {
 
         it('queues and processes events received during event loop by model id', () => {
             let model1ProcessorReceived = 0, testPassed = false;
-            _router.addModel('modelId1', {});
-            _router.addModel('modelId2', {});
+            registerModel(_router, 'modelId1', {});
+            registerModel(_router, 'modelId2', {});
             _router.getEventObservable('modelId1', 'startEvent').subscribe(() => {
                 // publish an event for modelId2 while processing modelId1, thus queuing them
                 _router.publishEvent('modelId2', 'Event1', 'theEvent'); // should be processed second
@@ -57,7 +58,7 @@ describe('Router', () => {
         it('should reset the EventContext for each event', () => {
             let testPassed = false;
             let lastEventDelivered = false;
-            _router.addModel('modelId1', {});
+            registerModel(_router, 'modelId1', {});
             _router.getEventObservable('modelId1', 'startEvent').subscribe(({event, context}) => {
                 context.commit();
                 _router.publishEvent('modelId1', 'Event1', 'theEvent1');
@@ -94,7 +95,7 @@ describe('Router', () => {
                 _router.publishEvent('fooModel', 'startEvent', 'start');
             }).toThrow();
 
-            _router.addModel('fooModel', {});
+            registerModel(_router, 'fooModel', {});
             _router.publishEvent('fooModel', 'startEvent', 'start');
 
             expect(receivedEvents.length).toEqual(1);
@@ -102,7 +103,7 @@ describe('Router', () => {
 
         it('can publish with ModelAddress and DefaultModelAddress', () => {
             let receivedEnvelopes: EventEnvelope<unknown, unknown>[] = [];
-            _router.addModel('modelId1', {});
+            registerModel(_router, 'modelId1', {});
             _router.getEventObservable('modelId1', 'startEvent').subscribe((e: EventEnvelope<unknown, unknown>) => {
                 receivedEnvelopes.push(e);
             });
@@ -116,7 +117,7 @@ describe('Router', () => {
 
         it('can publish including entityKey', () => {
             let receivedEnvelopes: EventEnvelope<unknown, unknown>[] = [];
-            _router.addModel('modelId1', {});
+            registerModel(_router, 'modelId1', {});
             _router.getEventObservable('modelId1', 'startEvent').subscribe((e: EventEnvelope<unknown, unknown>) => {
                 receivedEnvelopes.push(e);
             });

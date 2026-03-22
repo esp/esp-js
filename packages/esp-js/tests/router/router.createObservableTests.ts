@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -24,106 +25,84 @@ describe('Router', () => {
 
         describe('model event workflow', () => {
 
-            let _router, _model1, _model2, _workflowActions;
-
-            class TestModel {
-                private modelId: string;
-                private workflowActions: string[];
-                private _router: esp.Router;
-                private priceSubject: esp.Subject<any>;
-                constructor(id, router, workflowActions) {
-                    this.modelId = id;
-                    this.workflowActions = workflowActions || [];
-                    this._router = router;
-                    this.priceSubject = router.createSubject();
-                }
-
-                registerWitRouter() {
-                    this._router.addModel(this.modelId, this);
-                }
-
-                preProcess() {
-                    this.workflowActions.push(`preProcess-${this.modelId}`);
-                }
-
-                getPrices() {
-                    return this._router.createObservableFor(
-                        this.modelId,
-                        observer => {
-                            this.workflowActions.push(`obsCreate-${this.modelId}`);
-                            let subscription = this.priceSubject.subscribe(observer);
-                            return () => {
-                                this.workflowActions.push(`disposed-${this.modelId}`);
-                                subscription.dispose();
-                            };
-                        }
-                    );
-                }
-
-                postProcess() {
-                    this.workflowActions.push(`postProcess-${this.modelId}`);
-                }
-            }
+            let _router: esp.Router, _workflowActions: string[];
+            let _model1Id = 'm1', _model2Id = 'm2';
+            let _priceSubject1: esp.Subject<any>;
 
             beforeEach(() => {
                 _router = new esp.Router();
                 _workflowActions = [];
-                _model1 = new TestModel('m1', _router, _workflowActions);
-                _model1.registerWitRouter();
-                _model2 = new TestModel('m2', _router, _workflowActions);
-                _model2.registerWitRouter();
+                _priceSubject1 = _router.createSubject();
+
+                new ModelBuilder(_router, _model1Id, {})
+                    .withPreEventProcessor(() => { _workflowActions.push(`preProcess-${_model1Id}`); })
+                    .withPostEventProcessor(() => { _workflowActions.push(`postProcess-${_model1Id}`); })
+                    .registerWithRouter();
+
+                new ModelBuilder(_router, _model2Id, {})
+                    .withPreEventProcessor(() => { _workflowActions.push(`preProcess-${_model2Id}`); })
+                    .withPostEventProcessor(() => { _workflowActions.push(`postProcess-${_model2Id}`); })
+                    .registerWithRouter();
             });
 
+            function getPrices() {
+                return _router.createObservableFor(
+                    _model1Id,
+                    observer => {
+                        _workflowActions.push(`obsCreate-${_model1Id}`);
+                        let subscription = _priceSubject1.subscribe(observer);
+                        return () => {
+                            _workflowActions.push(`disposed-${_model1Id}`);
+                            subscription.dispose();
+                        };
+                    }
+                );
+            }
+
             it('subscribes on correct dispatch loop', () => {
-                _model1
-                    .getPrices()
-                    .streamFor(_model2.modelId)
-                    .subscribe(o => {
-                    });
+                getPrices()
+                    .streamFor(_model2Id)
+                    .subscribe(o => {});
                 expect(_workflowActions).toEqual(['preProcess-m1', 'obsCreate-m1', 'postProcess-m1']);
             });
 
             it('notifies on correct dispatch loop', () => {
-                _model1
-                    .getPrices()
-                    .streamFor(_model2.modelId)
+                getPrices()
+                    .streamFor(_model2Id)
                     .subscribe(
                         i => {
-                            if (_router.isOnDispatchLoopFor(_model2.modelId)) {
+                            if (_router.isOnDispatchLoopFor(_model2Id)) {
                                 _workflowActions.push(`observerCalled-${i}`);
                             }
                         }
                     );
                 _workflowActions.length = 0; // clear initial subscribe workflows
-                _model1.priceSubject.onNext('aPrice');
+                _priceSubject1.onNext('aPrice');
                 expect(_workflowActions).toEqual(['preProcess-m2', 'observerCalled-aPrice', 'postProcess-m2']);
             });
 
             it('completes on correct dispatch loop', () => {
-                _model1
-                    .getPrices()
-                    .streamFor(_model2.modelId)
+                getPrices()
+                    .streamFor(_model2Id)
                     .subscribe(
                         o => {
                             _workflowActions.push('observerCalled'); // shouldn't be hit
                         },
                         () => {
-                            if (_router.isOnDispatchLoopFor(_model2.modelId)) {
+                            if (_router.isOnDispatchLoopFor(_model2Id)) {
                                 _workflowActions.push('completed');
                             }
                         }
                     );
                 _workflowActions.length = 0; // clear initial subscribe workflows
-                _model1.priceSubject.onCompleted();
+                _priceSubject1.onCompleted();
                 expect(_workflowActions).toEqual(['preProcess-m2', 'completed', 'postProcess-m2']);
             });
 
             it('disposes on correct dispatch loop', () => {
-                let subscription = _model1
-                    .getPrices()
-                    .streamFor(_model2.modelId)
-                    .subscribe(o => {
-                    });
+                let subscription = getPrices()
+                    .streamFor(_model2Id)
+                    .subscribe(o => {});
                 _workflowActions.length = 0; // clear initial subscribe workflows
                 subscription.dispose();
                 expect(_workflowActions).toEqual(['preProcess-m1', 'disposed-m1', 'postProcess-m1']);
@@ -131,11 +110,9 @@ describe('Router', () => {
 
             describe('single model router', () => {
                 it('honours same workflow as full router', () => {
-                    // we could break down the tests for the single model router as we've done for the full router above
-                    // however it's really only proxying the underlying router so a smoke test is sufficient here.
-                    let model3 = {}, model4 = {}, results = [];
-                    _router.addModel('m3', model3);
-                    _router.addModel('m4', model4);
+                    let results = [];
+                    new ModelBuilder(_router, 'm3', {}).registerWithRouter();
+                    new ModelBuilder(_router, 'm4', {}).registerWithRouter();
                     let singleModelRouter = _router.createModelRouter('m3');
                     let subject = singleModelRouter.createSubject();
                     let stream = singleModelRouter.createObservable(

@@ -105,10 +105,6 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    runAction(modelId: string): void {
-
-    }
-
     eventEnqueued(modelId: string, entityKey: string, eventType: string, event: any): void {
         let modelEventCount = this._noisyModelMap.get(modelId);
         this._noisyModelMap.set(modelId, modelEventCount + 1);
@@ -143,10 +139,6 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
     }
 
     dispatchingEvents(): void {
-
-    }
-
-    dispatchingAction(): void {
 
     }
 

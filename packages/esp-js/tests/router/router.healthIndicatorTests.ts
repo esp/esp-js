@@ -18,28 +18,25 @@
 
 import * as esp from '../../src';
 import {HealthStatus} from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
     let _router;
-    let _model;
+    let _flags;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     beforeEach(() => {
-        _model = {
-            throwADispatch: false
-        };
-        _router.addModel('modelId1', _model, {});
-        _router.getEventObservable('modelId1', 'Event1').subscribe(
-            ({event, context, model}) => {
-                if (model.throwADispatch) {
-                    throw new Error('Boom:Dispatch');
-                }
+        _flags = { throwADispatch: false };
+        registerModel(_router, 'modelId1', {});
+        _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
+            if (_flags.throwADispatch) {
+                throw new Error('Boom:Dispatch');
             }
-        );
+        });
     });
 
     it('is healthy by default', () => {
@@ -49,7 +46,7 @@ describe('Router', () => {
     });
 
     it('when halted is unhealthy', () => {
-        _model.throwADispatch = true;
+        _flags.throwADispatch = true;
         expect(() => {
             _router.publishEvent('modelId1', 'Event1', {});
         }).toThrow(new Error('Boom:Dispatch'));

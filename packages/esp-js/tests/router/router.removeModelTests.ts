@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -34,45 +35,47 @@ describe('Router', () => {
         let _postProcessorReceivedCount = 0;
         let _updateReceivedCount1 = 0;
         let _updateReceivedCount2 = 0;
-        let _model;
+        // flags live outside the frozen model so tests can mutate them freely
+        let _flags = {
+            removeAtPre: false,
+            removeAtUpdate: false,
+            removeAtPost: false,
+            removeAtDispatch: false
+        };
 
         beforeEach(()=> {
-            _model = {
+            _flags = {
                 removeAtPre: false,
                 removeAtUpdate: false,
                 removeAtPost: false,
                 removeAtDispatch: false
             };
-            _router.addModel(
-                'modelId1',
-                _model,
-                {
-                    preEventProcessor: (model) => {
-                        _preProcessorReceivedCount++;
-                        if (model.removeAtPre) {
-                            _router.removeModel('modelId1');
-                        }
-                    },
-                    postEventProcessor : (model) => {
-                        _postProcessorReceivedCount++;
-                        if(model.removeAtPost) {
-                            _router.removeModel('modelId1');
-                        }
+            new ModelBuilder(_router, 'modelId1', {})
+                .withPreEventProcessor(() => {
+                    _preProcessorReceivedCount++;
+                    if (_flags.removeAtPre) {
+                        _router.removeModel('modelId1');
                     }
-                }
-            );
-            _router.getEventObservable('modelId1', 'Event1').subscribe(({event, context, model}) => {
+                })
+                .withPostEventProcessor(() => {
+                    _postProcessorReceivedCount++;
+                    if (_flags.removeAtPost) {
+                        _router.removeModel('modelId1');
+                    }
+                })
+                .registerWithRouter();
+            _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 _eventReceivedCount1++;
-                if(model.removeAtDispatch) {
+                if (_flags.removeAtDispatch) {
                     _router.removeModel('modelId1');
                 }
             });
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 _eventReceivedCount2++;
             });
-            _router.getModelObservable('modelId1').subscribe(model => {
+            _router.getModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount1++;
-                if(model.removeAtUpdate) {
+                if (_flags.removeAtUpdate) {
                     _router.removeModel('modelId1');
                 }
             });
@@ -124,7 +127,7 @@ describe('Router', () => {
             }
 
             it('should allow a preprocessor to removeModel', () => {
-                _model.removeAtPre = true;
+                _flags.removeAtPre = true;
                 _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
@@ -137,7 +140,7 @@ describe('Router', () => {
             });
 
             it('should allow an eventProcessor to removeModel', () => {
-                _model.removeAtDispatch = true;
+                _flags.removeAtDispatch = true;
                 _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
@@ -150,7 +153,7 @@ describe('Router', () => {
             });
 
             it('should allow a postprocessor to removeModel', () => {
-                _model.removeAtPost = true;
+                _flags.removeAtPost = true;
                 _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,
@@ -163,7 +166,7 @@ describe('Router', () => {
             });
 
             it('should allow a model update observer to removeModel', () => {
-                _model.removeAtUpdate = true;
+                _flags.removeAtUpdate = true;
                 _router.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
                     atPre: 1,

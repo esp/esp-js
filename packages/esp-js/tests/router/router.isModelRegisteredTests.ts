@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -33,7 +34,7 @@ describe('Router', () => {
         });
 
         it('returns true if model is registered', () => {
-            _router.addModel('modelId1', {});
+            registerModel(_router, 'modelId1', {});
             expect(_router.isModelRegistered('modelId1')).toEqual(true);
         });
 
@@ -42,7 +43,7 @@ describe('Router', () => {
         });
 
         it('returns false if model NOT unregistered', () => {
-            _router.addModel('modelId1', {});
+            registerModel(_router, 'modelId1', {});
             _router.removeModel('modelId1');
             expect(_router.isModelRegistered('modelId1')).toEqual(false);
         });

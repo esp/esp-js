@@ -19,23 +19,19 @@
 import {DefaultModelAddress, ModelAddress, EventContext, EventRecord, ModelRecord, ObservationStage, SingleModelRouter, State, Status} from './';
 import {Observable, RouterObservable, RouterSubject, Subject} from '../reactive';
 import {Guard, Health, HealthIndicator, Logger, utils} from '../system';
-import {CompositeDisposable, Disposable, DisposableBase} from '../system/disposables';
-import {EspDecoratorUtil, ObserveEventPredicate} from '../decorators';
-import {DecoratorObservationRegister} from './decoratorObservationRegister';
-import {EventProcessors} from './eventProcessors';
+import {DisposableBase} from '../system/disposables';
 import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventStreamsRegistration} from './modelRecord';
 import {DefaultEventContext} from './eventContext';
-import {DecoratorTypes} from '../decorators';
 import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor, reduxDevToolsDetectedAndEnabledInEsp} from './devtools';
+import {ModelConfig, PublishDelegate} from '../model/types';
+import {produce, freeze} from 'immer';
 
 let _log = Logger.create('Router');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
-const RUN_ACTION_EVENT_NAME = '__runAction';
-
-let routerInstanceId = 1;
+const _RUN_ACTION_EVENT_NAME = '__runAction';
 
 export class Router extends DisposableBase implements HealthIndicator {
     private _models: Map<string, ModelRecord>;
@@ -44,7 +40,6 @@ export class Router extends DisposableBase implements HealthIndicator {
     private _state: State;
     private _onErrorHandlers: Array<(error: Error) => void>;
     private _diagnosticMonitor: DiagnosticMonitor;
-    private _decoratorObservationRegister: DecoratorObservationRegister;
     private _currentHealth = Health.builder(this.healthIndicatorName).isHealthy().build();
 
     public constructor() {
@@ -55,8 +50,6 @@ export class Router extends DisposableBase implements HealthIndicator {
         this._onErrorHandlers = [];
 
         this._state = new State();
-
-        this._decoratorObservationRegister = new DecoratorObservationRegister();
 
         this._diagnosticMonitor = reduxDevToolsDetectedAndEnabledInEsp()
             ? new ReduxDevToolsDiagnosticMonitor(`Router_${Date.now()}`)
@@ -76,22 +69,56 @@ export class Router extends DisposableBase implements HealthIndicator {
         return this._currentHealth;
     }
 
-    public addModel(modelId: string, model: any, eventProcessors?: EventProcessors) {
+    public addModel<TModel>(modelId: string, initialModel: TModel, config: ModelConfig<TModel>): void {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
-        Guard.isDefined(model, 'The model argument must be defined');
-        if (eventProcessors) {
-            Guard.isObject(eventProcessors, `The eventProcessors argument provided with the model (of id ${modelId}) should be an object`);
+        Guard.isDefined(initialModel, 'The model argument must be defined');
+        Guard.isDefined(config, 'The config argument must be defined');
+
+        const modelRecord = this._getOrCreateModelRecord(modelId) as ModelRecord<TModel>;
+        if (modelRecord.hasModel) {
+            throw new Error('The model with id [' + modelId + '] is already registered');
         }
-        let modelRecord = this._models.get(modelId);
-        if (modelRecord) {
-            // It's possible the model was observed first, thus has a model record but not yet an actual model.
-            // If there is a record, we just ensure it's model isn't there yet.
-            Guard.isFalsey(modelRecord.model, 'The model with id [' + modelId + '] is already registered');
+
+        const publishDelegate: PublishDelegate = (eventType: string, event: any) => {
+            this.publishEvent(modelId, eventType, event);
+        };
+
+        const frozenModel = freeze(initialModel, true) as TModel;
+        modelRecord.upgradeToFullModel(frozenModel, config, publishDelegate);
+
+        // Pre-register event streams for all known event types
+        for (const eventType of config.eventHandlers.keys()) {
+            modelRecord.getOrCreateEventStreamsRegistration(
+                eventType,
+                <Observable<EventEnvelope<any, any>>>this._dispatchSubject
+            );
         }
-        this._getOrCreateModelRecord(modelId, model, eventProcessors);
-        this._dispatchSubject.onNext({modelId: modelId, model: model, dispatchType: DispatchType.ModelUpdate});
+        for (const eventType of config.previewHandlers.keys()) {
+            modelRecord.getOrCreateEventStreamsRegistration(
+                eventType,
+                <Observable<EventEnvelope<any, any>>>this._dispatchSubject
+            );
+        }
+        for (const eventType of config.effectHandlers.keys()) {
+            modelRecord.getOrCreateEventStreamsRegistration(
+                eventType,
+                <Observable<EventEnvelope<any, any>>>this._dispatchSubject
+            );
+        }
+
+        // Start subscription factories
+        for (const factory of config.subscriptionFactories) {
+            const disposable = factory(publishDelegate);
+            if (disposable) {
+                modelRecord.subscriptionDisposables.add(disposable);
+            }
+        }
+
+        // Emit initial model update
+        this._dispatchSubject.onNext({modelId: modelId, model: frozenModel, dispatchType: DispatchType.ModelUpdate});
         this._diagnosticMonitor.addModel(modelId);
+
     }
 
     public removeModel(modelId: string) {
@@ -106,9 +133,28 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
     }
 
+    /** @internal Used by reactive utilities (subscribeOn, streamFor) to schedule callbacks on the dispatch loop. Not public API.
+     * @deprecated */
+    public _runAction<TModel>(modelId: string, action: (model: TModel) => void) {
+        this._throwIfHaltedOrDisposed();
+        Guard.isString(modelId, 'modelId must be a string');
+        Guard.isFunction(action, 'action must be a function');
+        let modelRecord = this._models.get(modelId);
+        if (!modelRecord || !modelRecord.hasModel) {
+            throw new Error('Can not run action as model with id [' + modelId + '] not registered');
+        }
+        modelRecord.eventQueue.push({entityKey: null, eventType: _RUN_ACTION_EVENT_NAME, event: null, action: action});
+        try {
+            this._purgeEventQueues();
+        } catch (err) {
+            this._halt(err);
+        }
+    }
+
     public isModelRegistered(modelId: string): boolean {
         Guard.isString(modelId, 'The modelId argument should be a string');
-        return this._models.has(modelId);
+        const record = this._models.get(modelId);
+        return record ? record.hasModel : false;
     }
 
     public isModelDispatchStatus(modelId: string, status: Status): boolean {
@@ -130,7 +176,7 @@ export class Router extends DisposableBase implements HealthIndicator {
             if (!modelRecord.hasModel) {
                 throw new Error(`Model with id ${modelId} is registered, however it's model has not yet been set. Can not retrieve`);
             }
-            return modelRecord.model;
+            return modelRecord.model as unknown as TModel;
         }
         return null;
     }
@@ -157,8 +203,8 @@ export class Router extends DisposableBase implements HealthIndicator {
         return null;
     }
 
-    public publishEvent(modelId: string, eventType: string, event: any) : void;
-    public publishEvent(modelAddress: ModelAddress, eventType: string, event: any)  : void;
+    public publishEvent(modelId: string, eventType: string, event: any): void;
+    public publishEvent(modelAddress: ModelAddress, eventType: string, event: any): void;
     public publishEvent(...args: any[]): void {
         this._throwIfHaltedOrDisposed();
         const modelAddress: ModelAddress = utils.isObject(args[0]) && args[0] instanceof DefaultModelAddress
@@ -202,25 +248,6 @@ export class Router extends DisposableBase implements HealthIndicator {
                 eventType
             );
         });
-    }
-
-    public runAction<TModel>(modelId: string, action: (model: TModel) => void) {
-        this._throwIfHaltedOrDisposed();
-        Guard.isString(modelId, 'modelId must be a string');
-        Guard.isTruthy(modelId !== '', 'modelId must not be empty');
-        Guard.isFunction(action, 'the argument passed to runAction must be a function and can not be null|undefined');
-        this._diagnosticMonitor.runAction(modelId);
-        let modelRecord = this._models.get(modelId);
-        if (!modelRecord) {
-            throw new Error('Can not run action as model with id [' + modelId + '] not registered');
-        } else {
-            modelRecord.eventQueue.push({eventType: RUN_ACTION_EVENT_NAME, entityKey: null, event: null, action: action});
-            try {
-                this._purgeEventQueues();
-            } catch (err) {
-                this._halt(err);
-            }
-        }
     }
 
     public getEventObservable<TEvent, TModel>(modelId: string, eventType: string, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
@@ -283,7 +310,7 @@ export class Router extends DisposableBase implements HealthIndicator {
             if (ObservationStage.isObservationStage(args[0])) {
                 stage = this._tryDefaultObservationStage(args[0]);
                 eventFilter = () => true;
-            } else  {
+            } else {
                 // else assume it's an array
                 stage = ObservationStage.normal;
                 eventFilter = buildFilter(args[0]);
@@ -352,13 +379,6 @@ export class Router extends DisposableBase implements HealthIndicator {
         return SingleModelRouter.createWithRouter<TModel>(this, targetModelId);
     }
 
-    public observeEventsOn(modelId: string, object: any): Disposable {
-        if (EspDecoratorUtil.hasMetadata(object)) {
-            return this._observeEventsUsingDirectives(modelId, object);
-        }
-        return new DisposableBase();
-    }
-
     public addOnErrorHandler(handler: (error: Error) => void) {
         this._onErrorHandlers.push(handler);
     }
@@ -372,24 +392,32 @@ export class Router extends DisposableBase implements HealthIndicator {
         }
     }
 
+
     public isOnDispatchLoopFor(modelId: string) {
         Guard.isString(modelId, 'modelId must be a string');
         Guard.isFalsey(modelId === '', 'modelId must not be empty');
         return this._state.currentModelId === modelId;
     }
 
-    private _getOrCreateModelRecord(modelId: string, model?: any, eventProcessors?: EventProcessors): ModelRecord {
+    private _getOrCreateModelRecord(modelId: string): ModelRecord {
         let modelRecord: ModelRecord = this._models.get(modelId);
-        if (modelRecord) {
-            if (!modelRecord.hasModel) {
-                modelRecord.setModel(model, eventProcessors);
-            }
-        } else {
-            let modelObservationStream =  this._dispatchSubject
+        if (!modelRecord) {
+            // Create a shell record for lazy observation registration (getEventObservable / getModelObservable called before addModel)
+            // This record has no handlers — it will be a proper record once addModel is called.
+            // We create a minimal placeholder; however since we removed lazy addModel support,
+            // we just create a modelObservationStream-only record with empty config.
+            let modelObservationStream = this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
                 .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate && envelope.modelId === modelId)
                 .share(true);
-            modelRecord = new ModelRecord(modelId, model, modelObservationStream, eventProcessors);
+            const emptyConfig = {
+                eventHandlers: new Map(),
+                previewHandlers: new Map(),
+                effectHandlers: new Map(),
+                subscriptionFactories: [],
+            };
+            const noopPublish: PublishDelegate = () => {};
+            modelRecord = new ModelRecord(modelId, null, modelObservationStream, emptyConfig as any, noopPublish);
             this._models.set(modelId, modelRecord);
         }
         return modelRecord;
@@ -430,11 +458,8 @@ export class Router extends DisposableBase implements HealthIndicator {
                     this._state.moveToEventDispatch();
                     this._diagnosticMonitor.dispatchingEvents();
                     while (hasEvents) {
-                        if (eventRecord.eventType === RUN_ACTION_EVENT_NAME) {
-                            this._diagnosticMonitor.dispatchingAction();
-                            modelRecord.eventDispatchProcessor(modelRecord.model, null, RUN_ACTION_EVENT_NAME);
+                        if (eventRecord.eventType === _RUN_ACTION_EVENT_NAME) {
                             eventRecord.action(modelRecord.model);
-                            modelRecord.eventDispatchedProcessor(modelRecord.model, null, RUN_ACTION_EVENT_NAME);
                         } else {
                             this._state.eventsProcessed.push(eventRecord.eventType);
                             this._dispatchEventToEventProcessors(
@@ -480,18 +505,32 @@ export class Router extends DisposableBase implements HealthIndicator {
             eventType,
             entityKey
         );
+
+        // --- preview stage ---
+        const previewHandlers = modelRecord.previewHandlers.get(eventType);
+        if (previewHandlers && previewHandlers.length > 0) {
+            previewHandlers.forEach(h => h(modelRecord.currentModel, event, eventContext));
+        }
         this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.preview);
         if (eventContext.isCommitted) {
             throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
         }
+
         if (!eventContext.isCanceled) {
-            let wasCommittedAtNormalStage;
+            // --- normal stage: run immer produce then dispatch ---
             eventContext.updateCurrentState(ObservationStage.normal);
+            const eventHandlers = modelRecord.eventHandlers.get(eventType);
+            if (eventHandlers && eventHandlers.length > 0) {
+                modelRecord.currentModel = produce(modelRecord.currentModel, (draft: any) => {
+                    eventHandlers.forEach(h => h(draft, event, eventContext));
+                }) as any;
+            }
             this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
-            wasCommittedAtNormalStage = eventContext.isCommitted;
+
+            let wasCommittedAtNormalStage = eventContext.isCommitted;
             if (wasCommittedAtNormalStage) {
                 eventContext.updateCurrentState(ObservationStage.committed);
                 this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.committed);
@@ -499,6 +538,8 @@ export class Router extends DisposableBase implements HealthIndicator {
                     throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
                 }
             }
+
+            // --- final stage: dispatch then run effects ---
             eventContext.updateCurrentState(ObservationStage.final);
             this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.final);
             if (eventContext.isCanceled) {
@@ -506,6 +547,11 @@ export class Router extends DisposableBase implements HealthIndicator {
             }
             if (!wasCommittedAtNormalStage && eventContext.isCommitted) {
                 throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
+            }
+
+            const effectHandlers = modelRecord.effectHandlers.get(eventType);
+            if (effectHandlers && effectHandlers.length > 0) {
+                effectHandlers.forEach(h => h(modelRecord.currentModel, event, eventContext, modelRecord.publishDelegate));
             }
         }
     }
@@ -560,36 +606,6 @@ export class Router extends DisposableBase implements HealthIndicator {
             }
         }
         return candidate;
-    }
-
-    private _observeEventsUsingDirectives(modelId: string, object: any) {
-        if (this._decoratorObservationRegister.isRegistered(modelId, object)) {
-            // tslint:disable-next-line:max-line-length
-            throw new Error(`observeEventsOn has already been called for model with id '${modelId}' and the given object. Note you can observe the same model with different decorated objects, however you have called observeEventsOn twice with the same object.`);
-        }
-        this._decoratorObservationRegister.register(modelId, object);
-        let compositeDisposable = new CompositeDisposable();
-        let eventsDetails = EspDecoratorUtil.getAllEvents(object);
-        for (let i = 0; i < eventsDetails.length; i++) {
-            let details = eventsDetails[i];
-            compositeDisposable.add(this.getEventObservable(modelId, details.eventType, details.observationStage).subscribe((eventEnvelope) => {
-                // note if the code is uglifyied then details.functionName isn't going to mean much.
-                // If you're packing your vendor bundles, or debug bundles separately then you can use the no-mangle-functions option to retain function names.
-                let predicate = <ObserveEventPredicate>details.predicate;
-                if (!predicate || predicate(object, eventEnvelope.event, eventEnvelope.context)) {
-                    this._diagnosticMonitor.dispatchingViaDirective(details.functionName);
-                    if (details.decoratorType === DecoratorTypes.observeEvent) {
-                        object[details.functionName](eventEnvelope.event, eventEnvelope.context, eventEnvelope.model);
-                    } else {
-                        object[details.functionName](eventEnvelope);
-                    }
-                }
-            }));
-        }
-        compositeDisposable.add(() => {
-            this._decoratorObservationRegister.removeRegistration(modelId, object);
-        });
-        return compositeDisposable;
     }
 
     private _tryDefaultObservationStage(stage?: ObservationStage) {

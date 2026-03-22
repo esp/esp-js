@@ -36,9 +36,6 @@ export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticM
     executingEvent(eventType: string): void {
         
     }
-    runAction(modelId: string): void {
-        
-    }
     eventEnqueued(modelId: string, entityKey: string, eventType: string): void {
         
     }
@@ -52,9 +49,6 @@ export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticM
         
     }
     dispatchingEvents(): void {
-        
-    }
-    dispatchingAction(): void {
         
     }
     dispatchingEvent(eventType: string, stage: string): void {

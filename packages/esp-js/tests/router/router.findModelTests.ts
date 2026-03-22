@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -30,9 +31,9 @@ describe('Router', () => {
         m1 = { id: 'm1'};
         m2 = { id: 'm2'};
         m3 = { id: 'm3'};
-        _router.addModel('m1', m1);
-        _router.addModel('m2', m2);
-        _router.addModel('m3', m3);
+        registerModel(_router, 'm1', m1);
+        registerModel(_router, 'm2', m2);
+        registerModel(_router, 'm3', m3);
 
     });
 

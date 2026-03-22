@@ -32,13 +32,13 @@ RouterObservable.prototype.subscribeOn = function<T>(modelId) {
                 this.isDisposed = true;
                 let _subscription = this.subscription;
                 if (_subscription) {
-                    source._router.runAction(modelId, () => {
+                    source._router._runAction(modelId, () => {
                         _subscription.dispose();
                     });
                 }
             }
         };
-        source._router.runAction(modelId, () => {
+        source._router._runAction(modelId, () => {
             if (!disposable.isDisposed) {
                 disposable.subscription = source.subscribe(observer);
             }

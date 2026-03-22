@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `Router` sits between event publishers and models: publishers call `router.publishEvent(modelId, eventType, event)`, the router queues and dispatches events through ordered observation stages, and the mutated model is then pushed to model observers. The framework supports both OO and immutable (Redux-like) modeling patterns and is designed for complex composite single-page applications.
+ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `Router` sits between event publishers and models: publishers call `router.publishEvent(modelId, eventType, event)`, the router queues and dispatches events through ordered observation stages, and the mutated model is then pushed to model observers. The framework uses [immer](https://immerjs.github.io/immer/) directly in the dispatch loop to produce immutable state snapshots. It is designed for complex composite single-page applications.
 
-The monorepo contains the core router, dependency injection container, React integration, immutable model support, RxJS utilities, a composite-app UI framework, and supporting packages.
+The monorepo contains the core router, dependency injection container, React integration, RxJS utilities, a composite-app UI framework, and supporting packages.
 
 ## Monorepo Structure
 
@@ -13,8 +13,8 @@ packages/
   esp-js              # Core event router — foundational, no dependencies on other esp-* packages
   esp-js-di           # Standalone IoC container (JavaScript, not TypeScript)
   esp-js-metrics      # Pluggable metrics abstraction (prom-client-compatible interface)
-  esp-js-polimer      # Immutable model support using immer; depends on esp-js + rxjs
-  esp-js-react        # React bindings (ConnectableComponent, hooks); depends on esp-js + esp-js-polimer
+  esp-js-polimer      # DEPRECATED in v9 — immer integration moved into esp-js core
+  esp-js-react        # React bindings (ConnectableComponent, hooks); depends on esp-js
   esp-js-rx           # RxJS operator utilities; depends on esp-js + rxjs
   esp-js-ui           # Composite app framework (Shell, Module, Region, ViewFactory); depends on most packages
   esp-js-ui-rxcompat  # Legacy RxJS 5/6 compat shims for esp-js-rx; depends on esp-js + esp-js-rx + rxjs-compat
@@ -40,7 +40,7 @@ esp-js-di       (no esp deps)
 esp-js-metrics  (no esp deps)
 esp-js          (no esp deps)
   └── esp-js-rx
-  └── esp-js-polimer
+  └── esp-js-polimer  (DEPRECATED — use esp-js ModelBuilder directly)
         └── esp-js-react
               └── esp-js-ui  (also depends on esp-js-di, esp-js-metrics, esp-js-rx)
   └── esp-js-ui-rxcompat  (also depends on esp-js-rx)
@@ -51,7 +51,7 @@ esp-js          (no esp deps)
 - **Package manager**: npm (workspaces)
 - **Monorepo orchestration**: Lerna 8 (`lerna.json`)
 - **Per-package build scripts**: delegated to `nps` (`package-scripts.js` at root defines shared scripts)
-- **Versioning**: Lerna fixed-mode — all packages share the same version (`8.1.0`)
+- **Versioning**: Lerna fixed-mode — all packages share the same version (see `lerna.json` for current version)
 - **Publishing**: `forcePublish: true` — every package is always published together
 
 ### Key root commands
@@ -118,9 +118,9 @@ npm run test-ci              # jest (no watch, CI mode)
 5. `npm test` from inside a package for watch-mode tests
 6. `npm run build-prod && npm test` from root before committing
 
-**Adding a new package**: use `yarn create-package` (invokes `nps create-package`).
+**Adding a new package**: use `npm run create-package` (invokes `nps create-package`).
 
-**Local linking**: Yarn workspaces handle symlinking automatically — no `yarn link` required.
+**Local linking**: npm workspaces handle symlinking automatically — no `npm link` required.
 
 ## Key Architectural Patterns
 
@@ -128,24 +128,43 @@ npm run test-ci              # jest (no watch, CI mode)
 
 1. `router.publishEvent(modelId, eventType, event)` — enqueues event
 2. Router drains the queue, dispatching each event through four sequential observation stages:
-   - `preview` — observe before mutation; can cancel the event
-   - `normal` — primary mutation stage
+   - `preview` — observe before mutation; can cancel the event (`PreviewHandler`)
+   - `normal` — primary mutation stage; immer `produce` is applied, handler receives a `Draft<TModel>` (`EventHandler`)
    - `committed` — only fires if `eventContext.commit()` was called during `normal`
-   - `final` — fires regardless of commit; observe after all mutation
+   - `final` — fires regardless of commit; effects run here, receiving the frozen immutable model (`EffectHandler`)
 3. After all events for a model are processed, the model is pushed to model observers (`router.getModelObservable(modelId)`)
 
-### OO model pattern (esp-js core)
+### Functional model pattern (v9+)
 
-- Extend `ModelBase` (from `esp-js`, re-exported by `esp-js-ui`)
-- Decorate handler methods with `@observeEvent(eventType)` or `@observeEvent(eventType, ObservationStage.preview)`
-- Call `this.observeEvents()` in the constructor to register the model and wire decorators
+The primary way to register a model with the router. Use `ModelBuilder<TModel>` to collect handlers, then call `registerWithRouter()` — the builder is discarded after registration:
 
-### Immutable model pattern (esp-js-polimer)
+```typescript
+import {Router, ModelBuilder} from 'esp-js';
 
-- Define a plain `ImmutableModel` interface (nested state slices)
-- Use `PolimerModelBuilder` to construct a `PolimerModel` registered with the router
-- Decorate handler methods with `@observeEvent` on state handler objects; immer's `produce` applies mutations as drafts
-- Use `@eventTransformFor` on observable-returning methods for async side-effects that produce new events
+interface CounterModel { count: number; }
+
+new ModelBuilder<CounterModel>(router, 'counter', { count: 0 })
+    .withPreviewHandler('Increment', (model, event, ctx) => {
+        if (event.amount < 0) ctx.cancel();
+    })
+    .withEventHandler('Increment', (draft, event) => {
+        draft.count += event.amount; // mutate immer draft directly
+    })
+    .withEffect('Increment', (model, event, ctx, publish) => {
+        if (model.count > 100) publish('CounterMaxed', {});
+    })
+    .withEventSubscription(publish => {
+        const timer = setInterval(() => publish('Tick', {}), 1000);
+        return { dispose: () => clearInterval(timer) };
+    })
+    .registerWithRouter();
+```
+
+Handler types:
+- `EventHandler<TModel, TEvent>` — receives `Draft<TModel>` (immer); mutations applied via `produce()`
+- `PreviewHandler<TModel, TEvent>` — receives `Readonly<TModel>`; call `eventContext.cancel()` to suppress
+- `EffectHandler<TModel, TEvent>` — receives `Readonly<TModel>` + `PublishDelegate`; runs at `final` stage; use for side-effects and publishing secondary events
+- `SubscriptionFactory` — `(publish: PublishDelegate) => Disposable`; set up long-lived subscriptions (timers, streams)
 
 ### React integration (esp-js-react)
 
@@ -164,12 +183,27 @@ npm run test-ci              # jest (no watch, CI mode)
 ## Coding Conventions
 
 - **TypeScript strictness**: `noImplicitAny: false`, `strictNullChecks: false` — the codebase does not use strict mode
-- **Decorators**: `experimentalDecorators: true`, `emitDecoratorMetadata: true` — legacy decorator style (stage 2)
+- **Decorators**: `experimentalDecorators: true`, `emitDecoratorMetadata: true` — legacy decorator style (stage 2); used in `esp-js-react` (`@viewBinding`) and `esp-js-ui` (`@espModule`, `@viewFactory`); no longer used for model event handlers in `esp-js` core
 - **Exports**: each package re-exports everything through `src/index.ts`; sub-directory `index.ts` files are auto-generated
 - **Disposables**: lifecycle management uses `DisposableBase` / `CompositeDisposable`; `addDisposable()` registers cleanup
 - **Logging**: `Logger.create('ComponentName')` — structured logging with configurable sinks; use `_log.verbose/debug/info/warn/error`
 - **Guards**: `Guard.isString()`, `Guard.isDefined()` etc. used throughout for runtime argument validation
 - **Event type constants**: event types are plain strings — define them as string constants in a dedicated file
+- **Functional model handlers**: define handlers as plain typed functions (`EventHandler`, `PreviewHandler`, `EffectHandler`) and register via `ModelBuilder` — do not use class inheritance or decorators for model event handling in new code
+
+## Breaking Changes (v9)
+
+| Removed | Replacement |
+|---------|-------------|
+| `ModelBase` class | `ModelBuilder<TModel>` — functional registration |
+| `@observeEvent` / `@observeEventEnvelope` decorators | `builder.withEventHandler()`, `.withPreviewHandler()`, `.withEffect()` |
+| `router.observeEventsOn(modelId, model)` | Handled internally by `ModelBuilder.registerWithRouter()` |
+| `router.runAction(modelId, action)` | Use `EffectHandler` with `PublishDelegate`, or dispatch from `committed`/`final` stage |
+| `router.addModel(modelId, model, eventProcessors?)` | `router.addModel(modelId, initialModel, config: ModelConfig<TModel>)` |
+| `EventProcessors` interface | `preEventProcessor` / `postEventProcessor` fields on `ModelConfig<TModel>` |
+| `esp-js-polimer` package | `ModelBuilder` + immer built into `esp-js` core |
+
+Migration guide: see `CHANGES-v9.md` at the repo root.
 
 ## Important Files
 
@@ -180,6 +214,7 @@ npm run test-ci              # jest (no watch, CI mode)
 | `__jest__/jest.config.js` | Shared Jest configuration |
 | `__jest__/typeScriptPreprocessor.ts` | Jest TypeScript transform |
 | `tslint.json` | Lint rules applied during webpack build |
+| `CHANGES-v9.md` | Full v9 breaking changes and migration guide |
 | `packages/esp-js-ui/src/ui/dependencyInjection/systemContainerConst.ts` | Well-known DI container key constants |
 | `packages/esp-js-ui/src/ui/dependencyInjection/systemContainerConfiguration.ts` | Registers all framework services into the root container |
 | `webpack/peerDepsExternalsPlugin.js` | Auto-externalizes peer dependencies in webpack bundles |

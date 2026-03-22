@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -36,15 +37,24 @@ describe('Router', () => {
             _model3OptionsHelper;
 
         beforeEach(() => {
-            _model1 = { id: "model1"  };
-            _model2 = { id : " model2" };
-            _model3 = { id : " model3" };
+            _model1 = { id: 'model1'  };
+            _model2 = { id: ' model2' };
+            _model3 = { id: ' model3' };
             _model1OptionsHelper = createOptionsHelper();
             _model2OptionsHelper = createOptionsHelper();
             _model3OptionsHelper = createOptionsHelper();
-            _router.addModel(_model1.id, _model1, _model1OptionsHelper.options);
-            _router.addModel(_model2.id, _model2, _model2OptionsHelper.options);
-            _router.addModel(_model3.id, _model3, _model3OptionsHelper.options);
+            new ModelBuilder(_router, _model1.id, _model1)
+                .withPreEventProcessor(_model1OptionsHelper.options.preEventProcessor)
+                .withPostEventProcessor(_model1OptionsHelper.options.postEventProcessor)
+                .registerWithRouter();
+            new ModelBuilder(_router, _model2.id, _model2)
+                .withPreEventProcessor(_model2OptionsHelper.options.preEventProcessor)
+                .withPostEventProcessor(_model2OptionsHelper.options.postEventProcessor)
+                .registerWithRouter();
+            new ModelBuilder(_router, _model3.id, _model3)
+                .withPreEventProcessor(_model3OptionsHelper.options.preEventProcessor)
+                .withPostEventProcessor(_model3OptionsHelper.options.postEventProcessor)
+                .registerWithRouter();
         });
 
         function createOptionsHelper() {

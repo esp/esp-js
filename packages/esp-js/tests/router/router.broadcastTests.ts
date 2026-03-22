@@ -17,6 +17,7 @@
 // notice_end
 
 import {EventEnvelope, Router} from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -34,8 +35,8 @@ describe('Router', () => {
 
         it('should deliver the event to all models observing event', () => {
             let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
-            _router.addModel('modelId1', {});
-            _router.addModel('modelId2', {});
+            registerModel(_router, 'modelId1', {});
+            registerModel(_router, 'modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').subscribe(({event}) => {
                 model1ProcessorReceived+=event;
             });
@@ -49,8 +50,8 @@ describe('Router', () => {
 
         it('should not deliver the event to models not observing event', () => {
             let model1ProcessorReceivedCount = 0, model2ProcessorReceivedCount = 0, receivedEvents: EventEnvelope<any, any>[] = [];
-            _router.addModel('modelId1', {});
-            _router.addModel('modelId2', {});
+            registerModel(_router, 'modelId1', {});
+            registerModel(_router, 'modelId2', {});
             // first subscribe model 1 to the event
             _router.getEventObservable('modelId1', 'Event1').subscribe(({event}) => {
                 model1ProcessorReceivedCount++;

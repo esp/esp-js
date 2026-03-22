@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('.subscribeOn', () => {
     let _router;
@@ -29,7 +30,7 @@ describe('.subscribeOn', () => {
         _router = new esp.Router();
         _workflowActions = [];
         _testModel1 = { modelId: 'modeliId' };
-        _router.addModel(_testModel1.modelId, _testModel1);
+        registerModel(_router, _testModel1.modelId, _testModel1);
         _routerSubject = _router.createSubject();
         _routerObservable = _routerSubject.asRouterObservable();
     });

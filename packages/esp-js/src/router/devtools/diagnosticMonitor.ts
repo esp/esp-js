@@ -25,13 +25,11 @@ export interface DiagnosticMonitor extends DisposableBase {
     publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void;
     broadcastEvent(eventType: string): void;
     executingEvent(eventType: string): void;
-    runAction(modelId: string): void;
     eventEnqueued(modelId: string, entityKey: string, eventType: string, event: any): void;
     dispatchLoopStart(): void;
     startingModelEventLoop(modelId: string, entityKey: string, initiatingEventType: string): void;
     preProcessingModel(): void;
     dispatchingEvents(): void;
-    dispatchingAction(): void;
     dispatchingEvent(eventType: string, stage: string): void;
     dispatchingViaDirective(functionName: string): void;
     finishDispatchingEvent(): void;

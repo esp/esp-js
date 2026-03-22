@@ -11,16 +11,9 @@ import {
     Subject,
     RouterObservable,
     RouterSubject,
-    observeEvent,
     DisposableWrapper,
     Guard,
-    EspDecoratorUtil,
-    DecoratorTypes,
-    EspMetadata,
-    EspDecoratedObject,
-    EventObservationMetadata,
-    isEspDecoratedObject
-
+    ModelBuilder,
 } from '../src';
 
 describe('index exports', () => {
@@ -84,22 +77,13 @@ describe('index exports', () => {
         expect(RouterObservable).toBeDefined();
     });
 
-    it('should export observeEvent', () => {
-        expect(esp.observeEvent).toBeDefined();
-        expect(observeEvent).toBeDefined();
-    });
-
     it('should export Guard', () => {
         expect(Guard).toBeDefined();
     });
 
-    it('should export decorator metadata', () => {
-        expect(esp.EspDecoratorUtil).toBeDefined();
-        expect(esp.DecoratorTypes).toBeDefined();
-        expect(esp.isEspDecoratedObject).toBeDefined();
-
-        expect(EspDecoratorUtil).toBeDefined();
-        expect(DecoratorTypes).toBeDefined();
-        expect(isEspDecoratedObject).toBeDefined();
+    it('should export ModelBuilder', () => {
+        expect(esp.ModelBuilder).toBeDefined();
+        expect(ModelBuilder).toBeDefined();
     });
+
 });

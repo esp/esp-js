@@ -16,14 +16,17 @@
  */
 // notice_end
 
-import {Router}  from './router';
+import {Router} from './router';
 import {Guard} from '../system';
 import {Observable, RouterObservable, RouterSubject} from '../reactive';
 import {ObservationStage} from './observationStage';
 import {EventEnvelope} from './envelopes';
 import {OnObserve} from '../reactive/observable';
-import {Disposable} from '../system/disposables';
+import {ModelBuilder} from '../model/modelBuilder';
 
+/**
+ * @deprecated
+ */
 export class SingleModelRouter<TModel> {
     private _underlying: Router;
     private _targetModelId: string;
@@ -38,12 +41,16 @@ export class SingleModelRouter<TModel> {
         return router;
     }
 
-    public static createWithModel<TModel>(model: TModel) {
+    /**
+     * Creates a SingleModelRouter with a pre-registered model using a ModelBuilder.
+     * The model is registered immediately via the builder.
+     */
+    public static createWithModel<TModel>(model: TModel): SingleModelRouter<TModel> {
         Guard.isDefined(model, 'Model passed to to createWithModel must not be undefined.');
         let router = new SingleModelRouter<TModel>();
         router._underlying = new Router();
         router._targetModelId = 'modelId';
-        router.setModel(model);
+        new ModelBuilder<TModel>(router._underlying, router._targetModelId, model).registerWithRouter();
         return router;
     }
 
@@ -68,9 +75,13 @@ export class SingleModelRouter<TModel> {
         return this._targetModelId;
     }
 
-    setModel(model: TModel) {
+    /**
+     * Registers a model with the router using a ModelBuilder with no handlers.
+     * For more complex registration, use ModelBuilder directly.
+     */
+    setModel(model: TModel): void {
         Guard.isDefined(model, 'Model passed to setModel() must not be undefined.');
-        this._underlying.addModel(this._targetModelId, model);
+        new ModelBuilder<TModel>(this._underlying, this._targetModelId, model).registerWithRouter();
     }
 
     publishEvent(eventType: string, event: any) {
@@ -81,11 +92,6 @@ export class SingleModelRouter<TModel> {
     executeEvent(eventType: string, event: any) {
         this._ensureModelIsSet();
         this._underlying.executeEvent(eventType, event);
-    }
-
-    runAction(action: () => void) {
-        this._ensureModelIsSet();
-        this._underlying.runAction(this._targetModelId, action);
     }
 
     getEventObservable<TEvent>(eventType: string, stage?: ObservationStage): Observable<EventEnvelope<TEvent, TModel>> {
@@ -107,11 +113,6 @@ export class SingleModelRouter<TModel> {
 
     createSubject<T>(): RouterSubject<T> {
         return this._underlying.createSubject<T>();
-    }
-
-    observeEventsOn(object: any): Disposable {
-        this._ensureModelIsSet();
-        return this._underlying.observeEventsOn(this._targetModelId, object);
     }
 
     isOnDispatchLoop(): boolean {

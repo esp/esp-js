@@ -36,13 +36,13 @@ RouterObservable.prototype.streamFor = function<T>(modelId) {
                 if (hasCompleted) {
                     return;
                 }
-                source._router.runAction(modelId, () => {
+                source._router._runAction(modelId, () => {
                     observer.onNext(item);
                 });
             },
             () => {
                 hasCompleted = true;
-                source._router.runAction(modelId, () => {
+                source._router._runAction(modelId, () => {
                     observer.onCompleted();
                 });
             }

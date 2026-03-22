@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -39,8 +40,8 @@ describe('Router', () => {
                 model1EventHandler_isOnModel2DispatchLoop = null,
                 model2EventHandler_isOnModel1DispatchLoop = null,
                 model2EventHandler_isOnModel2DispatchLoop = null;
-            _router.addModel('modelId1', {});
-            _router.addModel('modelId2', {});
+            registerModel(_router, 'modelId1', {});
+            registerModel(_router, 'modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 model1EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
                 model1EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');

@@ -17,35 +17,50 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
-    let _router;
+    let _router: esp.Router;
 
     beforeEach(() => {
         _router = new esp.Router();
     });
 
     describe('.addModel()', () => {
-        it('throws if arguments incorrect', () => {
-            expect(() => {_router.addModel(undefined, 'foo'); }).toThrow();
-            expect(() => {_router.addModel('foo', undefined); }).toThrow();
-            expect(() => {_router.addModel('foo', {}, 'not a function'); }).toThrow();
-            expect(() => {_router.addModel({ },{ }); }).toThrow(new Error('The modelId argument should be a string'));
-            expect(() => {_router.addModel('modelId', { },'notSomeOptions'); }).toThrow(new Error('The eventProcessors argument provided with the model (of id modelId) should be an object'));
-            expect(() => {_router.addModel('modelId', { }, { preEventProcessor: {} }); }).toThrow(new Error('preEventProcessor on the model options exists but is not a function'));
-            expect(() => {_router.addModel('modelId', { }, { preEventProcessor: 'boo' }); }).toThrow('preEventProcessor on the model options exists but is not a function');
-            expect(() => {_router.addModel('modelId', { }, { eventDispatchProcessor: {} }); }).toThrow(new Error('eventDispatchProcessor on the model options exists but is not a function'));
-            expect(() => {_router.addModel('modelId', { }, { eventDispatchProcessor: 'boo' }); }).toThrow('eventDispatchProcessor on the model options exists but is not a function');
-            expect(() => {_router.addModel('modelId', { }, { eventDispatchedProcessor:{}}); }).toThrow(new Error('eventDispatchedProcessor on the model options exists but is not a function'));
-            expect(() => {_router.addModel('modelId', { }, { eventDispatchedProcessor:'boo'}); }).toThrow(new Error('eventDispatchedProcessor on the model options exists but is not a function'));
-            expect(() => {_router.addModel('modelId', { }, { postEventProcessor:{}}); }).toThrow(new Error('postEventProcessor on the model options exists but is not a function'));
-            expect(() => {_router.addModel('modelId', { }, { postEventProcessor:'boo'}); }).toThrow(new Error('postEventProcessor on the model options exists but is not a function'));
+        it('throws if modelId not a string', () => {
+            expect(() => { registerModel(_router, undefined, {}); }).toThrow();
+            expect(() => { registerModel(_router, <any>{}, {}); }).toThrow();
+        });
+
+        it('router.addModel throws if modelId not a string', () => {
+            expect(() => { _router.addModel(<any>{}, {}, {eventHandlers: new Map(), previewHandlers: new Map(), effectHandlers: new Map(), subscriptionFactories: []}); }).toThrow(new Error('The modelId argument should be a string'));
+        });
+
+        it('throws if model is undefined', () => {
+            expect(() => { registerModel(_router, 'foo', undefined); }).toThrow();
+        });
+
+        it('throws if config is undefined', () => {
+            expect(() => { _router.addModel('modelId', {}, undefined); }).toThrow();
         });
 
         it('should throw if model already registered', () => {
-            _router.addModel('modelId', {});
-            expect(() => {_router.addModel('modelId', {}); }).toThrow(new Error('The model with id [modelId] is already registered'));
+            registerModel(_router, 'modelId', {});
+            expect(() => { registerModel(_router, 'modelId', {}); }).toThrow(new Error('The model with id [modelId] is already registered'));
+        });
+
+        it('ModelBuilder throws if handler undefined', () => {
+            expect(() => {
+                new ModelBuilder(_router, 'modelId', {}).withEventHandler('evt', undefined);
+            }).toThrow();
+        });
+
+        it('ModelBuilder throws if eventType not a string', () => {
+            expect(() => {
+                new ModelBuilder(_router, 'modelId', {}).withEventHandler(undefined, () => {});
+            }).toThrow();
         });
     });
 });

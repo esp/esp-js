@@ -1,6 +1,5 @@
-// Auto-generated 
+// Auto-generated
 export * from './devtools';
-export * from './decoratorObservationRegister';
 export * from './envelopes';
 export * from './eventContext';
 export * from './eventProcessors';

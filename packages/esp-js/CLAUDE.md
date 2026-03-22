@@ -2,12 +2,12 @@
 
 ## Package Purpose
 
-The core Evented State Processor library. Provides the `Router`, all event dispatch infrastructure, `ObservationStage`, `ModelBase`, decorators (`@observeEvent`), a lightweight built-in reactive system (`Observable`, `Subject`), disposable lifecycle utilities, logging, and health monitoring. Every other esp-* package depends on this one.
+The core Evented State Processor library. Provides the `Router`, all event dispatch infrastructure, `ObservationStage`, a functional `ModelBuilder<TModel>` for registering models with immer-backed immutable state, a lightweight built-in reactive system (`Observable`, `Subject`), disposable lifecycle utilities, logging, and health monitoring. Every other esp-* package depends on this one.
 
 ## Role in Monorepo
 
 - **Foundational** — no dependencies on other esp-* packages
-- Direct dependents: `esp-js-polimer`, `esp-js-rx`, `esp-js-react`, `esp-js-ui`, `esp-js-ui-rxcompat`
+- Direct dependents: `esp-js-polimer` (deprecated), `esp-js-rx`, `esp-js-react`, `esp-js-ui`, `esp-js-ui-rxcompat`
 - Published as `esp-js` on npm
 
 ## Build and Test
@@ -27,16 +27,18 @@ Output: `.dist/esp-js.js` (UMD bundle), `.dist/typings/index.d.ts` (type declara
 ```
 src/
   index.ts                  # Re-exports everything (auto-generated)
+  model/
+    types.ts                # ModelConfig<TModel>, EventHandler, PreviewHandler, EffectHandler, PublishDelegate, SubscriptionFactory
+    modelBuilder.ts         # ModelBuilder<TModel> — fluent builder; call registerWithRouter() to register
+    index.ts                # Barrel export for model/
   router/
     router.ts               # Router class — the central event bus
-    singleModelRouter.ts    # Convenience wrapper for single-model use cases
-    modelRecord.ts          # Internal per-model state: event queue, streams, processors
+    singleModelRouter.ts    # Convenience wrapper for single-model use cases (@deprecated)
+    modelRecord.ts          # Internal per-model state: event queue, streams, handler maps, subscriptions
     observationStage.ts     # ObservationStage enum: preview | normal | committed | final | all
-    eventProcessors.ts      # PreEventProcessor, PostEventProcessor, EventDispatchProcessor interfaces
     eventContext.ts         # EventContext — passed to handlers; exposes commit(), cancel()
     envelopes.ts            # EventEnvelope<TEvent, TModel>, ModelEnvelope types
     modelAddress.ts         # ModelAddress / DefaultModelAddress for targeted event dispatch
-    decoratorObservationRegister.ts  # Wires @observeEvent metadata to router subscriptions
     devtools/               # Redux DevTools integration (auto-detected)
     state.ts                # Internal Router state machine
     status.ts               # Status enum for Router lifecycle
@@ -47,15 +49,10 @@ src/
     routerSubject.ts        # Subject backed by router dispatch
     autoConnectedObservable.ts  # Auto-connecting observable for event stream caching
     extMethods/             # Extension methods on Observable
-  decorators/
-    observeEvent.ts         # @observeEvent and @observeEventEnvelope decorators
-    espDecoratorMetadata.ts # Metadata storage and EspDecoratorUtil
   system/
     disposables/            # Disposable, DisposableBase, CompositeDisposable, SerialDisposable
     health/                 # Health, HealthIndicator, AggregateHealthIndicator
     logging/                # Logger, LoggingConfig, sinks (Level enum)
-    models/
-      modelBase.ts          # ModelBase abstract class
     guard.ts                # Runtime argument validation
     utils.ts                # Type utilities (isString, isFunction, etc.)
     globalState.ts          # Global singleton state (for multi-router scenarios)
@@ -68,79 +65,74 @@ src/
 The `Router` is the central event bus. Key methods:
 
 ```typescript
-router.addModel(modelId, model, eventProcessors?)   // register a model
+router.addModel(modelId, initialModel, config: ModelConfig<TModel>)  // register a model
 router.removeModel(modelId)
 router.publishEvent(modelId, eventType, event)       // enqueue an event
 router.broadcastEvent(eventType, event)              // send to all models
-router.runAction(modelId, action)                    // run arbitrary mutation on dispatch loop
 router.getEventObservable(modelId, eventType, stage) // subscribe to events imperatively
 router.getModelObservable(modelId)                   // subscribe to model updates
-router.observeEventsOn(modelId, model)               // wire @observeEvent decorators on model
-router.executeEvent(eventType, event)                // dispatch an event synchronously within current dispatch context
+router.executeEvent(eventType, event)                // dispatch synchronously within current dispatch context
 router.isOnDispatchLoopFor(modelId)                  // check if currently executing for model
 ```
+
+In practice, use `ModelBuilder.registerWithRouter()` rather than calling `router.addModel()` directly.
 
 ### ObservationStage
 
 Events pass through up to four stages in order:
 
-| Stage | When |
-|-------|------|
-| `preview` | Before mutation; call `eventContext.cancel()` to suppress |
-| `normal` | Primary mutation stage |
-| `committed` | Only fires if `eventContext.commit()` was called during `normal` |
-| `final` | Always fires after `normal` (and `committed` if it ran) |
-| `all` | Fires at every stage |
+| Stage | When | Handler type |
+|-------|------|-------------|
+| `preview` | Before mutation; call `eventContext.cancel()` to suppress | `PreviewHandler` — receives `Readonly<TModel>` |
+| `normal` | Primary mutation stage; immer `produce` applied | `EventHandler` — receives `Draft<TModel>` |
+| `committed` | Only fires if `eventContext.commit()` was called during `normal` | — |
+| `final` | Always fires after `normal` (and `committed` if it ran); effects run here | `EffectHandler` — receives `Readonly<TModel>` |
+| `all` | Fires at every stage | — |
 
-### @observeEvent decorator
+### Functional ModelBuilder pattern (v9+)
 
-```typescript
-class MyModel extends ModelBase {
-    constructor(router: Router) {
-        super('my-model-id', router);
-        this.observeEvents(); // registers model + wires decorators
-    }
-
-    @observeEvent('MyEvent')
-    private _onMyEvent(event: MyEvent, eventContext: EventContext, model: this) {
-        // mutate this
-    }
-
-    @observeEvent('AnotherEvent', ObservationStage.preview)
-    private _onPreview(event, eventContext: EventContext) {
-        eventContext.cancel(); // suppress the event
-    }
-}
-```
-
-### ModelBase
-
-Abstract base class that:
-- Calls `router.addModel(modelId, this)` and `router.observeEventsOn(modelId, this)` in `observeEvents()`
-- Auto-removes the model from the router on `dispose()`
-- Provides `ensureOnDispatchLoop(action)` for safe cross-thread mutations
-- Provides `this.router` and `this.modelId` accessors
-
-### EventProcessors
-
-Optional lifecycle hooks attached when calling `router.addModel()`:
+`ModelBuilder<TModel>` is a pure config collector. Call `registerWithRouter()` once — it builds a `ModelConfig` and calls `router.addModel()`. The builder should not be retained after that call.
 
 ```typescript
-{
-    preEventProcessor(model): void          // called before event queue drains
-    postEventProcessor(model, events): void // called after all events processed
-    eventDispatchProcessor(model, eventType, event, stage): void   // before each event+stage
-    eventDispatchedProcessor(model, eventType, event, stage): void // after each event+stage
-}
+new ModelBuilder<MyModel>(router, 'my-model', initialModel)
+    .withPreviewHandler<MyEvent>('MyEvent', (model, event, ctx) => {
+        if (!event.isValid) ctx.cancel();
+    })
+    .withEventHandler<MyEvent>('MyEvent', (draft, event, ctx) => {
+        draft.value = event.value; // mutate immer draft
+    })
+    .withEffect<MyEvent>('MyEvent', (model, event, ctx, publish) => {
+        publish('SideEffect', { source: 'MyEvent' }); // publish secondary events
+    })
+    .withEventSubscription(publish => {
+        // set up a long-lived subscription; return a Disposable
+        const sub = someStream.subscribe(v => publish('StreamUpdate', v));
+        return { dispose: () => sub.unsubscribe() };
+    })
+    .withPreEventProcessor(model => { /* called before event queue drains */ })
+    .withPostEventProcessor((model, events) => { /* called after all events */ })
+    .registerWithRouter();
 ```
+
+### ModelRecord (internal)
+
+`ModelRecord` is the router's internal per-model state object. It owns:
+- The event queue and dispatch streams
+- Handler maps (`eventHandlers`, `previewHandlers`, `effectHandlers`)
+- `subscriptionDisposables` — cleaned up on `router.removeModel()`
+- `publishDelegate` — pre-bound `(eventType, event) => router.publishEvent(modelId, ...)` passed to effects
+
+### PublishDelegate
+
+`PublishDelegate = (eventType: string, event: any) => void` — pre-bound to a model's `modelId`. Passed to `EffectHandler` and `SubscriptionFactory` so they can publish events without holding a reference to the router or knowing the modelId.
 
 ### SingleModelRouter
 
-Convenience wrapper when working with a single model. Use `SingleModelRouter.create<TModel>()` or `SingleModelRouter.createWithModel(model)`.
+`@deprecated` — Convenience wrapper for single-model use cases. Wraps a `Router` with a fixed `modelId`. Use `SingleModelRouter.create<TModel>()` or `SingleModelRouter.createWithModel(model)`.
 
 ### ESP Observable vs RxJS
 
-The `Observable` in `esp-js` is **not** RxJS. It is a lightweight, synchronous observable designed for the router's internal event streams. For async/RxJS pipelines use `esp-js-rx` or `esp-js-polimer`'s event transforms.
+The `Observable` in `esp-js` is **not** RxJS. It is a lightweight, synchronous observable designed for the router's internal event streams. For async/RxJS pipelines use `esp-js-rx`.
 
 ### Redux DevTools
 
@@ -151,10 +143,8 @@ The router auto-detects Redux DevTools extension. If `window.__REDUX_DEVTOOLS_EX
 All exports flow through `src/index.ts`:
 
 - `Router`, `SingleModelRouter`
-- `ModelBase`
+- `ModelBuilder`, `ModelConfig`, `EventHandler`, `PreviewHandler`, `EffectHandler`, `PublishDelegate`, `SubscriptionFactory`
 - `ObservationStage`, `EventContext`, `EventEnvelope`, `ModelAddress`, `DefaultModelAddress`
-- `EventProcessors`, `PreEventProcessor`, `PostEventProcessor`
-- `observeEvent`, `observeEventEnvelope`
 - `Observable`, `Subject`, `RouterObservable`, `RouterSubject`
 - `DisposableBase`, `CompositeDisposable`, `Disposable`
 - `Logger`, `Level`, `LoggingConfig`
@@ -164,47 +154,60 @@ All exports flow through `src/index.ts`:
 ## Testing Approach
 
 - Test files: `tests/**/*Tests.ts`
-- Organized to mirror `src/`: `tests/router/`, `tests/reactive/`, `tests/decorators/`, `tests/system/`
+- Organized to mirror `src/`: `tests/router/`, `tests/reactive/`, `tests/model/`, `tests/system/`
 - Tests instantiate `Router` directly — no mocks required for the core
 - `tests/router/router.*.ts` — comprehensive coverage of each Router method
+- `tests/model/` — coverage of `ModelBuilder` (basic, preview, effects, subscriptions, registration)
 - `SingleModelRouter` is often used in tests to reduce boilerplate
 
 ## Common Tasks
 
-**Register and observe a model:**
+**Register a model with the builder:**
 ```typescript
 const router = new Router();
-router.addModel('my-id', myModel);
-router.getModelObservable('my-id').subscribe(model => render(model));
-router.observeEventsOn('my-id', myModel); // wires @observeEvent decorators
-router.publishEvent('my-id', 'Increment', { amount: 1 });
-```
 
-**Use ModelBase (preferred pattern):**
-```typescript
-class Counter extends ModelBase {
-    count = 0;
-    constructor(router: Router) { super('counter', router); this.observeEvents(); }
-    @observeEvent('Increment')
-    private _onIncrement(e: { amount: number }) { this.count += e.amount; }
-}
+new ModelBuilder<CounterModel>(router, 'counter', { count: 0 })
+    .withEventHandler('Increment', (draft, event: { amount: number }) => {
+        draft.count += event.amount;
+    })
+    .registerWithRouter();
 ```
 
 **Subscribe to model updates:**
 ```typescript
-router.getModelObservable<Counter>('counter').subscribe(m => console.log(m.count));
+router.getModelObservable<CounterModel>('counter').subscribe(m => console.log(m.count));
 ```
 
-**Check dispatch loop and run action safely:**
+**Publish a secondary event from an effect:**
 ```typescript
-model.ensureOnDispatchLoop(() => { model.value = 42; });
+.withEffect('OrderSubmitted', (model, event, ctx, publish) => {
+    if (model.orders.length > 10) {
+        publish('OrderLimitWarning', { count: model.orders.length });
+    }
+})
+```
+
+**Preview handler to cancel an event:**
+```typescript
+.withPreviewHandler('DeleteAll', (model, event, ctx) => {
+    if (!model.isDeletionAllowed) ctx.cancel();
+})
+```
+
+**Long-lived subscription:**
+```typescript
+.withEventSubscription(publish => {
+    const id = setInterval(() => publish('Heartbeat', {}), 5000);
+    return { dispose: () => clearInterval(id) };
+})
 ```
 
 ## Gotchas
 
-- `router.publishEvent()` throws if called from within a `normal`/`preview` event handler — use `router.runAction()` or dispatch from `committed`/`final` instead
-- `observeEvents()` may only be called once per `ModelBase` instance — calling it twice throws
+- `router.publishEvent()` throws if called from within a `normal`/`preview` event handler — use an `EffectHandler` (which runs at `final` stage) with the provided `PublishDelegate` instead
 - The built-in `Observable` is synchronous and distinct from RxJS; do not mix the two without using `esp-js-rx`
 - `ModelRecord` maintains an event queue per model — events published during another model's dispatch are queued and processed after the current model finishes
 - `broadcastEvent` dispatches to all registered models; models not observing the event simply ignore it
-- `emitDecoratorMetadata: true` is required at compile time for `@observeEvent` to work
+- `ModelBuilder` calls `router.addModel()` internally — do not call `addModel()` for the same `modelId` twice; it will throw
+- `EffectHandler` receives the **frozen immutable model** (post-produce snapshot), not a draft — it is safe to read but cannot be mutated
+- `SubscriptionFactory` disposables are tracked in `ModelRecord.subscriptionDisposables` and cleaned up automatically when `router.removeModel()` is called

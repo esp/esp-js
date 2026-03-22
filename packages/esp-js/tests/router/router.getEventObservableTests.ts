@@ -18,6 +18,7 @@
 
 import * as esp from '../../src';
 import {ObservationStage, EventEnvelope} from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -42,8 +43,8 @@ describe('Router', () => {
 
         it('dispatches events to processors by modelid', () => {
             let model1ProcessorReceived = false, model2ProcessorReceived = false;
-            _router.addModel('modelId1', {});
-            _router.addModel('modelId2', {});
+            registerModel(_router, 'modelId1', {});
+            registerModel(_router, 'modelId2', {});
             _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 model1ProcessorReceived = true;
             });
@@ -56,7 +57,7 @@ describe('Router', () => {
         });
 
         it('doesn\'t dispatch to disposed update ubscribers', () => {
-            _router.addModel('modelId1', {});
+            registerModel(_router, 'modelId1', {});
             let eventReeivedCount =0;
             let disposable = _router.getEventObservable('modelId1', 'Event1').subscribe(() => {
                 eventReeivedCount++;
@@ -206,7 +207,7 @@ describe('Router', () => {
                     shouldCancel: false,
                     commitStage: ''
                 };
-                _router.addModel('modelId1', {});
+                registerModel(_router, 'modelId1', {});
             });
 
             describe('Separate observation stage dispatch', () => {

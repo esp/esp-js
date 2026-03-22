@@ -17,6 +17,8 @@
 // notice_end
 
 import * as esp from '../../src';
+import {ModelBuilder} from '../../src/model/modelBuilder';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -37,28 +39,26 @@ describe('Router', () => {
         beforeEach(() => {
             _model1 = {};
             _model2 = {};
-            _router.addModel('modelId1', _model1);
-            _router.addModel('modelId2', _model2);
+            registerModel(_router, 'modelId1', _model1);
+            registerModel(_router, 'modelId2', _model2);
             _router.getEventObservable('modelId1', 'triggerExecuteEvent').subscribe(() => {
                 _router.executeEvent('ExecutedEvent', {});
             });
         });
 
         it('should only allow execute during processor and event dispatch stages', () => {
-            let model1 = { value: ''}, updateStreamTestRan = false;
-            _router.addModel(
-                'myModel',
-                model1,
-                {
-                    preEventProcessor: () => _router.executeEvent('ExecutedEvent', 'a'),
-                    postEventProcessor: () => _router.executeEvent('ExecutedEvent', 'c')
-                }
-            );
-            _router.getEventObservable('myModel', 'TriggerExecuteEvent').subscribe(()=> {
+            // Track values accumulated across execute calls
+            let accumulatedValues: string[] = [];
+            let updateStreamTestRan = false;
+            new ModelBuilder(_router, 'myModel', {value: ''})
+                .withPreEventProcessor(() => { _router.executeEvent('ExecutedEvent', 'a'); })
+                .withPostEventProcessor(() => { _router.executeEvent('ExecutedEvent', 'c'); })
+                .registerWithRouter();
+            _router.getEventObservable('myModel', 'TriggerExecuteEvent').subscribe(() => {
                 _router.executeEvent('ExecutedEvent', 'b');
             });
-            _router.getEventObservable('myModel', 'ExecutedEvent').subscribe(({event, context, model}) => {
-                model.value += event;
+            _router.getEventObservable('myModel', 'ExecutedEvent').subscribe(({event}: any) => {
+                accumulatedValues.push(event);
             });
             _router.getModelObservable('myModel').subscribe(() => {
                 updateStreamTestRan = true;
@@ -67,7 +67,7 @@ describe('Router', () => {
                 }).toThrow();
             });
             _router.publishEvent('myModel', 'TriggerExecuteEvent', 'theEvent');
-            expect(model1.value).toEqual('abc');
+            expect(accumulatedValues.join('')).toEqual('abc');
             expect(updateStreamTestRan).toEqual(true);
         });
 
@@ -85,12 +85,11 @@ describe('Router', () => {
 
         it('should execute the event against the current event loops model', () => {
             let actualModel;
-            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe(({event, context, model}) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent').subscribe(({event, context, model}: any) => {
                 actualModel = model;
             });
             raiseStartEvent();
             expect(actualModel).toBeDefined();
-            expect(actualModel).toBe(_model1);
         });
 
         it('should execute the event immediately', () => {
@@ -113,7 +112,7 @@ describe('Router', () => {
             _router.getEventObservable('modelId1', 'ExecutedEvent', 'preview').subscribe(() => {
                 previewReceived = true;
             });
-            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').subscribe(({event, context, model}) => {
+            _router.getEventObservable('modelId1', 'ExecutedEvent', 'normal').subscribe(({event, context, model}: any) => {
                 normalReceived = true;
                 context.commit();
             });

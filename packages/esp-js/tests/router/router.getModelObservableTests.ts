@@ -17,6 +17,7 @@
 // notice_end
 
 import * as esp from '../../src';
+import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
 
@@ -29,8 +30,8 @@ describe('Router', () => {
     describe('.getModelObservable()', () => {
 
         beforeEach(() => {
-            _router.addModel('modelId1', {number:0});
-            _router.addModel('modelId2', {number:0});
+            registerModel(_router, 'modelId1', {number:0});
+            registerModel(_router, 'modelId2', {number:0});
         });
 
         it('throws if arguments incorrect', () => {
@@ -40,7 +41,7 @@ describe('Router', () => {
 
         it('dispatches model once registered', () => {
             let model3UpdateCount = 0;
-            _router.addModel('modelId3', {number:0});
+            registerModel(_router, 'modelId3', {number:0});
             _router.getModelObservable('modelId1').subscribe(() => {
                 model3UpdateCount++;
             });

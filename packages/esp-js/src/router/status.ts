@@ -22,6 +22,7 @@ export class Status {
     static get EventProcessorDispatch() { return 'eventProcessorDispatch'; }
     static get EventExecution() { return 'eventProcessorExecution'; }
     static get PostProcessing () { return 'postEventProcessorDispatch'; }
+    static get EffectsProcessing() { return 'effectsProcessing'; }
     static get DispatchModelUpdates() { return 'dispatchModelUpdates'; }
     static get Halted() { return 'halted'; }
 }

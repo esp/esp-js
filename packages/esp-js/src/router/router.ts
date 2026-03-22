@@ -305,37 +305,62 @@ export class Router extends DisposableBase {
             while (hasEvents) {
                 let eventRecord: EventRecord = modelRecord.eventQueue.shift();
                 this._diagnosticMonitor.startingModelEventLoop(modelRecord.modelId, eventRecord.entityKey, eventRecord.eventType);
-                this._state.moveToPreProcessing(modelRecord.modelId, modelRecord);
-                this._diagnosticMonitor.preProcessingModel();
-                modelRecord.preEventProcessor(modelRecord.model);
-                if (!modelRecord.wasRemoved) {
-                    this._state.moveToEventDispatch();
-                    this._diagnosticMonitor.dispatchingEvents();
-                    while (hasEvents) {
-                        this._state.eventsProcessed.push(eventRecord.eventType);
-                        this._dispatchEventToEventProcessors(
-                            modelRecord,
-                            eventRecord.entityKey,
-                            eventRecord.event,
-                            eventRecord.eventType
-                        );
-                        if (modelRecord.wasRemoved) {
-                            break;
-                        }
-                        modelRecord.hasReceivedEvent = true;
-                        hasEvents = modelRecord.eventQueue.length > 0;
-                        if (hasEvents) {
-                            eventRecord = modelRecord.eventQueue.shift();
-                        }
-                    } // keep looping until any events from the dispatch to processors stage are processed
-                    this._diagnosticMonitor.finishDispatchingEvent();
+
+                // Wrap the entire pre-processing → event dispatch → post-processing cycle in a
+                // single immer produce so the model is a mutable draft throughout. Effects are
+                // collected during dispatch and run against the resulting frozen model afterwards.
+                const newModel = produce(modelRecord.currentModel, (draft: any) => {
+                    modelRecord.currentModel = draft;
+
+                    this._state.moveToPreProcessing(modelRecord.modelId, modelRecord);
+                    this._diagnosticMonitor.preProcessingModel();
+                    modelRecord.preEventProcessor(draft);
+
                     if (!modelRecord.wasRemoved) {
-                        this._diagnosticMonitor.postProcessingModel();
-                        this._state.moveToPostProcessing();
-                        modelRecord.postEventProcessor(modelRecord.model, this._state.eventsProcessed);
-                        this._state.clearEventDispatchQueue();
+                        this._state.moveToEventDispatch();
+                        this._diagnosticMonitor.dispatchingEvents();
+                        while (hasEvents) {
+                            this._state.eventsProcessed.push(eventRecord.eventType);
+                            this._dispatchEventToEventProcessors(
+                                modelRecord,
+                                eventRecord.entityKey,
+                                eventRecord.event,
+                                eventRecord.eventType
+                            );
+                            if (modelRecord.wasRemoved) {
+                                break;
+                            }
+                            modelRecord.hasReceivedEvent = true;
+                            hasEvents = modelRecord.eventQueue.length > 0;
+                            if (hasEvents) {
+                                eventRecord = modelRecord.eventQueue.shift();
+                            }
+                        } // keep looping until any events from the dispatch to processors stage are processed
+                        this._diagnosticMonitor.finishDispatchingEvent();
+                        if (!modelRecord.wasRemoved) {
+                            this._diagnosticMonitor.postProcessingModel();
+                            this._state.moveToPostProcessing();
+                            modelRecord.postEventProcessor(draft, this._state.eventsProcessed);
+                        }
+                    }
+                });
+
+                // Model is now frozen — restore it from the produce result
+                modelRecord.currentModel = newModel as any;
+
+                // Run collected effects against the frozen model, just before clearing the dispatch queue
+                if (!modelRecord.wasRemoved && this._state.pendingEffects.length > 0) {
+                    this._state.moveToEffectsProcessing();
+                    for (const pe of this._state.pendingEffects) {
+                        pe.handlers.forEach((h: any) => h(modelRecord.currentModel, pe.event, pe.eventContext, modelRecord.publishDelegate));
                     }
                 }
+                this._state.clearPendingEffects();
+
+                if (!modelRecord.wasRemoved) {
+                    this._state.clearEventDispatchQueue();
+                }
+
                 modelRecord.eventQueuePurged();
                 // we now dispatch updates before processing the next model, if any
                 this._state.moveToDispatchModelUpdates();
@@ -356,7 +381,7 @@ export class Router extends DisposableBase {
             entityKey
         );
 
-        // --- preview stage ---
+        // --- preview stage: pass the draft directly ---
         const previewHandlers = modelRecord.previewHandlers.get(eventType);
         if (previewHandlers && previewHandlers.length > 0) {
             previewHandlers.forEach(h => h(modelRecord.currentModel, event, eventContext));
@@ -367,13 +392,12 @@ export class Router extends DisposableBase {
         }
 
         if (!eventContext.isCanceled) {
-            // --- normal stage: run immer produce then dispatch ---
+            // --- normal stage: mutate the outer produce draft directly ---
             eventContext.updateCurrentState(ObservationStage.normal);
             const eventHandlers = modelRecord.eventHandlers.get(eventType);
             if (eventHandlers && eventHandlers.length > 0) {
-                modelRecord.currentModel = produce(modelRecord.currentModel, (draft: any) => {
-                    eventHandlers.forEach(h => h(draft, event, eventContext));
-                }) as any;
+                // modelRecord.currentModel is the immer draft from the outer produce in _purgeEventQueues
+                eventHandlers.forEach(h => h(modelRecord.currentModel as any, event, eventContext));
             }
             this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
@@ -389,7 +413,7 @@ export class Router extends DisposableBase {
                 }
             }
 
-            // --- final stage: dispatch then run effects ---
+            // --- final stage ---
             eventContext.updateCurrentState(ObservationStage.final);
             this._dispatchEvent(modelRecord, entityKey, event, eventType, eventContext, ObservationStage.final);
             if (eventContext.isCanceled) {
@@ -399,9 +423,10 @@ export class Router extends DisposableBase {
                 throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + modelRecord.modelId + ']');
             }
 
+            // --- collect effects to run after produce completes with the frozen model ---
             const effectHandlers = modelRecord.effectHandlers.get(eventType);
             if (effectHandlers && effectHandlers.length > 0) {
-                effectHandlers.forEach(h => h(modelRecord.currentModel, event, eventContext, modelRecord.publishDelegate));
+                this._state.pendingEffects.push({handlers: effectHandlers, event, eventContext});
             }
         }
     }

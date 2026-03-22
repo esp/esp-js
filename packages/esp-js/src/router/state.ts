@@ -28,10 +28,12 @@ export class State {
     private _currentModelRecord: ModelRecord;
     private _circularEventDispatchLimit = 10000;
     private _currentDispatchCount = 0;
+    private _pendingEffects: any[];
 
     public constructor() {
         this._currentStatus = Status.Idle;
         this._eventsDispatched = [];
+        this._pendingEffects = [];
     }
 
     public get currentStatus(): Status {
@@ -48,6 +50,10 @@ export class State {
 
     public get eventsProcessed(): string[] {
         return this._eventsDispatched;
+    }
+
+    public get pendingEffects(): any[] {
+        return this._pendingEffects;
     }
 
     public moveToIdle() {
@@ -85,6 +91,10 @@ export class State {
         this._currentStatus = previousStatus;
     }
 
+    public moveToEffectsProcessing() {
+        this._currentStatus = Status.EffectsProcessing;
+    }
+
     public moveToDispatchModelUpdates() {
         this._currentStatus = Status.DispatchModelUpdates;
     }
@@ -98,9 +108,14 @@ export class State {
         this._eventsDispatched = [];
     }
 
+    public clearPendingEffects() {
+        this._pendingEffects = [];
+    }
+
     private _clear() {
         this._currentModelId = undefined;
         this._currentModelRecord = undefined;
         this.clearEventDispatchQueue();
+        this.clearPendingEffects();
     }
 }

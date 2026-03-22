@@ -57,17 +57,20 @@ describe('ModelBuilder', () => {
             expect(normalCalled).toBe(false);
         });
 
-        it('preview handler receives a readonly (frozen) model', () => {
-            let receivedModel: Readonly<SimpleModel> = null;
+        it('preview handler receives the draft model and can read its values', () => {
+            // Preview handlers receive the live immer draft. Do not store the model reference
+            // beyond the handler — the draft proxy is revoked after produce completes.
+            let receivedValue: number = null;
+            let handlerCalled = false;
             new ModelBuilder<SimpleModel>(_router, 'model', { value: 42 })
                 .withPreviewHandler('AnEvent', (model) => {
-                    receivedModel = model;
+                    handlerCalled = true;
+                    receivedValue = model.value;
                 })
                 .registerWithRouter();
             _router.publishEvent('model', 'AnEvent', {});
-            expect(receivedModel).toBeDefined();
-            expect(receivedModel.value).toEqual(42);
-            expect(() => { (receivedModel as any).value = 99; }).toThrow();
+            expect(handlerCalled).toBe(true);
+            expect(receivedValue).toEqual(42);
         });
 
         it('multiple preview handlers are all called', () => {

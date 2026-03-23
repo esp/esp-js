@@ -19,33 +19,33 @@
 import * as esp from '../../src';
 import {registerModel} from '../testApi/testHelpers';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('.isModelRegistered()', () => {
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_router.isModelRegistered({ }); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_bus.isModelRegistered({ }); }).toThrow(new Error('The modelId argument should be a string'));
         });
 
         it('returns true if model is registered', () => {
-            registerModel(_router, 'modelId1', {});
-            expect(_router.isModelRegistered('modelId1')).toEqual(true);
+            registerModel(_bus, 'modelId1', {});
+            expect(_bus.isModelRegistered('modelId1')).toEqual(true);
         });
 
         it('returns false if model NOT registered', () => {
-            expect(_router.isModelRegistered('modelId1')).toEqual(false);
+            expect(_bus.isModelRegistered('modelId1')).toEqual(false);
         });
 
         it('returns false if model NOT unregistered', () => {
-            registerModel(_router, 'modelId1', {});
-            _router.removeModel('modelId1');
-            expect(_router.isModelRegistered('modelId1')).toEqual(false);
+            registerModel(_bus, 'modelId1', {});
+            _bus.removeModel('modelId1');
+            expect(_bus.isModelRegistered('modelId1')).toEqual(false);
         });
     });
 });

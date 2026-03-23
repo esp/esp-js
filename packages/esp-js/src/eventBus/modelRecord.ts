@@ -144,7 +144,7 @@ export class ModelRecord<TModel = any> {
         }
     }
 
-    // no-op stubs kept for router compatibility
+    // no-op stubs kept for bus compatibility
     public eventDispatchProcessor(_model: TModel, _eventType: string, _event: any, _stage?: ObservationStage): void {
         // noop — no dispatch processor in functional model
     }

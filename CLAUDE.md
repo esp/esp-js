@@ -2,15 +2,15 @@
 
 ## Project Overview
 
-ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `Router` sits between event publishers and models: publishers call `router.publishEvent(modelId, eventType, event)`, the router queues and dispatches events through ordered observation stages, and a frozen immutable snapshot of the mutated model is then pushed to model observers. The framework uses an immer-based functional modeling pattern (`ModelBuilder`) and is designed for complex composite single-page applications.
+ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `EventBus` sits between event publishers and models: publishers call `bus.publishEvent(modelId, eventType, event)`, the bus queues and dispatches events through ordered observation stages, and a frozen immutable snapshot of the mutated model is then pushed to model observers. The framework uses an immer-based functional modeling pattern (`ModelBuilder`) and is designed for complex composite single-page applications.
 
-The monorepo contains the core router, dependency injection container, and React integration.
+The monorepo contains the core event bus, dependency injection container, and React integration.
 
 ## Monorepo Structure
 
 ```
 packages/
-  esp-js              # Core event router — foundational, no dependencies on other esp-* packages
+  esp-js              # Core event bus — foundational, no dependencies on other esp-* packages
   esp-js-di           # Standalone IoC container (JavaScript, not TypeScript)
   esp-js-react        # React bindings (ConnectableComponent, hooks); depends on esp-js
 ```
@@ -105,27 +105,27 @@ npm run test-ci              # vitest run (no watch, CI mode)
 
 ## Key Architectural Patterns
 
-### The Router event dispatch cycle
+### The EventBus event dispatch cycle
 
-1. `router.publishEvent(modelId, eventType, event)` — enqueues event
-2. Router drains the queue, dispatching each event through four sequential observation stages:
+1. `bus.publishEvent(modelId, eventType, event)` — enqueues event
+2. EventBus drains the queue, dispatching each event through four sequential observation stages:
    - `preview` — observe before mutation; can cancel the event
    - `normal` — primary mutation stage
    - `committed` — only fires if `eventContext.commit()` was called during `normal`
    - `final` — fires regardless of commit; observe after all mutation
-3. After all events for a model are processed, a frozen immutable snapshot of the model is pushed to model observers (`router.getModelObservable(modelId)`)
+3. After all events for a model are processed, a frozen immutable snapshot of the model is pushed to model observers (`bus.getModelObservable(modelId)`)
 
 ### Functional model pattern (esp-js core)
 
 - Create a plain object or class instance as the initial state
-- Register with `router.modelBuilder(modelId, initialState).withEventHandler(...).build()`
-- Event handlers receive an immer `draft` — mutate it directly; the router produces a new frozen snapshot after all handlers run
+- Register with `bus.modelBuilder(modelId, initialState).withEventHandler(...).build()`
+- Event handlers receive an immer `draft` — mutate it directly; the bus produces a new frozen snapshot after all handlers run
 - Preview handlers and effect handlers receive `Readonly<TModel>` (no draft)
 - Class instances used as model state must include `[immerable] = true` (from `immer`) for immer to handle them
 
 ### React integration (esp-js-react)
 
-- `<EspRouterContextProvider router={router}>` — provides router via context
+- `<EspEventBusContextProvider bus={bus}>` — provides bus via context
 - `ConnectableComponent` / `connect()` — subscribes to a model by `modelId`, re-renders on model updates; requires explicit `view` prop
 - `useSyncModelWithSelector` — hook-based subscription with selector and equality function
 

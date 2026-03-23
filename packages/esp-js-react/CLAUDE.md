@@ -2,7 +2,7 @@
 
 ## Package Purpose
 
-React bindings for ESP. Provides two complementary integration approaches: the `ConnectableComponent`/`connect()` HOC pattern and the `useSyncModelWithSelector` hook. Also provides React context providers for the `Router` and model.
+React bindings for ESP. Provides two complementary integration approaches: the `ConnectableComponent`/`connect()` HOC pattern and the `useSyncModelWithSelector` hook. Also provides React context providers for the `EventBus` and model.
 
 ## Role in Monorepo
 
@@ -27,29 +27,29 @@ Note: the Vite entry and output filename is `esp-react` (see `vite.config.ts`), 
 
 ```
 src/
-  index.ts                      # Public exports
-  connectableComponent.tsx      # ConnectableComponent — HOC that subscribes to router model
-  connect.tsx                   # connect() factory — creates typed ConnectableComponentFactory
-  espRouterContextProvider.tsx  # RouterProvider, EspRouterContextProvider, useRouter, usePublishEvent
-  espModelContextProvider.tsx   # EspModelContextProvider, useGetModel, useGetModelId, usePublishModelEvent
-  useSyncModelWithSelector.ts   # useSyncModelWithSelector hook + SyncModelWithSelectorOptions
+  index.ts                       # Public exports
+  connectableComponent.tsx       # ConnectableComponent — HOC that subscribes to bus model
+  connect.tsx                    # connect() factory — creates typed ConnectableComponentFactory
+  espEventBusContextProvider.tsx # EventBusProvider, EspEventBusContextProvider, useEventBus, usePublishEvent
+  espModelContextProvider.tsx    # EspModelContextProvider, useGetModel, useGetModelId, usePublishModelEvent
+  useSyncModelWithSelector.ts    # useSyncModelWithSelector hook + SyncModelWithSelectorOptions
 ```
 
 ## Key Concepts and Patterns
 
-### Router Context
+### EventBus Context
 
-Wrap the application (or subtree) with `EspRouterContextProvider` to make the router available via context:
+Wrap the application (or subtree) with `EspEventBusContextProvider` to make the bus available via context:
 
 ```tsx
-<EspRouterContextProvider router={router}>
+<EspEventBusContextProvider bus={bus}>
     <App />
-</EspRouterContextProvider>
+</EspEventBusContextProvider>
 ```
 
-Access the router in any descendant:
+Access the bus in any descendant:
 ```tsx
-const router = useRouter();
+const bus = useEventBus();
 const publishEvent = usePublishEvent(); // (modelId, eventType, event) => void
 ```
 
@@ -67,11 +67,11 @@ const MyConnectedView = connect<MyModel, MyPublishProps>(
 <MyConnectedView modelId="my-model" />
 ```
 
-`ConnectableComponent` subscribes to `router.getModelObservable(modelId)` and re-renders when the model updates.
+`ConnectableComponent` subscribes to `bus.getModelObservable(modelId)` and re-renders when the model updates.
 
 ### useSyncModelWithSelector
 
-Hook-based approach using React 18's `useSyncExternalStore`. The model emitted by the router is always a frozen immutable snapshot (produced by immer via `ModelBuilder`) — no unwrapping required.
+Hook-based approach using React 18's `useSyncExternalStore`. The model emitted by the bus is always a frozen immutable snapshot (produced by immer via `ModelBuilder`) — no unwrapping required.
 
 ```tsx
 const orders = useSyncModelWithSelector<OrdersState>(
@@ -109,8 +109,8 @@ export { ConnectableComponent, ConnectableComponentProps, MapModelToProps, Creat
 // Hook approach
 export { useSyncModelWithSelector, SyncModelWithSelectorOptionsBuilder, syncModelWithSelectorOptions, SyncModelWithSelectorOptions, SyncModelWithSelectorEqualityFn }
 
-// Router context
-export { RouterProvider, EspRouterContextProvider, RouterContext, useRouter, PublishEventDelegate, PublishEventContext, usePublishEvent }
+// EventBus context
+export { EventBusProvider, EspEventBusContextProvider, EventBusContext, useEventBus, PublishEventDelegate, PublishEventContext, usePublishEvent }
 
 // Model context
 export { EspModelContextProvider, useGetModelId, useGetModel, usePublishModelEvent, usePublishModelEventWithEntityKey, GetModelIdContext, GetModelContext, PublishModelEventDelegate, PublishModelEventContext, PublishModelEventWithEntityKeyDelegate, PublishModelEventWithEntityKeyContext }
@@ -120,14 +120,14 @@ export { EspModelContextProvider, useGetModelId, useGetModel, usePublishModelEve
 
 - Test files: `tests/**/*Tests.tsx`
 - Uses `@testing-library/react` for rendering and interaction
-- `tests/testApi/` — shared test fixtures including mock router and model helpers
-  - `testModel.ts` — `createTestModel(router, modelId)` registers a model via `ModelBuilder`
+- `tests/testApi/` — shared test fixtures including mock bus and model helpers
+  - `testModel.ts` — `createTestModel(bus, modelId)` registers a model via `ModelBuilder`
   - `testApi.tsx` — `setupTestModel(modelId)` and `setupModel(modelId, model)` helpers
-  - `routerSpy.ts` — `RouterSpy extends Router`, wraps `getModelObservable()` to count subscriptions (does **not** use `Observable.create` — reactive module is internal)
+  - `eventBusSpy.ts` — `EventBusSpy extends EventBus`, wraps `getModelObservable()` to count subscriptions (does **not** use `Observable.create` — reactive module is internal)
 - Notable test files:
   - `connectableComponentTests.tsx` — HOC subscription and re-render behaviour; models use `[immerable] = true`
   - `useSyncModelWithSelectorTests.tsx` — hook selector and equality function behaviour
-  - `espModelContextProviderTests.tsx`, `espRouterContextProviderTests.tsx` — context hook tests; use `router.getModel()` to read current snapshot after events
+  - `espModelContextProviderTests.tsx`, `espEventBusContextProviderTests.tsx` — context hook tests; use `bus.getModel()` to read current snapshot after events
 
 ## Common Tasks
 
@@ -135,11 +135,11 @@ export { EspModelContextProvider, useGetModelId, useGetModel, usePublishModelEve
 ```tsx
 function App() {
     return (
-        <EspRouterContextProvider router={router}>
+        <EspEventBusContextProvider bus={bus}>
             <EspModelContextProvider modelId="counter">
                 <CounterView />
             </EspModelContextProvider>
-        </EspRouterContextProvider>
+        </EspEventBusContextProvider>
     );
 }
 

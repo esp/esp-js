@@ -30,11 +30,11 @@ import {Subscribable} from '../model/subscribable';
 import {ModelBuilder} from '../model/modelBuilder';
 import {produce, freeze} from 'immer';
 
-let _log = Logger.create('Router');
+let _log = Logger.create('EventBus');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
-export class Router extends DisposableBase {
+export class EventBus extends DisposableBase {
     private _models: Map<string, ModelRecord>;
     private _dispatchSubject: Subject<Envelope>;
     private _haltingException: Error;
@@ -52,7 +52,7 @@ export class Router extends DisposableBase {
         this._state = new State();
 
         this._diagnosticMonitor = reduxDevToolsDetectedAndEnabledInEsp()
-            ? new ReduxDevToolsDiagnosticMonitor(`Router_${Date.now()}`)
+            ? new ReduxDevToolsDiagnosticMonitor(`EventBus_${Date.now()}`)
             : new NoopDiagnosticMonitor();
         this.addDisposable(this._diagnosticMonitor);
     }
@@ -494,10 +494,10 @@ export class Router extends DisposableBase {
 
     private _throwIfHaltedOrDisposed() {
         if (this._state.currentStatus === Status.Halted) {
-            throw new Error(`ESP router halted due to previous unhandled error [${this._haltingException}]`);
+            throw new Error(`ESP event bus halted due to previous unhandled error [${this._haltingException}]`);
         }
         if (this.isDisposed) {
-            throw new Error(`ESP router has been disposed`);
+            throw new Error(`ESP event bus has been disposed`);
         }
     }
 
@@ -508,12 +508,12 @@ export class Router extends DisposableBase {
 
         let modelIds = [...this._models.keys()];
         this._diagnosticMonitor.halted(modelIds, err);
-        let errorMessage = 'The ESP router has caught an unhandled error and will halt';
+        let errorMessage = 'The ESP event bus has caught an unhandled error and will halt';
         _log.error(errorMessage, err);
         this._haltingException = err;
 
         // We run the onErrorHandlers after the
-        // router has had time to set it's own state
+        // bus has had time to set it's own state
         if (isInitialHaltingError) {
             this._onErrorHandlers.forEach(handler => {
                 try {

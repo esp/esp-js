@@ -2,7 +2,7 @@
 
 ## Package Purpose
 
-The core Evented State Processor library. Provides the `Router`, all event dispatch infrastructure, `ModelBuilder` (immer-based functional model registration), `ObservationStage`, disposable lifecycle utilities, logging, and `Guard`. Every other esp-* package depends on this one.
+The core Evented State Processor library. Provides the `EventBus`, all event dispatch infrastructure, `ModelBuilder` (immer-based functional model registration), `ObservationStage`, disposable lifecycle utilities, logging, and `Guard`. Every other esp-* package depends on this one.
 
 ## Role in Monorepo
 
@@ -26,13 +26,13 @@ Output: `.dist/esp-js.js` (UMD), `.dist/esp-js.esm.js` (ESM), `.dist/esp-js.min.
 
 ```
 src/
-  index.ts                  # Re-exports from model/, router/, system/
+  index.ts                  # Re-exports from model/, eventBus/, system/
   model/
-    modelBuilder.ts         # ModelBuilder<TModel> — fluent builder to register models with the router
+    modelBuilder.ts         # ModelBuilder<TModel> — fluent builder to register models with the bus
     types.ts                # EventHandler, PreviewHandler, EffectHandler, SubscriptionFactory, etc.
     subscribable.ts         # Subscribable<T> — minimal public subscription interface
-  router/
-    router.ts               # Router class — the central event bus
+  eventBus/
+    eventBus.ts             # EventBus class — the central event bus
     modelRecord.ts          # Internal per-model state: event queue, streams, processors
     observationStage.ts     # ObservationStage enum: preview | normal | committed | final | all
     eventProcessors.ts      # PreEventProcessor, PostEventProcessor interfaces
@@ -40,8 +40,8 @@ src/
     envelopes.ts            # EventEnvelope<TEvent, TModel>, ModelEnvelope types
     modelAddress.ts         # ModelAddress / DefaultModelAddress for targeted event dispatch
     devtools/               # Redux DevTools integration (auto-detected)
-    state.ts                # Internal Router state machine
-    status.ts               # Status enum for Router lifecycle
+    state.ts                # Internal EventBus state machine
+    status.ts               # Status enum for EventBus lifecycle
   reactive/                 # INTERNAL — not exported from src/index.ts; do not import directly
     observable.ts           # ESP's own lightweight Observable (not RxJS)
     subject.ts              # Subject<T>
@@ -51,25 +51,25 @@ src/
     logging/                # Logger, LoggingConfig, sinks (Level enum)
     guard.ts                # Runtime argument validation
     utils.ts                # Type utilities (isString, isFunction, etc.)
-    globalState.ts          # Global singleton state (for multi-router scenarios)
+    globalState.ts          # Global singleton state (for multi-bus scenarios)
 ```
 
 ## Key Concepts and Patterns
 
-### Router
+### EventBus
 
-The `Router` is the central event bus. Key methods:
+The `EventBus` is the central event bus. Key methods:
 
 ```typescript
-router.modelBuilder<TModel>(modelId, initialModel)   // create a ModelBuilder for this model (preferred)
-router.removeModel(modelId)
-router.getModel<TModel>(modelId)                     // get the current frozen model snapshot
-router.publishEvent(modelId, eventType, event)        // enqueue an event
-router.broadcastEvent(eventType, event)              // send to all models
-router.getEventObservable(modelId, eventType, stage) // subscribe to events imperatively
-router.getModelObservable(modelId)                   // subscribe to model snapshots (Subscribable<TModel>)
-router.executeEvent(eventType, event)                // dispatch an event synchronously within current dispatch context
-router.isOnDispatchLoopFor(modelId)                  // check if currently executing for model
+bus.modelBuilder<TModel>(modelId, initialModel)   // create a ModelBuilder for this model (preferred)
+bus.removeModel(modelId)
+bus.getModel<TModel>(modelId)                     // get the current frozen model snapshot
+bus.publishEvent(modelId, eventType, event)        // enqueue an event
+bus.broadcastEvent(eventType, event)              // send to all models
+bus.getEventObservable(modelId, eventType, stage) // subscribe to events imperatively
+bus.getModelObservable(modelId)                   // subscribe to model snapshots (Subscribable<TModel>)
+bus.executeEvent(eventType, event)                // dispatch an event synchronously within current dispatch context
+bus.isOnDispatchLoopFor(modelId)                  // check if currently executing for model
 ```
 
 ### ObservationStage
@@ -86,12 +86,12 @@ Events pass through up to four stages in order:
 
 ### ModelBuilder (preferred pattern)
 
-`ModelBuilder` is the primary way to register models. It builds an immer-based immutable model pipeline where each event handler receives an immer `Draft<TModel>` and mutates it directly. After all handlers run for a dispatch cycle, the router emits a new frozen snapshot to `getModelObservable()`.
+`ModelBuilder` is the primary way to register models. It builds an immer-based immutable model pipeline where each event handler receives an immer `Draft<TModel>` and mutates it directly. After all handlers run for a dispatch cycle, the bus emits a new frozen snapshot to `getModelObservable()`.
 
 ```typescript
 // Plain object state (no immer config needed)
 type CounterState = { count: number };
-router.modelBuilder<CounterState>('counter', { count: 0 })
+bus.modelBuilder<CounterState>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, event: { amount: number }) => {
         draft.count += event.amount;
     })
@@ -126,7 +126,7 @@ class MyState {
     value: string = 'initial';
 }
 
-router.modelBuilder<MyState>('my-id', new MyState())
+bus.modelBuilder<MyState>('my-id', new MyState())
     .withEventHandler('Update', (draft, event: string) => { draft.value = event; })
     .build();
 ```
@@ -137,11 +137,11 @@ Lower-level lifecycle hooks — prefer `withPreEventProcessor`/`withPostEventPro
 
 ### Subscribable\<T\>
 
-`router.getModelObservable()` returns a `Subscribable<T>` — a minimal interface with a `.subscribe()` method. Do **not** import from the internal `reactive/` module. Wrapping the subscription:
+`bus.getModelObservable()` returns a `Subscribable<T>` — a minimal interface with a `.subscribe()` method. Do **not** import from the internal `reactive/` module. Wrapping the subscription:
 
 ```typescript
 // Wrapping without Observable.create (reactive module is internal):
-const upstream = router.getModelObservable<MyState>('my-id');
+const upstream = bus.getModelObservable<MyState>('my-id');
 const wrapped = {
     subscribe(observer: any) {
         const sub = upstream.subscribe(observer);
@@ -152,13 +152,13 @@ const wrapped = {
 
 ### Redux DevTools
 
-The router auto-detects Redux DevTools extension. If `window.__REDUX_DEVTOOLS_EXTENSION__` is present and the environment variable `esp_js_devtools` is set, the `ReduxDevToolsDiagnosticMonitor` is activated with no code changes required.
+The bus auto-detects Redux DevTools extension. If `window.__REDUX_DEVTOOLS_EXTENSION__` is present and the environment variable `esp_js_devtools` is set, the `ReduxDevToolsDiagnosticMonitor` is activated with no code changes required.
 
 ## Public API
 
 All exports flow through `src/index.ts`:
 
-- `Router`
+- `EventBus`
 - `ModelBuilder`
 - `EventHandler`, `PreviewHandler`, `EffectHandler`, `SubscriptionFactory`, `PreEventProcessorFn`, `PostEventProcessorFn`, `ModelConfig`
 - `Subscribable`
@@ -169,51 +169,51 @@ All exports flow through `src/index.ts`:
 - `Guard`, `utils`
 - `Status`
 
-**Not exported (internal):** `Observable`, `Subject`, `RouterObservable`, `RouterSubject` — the `reactive/` module is internal. Do not import from it directly.
+**Not exported (internal):** `Observable`, `Subject`, `EventBusObservable`, `EventBusSubject` — the `reactive/` module is internal. Do not import from it directly.
 
-**Removed in v9:** `ModelBase`, `SingleModelRouter`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `router.runAction()`, `router.observeEventsOn()`. `router.addModel()` is now private — use `router.modelBuilder()` instead.
+**Removed in v9:** `ModelBase`, `SingleModelEventBus`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `bus.runAction()`, `bus.observeEventsOn()`. `bus.addModel()` is now private — use `bus.modelBuilder()` instead.
 
 ## Testing Approach
 
 - Test files: `tests/**/*Tests.ts`
-- Organized to mirror `src/`: `tests/router/`, `tests/model/`, `tests/system/`
-- Tests instantiate `Router` directly — no mocks required for the core
+- Organized to mirror `src/`: `tests/eventBus/`, `tests/model/`, `tests/system/`
+- Tests instantiate `EventBus` directly — no mocks required for the core
 - `ModelBuilder` is used in tests to register models
 
 ## Common Tasks
 
 **Register a model and subscribe:**
 ```typescript
-const router = new Router();
+const bus = new EventBus();
 
-router.modelBuilder<{ count: number }>('counter', { count: 0 })
+bus.modelBuilder<{ count: number }>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, e: { amount: number }) => { draft.count += e.amount; })
     .build();
 
-router.getModelObservable<{ count: number }>('counter')
+bus.getModelObservable<{ count: number }>('counter')
     .subscribe(model => console.log(model.count));
 
-router.publishEvent('counter', 'Increment', { amount: 1 });
+bus.publishEvent('counter', 'Increment', { amount: 1 });
 ```
 
 **Get the current model snapshot:**
 ```typescript
-const snapshot = router.getModel<MyState>('my-id');
+const snapshot = bus.getModel<MyState>('my-id');
 // snapshot is a frozen Readonly<MyState>
 ```
 
 **Subscribe to events imperatively:**
 ```typescript
-router.getEventObservable('my-id', 'MyEvent').subscribe(envelope => {
+bus.getEventObservable('my-id', 'MyEvent').subscribe(envelope => {
     console.log(envelope.event);
 });
 ```
 
 ## Gotchas
 
-- `router.publishEvent()` throws if called from within a `normal`/`preview` event handler — use `withEffect` to publish side-effect events instead
-- `router.getModelObservable()` returns `Subscribable<T>` — do NOT use `Observable.create` or import from the `reactive/` module (it is internal and not part of the public API)
+- `bus.publishEvent()` throws if called from within a `normal`/`preview` event handler — use `withEffect` to publish side-effect events instead
+- `bus.getModelObservable()` returns `Subscribable<T>` — do NOT use `Observable.create` or import from the `reactive/` module (it is internal and not part of the public API)
 - Class instances used as model state **must** have `[immerable] = true` from `immer`, otherwise `produce` throws at runtime
 - `ModelRecord` maintains an event queue per model — events published during another model's dispatch are queued and processed after the current model finishes
 - `broadcastEvent` dispatches to all registered models; models not observing the event simply ignore it
-- `router.getModel(modelId)` returns the latest frozen snapshot; **do not hold references** across event dispatches — the reference becomes stale after the next dispatch
+- `bus.getModel(modelId)` returns the latest frozen snapshot; **do not hold references** across event dispatches — the reference becomes stale after the next dispatch

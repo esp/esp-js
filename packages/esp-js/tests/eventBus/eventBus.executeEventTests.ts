@@ -19,12 +19,12 @@
 import * as esp from '../../src';
 import {registerModel} from '../testApi/testHelpers';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('.executeEvent()', () => {
@@ -33,114 +33,114 @@ describe('Router', () => {
             _model2 = {};
 
         function raiseStartEvent() {
-            _router.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
+            _bus.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
         }
 
         beforeEach(() => {
             _model1 = {};
             _model2 = {};
-            _router.modelBuilder('modelId1', _model1)
+            _bus.modelBuilder('modelId1', _model1)
                 .withEventHandler('triggerExecuteEvent', () => {
-                    _router.executeEvent('ExecutedEvent', {});
+                    _bus.executeEvent('ExecutedEvent', {});
                 })
                 .build();
-            registerModel(_router, 'modelId2', _model2);
+            registerModel(_bus, 'modelId2', _model2);
         });
 
         it('should only allow execute during processor and event dispatch stages', () => {
             // Track values accumulated across execute calls
             let accumulatedValues: string[] = [];
             let updateStreamTestRan = false;
-            _router.modelBuilder('myModel', {value: ''})
-                .withPreEventProcessor(() => { _router.executeEvent('ExecutedEvent', 'a'); })
-                .withPostEventProcessor(() => { _router.executeEvent('ExecutedEvent', 'c'); })
+            _bus.modelBuilder('myModel', {value: ''})
+                .withPreEventProcessor(() => { _bus.executeEvent('ExecutedEvent', 'a'); })
+                .withPostEventProcessor(() => { _bus.executeEvent('ExecutedEvent', 'c'); })
                 .withEventHandler('TriggerExecuteEvent', () => {
-                    _router.executeEvent('ExecutedEvent', 'b');
+                    _bus.executeEvent('ExecutedEvent', 'b');
                 })
                 .withEventHandler('ExecutedEvent', (draft, event: string) => {
                     accumulatedValues.push(event);
                 })
                 .build();
-            _router.getModelObservable('myModel').subscribe(() => {
+            _bus.getModelObservable('myModel').subscribe(() => {
                 updateStreamTestRan = true;
                 expect(() => {
-                    _router.executeEvent('ExecutedEvent', {});
+                    _bus.executeEvent('ExecutedEvent', {});
                 }).toThrow();
             });
-            _router.publishEvent('myModel', 'TriggerExecuteEvent', 'theEvent');
+            _bus.publishEvent('myModel', 'TriggerExecuteEvent', 'theEvent');
             expect(accumulatedValues.join('')).toEqual('abc');
             expect(updateStreamTestRan).toEqual(true);
         });
 
         it('should throw if an execute handler raises another event', () => {
             let didTest = false;
-            _router.modelBuilder('modelId1b', {})
+            _bus.modelBuilder('modelId1b', {})
                 .withEventHandler('ExecutedEvent', () => {
                     didTest = true;
                     expect(() => {
-                        _router.publishEvent('modelId1b', 'Event3', {});
+                        _bus.publishEvent('modelId1b', 'Event3', {});
                     }).toThrow();
                 })
                 .build();
             // Use a fresh model to avoid double-registration
-            const router2 = new esp.Router();
-            router2.modelBuilder('modelId1', {})
+            const bus2 = new esp.EventBus();
+            bus2.modelBuilder('modelId1', {})
                 .withEventHandler('triggerExecuteEvent', () => {
-                    router2.executeEvent('ExecutedEvent', {});
+                    bus2.executeEvent('ExecutedEvent', {});
                 })
                 .withEventHandler('ExecutedEvent', () => {
                     didTest = true;
                     expect(() => {
-                        router2.publishEvent('modelId1', 'Event3', {});
+                        bus2.publishEvent('modelId1', 'Event3', {});
                     }).toThrow();
                 })
                 .build();
-            router2.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
+            bus2.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
             expect(didTest).toEqual(true);
         });
 
         it('should execute the event against the current event loops model', () => {
             let actualModel;
             // The model passed to handler is the current frozen model
-            const router2 = new esp.Router();
+            const bus2 = new esp.EventBus();
             const theModel = {};
-            router2.modelBuilder('modelId1', theModel)
+            bus2.modelBuilder('modelId1', theModel)
                 .withEventHandler('triggerExecuteEvent', () => {
-                    router2.executeEvent('ExecutedEvent', {});
+                    bus2.executeEvent('ExecutedEvent', {});
                 })
                 .withEventHandler('ExecutedEvent', (draft, event, ctx, m?) => {
                     // draft is the immer draft, but we can verify it's processed correctly
                     actualModel = draft;
                 })
                 .build();
-            router2.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
+            bus2.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
             expect(actualModel).toBeDefined();
         });
 
         it('should execute the event immediately', () => {
             let counter = 0, testPassed = false;
-            const router2 = new esp.Router();
-            router2.modelBuilder('modelId1', {})
+            const bus2 = new esp.EventBus();
+            bus2.modelBuilder('modelId1', {})
                 .withEventHandler('triggerExecuteEvent2', () => {
                     counter = 1;
-                    router2.executeEvent('ExecutedEvent', {});
+                    bus2.executeEvent('ExecutedEvent', {});
                     counter = 2;
                 })
                 .withEventHandler('ExecutedEvent', () => {
                     testPassed = counter === 1;
                 })
                 .build();
-            router2.publishEvent('modelId1', 'triggerExecuteEvent2', 'theEvent');
+            bus2.publishEvent('modelId1', 'triggerExecuteEvent2', 'theEvent');
             testPassed = testPassed && counter === 2;
             expect(testPassed).toEqual(true);
         });
 
         it('should execute the event against preview, normal, and final stages', () => {
             let previewReceived = false, normalReceived = false, finalReceived = false;
-            const router2 = new esp.Router();
-            router2.modelBuilder('modelId1', {})
+            const bus2 = new esp.EventBus();
+            bus2.modelBuilder('modelId1', {})
                 .withEventHandler('triggerExecuteEvent', () => {
-                    router2.executeEvent('ExecutedEvent', {});
+                    bus2.executeEvent('ExecutedEvent', {});
                 })
                 .withPreviewHandler('ExecutedEvent', () => {
                     previewReceived = true;
@@ -154,7 +154,7 @@ describe('Router', () => {
                     finalReceived = true;
                 })
                 .build();
-            router2.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
+            bus2.publishEvent('modelId1', 'triggerExecuteEvent', 'theEvent');
             expect(previewReceived).toEqual(true);
             expect(normalReceived).toEqual(true);
             expect(finalReceived).toEqual(true);

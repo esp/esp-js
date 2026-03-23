@@ -17,7 +17,7 @@
 // notice_end
 
 import * as reactive from '../../src/reactive/index';
-import {Router} from '../../src';
+import {EventBus} from '../../src';
 
 describe('.merge', () => {
     let subject1,
@@ -93,7 +93,7 @@ describe('.merge', () => {
 
     it('test with router', () => {
         const receivedEvents: number[] = [];
-        const router = new Router();
+        const bus = new EventBus();
         const modelId = 'testModel';
         const receivedByHandler: { [key: string]: number[] } = {
             myEvent1: [],
@@ -101,21 +101,21 @@ describe('.merge', () => {
             myEvent3: [],
         };
 
-        router.modelBuilder<{}>(modelId, {})
+        bus.modelBuilder<{}>(modelId, {})
             .withEventHandler<number>('myEvent1', (draft, event) => { receivedByHandler.myEvent1.push(event); })
             .withEventHandler<number>('myEvent2', (draft, event) => { receivedByHandler.myEvent2.push(event); })
             .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })
             .build();
 
-        router.getModelObservable(modelId).subscribe(() => {});
+        bus.getModelObservable(modelId).subscribe(() => {});
 
-        router.publishEvent(modelId, 'myEvent1', 1);
+        bus.publishEvent(modelId, 'myEvent1', 1);
         expect(receivedByHandler.myEvent1).toEqual([1]);
 
-        router.publishEvent(modelId, 'myEvent2', 2);
+        bus.publishEvent(modelId, 'myEvent2', 2);
         expect(receivedByHandler.myEvent2).toEqual([2]);
 
-        router.publishEvent(modelId, 'myEvent3', 3);
+        bus.publishEvent(modelId, 'myEvent3', 3);
         expect(receivedByHandler.myEvent3).toEqual([3]);
     });
 });

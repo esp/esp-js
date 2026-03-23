@@ -7,7 +7,7 @@ export interface ModelAddress {
     modelId?: string;
     /**
      * An optional path which can be used at observation time to direct the event to a specific part of a model.
-     * The ESP Router does not do any specific filtering on this, it simply adds it to the EventEnvelope dispatched to observers.
+     * The ESP EventBus does not do any specific filtering on this, it simply adds it to the EventEnvelope dispatched to observers.
      * Observers can use it as they need.
      */
     entityKey?: string;

@@ -18,12 +18,12 @@
 
 import * as esp from '../../src';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('eventProcessors', () => {
@@ -60,39 +60,39 @@ describe('Router', () => {
             _model3Event1Count = 0;
             _model1PreEventPreProcessingLen = 0;
 
-            _router.modelBuilder('modelId1', _model1)
+            _bus.modelBuilder('modelId1', _model1)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('startEvent', () => {
-                    _router.publishEvent('modelId3', 'Event1', 'theEvent');
-                    _router.publishEvent('modelId2', 'Event1', 'theEvent');
-                    _router.publishEvent('modelId1', 'Event1', 'theEvent');
+                    _bus.publishEvent('modelId3', 'Event1', 'theEvent');
+                    _bus.publishEvent('modelId2', 'Event1', 'theEvent');
+                    _bus.publishEvent('modelId1', 'Event1', 'theEvent');
                 })
                 .withEventHandler('Event1', () => {
                     _model1Event1Count++;
                     _model1PreEventPreProcessingLen = _modelsSentForPreProcessing.length;
                 })
                 .build();
-            _router.modelBuilder('modelId2', _model2)
+            _bus.modelBuilder('modelId2', _model2)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     _model2Event1Count++;
                 })
                 .build();
-            _router.modelBuilder('modelId3', _model3)
+            _bus.modelBuilder('modelId3', _model3)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     _model3Event1Count++;
                 })
                 .build();
-            _router.modelBuilder('modelId5', _model5)
+            _bus.modelBuilder('modelId5', _model5)
                 .withPreEventProcessor(() => { _model5PreProcessCount++; })
                 .withPostEventProcessor((model, eventsProcessed) => { _model5PostProcessCount++; _model5EventsProcessed = eventsProcessed; })
                 .withEventHandler('startEvent', () => { /* noop */ })
                 .build();
-            _router.modelBuilder('modelId6', _model6)
+            _bus.modelBuilder('modelId6', _model6)
                 .withPreEventProcessor((model: any) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model: any, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('startEvent', () => { /* noop */ })
@@ -100,38 +100,38 @@ describe('Router', () => {
         });
 
         it('calls pre processor before processing the first event (via withPreEventProcessor)', () => {
-            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            _bus.publishEvent('modelId5', 'startEvent', 'theEvent');
             expect(_model5PreProcessCount).toBe(1);
         });
 
         it('calls post processor after processing the first event (via withPostEventProcessor)', () => {
-            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            _bus.publishEvent('modelId5', 'startEvent', 'theEvent');
             expect(_model5PostProcessCount).toBe(1);
         });
 
         it('postProcess() passes the events published to postProcess', () => {
-            _router.publishEvent('modelId5', 'startEvent', 'theEvent');
+            _bus.publishEvent('modelId5', 'startEvent', 'theEvent');
             expect(_model5EventsProcessed).toEqual(['startEvent']);
         });
 
         it('does not call preEventProcessor if the model is NOT observing the published event', () => {
-            _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
+            _bus.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
             expect(_model5PreProcessCount).toBe(0);
         });
 
         it('does not call postEventProcessor if the model is NOT observing the published event', () => {
-            _router.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
+            _bus.publishEvent('modelId5', 'nothingListeningToThisEvent', 'theEventPayload');
             expect(_model5PostProcessCount).toBe(0);
         });
 
         it('does not call a models pre event processor if the model is not observing the published event', () => {
-            _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
+            _bus.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
             const passed = _modelsSentForPreProcessing.length === 0;
             expect(passed).toBe(true);
         });
 
         it('does not call a models post event processor if the model is not observing the published event', () => {
-            _router.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
+            _bus.publishEvent('modelId1', 'nothingListeningToThisEvent', 'theEventPayload');
             const passed = _modelsSentForPostProcessing.length === 0;
             expect(passed).toBe(true);
         });
@@ -139,7 +139,7 @@ describe('Router', () => {
         it('calls a models post processors in order before processing the next models events', () => {
             let passed = true;
             // modelId3's Event1 handler checks that modelId1's postProcessor ran before modelId3's
-            _router.modelBuilder('modelId3Check', _model3)
+            _bus.modelBuilder('modelId3Check', _model3)
                 .withEventHandler('Event1', () => {
                     passed = passed && _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].modelId === 'model1';
                 })
@@ -160,34 +160,34 @@ describe('Router', () => {
             let model3Passed = false;
             let model2Passed = false;
 
-            // Rebuild using fresh router since models are already registered
-            const router2 = new esp.Router();
+            // Rebuild using fresh bus since models are already registered
+            const bus2 = new esp.EventBus();
             const m1 = {_id: 'm1'}, m2 = {_id: 'm2'}, m3 = {_id: 'm3'};
             const postProcessors = [];
 
-            router2.modelBuilder('modelId1', m1)
+            bus2.modelBuilder('modelId1', m1)
                 .withPreEventProcessor((model) => {})
                 .withPostEventProcessor((model: any, eventsProcessed) => { postProcessors.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('startEvent', () => {
-                    router2.publishEvent('modelId3', 'Event1', 'theEvent');
-                    router2.publishEvent('modelId2', 'Event1', 'theEvent');
-                    router2.publishEvent('modelId1', 'Event1', 'theEvent');
+                    bus2.publishEvent('modelId3', 'Event1', 'theEvent');
+                    bus2.publishEvent('modelId2', 'Event1', 'theEvent');
+                    bus2.publishEvent('modelId1', 'Event1', 'theEvent');
                 })
                 .withEventHandler('Event1', () => {})
                 .build();
-            router2.modelBuilder('modelId2', m2)
+            bus2.modelBuilder('modelId2', m2)
                 .withPostEventProcessor((model: any, eventsProcessed) => { postProcessors.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     model2Passed = postProcessors.length === 2 && postProcessors[1].modelId === 'm3';
                 })
                 .build();
-            router2.modelBuilder('modelId3', m3)
+            bus2.modelBuilder('modelId3', m3)
                 .withPostEventProcessor((model: any, eventsProcessed) => { postProcessors.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     model3Passed = postProcessors.length === 1 && postProcessors[0].modelId === 'm1';
                 })
                 .build();
-            router2.publishEvent('modelId1', 'startEvent', 'theEvent');
+            bus2.publishEvent('modelId1', 'startEvent', 'theEvent');
             passed = passed && model3Passed && model2Passed;
             passed = passed && postProcessors.length === 3 && postProcessors[2].modelId === 'm2';
             expect(passed).toBe(true);
@@ -198,26 +198,26 @@ describe('Router', () => {
             // modelId1 already has a pre-event-processor registered that adds to _modelsSentForPreProcessing
             // The Event1 handler on modelId1 checks the length
             // Re-use the counter captured during Event1 dispatch
-            _router.publishEvent('modelId1', 'Event1', 'theEvent');
+            _bus.publishEvent('modelId1', 'Event1', 'theEvent');
             // When Event1 fires on modelId1, preProcessor should have been called (adding model1)
             passed = _model1PreEventPreProcessingLen === 1 && _modelsSentForPreProcessing[0] === 'model1';
             expect(passed).toBe(true);
         });
 
         it('only calls the pre event processor for the model the event was targeted at', () => {
-            _router.publishEvent('modelId1', 'Event1', 'theEvent');
+            _bus.publishEvent('modelId1', 'Event1', 'theEvent');
             const passed = _modelsSentForPreProcessing.length === 1 && _modelsSentForPreProcessing[0] === 'model1';
             expect(passed).toBe(true);
         });
 
         it('should allow a preEventProcessor to publish an event', () => {
             let wasPublished = false;
-            _router.modelBuilder('modelId4', _model1)
-                .withPreEventProcessor(() => { _router.publishEvent('modelId4', 'Event2', 'theEvent'); })
+            _bus.modelBuilder('modelId4', _model1)
+                .withPreEventProcessor(() => { _bus.publishEvent('modelId4', 'Event2', 'theEvent'); })
                 .withEventHandler('Event1', () => { /* noop */ })
                 .withEventHandler('Event2', () => { wasPublished = true; })
                 .build();
-            _router.publishEvent('modelId4', 'Event1', 'theEvent');
+            _bus.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(wasPublished).toEqual(true);
         });
 
@@ -226,18 +226,18 @@ describe('Router', () => {
                 postProcessorPublished = false,
                 preProcessorCalledCount = 0;
             const innerModel = { version: 1 };
-            _router.modelBuilder('modelId4', innerModel)
+            _bus.modelBuilder('modelId4', innerModel)
                 .withPreEventProcessor(() => { preProcessorCalledCount++; })
                 .withPostEventProcessor(() => {
                     if (!postProcessorPublished) {
                         postProcessorPublished = true;
-                        _router.publishEvent('modelId4', 'Event2', 'theEvent2');
+                        _bus.publishEvent('modelId4', 'Event2', 'theEvent2');
                     }
                 })
                 .withEventHandler('Event1', () => { eventReceived = true; })
                 .withEventHandler('Event2', () => { /* observe Event2 so it can be enqueued when postProcessor publishes it */ })
                 .build();
-            _router.publishEvent('modelId4', 'Event1', 'theEvent');
+            _bus.publishEvent('modelId4', 'Event1', 'theEvent');
             expect(eventReceived).toBe(true);
             // preProcessor was called twice (once for Event1, once for Event2)
             expect(preProcessorCalledCount).toBe(2);

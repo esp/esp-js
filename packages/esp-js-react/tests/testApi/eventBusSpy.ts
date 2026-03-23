@@ -1,6 +1,6 @@
-import {Router} from 'esp-js';
+import {EventBus} from 'esp-js';
 
-export class RouterSpy extends Router {
+export class EventBusSpy extends EventBus {
     private _modelSubscriptionCountByModelId = new Map<string, number>();
 
     public getSubscriberCount(modelId: string) {

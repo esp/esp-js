@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {useRouter} from './espRouterContextProvider';
+import {useEventBus} from './espEventBusContextProvider';
 import {useMemo} from 'react';
-import {Router} from 'esp-js';
+import {EventBus} from 'esp-js';
 import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
 import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
 
@@ -20,12 +20,12 @@ export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {},
 export interface ConnectableComponentChildProps<TModel = object> {
     modelId: string;
     model: TModel;
-    router: Router;
+    bus: EventBus;
     [key: string]: any; // ...rest props
 }
 
 const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
-    router: Router,
+    bus: EventBus,
     modelId: string,
     restProps: object,
     model: TModel,
@@ -34,7 +34,7 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
 ): ConnectableComponentChildProps<TModel> => {
     let childProps = {
         modelId,
-        router: router,
+        bus: bus,
         ...restProps,
         ...publishEventProps,
         model
@@ -57,7 +57,7 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         ...rest
     }: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>
 ) => {
-    const router = useRouter();
+    const bus = useEventBus();
     // Note: we always need to render the hooks else react will complain about a different count.
     let modelIdFromContext = useGetModelId();
     modelId = modelId || modelIdFromContext;
@@ -65,13 +65,13 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         () => {
             if (createPublishEventProps) {
                 const publishModelEvent = (eventType: string, event: any) => {
-                    router.publishEvent(modelId, eventType, event);
+                    bus.publishEvent(modelId, eventType, event);
                 };
                 return createPublishEventProps(publishModelEvent);
             }
             return {} as TPublishEventProps;
         },
-        [router, modelId]
+        [bus, modelId]
     );
     const model = useSyncModelWithSelector<TModel, TModel>(
         m => m,
@@ -81,10 +81,10 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
     if (model == null) {
         return null;
     }
-    let childProps = getChildProps(router, modelId, rest, model, mapModelToProps, publishEventProps);
+    let childProps = getChildProps(bus, modelId, rest, model, mapModelToProps, publishEventProps);
     let viewElement = view ? React.createElement(view as React.ComponentType<any>, childProps) : null;
     return (
-        <EspModelContextProvider modelId={modelId} model={model} router={router} {...childProps}>
+        <EspModelContextProvider modelId={modelId} model={model} bus={bus} {...childProps}>
             {viewElement}
         </EspModelContextProvider>
     );

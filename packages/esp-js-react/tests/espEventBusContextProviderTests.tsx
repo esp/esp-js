@@ -1,15 +1,15 @@
 import {
-    EspRouterContextProvider,
-    useRouter,
+    EspEventBusContextProvider,
+    useEventBus,
     usePublishEvent
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
 import {renderHook} from '@testing-library/react';
 import {TestModelState} from './testApi/testModel';
 import * as React from 'react';
-import {Router} from 'esp-js';
+import {EventBus} from 'esp-js';
 
-describe('EspRouterContextProvider tests', () => {
+describe('EspEventBusContextProvider tests', () => {
     let api: TestApi;
 
     beforeEach(() => {
@@ -19,22 +19,22 @@ describe('EspRouterContextProvider tests', () => {
     });
 
     // https://testing-library.com/docs/react-testing-library/api/#renderhook-options-initialprops
-    const createEspRouterContextProviderWrapper = (router: Router) => {
+    const createEspEventBusContextProviderWrapper = (bus: EventBus) => {
         return ({ children }: React.PropsWithChildren) => {
-            return (<EspRouterContextProvider router={router}>{children}</EspRouterContextProvider>);
+            return (<EspEventBusContextProvider bus={bus}>{children}</EspEventBusContextProvider>);
         };
     };
 
-    it('useRouter returns Router', () => {
+    it('useEventBus returns EventBus', () => {
         const {result} =renderHook(
             props => {
-                return useRouter();
+                return useEventBus();
             },
             {
-                wrapper: createEspRouterContextProviderWrapper(api.router),
+                wrapper: createEspEventBusContextProviderWrapper(api.bus),
             }
         );
-        expect(result.current).toBe(api.router);
+        expect(result.current).toBe(api.bus);
     });
 
     it('usePublishEvent returns publishEvent delegate', () => {
@@ -43,13 +43,13 @@ describe('EspRouterContextProvider tests', () => {
                 return usePublishEvent();
             },
             {
-                wrapper: createEspRouterContextProviderWrapper(api.router),
+                wrapper: createEspEventBusContextProviderWrapper(api.bus),
             }
         );
-        expect(api.router.getModel<TestModelState>('model-id').value).toBe('initial-value');
+        expect(api.bus.getModel<TestModelState>('model-id').value).toBe('initial-value');
         result.current('model-id', 'test-event', 'updated');
-        expect(api.router.getModel<TestModelState>('model-id').value).toBe('updated');
+        expect(api.bus.getModel<TestModelState>('model-id').value).toBe('updated');
         result.current({ address: 'model-id', eventType: 'test-event', event: 'updated2'});
-        expect(api.router.getModel<TestModelState>('model-id').value).toBe('updated2');
+        expect(api.bus.getModel<TestModelState>('model-id').value).toBe('updated2');
     });
 });

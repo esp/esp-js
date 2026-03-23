@@ -1,7 +1,7 @@
 import {RenderResult} from '@testing-library/react';
 // import for extra asserts
 import '@testing-library/jest-dom';
-import {RouterSpy} from './routerSpy';
+import {EventBusSpy} from './eventBusSpy';
 import {TestPropStore} from './useStoreReceivedProps';
 
 export type ViewAsserts = {
@@ -60,22 +60,22 @@ export const viewAsserts = (renderResult: RenderResult) => {
     } as ViewAsserts;
 };
 
-export type RouterAsserts = {
-    subscriberCountIs(modelId: string, expectedCount: number): RouterAsserts
+export type EventBusAsserts = {
+    subscriberCountIs(modelId: string, expectedCount: number): EventBusAsserts
 };
 
-export const routerAsserts = (routerSpy: RouterSpy) => {
+export const eventBusAsserts = (eventBusSpy: EventBusSpy) => {
     return {
         subscriberCountIs(modelId: string, expectedCount: number) {
             if (expectedCount === 0) {
-                let modelNotSubscribed = routerSpy.getSubscriberCount(modelId) === undefined || routerSpy.getSubscriberCount(modelId) === 0;
+                let modelNotSubscribed = eventBusSpy.getSubscriberCount(modelId) === undefined || eventBusSpy.getSubscriberCount(modelId) === 0;
                 expect(modelNotSubscribed).toBeTruthy();
             } else {
-                expect(routerSpy.getSubscriberCount(modelId)).toEqual(expectedCount);
+                expect(eventBusSpy.getSubscriberCount(modelId)).toEqual(expectedCount);
             }
             return this;
         },
-    } as RouterAsserts;
+    } as EventBusAsserts;
 };
 
 export type PropAsserts = {

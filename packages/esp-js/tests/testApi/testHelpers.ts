@@ -1,11 +1,11 @@
-import {Router} from '../../src/router/router';
+import {EventBus} from '../../src/eventBus/eventBus';
 
 /**
  * Helper to register a model with an empty config (no handlers).
  * Used in tests that need a model registered without any event handlers.
  */
-export function registerModel<TModel>(router: Router, modelId: string, model: TModel): void {
-    router.modelBuilder<TModel>(modelId, model).build();
+export function registerModel<TModel>(bus: EventBus, modelId: string, model: TModel): void {
+    bus.modelBuilder<TModel>(modelId, model).build();
 }
 
 /**

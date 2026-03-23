@@ -36,18 +36,18 @@ export type {
     SyncModelWithSelectorEqualityFn,
 } from './useSyncModelWithSelector';
 export {
-    RouterProvider,
-    EspRouterContextProvider,
-    RouterContext,
-    useRouter,
+    EventBusProvider,
+    EspEventBusContextProvider,
+    EventBusContext,
+    useEventBus,
     PublishEventContext,
     usePublishEvent,
-} from './espRouterContextProvider';
+} from './espEventBusContextProvider';
 export type {
-    RouterProviderProps,
-    EspRouterContextProviderProps,
+    EventBusProviderProps,
+    EspEventBusContextProviderProps,
     PublishEventDelegate,
-} from './espRouterContextProvider';
+} from './espEventBusContextProvider';
 export {
     useGetModelId,
     GetModelIdContext,

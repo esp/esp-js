@@ -19,42 +19,42 @@
 import * as esp from '../../src';
 import {registerModel} from '../testApi/testHelpers';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router,
+    let _bus,
         m1,
         m2,
         m3;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
         m1 = { id: 'm1'};
         m2 = { id: 'm2'};
         m3 = { id: 'm3'};
-        registerModel(_router, 'm1', m1);
-        registerModel(_router, 'm2', m2);
-        registerModel(_router, 'm3', m3);
+        registerModel(_bus, 'm1', m1);
+        registerModel(_bus, 'm2', m2);
+        registerModel(_bus, 'm3', m3);
 
     });
 
     describe('.findModel()', () => {
         it('finds model', () => {
-            const foundM1 =_router.findModel(m => m.id === 'm1');
+            const foundM1 =_bus.findModel(m => m.id === 'm1');
             expect(foundM1).toBe(m1);
-            const foundM2 =_router.findModel(m => m.id === 'm2');
+            const foundM2 =_bus.findModel(m => m.id === 'm2');
             expect(foundM2).toBe(m2);
-            const foundM3 =_router.findModel(m => m.id === 'm3');
+            const foundM3 =_bus.findModel(m => m.id === 'm3');
             expect(foundM3).toBe(m3);
         });
 
         it('returns null if model not found', () => {
-            const shouldBeNull =_router.findModel(m => m.id === 'not-there');
+            const shouldBeNull =_bus.findModel(m => m.id === 'not-there');
             expect(shouldBeNull).toBeNull();
         });
 
         it('should throw if predicate not a function', () => {
-            expect(() => {_router.findModel(<any>'boom'); }).toThrow(new Error('predicate should be a function'));
-            expect(() => {_router.findModel(undefined); }).toThrow(new Error('predicate should be a function'));
+            expect(() => {_bus.findModel(<any>'boom'); }).toThrow(new Error('predicate should be a function'));
+            expect(() => {_bus.findModel(undefined); }).toThrow(new Error('predicate should be a function'));
         });
     });
 });

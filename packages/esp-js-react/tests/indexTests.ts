@@ -24,10 +24,10 @@ describe('index exports', () => {
         expect(espReact.ConnectableComponent).toBeDefined();
         expect(espReact.useSyncModelWithSelector).toBeDefined();
         expect(espReact.syncModelWithSelectorOptions).toBeDefined();
-        expect(espReact.RouterProvider).toBeDefined();
-        expect(espReact.EspRouterContextProvider).toBeDefined();
-        expect(espReact.RouterContext).toBeDefined();
-        expect(espReact.useRouter).toBeDefined();
+        expect(espReact.EventBusProvider).toBeDefined();
+        expect(espReact.EspEventBusContextProvider).toBeDefined();
+        expect(espReact.EventBusContext).toBeDefined();
+        expect(espReact.useEventBus).toBeDefined();
         expect(espReact.PublishEventContext).toBeDefined();
         expect(espReact.usePublishEvent).toBeDefined();
         expect(espReact.useGetModelId).toBeDefined();

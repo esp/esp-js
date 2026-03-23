@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {act} from 'react';
-import {EspModelContextProvider, EspRouterContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
+import {EspModelContextProvider, EspEventBusContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
 import {TestModelState} from './testApi/testModel';
 import {viewFactory, ViewMetadata} from './testApi/viewFactory';
-import {routerAsserts} from './testApi/asserts';
+import {eventBusAsserts} from './testApi/asserts';
 import {testApi, TestApi} from './testApi/testApi';
 import {TestPropStoreContext} from './testApi/useStoreReceivedProps';
 
@@ -45,7 +45,7 @@ describe('useSyncModelWithSelector', () => {
 
         it('updates are rendered', () => {
             act(() => {
-                api.router.publishEvent(modelId, 'test-event', 'new-value');
+                api.bus.publishEvent(modelId, 'test-event', 'new-value');
             });
             api.asserts.view
                 .modelIdIs(modelId)
@@ -120,13 +120,13 @@ describe('useSyncModelWithSelector', () => {
                 .modelIdIs(modelId)
                 .valueIs('initial-value');
             act(() => {
-                api.router.publishEvent(modelId, 'test-event', 'assume-no-change');
+                api.bus.publishEvent(modelId, 'test-event', 'assume-no-change');
             });
             api.asserts.view
                 .modelIdIs(modelId)
                 .valueIs('initial-value'); // event data WAS NOT propagated
             act(() => {
-                api.router.publishEvent(modelId, 'test-event', 'do-change');
+                api.bus.publishEvent(modelId, 'test-event', 'do-change');
             });
             api.asserts.view
                 .modelIdIs(modelId)
@@ -156,13 +156,13 @@ describe('useSyncModelWithSelector', () => {
             api.doRender(View, modelId1);
         });
 
-        it('selector subscribed to Router', () => {
-            routerAsserts(api.router).subscriberCountIs(modelId1, 1);
+        it('selector subscribed to EventBus', () => {
+            eventBusAsserts(api.bus).subscriberCountIs(modelId1, 1);
         });
 
         it('unsubscribes when modelId changes', () => {
             api.doReRender(View, undefined);
-            api.asserts.router.subscriberCountIs(modelId1, 0);
+            api.asserts.bus.subscriberCountIs(modelId1, 0);
         });
 
         it('resubscribes to new model when modelId changes', () => {
@@ -179,7 +179,7 @@ describe('useSyncModelWithSelector', () => {
                 .modelIdIs(modelId2)
                 .valueIs('initial-value');
             act(() => {
-                api.router.publishEvent(modelId2, 'test-event', 'updated');
+                api.bus.publishEvent(modelId2, 'test-event', 'updated');
             });
             api.asserts.view
                 .modelIdIs(modelId2)
@@ -190,14 +190,14 @@ describe('useSyncModelWithSelector', () => {
     describe('noop argument edge cases', () => {
         const View = viewFactory('View1');
 
-        it('falsey router', () => {
+        it('falsey bus', () => {
             api.doRender((
                 <TestPropStoreContext.Provider value={api.propStore}>
-                    <EspRouterContextProvider router={undefined}>
+                    <EspEventBusContextProvider bus={undefined}>
                         <EspModelContextProvider modelId={'some-modelId'}>
                             <View  />,
                         </EspModelContextProvider>
-                    </EspRouterContextProvider>
+                    </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             api.asserts.props
@@ -212,11 +212,11 @@ describe('useSyncModelWithSelector', () => {
         it('falsey modelId', () => {
             api.doRender((
                 <TestPropStoreContext.Provider value={api.propStore}>
-                    <EspRouterContextProvider router={api.router}>
+                    <EspEventBusContextProvider bus={api.bus}>
                         <EspModelContextProvider modelId={undefined}>
                             <View  />,
                         </EspModelContextProvider>
-                    </EspRouterContextProvider>
+                    </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             api.asserts.props

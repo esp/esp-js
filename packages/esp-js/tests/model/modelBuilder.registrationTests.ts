@@ -24,58 +24,58 @@ interface SimpleModel {
 
 describe('ModelBuilder', () => {
 
-    let _router: esp.Router;
+    let _bus: esp.EventBus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('registration (build)', () => {
 
         it('model is registered with the router after build', () => {
-            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
-            expect(_router.isModelRegistered('myModel')).toBe(true);
+            _bus.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
+            expect(_bus.isModelRegistered('myModel')).toBe(true);
         });
 
         it('router.removeModel() removes the model', () => {
-            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
-            expect(_router.isModelRegistered('myModel')).toBe(true);
-            _router.removeModel('myModel');
-            expect(_router.isModelRegistered('myModel')).toBe(false);
+            _bus.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
+            expect(_bus.isModelRegistered('myModel')).toBe(true);
+            _bus.removeModel('myModel');
+            expect(_bus.isModelRegistered('myModel')).toBe(false);
         });
 
         it('router.removeModel() disposes subscription factories', () => {
             let disposeCalled = false;
-            _router.modelBuilder<SimpleModel>('myModel', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('myModel', { value: 0 })
                 .withEventSubscription(() => ({ dispose: () => { disposeCalled = true; } }))
                 .build();
-            _router.removeModel('myModel');
+            _bus.removeModel('myModel');
             expect(disposeCalled).toBe(true);
         });
 
         it('event handler registered via withEventHandler fires on publishEvent', () => {
             let received = false;
-            _router.modelBuilder<SimpleModel>('myModel', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('myModel', { value: 0 })
                 .withEventHandler('AnEvent', () => { received = true; })
                 .build();
-            _router.publishEvent('myModel', 'AnEvent', {});
+            _bus.publishEvent('myModel', 'AnEvent', {});
             expect(received).toBe(true);
         });
 
         it('isModelRegistered returns false before registration', () => {
-            expect(_router.isModelRegistered('notYet')).toBe(false);
+            expect(_bus.isModelRegistered('notYet')).toBe(false);
         });
 
         it('isModelRegistered returns false after removeModel', () => {
-            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
-            _router.removeModel('myModel');
-            expect(_router.isModelRegistered('myModel')).toBe(false);
+            _bus.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
+            _bus.removeModel('myModel');
+            expect(_bus.isModelRegistered('myModel')).toBe(false);
         });
 
         it('throws if the same modelId is registered twice', () => {
-            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
+            _bus.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             expect(() => {
-                _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
+                _bus.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             }).toThrow();
         });
     });

@@ -16,31 +16,31 @@
  */
 // notice_end
 
-import {Router} from '../../src';
+import {EventBus} from '../../src';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
 
     beforeEach(() => {
-        _router = new Router();
+        _bus = new EventBus();
     });
 
     describe('.broadcast()', function() {
         it('throws if arguments incorrect', () => {
-            expect(() => {_router.broadcastEvent(undefined, 'foo'); }).toThrow();
-            expect(() => {_router.broadcastEvent('anEvent', undefined); }).toThrow();
+            expect(() => {_bus.broadcastEvent(undefined, 'foo'); }).toThrow();
+            expect(() => {_bus.broadcastEvent('anEvent', undefined); }).toThrow();
         });
 
         it('should deliver the event to all models observing event', () => {
             let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
-            _router.modelBuilder('modelId1', {})
+            _bus.modelBuilder('modelId1', {})
                 .withEventHandler<number>('Event1', (draft, event) => { model1ProcessorReceived += event; })
                 .build();
-            _router.modelBuilder('modelId2', {})
+            _bus.modelBuilder('modelId2', {})
                 .withEventHandler<number>('Event1', (draft, event) => { model2ProcessorReceived += event; })
                 .build();
-            _router.broadcastEvent('Event1', 10);
+            _bus.broadcastEvent('Event1', 10);
             expect(model1ProcessorReceived).toEqual(10);
             expect(model2ProcessorReceived).toEqual(10);
         });
@@ -50,24 +50,24 @@ describe('Router', () => {
             let model1ReceivedEvents: string[] = [];
             let model2ReceivedEvents: string[] = [];
             // first: model1 observes Event1, model2 does not
-            _router.modelBuilder('modelId1', {})
+            _bus.modelBuilder('modelId1', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model1ProcessorReceivedCount++;
                     model1ReceivedEvents.push(ctx.modelId);
                 })
                 .build();
-            _router.modelBuilder('modelId2', {})
+            _bus.modelBuilder('modelId2', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model2ProcessorReceivedCount++;
                     model2ReceivedEvents.push(ctx.modelId);
                 })
                 .build();
 
-            _router.broadcastEvent('Event1', 10);
+            _bus.broadcastEvent('Event1', 10);
             expect(model1ProcessorReceivedCount).toEqual(1);
             expect(model2ProcessorReceivedCount).toEqual(1);
 
-            _router.broadcastEvent('Event1', 20);
+            _bus.broadcastEvent('Event1', 20);
             expect(model1ProcessorReceivedCount).toEqual(2);
             expect(model2ProcessorReceivedCount).toEqual(2);
             // Verify events were delivered to both models

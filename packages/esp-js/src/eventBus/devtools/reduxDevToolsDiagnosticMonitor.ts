@@ -29,7 +29,7 @@ interface RegisteredModel {
 }
 
 interface DevToolsState {
-    routerName: string;
+    busName: string;
     totalEventCount: number;
     stateTimestamp: Date;
     registeredModelsMap: { [modelId: string]: RegisteredModel };
@@ -45,17 +45,17 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
     private _noisyModelMap: Map<string, number> = new Map();
     private _noisyEventMap: Map<string, number> = new Map();
 
-    constructor(private _routerName: string) {
+    constructor(private _busName: string) {
         super();
         this._state = {
-            routerName: this._routerName,
+            busName: this._busName,
             totalEventCount: 0,
             stateTimestamp: new Date(),
             registeredModelsMap: {},
             top20NoisyModelsEventCount: {},
             top20NoisyEventsCount: {},
         };
-        const disconnectDevTools = connectReduxDevTools(this._routerName);
+        const disconnectDevTools = connectReduxDevTools(this._busName);
         this.addDisposable(() => disconnectDevTools());
         this._startStateUpdateTrigger();
         this._sendDevToolsUpdate('@@INIT', null);
@@ -77,7 +77,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
             registeredModelsMap
         };
         this._noisyModelMap.set(modelId, 0);
-        this._sendDevToolsUpdate('router:add_model', {modelId: modelId});
+        this._sendDevToolsUpdate('eventBus:add_model', {modelId: modelId});
     }
 
     removeModel(modelId: string): void {
@@ -90,7 +90,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
             ...this._state,
             registeredModelsMap
         };
-        this._sendDevToolsUpdate('router:remove_model', {modelId: modelId});
+        this._sendDevToolsUpdate('eventBus:remove_model', {modelId: modelId});
     }
 
     publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void {
@@ -204,7 +204,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
                 top20NoisyEventsCount
             };
             this._lastSentState = this._state;
-            this._sendDevToolsUpdate('router:state_update', null);
+            this._sendDevToolsUpdate('eventBus:state_update', null);
         }
         setTimeout(this._startStateUpdateTrigger, DEV_TOOLS_STATE_UPDATE_INTERVAL_MS);
     };
@@ -215,7 +215,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
             // We don't always send the latest else to avoid smashing dev tools
             // This gets updated on a timer elsewhere in this class.
             this._lastSentState,
-            this._routerName
+            this._busName
         );
     };
 

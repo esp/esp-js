@@ -50,10 +50,10 @@ describe('ConnectableComponentTests', () => {
         api = testApi();
         testModel = new TestModel();
         testModel2 = new TestModel2();
-        api.router.modelBuilder<TestModel>('model-id1', testModel)
+        api.bus.modelBuilder<TestModel>('model-id1', testModel)
             .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
             .build();
-        api.router.modelBuilder<TestModel2>('model-id2', testModel2)
+        api.bus.modelBuilder<TestModel2>('model-id2', testModel2)
             .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
             .build();
     });
@@ -111,7 +111,7 @@ describe('ConnectableComponentTests', () => {
 
     const publishTestEvent = (modelId: string, eventData: string) => {
         act(() => {
-            api.router.publishEvent(modelId, 'test-event', eventData);
+            api.bus.publishEvent(modelId, 'test-event', eventData);
         });
     };
 
@@ -220,12 +220,12 @@ describe('ConnectableComponentTests', () => {
                     );
             });
 
-            it('passes router', () => {
+            it('passes bus', () => {
                 api.asserts.props
                     .propAtIndex(
                         0,
                         props => {
-                            expect(props.router).toBe(api.router);
+                            expect(props.bus).toBe(api.bus);
                         }
                     );
             });
@@ -364,7 +364,7 @@ describe('ConnectableComponentTests', () => {
                 api.asserts.view.viewNameElementTextIs('View1');
                 api.asserts.props.receivedPropCountIs(1);
                 act(() => {
-                    api.router.publishEvent('model-id1', 'test-event', 'changed-value');
+                    api.bus.publishEvent('model-id1', 'test-event', 'changed-value');
                 });
                 api.asserts.props
                     .receivedPropCountIs(2)

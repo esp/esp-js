@@ -19,9 +19,9 @@
 import * as esp from '../../src';
 import {registerModel} from '../testApi/testHelpers';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
     let _onErrorHandler;
     let _onErrorHandlerCallCount = 0;
 
@@ -32,12 +32,12 @@ describe('Router', () => {
     };
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
         _onErrorHandlerCallCount = 0;
         _onErrorHandler = () => {
             _onErrorHandlerCallCount++;
         };
-        _router.addOnErrorHandler(_onErrorHandler);
+        _bus.addOnErrorHandler(_onErrorHandler);
     });
 
     describe('onErrorHandler tests', function() {
@@ -52,7 +52,7 @@ describe('Router', () => {
 
         beforeEach(()=> {
             _flags = { throwAtPre: false, throwAtUpdate: false, throwAtPost: false, throwADispatch: false };
-            _router.modelBuilder('modelId1', {})
+            _bus.modelBuilder('modelId1', {})
                 .withPreEventProcessor(() => {
                     if (_flags.throwAtPre) {
                         throw new Error('Boom:Pre');
@@ -69,7 +69,7 @@ describe('Router', () => {
                     }
                 })
                 .build();
-            _router.getModelObservable('modelId1').subscribe(
+            _bus.getModelObservable('modelId1').subscribe(
                 (model: any) => {
                     if (_flags.throwAtUpdate) {
                         throw new Error('Boom:Update');
@@ -80,54 +80,54 @@ describe('Router', () => {
 
         describe('onErrorHandler mutation tests', () => {
             it('should not call an errorHandler once removed', () => {
-                _router.removeOnErrorHandler(_onErrorHandler);
+                _bus.removeOnErrorHandler(_onErrorHandler);
                 _flags.throwAtPre = true;
-                ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
+                ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', { }));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('Should throw trying to remove a handler that does not exist', () => {
                 expect(() => {
-                    _router.removeOnErrorHandler(() => {});
+                    _bus.removeOnErrorHandler(() => {});
                 }).toThrow(new Error('Unknown error handler.'));
             });
 
             it('Should ignore errors from onErrorHandlers', () => {
-                _router.removeOnErrorHandler(_onErrorHandler);
+                _bus.removeOnErrorHandler(_onErrorHandler);
 
                 let hasRun = false;
                 let handler1 = e => { throw new Error('Hello'); };
                 let handler2 = e => hasRun = true;
-                _router.addOnErrorHandler(handler1);
-                _router.addOnErrorHandler(handler2);
+                _bus.addOnErrorHandler(handler1);
+                _bus.addOnErrorHandler(handler2);
 
                 _flags.throwAtPre = true;
-                ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
+                ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', { }));
                 expect(hasRun).toEqual(true);
             });
         });
 
         it('should call onErrorHandler and rethrow if a pre processor errors', () => {
             _flags.throwAtPre = true;
-            ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
+            ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         it('should call onErrorHandler and rethrow if an event stream handler errors ', () => {
             _flags.throwADispatch = true;
-            ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
+            ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         it('should call onErrorHandler and rethrow if a post processor errors', () => {
             _flags.throwAtPost = true;
-            ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
+            ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
         it('should call onErrorHandler and rethrow if an update stream handler errors', () => {
             _flags.throwAtUpdate = true;
-            ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', { }));
+            ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', { }));
             expect(_onErrorHandlerCallCount).toEqual(1);
         });
 
@@ -135,64 +135,64 @@ describe('Router', () => {
             beforeEach(()=> {
                 _flags.throwAtPre = true;
                 expect(() => {
-                    _router.publishEvent('modelId1', 'Event1', { });
+                    _bus.publishEvent('modelId1', 'Event1', { });
                 }).toThrow(new Error('Boom:Pre'));
                 _onErrorHandlerCallCount = 0;
             });
 
             it('should not call onErrorHandler on publish', () => {
-                ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', 'payload'));
+                ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', 'payload'));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on getModelObservable subscribe', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
+                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on executeEvent()', () => {
-                ignoreErrors(() => _router.executeEvent('myEventType', {}));
+                ignoreErrors(() => _bus.executeEvent('myEventType', {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on addModel()', () => {
-                ignoreErrors(() => registerModel(_router, 'modelId2', {}));
+                ignoreErrors(() => registerModel(_bus, 'modelId2', {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on getModelObservable()', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
+                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });
 
         describe('when disposed', () => {
             beforeEach(()=> {
-                _router.dispose();
+                _bus.dispose();
             });
 
             it('should not call onErrorHandler on publish', () => {
-                ignoreErrors(() => _router.publishEvent('modelId1', 'Event1', 'payload'));
+                ignoreErrors(() => _bus.publishEvent('modelId1', 'Event1', 'payload'));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on getModelObservable subscribe', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
+                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on executeEvent()', () => {
-                ignoreErrors(() => _router.executeEvent('myEventType', {}));
+                ignoreErrors(() => _bus.executeEvent('myEventType', {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on addModel()', () => {
-                ignoreErrors(() => registerModel(_router, 'modelId2', {}));
+                ignoreErrors(() => registerModel(_bus, 'modelId2', {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
             it('should not call onErrorHandler on getModelObservable()', () => {
-                ignoreErrors(() => _router.getModelObservable('modelId1').subscribe(() => {}));
+                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });

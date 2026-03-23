@@ -21,7 +21,7 @@ export interface EventEnvelope<TEvent, TModel> {
      */
     modelId: string;
     /**
-     * An optional model path that may have been provided when the even was published to the Router
+     * An optional model path that may have been provided when the even was published to the EventBus
      */
     entityKey: string;
     /**

@@ -18,20 +18,20 @@
 
 import * as esp from '../../src';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('.isOnDispatchLoopFor()', function() {
         it('throws if arguments incorrect', () => {
-            expect(() => {_router.isOnDispatchLoopFor(); }).toThrow(new Error('modelId must be a string'));
-            expect(() => {_router.isOnDispatchLoopFor(1); }).toThrow(new Error('modelId must be a string'));
-            expect(() => {_router.isOnDispatchLoopFor({}); }).toThrow(new Error('modelId must be a string'));
-            expect(() => {_router.isOnDispatchLoopFor(''); }).toThrow(new Error('modelId must not be empty'));
+            expect(() => {_bus.isOnDispatchLoopFor(); }).toThrow(new Error('modelId must be a string'));
+            expect(() => {_bus.isOnDispatchLoopFor(1); }).toThrow(new Error('modelId must be a string'));
+            expect(() => {_bus.isOnDispatchLoopFor({}); }).toThrow(new Error('modelId must be a string'));
+            expect(() => {_bus.isOnDispatchLoopFor(''); }).toThrow(new Error('modelId must not be empty'));
         });
 
         it('returns true when on models dispatch loop', () => {
@@ -39,24 +39,24 @@ describe('Router', () => {
                 model1EventHandler_isOnModel2DispatchLoop = null,
                 model2EventHandler_isOnModel1DispatchLoop = null,
                 model2EventHandler_isOnModel2DispatchLoop = null;
-            _router.modelBuilder('modelId1', {})
+            _bus.modelBuilder('modelId1', {})
                 .withEventHandler('Event1', () => {
-                    model1EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
-                    model1EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
+                    model1EventHandler_isOnModel1DispatchLoop = _bus.isOnDispatchLoopFor('modelId1');
+                    model1EventHandler_isOnModel2DispatchLoop = _bus.isOnDispatchLoopFor('modelId2');
                 })
                 .build();
-            _router.modelBuilder('modelId2', {})
+            _bus.modelBuilder('modelId2', {})
                 .withEventHandler('Event1', () => {
-                    model2EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
-                    model2EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
+                    model2EventHandler_isOnModel1DispatchLoop = _bus.isOnDispatchLoopFor('modelId1');
+                    model2EventHandler_isOnModel2DispatchLoop = _bus.isOnDispatchLoopFor('modelId2');
                 })
                 .build();
-            expect(_router.isOnDispatchLoopFor('modelId1')).toEqual(false);
-            expect(_router.isOnDispatchLoopFor('modelId2')).toEqual(false);
-            _router.publishEvent('modelId1', 'Event1', {payload:'theEventPayload'});
+            expect(_bus.isOnDispatchLoopFor('modelId1')).toEqual(false);
+            expect(_bus.isOnDispatchLoopFor('modelId2')).toEqual(false);
+            _bus.publishEvent('modelId1', 'Event1', {payload:'theEventPayload'});
             expect(model1EventHandler_isOnModel1DispatchLoop).toEqual(true);
             expect(model1EventHandler_isOnModel2DispatchLoop).toEqual(false);
-            _router.publishEvent('modelId2', 'Event1', {payload:'theEventPayload'});
+            _bus.publishEvent('modelId2', 'Event1', {payload:'theEventPayload'});
             expect(model2EventHandler_isOnModel1DispatchLoop).toEqual(false);
             expect(model2EventHandler_isOnModel2DispatchLoop).toEqual(true);
         });

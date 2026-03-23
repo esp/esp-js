@@ -18,12 +18,12 @@
 
 import * as esp from '../../src';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router;
+    let _bus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('multiple models', () => {
@@ -50,14 +50,14 @@ describe('Router', () => {
             _model1OptionsHelper = createOptionsHelper();
             _model2OptionsHelper = createOptionsHelper();
             _model3OptionsHelper = createOptionsHelper();
-            _router.modelBuilder(_model1.id, _model1)
+            _bus.modelBuilder(_model1.id, _model1)
                 .withPreEventProcessor(_model1OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model1OptionsHelper.options.postEventProcessor)
                 .withEventHandler('fooEvent', () => {
                     _model1ReceivedEvent = true;
                 })
                 .build();
-            _router.modelBuilder(_model2.id, _model2)
+            _bus.modelBuilder(_model2.id, _model2)
                 .withPreEventProcessor(_model2OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model2OptionsHelper.options.postEventProcessor)
                 .withEventHandler<number>('fooEvent', (draft, event, ctx) => {
@@ -65,7 +65,7 @@ describe('Router', () => {
                     _receivedEvent2 = event;
                 })
                 .build();
-            _router.modelBuilder(_model3.id, _model3)
+            _bus.modelBuilder(_model3.id, _model3)
                 .withPreEventProcessor(_model3OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model3OptionsHelper.options.postEventProcessor)
                 .build();
@@ -88,7 +88,7 @@ describe('Router', () => {
         }
 
         it('should deliver correct model and event to target event observers', () => {
-            _router.publishEvent(_model2.id, 'fooEvent', 1);
+            _bus.publishEvent(_model2.id, 'fooEvent', 1);
             expect(_receivedModel2).toBeDefined();
             expect(_receivedModel2).toBe(_model2);
             expect(_receivedEvent2).toBeDefined();
@@ -98,15 +98,15 @@ describe('Router', () => {
 
         it('should dispatch updates for the child model only', () => {
             let model1UpdateCount = 0, model2UpdateCount = 0;
-            _router.getModelObservable(_model1.id).subscribe(() => {
+            _bus.getModelObservable(_model1.id).subscribe(() => {
                 model1UpdateCount++;
             });
             expect(model1UpdateCount).toEqual(1);
-            _router.getModelObservable(_model2.id).subscribe(() => {
+            _bus.getModelObservable(_model2.id).subscribe(() => {
                 model2UpdateCount++;
             });
             expect(model2UpdateCount).toEqual(1);
-            _router.publishEvent(_model2.id, 'fooEvent', 1);
+            _bus.publishEvent(_model2.id, 'fooEvent', 1);
             expect(model1UpdateCount).toEqual(1);
             expect(model2UpdateCount).toEqual(2);
         });

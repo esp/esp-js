@@ -25,17 +25,17 @@ interface SimpleModel {
 
 describe('ModelBuilder', () => {
 
-    let _router: esp.Router;
+    let _bus: esp.EventBus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('subscription factories (withEventSubscription)', () => {
 
         it('subscription factory is called when model is registered', () => {
             let factoryCalled = false;
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish) => {
                     factoryCalled = true;
                     return { dispose: () => {} };
@@ -48,7 +48,7 @@ describe('ModelBuilder', () => {
             let publishCalledWith: { eventType: string; event: any } = null;
             let factoryPublish: (eventType: string, event: any) => void = null;
 
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventHandler<{ amount: number }>('Add', (draft, event) => {
                     draft.value += event.amount;
                 })
@@ -59,7 +59,7 @@ describe('ModelBuilder', () => {
                 .build();
 
             let lastModel: SimpleModel = null;
-            _router.getModelObservable<SimpleModel>('model').subscribe(m => { lastModel = m; });
+            _bus.getModelObservable<SimpleModel>('model').subscribe(m => { lastModel = m; });
 
             // Use the captured publish delegate to publish outside normal flow
             factoryPublish('Add', { amount: 10 });
@@ -70,20 +70,20 @@ describe('ModelBuilder', () => {
 
         it('dispose returned from subscription factory is called on model removal', () => {
             let disposeCalled = false;
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish): Disposable => {
                     return {
                         dispose: () => { disposeCalled = true; }
                     };
                 })
                 .build();
-            _router.removeModel('model');
+            _bus.removeModel('model');
             expect(disposeCalled).toBe(true);
         });
 
         it('multiple subscription factories are all called', () => {
             const calls: string[] = [];
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish) => {
                     calls.push('factory1');
                     return { dispose: () => {} };

@@ -24,35 +24,35 @@ interface SimpleModel {
 
 describe('ModelBuilder', () => {
 
-    let _router: esp.Router;
+    let _bus: esp.EventBus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('preview handlers (withPreviewHandler)', () => {
 
         it('preview handler is called before event dispatch, normal handler fires after', () => {
             const calls: string[] = [];
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withPreviewHandler('AnEvent', (model, event, ctx) => {
                     calls.push('preview');
                 })
                 .withEventHandler('AnEvent', () => { calls.push('normal'); })
                 .build();
-            _router.publishEvent('model', 'AnEvent', {});
+            _bus.publishEvent('model', 'AnEvent', {});
             expect(calls).toEqual(['preview', 'normal']);
         });
 
         it('preview handler can cancel the event', () => {
             let normalCalled = false;
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withPreviewHandler('AnEvent', (model, event, ctx) => {
                     ctx.cancel();
                 })
                 .withEventHandler('AnEvent', () => { normalCalled = true; })
                 .build();
-            _router.publishEvent('model', 'AnEvent', {});
+            _bus.publishEvent('model', 'AnEvent', {});
             expect(normalCalled).toBe(false);
         });
 
@@ -61,24 +61,24 @@ describe('ModelBuilder', () => {
             // beyond the handler — the draft proxy is revoked after produce completes.
             let receivedValue: number = null;
             let handlerCalled = false;
-            _router.modelBuilder<SimpleModel>('model', { value: 42 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 42 })
                 .withPreviewHandler('AnEvent', (model) => {
                     handlerCalled = true;
                     receivedValue = model.value;
                 })
                 .build();
-            _router.publishEvent('model', 'AnEvent', {});
+            _bus.publishEvent('model', 'AnEvent', {});
             expect(handlerCalled).toBe(true);
             expect(receivedValue).toEqual(42);
         });
 
         it('multiple preview handlers are all called', () => {
             const calls: string[] = [];
-            _router.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withPreviewHandler('AnEvent', () => { calls.push('preview1'); })
                 .withPreviewHandler('AnEvent', () => { calls.push('preview2'); })
                 .build();
-            _router.publishEvent('model', 'AnEvent', {});
+            _bus.publishEvent('model', 'AnEvent', {});
             expect(calls).toEqual(['preview1', 'preview2']);
         });
     });

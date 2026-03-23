@@ -1,17 +1,17 @@
 import {createTestModel, TestModelState} from './testModel';
-import {RouterSpy} from './routerSpy';
+import {EventBusSpy} from './eventBusSpy';
 import {render, RenderResult} from '@testing-library/react';
 import * as React from 'react';
-import {EspModelContextProvider, EspRouterContextProvider} from '../../src';
-import {PropAsserts, propAsserts, RouterAsserts, routerAsserts, ViewAsserts, viewAsserts} from './asserts';
+import {EspModelContextProvider, EspEventBusContextProvider} from '../../src';
+import {EventBusAsserts, eventBusAsserts, PropAsserts, propAsserts, ViewAsserts, viewAsserts} from './asserts';
 import {isValidElement, ReactElement} from 'react';
 import {TestPropStore, TestPropStoreContext} from './useStoreReceivedProps';
 
 export type TestApi = {
-    router: RouterSpy;
+    bus: EventBusSpy;
     propStore: TestPropStore;
     asserts: {
-        router: RouterAsserts,
+        bus: EventBusAsserts,
         view: ViewAsserts,
         props: PropAsserts,
     };
@@ -25,15 +25,15 @@ export type TestApi = {
 };
 
 export const testApi = ()=> {
-    let router: RouterSpy = new RouterSpy();
+    let bus: EventBusSpy = new EventBusSpy();
     let renderResult: RenderResult;
     let propStore = new TestPropStore();
     return {
-        router,
+        bus,
         propStore,
         asserts: {
-            get router() {
-                return routerAsserts(router);
+            get bus() {
+                return eventBusAsserts(bus);
             },
             get view() {
                 return viewAsserts(renderResult);
@@ -48,11 +48,11 @@ export const testApi = ()=> {
             return this;
         },
         setupModel<TModel>(modelId: string, model: TModel): TModel {
-            router.modelBuilder<TModel>(modelId, model).build();
+            bus.modelBuilder<TModel>(modelId, model).build();
             return model;
         },
         setupTestModel(modelId: string): TestModelState {
-            return createTestModel(router, modelId);
+            return createTestModel(bus, modelId);
         },
         doRender(ComponentOrElement: any, modelIdForContext?: string, nextProps?: any) {
             let element: React.JSX.Element;
@@ -64,11 +64,11 @@ export const testApi = ()=> {
             let elementWithProps = React.cloneElement(element, nextProps);
             renderResult = render((
                 <TestPropStoreContext.Provider value={propStore}>
-                    <EspRouterContextProvider router={router}>
+                    <EspEventBusContextProvider bus={bus}>
                         <EspModelContextProvider modelId={modelIdForContext}>
                             {elementWithProps},
                         </EspModelContextProvider>
-                    </EspRouterContextProvider>
+                    </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             return this;
@@ -83,11 +83,11 @@ export const testApi = ()=> {
             let elementWithProps = React.cloneElement(element, nextProps);
             renderResult.rerender((
                 <TestPropStoreContext.Provider value={propStore}>
-                    <EspRouterContextProvider router={router}>
+                    <EspEventBusContextProvider bus={bus}>
                         <EspModelContextProvider modelId={modelIdForContext}>
                             {elementWithProps},
                         </EspModelContextProvider>
-                    </EspRouterContextProvider>
+                    </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             return this;

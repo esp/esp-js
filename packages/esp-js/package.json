@@ -5,11 +5,9 @@
   "keywords": [
     "state processor",
     "evented state processor",
-    "reactive",
     "event loop",
     "complex state processor",
-    "router",
-    "event router"
+    "event bus"
   ],
   "scripts": {
     "clean": "nps clean",

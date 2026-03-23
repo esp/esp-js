@@ -16,18 +16,18 @@
  */
 // notice_end
 
-import {Router} from '../../src';
+import {EventBus} from '../../src';
 
-describe('Router Dev Tools', () => {
+describe('EventBus Dev Tools', () => {
 
-    let _router: Router;
+    let _bus: EventBus;
 
     const setup = () => {
-        _router = new Router();
-        _router.modelBuilder('modelId1', {})
+        _bus = new EventBus();
+        _bus.modelBuilder('modelId1', {})
             .withEventHandler('startEvent', () => {})
             .build();
-        _router.getModelObservable('modelId1').subscribe(m => {
+        _bus.getModelObservable('modelId1').subscribe(m => {
         });
     };
 

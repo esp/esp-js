@@ -1,7 +1,7 @@
 import {useMemo} from 'react';
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
-import {Logger, Router, utils} from 'esp-js';
-import {useRouter} from './espRouterContextProvider';
+import {Logger, EventBus, utils} from 'esp-js';
+import {useEventBus} from './espEventBusContextProvider';
 import {useGetModelId} from './espModelContextProvider';
 
 export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
@@ -9,11 +9,11 @@ export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
 export const logger = Logger.create('useSyncModelWithSelector');
 
 /**
- * Options affecting the subscription of the model to the Router.
+ * Options affecting the subscription of the model to the EventBus.
  *
  * Use syncModelWithSelectorOptions() to create an instance of this type with sensible defaults.
  *
- * @param modelId - the modelId of the model to be observed via the esp Router.
+ * @param modelId - the modelId of the model to be observed via the esp EventBus.
  * @param equalityFn - Equality function which will be applied against TSelected, defaults to instance equality (a === b).
  */
 export type SyncModelWithSelectorOptions<TSelected> = {
@@ -75,11 +75,11 @@ const checkArguments = (selector: (model: any) => any, options: SyncModelWithSel
 };
 
 /**
- * A hook which returns model state from the esp Router.
+ * A hook which returns model state from the esp EventBus.
  *
  * This hooks wih observe updates and re-render the component if the model changes.
  *
- * To use this, please ensure your V-DOM has the EspRouterContextProvider at a higher node, and optionally EspModelContextProvider.
+ * To use this, please ensure your V-DOM has the EspEventBusContextProvider at a higher node, and optionally EspModelContextProvider.
  *
  * @param selector - a function to select a selection of the model - the selector does not need to be memoized, this selector will be cached against the modelId.
  * @param options
@@ -89,20 +89,20 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
     options: SyncModelWithSelectorOptions<TSelected> = syncModelWithSelectorOptions<TSelected>()
 ): TSelected => {
     checkArguments(selector, options);
-    const router = useRouter();
+    const bus = useEventBus();
     const modelIdFromContext = useGetModelId();
     const modelId = options?.modelId || modelIdFromContext;
     const equalityFn = options?.equalityFn;
     const dependencies = useMemo(
         () => {
-            const canSubscribe = router && utils.isString(modelId) && router.isModelRegistered(modelId);
+            const canSubscribe = bus && utils.isString(modelId) && bus.isModelRegistered(modelId);
             if (canSubscribe) {
-                return createSubscriptionState(router, modelId, selector);
+                return createSubscriptionState(bus, modelId, selector);
             }
             return createNoopSubscriptionState();
         },
         // Don't add 'selector' to the dependency list as that will likely change unless the caller memoizes it.
-        [router, modelId]
+        [bus, modelId]
     );
 
     // Docs on useSyncExternalStore https://github.com/reactwg/react-18/discussions/86
@@ -118,12 +118,12 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
 };
 
 const createSubscriptionState = <TModel, TSelected>(
-    router: Router,
+    bus: EventBus,
     modelId: string,
     selector: (model: TModel) => TSelected,
 ) => {
     // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
-    // When the subscription receives the new state from the Router, it can't pass this directly onto getSnapshot,
+    // When the subscription receives the new state from the EventBus, it can't pass this directly onto getSnapshot,
     // React calls that when it deems it needs to.
     // Given that, we need to cache the state which getSnapshot will return.
     //
@@ -131,7 +131,7 @@ const createSubscriptionState = <TModel, TSelected>(
     // It will call getSnapshot before it calls subscribe, to account for this we need to fetch the model first.
     let currentModel: TModel;
     let onStateChanged: () => void = null;
-    const modelSubscriptionDisposable = router
+    const modelSubscriptionDisposable = bus
         .getModelObservable<TModel>(modelId)
         .subscribe(
             (m: TModel) => {

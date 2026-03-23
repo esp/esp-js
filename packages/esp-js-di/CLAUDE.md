@@ -117,10 +117,10 @@ Primary surface: `Container` class. `RegistrationModifier` is returned by `regis
 
 ## Common Tasks
 
-**Register the router and services:**
+**Register the eventbus and services:**
 ```javascript
-container.register('router', Router).singleton();
-container.register('myService', MyService).inject('router').singleton();
+container.register('bus', EventBus).singleton();
+container.register('myService', MyService).inject('bus').singleton();
 ```
 
 **Create and dispose a module's child container:**

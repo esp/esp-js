@@ -19,38 +19,38 @@
 import * as esp from '../../src';
 import {registerModel} from '../testApi/testHelpers';
 
-describe('Router', () => {
+describe('EventBus', () => {
 
-    let _router: esp.Router;
+    let _bus: esp.EventBus;
 
     beforeEach(() => {
-        _router = new esp.Router();
+        _bus = new esp.EventBus();
     });
 
     describe('.modelBuilder()', () => {
         it('throws if modelId not a string', () => {
-            expect(() => { registerModel(_router, undefined, {}); }).toThrow();
-            expect(() => { registerModel(_router, <any>{}, {}); }).toThrow();
+            expect(() => { registerModel(_bus, undefined, {}); }).toThrow();
+            expect(() => { registerModel(_bus, <any>{}, {}); }).toThrow();
         });
 
         it('throws if model is undefined', () => {
-            expect(() => { registerModel(_router, 'foo', undefined); }).toThrow();
+            expect(() => { registerModel(_bus, 'foo', undefined); }).toThrow();
         });
 
         it('should throw if model already registered', () => {
-            registerModel(_router, 'modelId', {});
-            expect(() => { registerModel(_router, 'modelId', {}); }).toThrow(new Error('The model with id [modelId] is already registered'));
+            registerModel(_bus, 'modelId', {});
+            expect(() => { registerModel(_bus, 'modelId', {}); }).toThrow(new Error('The model with id [modelId] is already registered'));
         });
 
         it('ModelBuilder throws if handler undefined', () => {
             expect(() => {
-                _router.modelBuilder('modelId', {}).withEventHandler('evt', undefined);
+                _bus.modelBuilder('modelId', {}).withEventHandler('evt', undefined);
             }).toThrow();
         });
 
         it('ModelBuilder throws if eventType not a string', () => {
             expect(() => {
-                _router.modelBuilder('modelId', {}).withEventHandler(undefined, () => {});
+                _bus.modelBuilder('modelId', {}).withEventHandler(undefined, () => {});
             }).toThrow();
         });
     });

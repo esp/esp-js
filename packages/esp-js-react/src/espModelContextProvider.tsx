@@ -1,6 +1,6 @@
-import {DefaultModelAddress, Router} from 'esp-js';
+import {DefaultModelAddress, EventBus} from 'esp-js';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
-import {useRouter} from './espRouterContextProvider';
+import {useEventBus} from './espEventBusContextProvider';
 
 export const GetModelIdContext = createContext<string>(null);
 /**
@@ -19,14 +19,14 @@ export const GetModelContext = createContext<object>(null);
 export const useGetModel = <TModel,>() => useContext(GetModelContext) as TModel;
 
 export type PublishModelEventDelegate = { (eventType: string, event: any): void; (eventData: {eventType: string, event: any}): void; };
-const createPublishModelEvent = (router: Router, modelId: string) => {
+const createPublishModelEvent = (bus: EventBus, modelId: string) => {
     function publishModelEvent(eventType: string, event: any): void;
     function publishModelEvent(eventData: {eventType: string, event: any}): void;
     function publishModelEvent(...args: any[]) {
         if (args.length === 1) {
-            router.publishEvent(modelId, args[0].eventType, args[0].event);
+            bus.publishEvent(modelId, args[0].eventType, args[0].event);
         } else {
-            router.publishEvent(modelId, args[0], args[1]);
+            bus.publishEvent(modelId, args[0], args[1]);
         }
     }
     return publishModelEvent;
@@ -43,14 +43,14 @@ export const PublishModelEventContext = createContext<PublishModelEventDelegate>
 export const usePublishModelEvent = () => useContext(PublishModelEventContext);
 
 export type PublishModelEventWithEntityKeyDelegate = {(entityKey: string, eventType: string, event: any): void; (eventData: {entityKey: string, eventType: string, event: any}): void; };
-const createPublishModelEventWithEntityKey = (router: Router, modelId: string) => {
+const createPublishModelEventWithEntityKey = (bus: EventBus, modelId: string) => {
     function publishModelEventWithEntityKey(entityKey: string, eventType: string, event: any): void;
     function publishModelEventWithEntityKey(eventData: {entityKey: string, eventType: string, event: any}): void;
     function publishModelEventWithEntityKey(...args: any[]) {
         if (args.length === 1) {
-            router.publishEvent(new DefaultModelAddress(modelId, args[0].entityKey), args[0].eventType, args[0].event);
+            bus.publishEvent(new DefaultModelAddress(modelId, args[0].entityKey), args[0].eventType, args[0].event);
         } else {
-            router.publishEvent(new DefaultModelAddress(modelId, args[0]), args[1], args[2]);
+            bus.publishEvent(new DefaultModelAddress(modelId, args[0]), args[1], args[2]);
         }
     }
     return publishModelEventWithEntityKey;
@@ -73,19 +73,19 @@ export interface EspModelContextProviderProps {
 /**
  * Sets up various ESP context so ESP hooks are available below this point in the V-DOM
  *
- * To use this, please ensure your V-DOM has the EspRouterContextProvider at a higher node.
+ * To use this, please ensure your V-DOM has the EspEventBusContextProvider at a higher node.
  * @param modelId
  * @param children
  * @param model
  * @constructor
  */
 export const EspModelContextProvider = ({modelId, children, model}: PropsWithChildren<EspModelContextProviderProps>) => {
-    const router = useRouter();
+    const bus = useEventBus();
     // modelId may have been set by a higher level version of this component, so we try and get it from context if it's not set by props.
     let modelIdFromContext = useGetModelId();
     modelId = modelId || modelIdFromContext;
-    const publishModelEvent: PublishModelEventDelegate = useCallback(createPublishModelEvent(router, modelId), [router, modelId]);
-    const publishModelEventWithEntityKey: PublishModelEventWithEntityKeyDelegate = useCallback(createPublishModelEventWithEntityKey(router, modelId), [router, modelId]);
+    const publishModelEvent: PublishModelEventDelegate = useCallback(createPublishModelEvent(bus, modelId), [bus, modelId]);
+    const publishModelEventWithEntityKey: PublishModelEventWithEntityKeyDelegate = useCallback(createPublishModelEventWithEntityKey(bus, modelId), [bus, modelId]);
     return (
         <GetModelIdContext.Provider value={modelId}>
             <PublishModelEventContext.Provider value={publishModelEvent}>

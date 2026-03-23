@@ -1,7 +1,7 @@
 import {Disposable} from '../system/disposables';
 
 /**
- * Minimal public subscription interface returned by Router.getModelObservable().
+ * Minimal public subscription interface returned by EventBus.getModelObservable().
  * Consumers call .subscribe() to receive model snapshots — the underlying
  * implementation is the internal Observable, which satisfies this interface
  * structurally.

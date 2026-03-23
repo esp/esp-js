@@ -1,6 +1,6 @@
 import * as esp from '../src';
 import {
-    Router,
+    EventBus,
     ObservationStage,
     DefaultEventContext,
     CompositeDisposable,
@@ -13,9 +13,9 @@ import {
 } from '../src';
 
 describe('index exports', () => {
-    it('should export Router', () => {
-        expect(esp.Router).toBeDefined();
-        expect(Router).toBeDefined();
+    it('should export EventBus', () => {
+        expect(esp.EventBus).toBeDefined();
+        expect(EventBus).toBeDefined();
     });
 
     it('should export ObservationStage', () => {
@@ -59,9 +59,9 @@ describe('index exports', () => {
 
     it('should export Subscribable type', () => {
         // Subscribable is a type/interface, verify it is usable as a type annotation
-        const router = new Router();
-        router.modelBuilder('test', { value: 0 }).build();
-        const s: Subscribable<{ value: number }> = router.getModelObservable('test');
+        const bus = new EventBus();
+        bus.modelBuilder('test', { value: 0 }).build();
+        const s: Subscribable<{ value: number }> = bus.getModelObservable('test');
         expect(s).toBeDefined();
     });
 });

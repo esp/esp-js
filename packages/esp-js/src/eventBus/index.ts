@@ -4,5 +4,5 @@ export * from './eventContext';
 export * from './eventProcessors';
 export * from './modelAddress';
 export * from './observationStage';
-export * from './router';
+export * from './eventBus';
 export * from './status';

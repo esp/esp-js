@@ -14,7 +14,7 @@ export interface PostEventProcessor {
 
 export interface EventProcessors {
     /**
-     * An optional function which if provided will be called before the router processes any events for this model
+     * An optional function which if provided will be called before the bus processes any events for this model
      */
     preEventProcessor?: PreEventProcessor;
     /**
@@ -30,7 +30,7 @@ export interface EventProcessors {
      */
     eventDispatchedProcessor?: EventDispatchProcessor;
     /**
-     * An optional function which if provided will be called after the router processes all events on the model current dispatch loop
+     * An optional function which if provided will be called after the bus processes all events on the model current dispatch loop
      */
     postEventProcessor?: PostEventProcessor;
 }

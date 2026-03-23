@@ -7,20 +7,20 @@ A standalone IoC (Inversion of Control) dependency injection container. Supports
 ## Role in Monorepo
 
 - **No dependencies** on other esp-* packages — fully standalone
-- Depended on by: `esp-js-ui`
 - Published as `esp-js-di` on npm
 - Written in **JavaScript** (not TypeScript) — the only non-TypeScript package in the monorepo
 
 ## Build and Test
 
 ```bash
-npm run build-dev      # webpack → .dist/esp-js-di.js
-npm run build-prod     # webpack → .dist/esp-js-di.js + .dist/esp-js-di.min.js
-npm test               # jest --watchAll
-npm run test-ci        # jest (CI)
+npm run build-dev      # vite build → .dist/esp-js-di.js + .dist/esp-js-di.esm.js
+npm run build-prod     # adds .dist/esp-js-di.min.js (minified UMD)
+npm test               # vitest --watch
+npm run test-ci        # vitest run (CI)
+npm run dev            # vite build --watch
 ```
 
-Output: `.dist/esp-js-di.js` (UMD bundle). No TypeScript declarations generated (JavaScript source).
+Output: `.dist/esp-js-di.js` (UMD), `.dist/esp-js-di.esm.js` (ESM). No TypeScript declarations generated (JavaScript source).
 
 ## Source Structure
 
@@ -80,7 +80,7 @@ const svc = child.resolve('myService'); // falls through to parent if not in chi
 child.dispose(); // cleans up child singletons
 ```
 
-This pattern is used heavily in `esp-js-ui`: the root container holds app-wide services; each module gets a child container; each view factory may get a grandchild container.
+This pattern is useful when an app has app-wide services in the root container and module-scoped services in child containers — child containers can see parent registrations but not vice versa.
 
 ### Registration Modifiers
 
@@ -117,7 +117,7 @@ Primary surface: `Container` class. `RegistrationModifier` is returned by `regis
 
 ## Common Tasks
 
-**Register the router and services (as esp-js-ui does):**
+**Register the router and services:**
 ```javascript
 container.register('router', Router).singleton();
 container.register('myService', MyService).inject('router').singleton();

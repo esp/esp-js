@@ -2,26 +2,26 @@
 
 ## Package Purpose
 
-React bindings for ESP. Provides two complementary integration approaches: the `ConnectableComponent`/`connect()` HOC pattern (class-based or functional) and the `useSyncModelWithSelector` hook. Also provides `@viewBinding` decorator for declarative model-to-view mapping and React context providers for the `Router`.
+React bindings for ESP. Provides two complementary integration approaches: the `ConnectableComponent`/`connect()` HOC pattern and the `useSyncModelWithSelector` hook. Also provides React context providers for the `Router` and model.
 
 ## Role in Monorepo
 
-- **Depends on**: `esp-js`, `react`, `prop-types`, `use-sync-external-store`
-- Depended on by: `esp-js-ui`
+- **Depends on**: `esp-js`, `react`, `use-sync-external-store`
 - Published as `esp-js-react` on npm
 
 ## Build and Test
 
 ```bash
-npm run build-dev
-npm run build-prod  # output: .dist/esp-react.js  (note: filename is esp-react, not esp-js-react)
-npm test            # jest --watchAll
-npm run test-ci     # jest (CI)
+npm run build-dev   # vite build → .dist/esp-react.js + .dist/esp-react.esm.js
+npm run build-prod  # adds .dist/esp-react.min.js (minified UMD)
+npm test            # vitest --watch
+npm run test-ci     # vitest run (CI)
+npm run dev         # vite build --watch
 ```
 
-Output: `.dist/esp-react.js`, `.dist/typings/index.d.ts`.
+Output: `.dist/esp-react.js` (UMD), `.dist/esp-react.esm.js` (ESM), `.dist/typings/index.d.ts`.
 
-Note: the webpack entry and output filename is `esp-react` (see `webpack.config.js`), not `esp-js-react`.
+Note: the Vite entry and output filename is `esp-react` (see `vite.config.ts`), not `esp-js-react`.
 
 ## Source Structure
 
@@ -33,8 +33,6 @@ src/
   espRouterContextProvider.tsx  # RouterProvider, EspRouterContextProvider, useRouter, usePublishEvent
   espModelContextProvider.tsx   # EspModelContextProvider, useGetModel, useGetModelId, usePublishModelEvent
   useSyncModelWithSelector.ts   # useSyncModelWithSelector hook + SyncModelWithSelectorOptions
-  viewBinder.tsx                # ViewBinder component — renders view for a model using @viewBinding metadata
-  viewBindingDecorator.ts       # @viewBinding decorator + createViewForModel utility
 ```
 
 ## Key Concepts and Patterns
@@ -101,24 +99,10 @@ const model = useGetModel<MyModel>();
 const publishEvent = usePublishModelEvent(); // no modelId needed
 ```
 
-### @viewBinding decorator
-
-Declaratively associates a React component with a model class:
-
-```typescript
-@viewBinding(MyView)
-@viewBinding(MyCompactView, 'compact') // with display context
-class MyModel extends ModelBase { ... }
-```
-
-`createViewForModel(model, props, displayContext, fallbackView)` resolves the right component. `ViewBinder` renders it.
-
 ## Public API
 
 ```typescript
-// HOC / class component approach
-export { ViewBinder }
-export { viewBinding, DEFAULT_VIEW_KEY, createViewForModel }
+// HOC approach
 export { connect, ConnectableComponentFactory }
 export { ConnectableComponent, ConnectableComponentProps, MapModelToProps, CreatePublishEventProps, ConnectableComponentChildProps }
 
@@ -144,7 +128,6 @@ export { EspModelContextProvider, useGetModelId, useGetModel, usePublishModelEve
   - `connectableComponentTests.tsx` — HOC subscription and re-render behaviour; models use `[immerable] = true`
   - `useSyncModelWithSelectorTests.tsx` — hook selector and equality function behaviour
   - `espModelContextProviderTests.tsx`, `espRouterContextProviderTests.tsx` — context hook tests; use `router.getModel()` to read current snapshot after events
-  - `viewBinderTests.tsx` — `@viewBinding` resolution logic
 
 ## Common Tasks
 
@@ -175,19 +158,13 @@ const ConnectedView = connect<MyModel, { onSubmit: () => void }>(
 )(MyView);
 ```
 
-**Add @viewBinding to a model:**
-```typescript
-import { viewBinding } from 'esp-js-react';
-
-@viewBinding(MyReactComponent)
-class MyModel extends ModelBase { ... }
-```
-
 ## Gotchas
 
 - The output bundle is named `esp-react.js` (not `esp-js-react.js`) — this is intentional and matches the `main` field in `package.json`
-- `useSyncModelWithSelector` uses `useSyncExternalStoreWithSelector` from React 18 — requires React 18 or the `use-sync-external-store` shim
+- `useSyncModelWithSelector` uses `useSyncExternalStoreWithSelector` — requires React 18 or the `use-sync-external-store` shim
 - `ConnectableComponent` re-renders on every model update regardless of selector — for performance-sensitive cases prefer `useSyncModelWithSelector` with an equality function
-- `@viewBinding` metadata is stored on the **constructor function**, not the instance — `createViewForModel` must receive the model instance (it reads `model.constructor`)
+- `ConnectableComponent` requires an explicit `view` prop — there is no decorator-based view resolution in v9
 - The model received by hooks and `ConnectableComponent` is always a **frozen immutable snapshot** from immer — never mutate it directly, and do not hold references across dispatches (the reference becomes stale)
-- Class instances used as model state must include `[immerable] = true` from `immer`; subclasses inherit `@viewBinding` metadata via ES6 prototype chain (`class B extends A` means `B._viewMetadata` resolves via `Object.getPrototypeOf(B) === A`)
+- Class instances used as model state must include `[immerable] = true` from `immer`
+
+**Removed in v9:** `@viewBinding`, `ViewBinder`, `createViewForModel`, `DEFAULT_VIEW_KEY`, `viewContext` — the OO decorator-based view binding pattern is gone.

@@ -13,14 +13,14 @@ The core Evented State Processor library. Provides the `Router`, all event dispa
 ## Build and Test
 
 ```bash
-npm run build-dev      # webpack (dev mode) → .dist/esp-js.js
-npm run build-prod     # webpack (prod mode) → .dist/esp-js.js + .dist/esp-js.min.js
-npm test               # jest --watchAll
-npm run test-ci        # jest (CI)
-npm run dev            # webpack --watch
+npm run build-dev      # vite build → .dist/esp-js.js + .dist/esp-js.esm.js
+npm run build-prod     # vite build → adds .dist/esp-js.min.js (minified UMD)
+npm test               # vitest --watch
+npm run test-ci        # vitest run (CI)
+npm run dev            # vite build --watch
 ```
 
-Output: `.dist/esp-js.js` (UMD bundle), `.dist/typings/index.d.ts` (type declarations).
+Output: `.dist/esp-js.js` (UMD), `.dist/esp-js.esm.js` (ESM), `.dist/esp-js.min.js` (minified UMD), `.dist/typings/index.d.ts` (type declarations).
 
 ## Source Structure
 
@@ -61,7 +61,7 @@ src/
 The `Router` is the central event bus. Key methods:
 
 ```typescript
-router.addModel(modelId, initialModel, config)       // register a model (use ModelBuilder instead)
+router.modelBuilder<TModel>(modelId, initialModel)   // create a ModelBuilder for this model (preferred)
 router.removeModel(modelId)
 router.getModel<TModel>(modelId)                     // get the current frozen model snapshot
 router.publishEvent(modelId, eventType, event)        // enqueue an event
@@ -89,12 +89,9 @@ Events pass through up to four stages in order:
 `ModelBuilder` is the primary way to register models. It builds an immer-based immutable model pipeline where each event handler receives an immer `Draft<TModel>` and mutates it directly. After all handlers run for a dispatch cycle, the router emits a new frozen snapshot to `getModelObservable()`.
 
 ```typescript
-import {ModelBuilder} from 'esp-js';
-import {immerable} from 'immer';
-
 // Plain object state (no immer config needed)
 type CounterState = { count: number };
-new ModelBuilder<CounterState>(router, 'counter', { count: 0 })
+router.modelBuilder<CounterState>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, event: { amount: number }) => {
         draft.count += event.amount;
     })
@@ -107,7 +104,7 @@ new ModelBuilder<CounterState>(router, 'counter', { count: 0 })
     })
     .withPreEventProcessor(model => { /* before each dispatch cycle */ })
     .withPostEventProcessor((model, eventsProcessed) => { /* after each dispatch cycle */ })
-    .registerWithRouter();
+    .build();
 ```
 
 **Handler types:**
@@ -129,9 +126,9 @@ class MyState {
     value: string = 'initial';
 }
 
-new ModelBuilder<MyState>(router, 'my-id', new MyState())
+router.modelBuilder<MyState>('my-id', new MyState())
     .withEventHandler('Update', (draft, event: string) => { draft.value = event; })
-    .registerWithRouter();
+    .build();
 ```
 
 ### EventProcessors
@@ -174,7 +171,7 @@ All exports flow through `src/index.ts`:
 
 **Not exported (internal):** `Observable`, `Subject`, `RouterObservable`, `RouterSubject` — the `reactive/` module is internal. Do not import from it directly.
 
-**Removed in v9:** `ModelBase`, `SingleModelRouter`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `router.runAction()`, `router.observeEventsOn()`.
+**Removed in v9:** `ModelBase`, `SingleModelRouter`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `router.runAction()`, `router.observeEventsOn()`. `router.addModel()` is now private — use `router.modelBuilder()` instead.
 
 ## Testing Approach
 
@@ -189,9 +186,9 @@ All exports flow through `src/index.ts`:
 ```typescript
 const router = new Router();
 
-new ModelBuilder<{ count: number }>(router, 'counter', { count: 0 })
+router.modelBuilder<{ count: number }>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, e: { amount: number }) => { draft.count += e.amount; })
-    .registerWithRouter();
+    .build();
 
 router.getModelObservable<{ count: number }>('counter')
     .subscribe(model => console.log(model.count));

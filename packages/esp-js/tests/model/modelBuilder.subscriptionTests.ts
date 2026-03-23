@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 import {Disposable} from '../../src/system/disposables';
 
 interface SimpleModel {
@@ -36,12 +35,12 @@ describe('ModelBuilder', () => {
 
         it('subscription factory is called when model is registered', () => {
             let factoryCalled = false;
-            new ModelBuilder<SimpleModel>(_router, 'model', { value: 0 })
+            _router.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish) => {
                     factoryCalled = true;
                     return { dispose: () => {} };
                 })
-                .registerWithRouter();
+                .build();
             expect(factoryCalled).toBe(true);
         });
 
@@ -49,7 +48,7 @@ describe('ModelBuilder', () => {
             let publishCalledWith: { eventType: string; event: any } = null;
             let factoryPublish: (eventType: string, event: any) => void = null;
 
-            new ModelBuilder<SimpleModel>(_router, 'model', { value: 0 })
+            _router.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventHandler<{ amount: number }>('Add', (draft, event) => {
                     draft.value += event.amount;
                 })
@@ -57,7 +56,7 @@ describe('ModelBuilder', () => {
                     factoryPublish = publish;
                     return { dispose: () => {} };
                 })
-                .registerWithRouter();
+                .build();
 
             let lastModel: SimpleModel = null;
             _router.getModelObservable<SimpleModel>('model').subscribe(m => { lastModel = m; });
@@ -71,20 +70,20 @@ describe('ModelBuilder', () => {
 
         it('dispose returned from subscription factory is called on model removal', () => {
             let disposeCalled = false;
-            new ModelBuilder<SimpleModel>(_router, 'model', { value: 0 })
+            _router.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish): Disposable => {
                     return {
                         dispose: () => { disposeCalled = true; }
                     };
                 })
-                .registerWithRouter();
+                .build();
             _router.removeModel('model');
             expect(disposeCalled).toBe(true);
         });
 
         it('multiple subscription factories are all called', () => {
             const calls: string[] = [];
-            new ModelBuilder<SimpleModel>(_router, 'model', { value: 0 })
+            _router.modelBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish) => {
                     calls.push('factory1');
                     return { dispose: () => {} };
@@ -93,7 +92,7 @@ describe('ModelBuilder', () => {
                     calls.push('factory2');
                     return { dispose: () => {} };
                 })
-                .registerWithRouter();
+                .build();
             expect(calls).toEqual(['factory1', 'factory2']);
         });
     });

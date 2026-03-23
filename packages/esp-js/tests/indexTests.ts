@@ -60,7 +60,7 @@ describe('index exports', () => {
     it('should export Subscribable type', () => {
         // Subscribable is a type/interface, verify it is usable as a type annotation
         const router = new Router();
-        new ModelBuilder(router, 'test', { value: 0 }).registerWithRouter();
+        router.modelBuilder('test', { value: 0 }).build();
         const s: Subscribable<{ value: number }> = router.getModelObservable('test');
         expect(s).toBeDefined();
     });

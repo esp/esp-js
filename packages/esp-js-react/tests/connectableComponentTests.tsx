@@ -1,4 +1,3 @@
-import 'jest';
 import * as React from 'react';
 import {act} from 'react';
 import {
@@ -10,7 +9,6 @@ import {
     CreatePublishEventProps,
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
-import {ModelBuilder} from 'esp-js';
 import {immerable} from 'immer';
 import {viewFactory} from './testApi/viewFactory';
 
@@ -52,12 +50,12 @@ describe('ConnectableComponentTests', () => {
         api = testApi();
         testModel = new TestModel();
         testModel2 = new TestModel2();
-        new ModelBuilder<TestModel>(api.router, 'model-id1', testModel)
+        api.router.modelBuilder<TestModel>('model-id1', testModel)
             .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
-            .registerWithRouter();
-        new ModelBuilder<TestModel2>(api.router, 'model-id2', testModel2)
+            .build();
+        api.router.modelBuilder<TestModel2>('model-id2', testModel2)
             .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
-            .registerWithRouter();
+            .build();
     });
 
     const createConnectedComponentElement = (options: ConnectedComponentElementCreationProperties): React.JSX.Element => {

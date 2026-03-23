@@ -26,11 +26,10 @@
   "license": "Apache-2.0",
   "typings": "./esp-js-di.d.ts",
   "devDependencies": {
-    "jest": "^29.7.0",
-    "typescript": "^5.5.2",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "@rollup/plugin-terser": "^0.4.4",
+    "typescript": "^5.8.0",
+    "vite": "^5.4.6",
+    "vitest": "^2.1.1"
   },
   "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
 }

@@ -16,12 +16,16 @@
  */
 // notice_end
 
-const baseConfig = require("../../webpack.config.base");
+// Equivalent to the former __jest__/mocks/setupReactTestingLib.js
+// Imports @testing-library/jest-dom matchers and extends Vitest's expect.
+import '@testing-library/jest-dom/vitest';
 
-module.exports = {
-    ...baseConfig,
-    entry: {
-        'esp-react': './src/index.ts',
-        'esp-react.min': './src/index.ts',
-    }
-};
+// Re-implements the former __jest__/jest-fail-regression-fix.js.
+// Jest's global fail() was removed; Vitest also doesn't ship it.
+// Provide it as a global so existing tests that call fail() continue to work.
+function fail(message: string = ''): never {
+    throw new Error(`[FAIL] ${message}`.trim());
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).fail = fail;

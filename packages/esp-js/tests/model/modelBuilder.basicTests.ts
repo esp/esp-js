@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 interface Counter {
     count: number;
@@ -36,23 +35,23 @@ describe('ModelBuilder', () => {
 
         it('registers a model and dispatches events to withEventHandler', () => {
             let receivedEvent: any = null;
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler('Increment', (draft, event) => {
                     draft.count += event.amount;
                     receivedEvent = event;
                 })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('counter', 'Increment', { amount: 5 });
             expect(receivedEvent).toEqual({ amount: 5 });
         });
 
         it('applies immer draft mutations — model emitted is updated', () => {
             let lastModel: Counter = null;
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler<{ amount: number }>('Increment', (draft, event) => {
                     draft.count += event.amount;
                 })
-                .registerWithRouter();
+                .build();
             _router.getModelObservable<Counter>('counter').subscribe(m => { lastModel = m; });
             _router.publishEvent('counter', 'Increment', { amount: 3 });
             expect(lastModel).toBeDefined();
@@ -61,11 +60,11 @@ describe('ModelBuilder', () => {
 
         it('accumulated mutations are reflected in model', () => {
             let lastModel: Counter = null;
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler<{ amount: number }>('Increment', (draft, event) => {
                     draft.count += event.amount;
                 })
-                .registerWithRouter();
+                .build();
             _router.getModelObservable<Counter>('counter').subscribe(m => { lastModel = m; });
             _router.publishEvent('counter', 'Increment', { amount: 3 });
             _router.publishEvent('counter', 'Increment', { amount: 7 });
@@ -73,8 +72,8 @@ describe('ModelBuilder', () => {
         });
 
         it('model is frozen — direct mutation outside handler throws', () => {
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
-                .registerWithRouter();
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+                .build();
             let frozenModel: Counter = null;
             _router.getModelObservable<Counter>('counter').subscribe(m => { frozenModel = m; });
             expect(frozenModel).toBeDefined();
@@ -85,20 +84,20 @@ describe('ModelBuilder', () => {
 
         it('supports multiple event handlers for the same event type', () => {
             const calls: string[] = [];
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler('AnEvent', () => { calls.push('handler1'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler2'); })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('counter', 'AnEvent', {});
             expect(calls).toEqual(['handler1', 'handler2']);
         });
 
         it('supports multiple event types on the same model', () => {
             const calls: string[] = [];
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler('EventA', () => { calls.push('A'); })
                 .withEventHandler('EventB', () => { calls.push('B'); })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('counter', 'EventA', {});
             _router.publishEvent('counter', 'EventB', {});
             expect(calls).toEqual(['A', 'B']);
@@ -106,14 +105,14 @@ describe('ModelBuilder', () => {
 
         it('withEventHandler throws if eventType is not a string', () => {
             expect(() => {
-                new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+                _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                     .withEventHandler(undefined, () => {});
             }).toThrow();
         });
 
         it('withEventHandler throws if handler is not a function', () => {
             expect(() => {
-                new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+                _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                     .withEventHandler('AnEvent', undefined);
             }).toThrow();
         });
@@ -123,30 +122,30 @@ describe('ModelBuilder', () => {
 
         it('withPreEventProcessor is called before each event batch', () => {
             const calls: string[] = [];
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withPreEventProcessor(() => { calls.push('pre'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler'); })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('counter', 'AnEvent', {});
             expect(calls).toEqual(['pre', 'handler']);
         });
 
         it('withPostEventProcessor is called after each event batch', () => {
             const calls: string[] = [];
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withPostEventProcessor(() => { calls.push('post'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler'); })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('counter', 'AnEvent', {});
             expect(calls).toEqual(['handler', 'post']);
         });
 
         it('withPostEventProcessor receives the list of processed event types', () => {
             let processedEvents: string[] = null;
-            new ModelBuilder<Counter>(_router, 'counter', { count: 0, label: 'test' })
+            _router.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withPostEventProcessor((model, events) => { processedEvents = events; })
                 .withEventHandler('Foo', () => {})
-                .registerWithRouter();
+                .build();
             _router.publishEvent('counter', 'Foo', {});
             expect(processedEvents).toEqual(['Foo']);
         });

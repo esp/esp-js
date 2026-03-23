@@ -6,7 +6,6 @@ import {EspModelContextProvider, EspRouterContextProvider} from '../../src';
 import {PropAsserts, propAsserts, RouterAsserts, routerAsserts, ViewAsserts, viewAsserts} from './asserts';
 import {isValidElement, ReactElement} from 'react';
 import {TestPropStore, TestPropStoreContext} from './useStoreReceivedProps';
-import {ModelBuilder} from 'esp-js';
 
 export type TestApi = {
     router: RouterSpy;
@@ -49,7 +48,7 @@ export const testApi = ()=> {
             return this;
         },
         setupModel<TModel>(modelId: string, model: TModel): TModel {
-            new ModelBuilder<TModel>(router, modelId, model).registerWithRouter();
+            router.modelBuilder<TModel>(modelId, model).build();
             return model;
         },
         setupTestModel(modelId: string): TestModelState {

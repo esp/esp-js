@@ -1,4 +1,3 @@
-import 'jest';
 import * as React from 'react';
 import {act} from 'react';
 import {EspModelContextProvider, EspRouterContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';

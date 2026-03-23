@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -40,18 +39,18 @@ describe('Router', () => {
                 model1EventHandler_isOnModel2DispatchLoop = null,
                 model2EventHandler_isOnModel1DispatchLoop = null,
                 model2EventHandler_isOnModel2DispatchLoop = null;
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler('Event1', () => {
                     model1EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
                     model1EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
                 })
-                .registerWithRouter();
-            new ModelBuilder(_router, 'modelId2', {})
+                .build();
+            _router.modelBuilder('modelId2', {})
                 .withEventHandler('Event1', () => {
                     model2EventHandler_isOnModel1DispatchLoop = _router.isOnDispatchLoopFor('modelId1');
                     model2EventHandler_isOnModel2DispatchLoop = _router.isOnDispatchLoopFor('modelId2');
                 })
-                .registerWithRouter();
+                .build();
             expect(_router.isOnDispatchLoopFor('modelId1')).toEqual(false);
             expect(_router.isOnDispatchLoopFor('modelId2')).toEqual(false);
             _router.publishEvent('modelId1', 'Event1', {payload:'theEventPayload'});

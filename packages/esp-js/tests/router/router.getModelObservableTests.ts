@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
@@ -31,12 +30,12 @@ describe('Router', () => {
     describe('.getModelObservable()', () => {
 
         beforeEach(() => {
-            new ModelBuilder(_router, 'modelId1', {number:0})
+            _router.modelBuilder('modelId1', {number:0})
                 .withEventHandler('Event1', () => {})
-                .registerWithRouter();
-            new ModelBuilder(_router, 'modelId2', {number:0})
+                .build();
+            _router.modelBuilder('modelId2', {number:0})
                 .withEventHandler('Event1', () => {})
-                .registerWithRouter();
+                .build();
         });
 
         it('throws if arguments incorrect', () => {
@@ -46,7 +45,7 @@ describe('Router', () => {
 
         it('dispatches model once registered', () => {
             let model3UpdateCount = 0;
-            new ModelBuilder(_router, 'modelId3', {number:0}).registerWithRouter();
+            _router.modelBuilder('modelId3', {number:0}).build();
             _router.getModelObservable('modelId1').subscribe(() => {
                 model3UpdateCount++;
             });
@@ -99,7 +98,7 @@ describe('Router', () => {
             const router2 = new esp.Router();
             let m1UpdateCount = 0, m2UpdateCount = 0, m1EventCount = 0, m2EventCount = 0;
             let c1 = false, c2 = false;
-            new ModelBuilder(router2, 'modelId1', {number: 0})
+            router2.modelBuilder('modelId1', {number: 0})
                 .withEventHandler('StartEvent', () => {
                     router2.publishEvent('modelId1', 'Event1', 1);
                     router2.publishEvent('modelId2', 'Event1', 2);
@@ -110,13 +109,13 @@ describe('Router', () => {
                     m1EventCount++;
                     c1 = m1UpdateCount === 1 && m2UpdateCount === 1;
                 })
-                .registerWithRouter();
-            new ModelBuilder(router2, 'modelId2', {number: 0})
+                .build();
+            router2.modelBuilder('modelId2', {number: 0})
                 .withEventHandler('Event1', () => {
                     m2EventCount++;
                     c2 = m1UpdateCount === 2 && m2UpdateCount === 1 && m1EventCount === 2;
                 })
-                .registerWithRouter();
+                .build();
             router2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
             router2.getModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
             expect(m1UpdateCount).toBe(1);
@@ -136,12 +135,12 @@ describe('Router', () => {
             // modelId1 already has Event1 handler registered in beforeEach
             // Need a new router for this test to add Event2 handler
             const router2 = new esp.Router();
-            new ModelBuilder(router2, 'modelId1', {number: 0})
+            router2.modelBuilder('modelId1', {number: 0})
                 .withEventHandler('Event1', () => {})
                 .withEventHandler('Event2', () => {
                     event2Received = true;
                 })
-                .registerWithRouter();
+                .build();
             router2.getModelObservable('modelId1').subscribe(() => {
                 if (!publishedEvent2) {
                     publishedEvent2 = true;
@@ -156,15 +155,15 @@ describe('Router', () => {
             // Uses fresh router to avoid conflicts with beforeEach registered models
             const router2 = new esp.Router();
             let m1UpdateCount = 0, m2UpdateCount = 0;
-            new ModelBuilder(router2, 'modelId1', {number: 0})
+            router2.modelBuilder('modelId1', {number: 0})
                 .withEventHandler('Event1', () => {})
-                .registerWithRouter();
-            new ModelBuilder(router2, 'modelId2', {number: 0})
+                .build();
+            router2.modelBuilder('modelId2', {number: 0})
                 .withEventHandler('StartEvent', () => {
                     router2.publishEvent('modelId2', 'Event1', 'payload');
                 })
                 .withEventHandler('Event1', () => {})
-                .registerWithRouter();
+                .build();
             router2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
             expect(m1UpdateCount).toBe(1);
             router2.getModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
@@ -178,9 +177,9 @@ describe('Router', () => {
             // Uses a fresh router since we need a model without any Event1 handler
             const router2 = new esp.Router();
             let m1UpdateCount = 0;
-            new ModelBuilder(router2, 'modelId1', {number: 0})
+            router2.modelBuilder('modelId1', {number: 0})
                 .withEventHandler('StartEvent', () => {})
-                .registerWithRouter();
+                .build();
             router2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
             expect(m1UpdateCount).toBe(1);
             // publish an event the model does NOT listen to — no model update

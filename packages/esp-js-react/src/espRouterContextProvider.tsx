@@ -16,7 +16,6 @@
  */
 // notice_end
 
-import * as React from 'react';
 import {ModelAddress, Router} from 'esp-js';
 import {PropsWithChildren, createContext, useContext, useCallback} from 'react';
 

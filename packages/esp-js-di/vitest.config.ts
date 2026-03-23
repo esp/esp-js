@@ -16,12 +16,13 @@
  */
 // notice_end
 
-const baseConfig = require("../../webpack.config.base");
+// esp-js-di is a pure JavaScript package.
+// The vitest config is TypeScript because the shared base uses ESM exports.
+import { createVitestConfig } from '../../vitest.config.base';
 
-module.exports = {
-    ...baseConfig,
-    entry: {
-        'esp-js': './src/index',
-        'esp-js.min': './src/index'
-    }
-};
+export default createVitestConfig({
+    test: {
+        name: 'esp-js-di',
+        // Pure JavaScript package — no TSX/JSX to worry about.
+    },
+});

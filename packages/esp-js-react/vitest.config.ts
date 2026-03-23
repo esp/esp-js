@@ -16,4 +16,13 @@
  */
 // notice_end
 
-module.exports = require('../../__jest__/jest.config');
+import { createVitestConfig } from '../../vitest.config.base';
+
+export default createVitestConfig({
+    test: {
+        name: 'esp-js-react',
+        // React Testing Library requires a React-aware environment.
+        // jsdom is already set in the base config.
+        // The base setupFiles already imports @testing-library/jest-dom/vitest.
+    },
+});

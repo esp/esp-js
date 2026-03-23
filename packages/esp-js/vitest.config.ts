@@ -16,12 +16,11 @@
  */
 // notice_end
 
-const baseConfig = require("../../webpack.config.base");
+import { createVitestConfig } from '../../vitest.config.base';
 
-module.exports = {
-    ...baseConfig,
-    entry: {
-        'esp-js-di': './src/index.js',
-        'esp-js-di.min': './src/index.js'
-    }
-};
+export default createVitestConfig({
+    test: {
+        // esp-js has no React; no additional setup needed beyond the base.
+        name: 'esp-js',
+    },
+});

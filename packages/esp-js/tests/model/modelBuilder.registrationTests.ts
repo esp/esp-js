@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 interface SimpleModel {
     value: number;
@@ -31,15 +30,15 @@ describe('ModelBuilder', () => {
         _router = new esp.Router();
     });
 
-    describe('registration (registerWithRouter)', () => {
+    describe('registration (build)', () => {
 
-        it('model is registered with the router after registerWithRouter', () => {
-            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 }).registerWithRouter();
+        it('model is registered with the router after build', () => {
+            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             expect(_router.isModelRegistered('myModel')).toBe(true);
         });
 
         it('router.removeModel() removes the model', () => {
-            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 }).registerWithRouter();
+            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             expect(_router.isModelRegistered('myModel')).toBe(true);
             _router.removeModel('myModel');
             expect(_router.isModelRegistered('myModel')).toBe(false);
@@ -47,18 +46,18 @@ describe('ModelBuilder', () => {
 
         it('router.removeModel() disposes subscription factories', () => {
             let disposeCalled = false;
-            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 })
+            _router.modelBuilder<SimpleModel>('myModel', { value: 0 })
                 .withEventSubscription(() => ({ dispose: () => { disposeCalled = true; } }))
-                .registerWithRouter();
+                .build();
             _router.removeModel('myModel');
             expect(disposeCalled).toBe(true);
         });
 
         it('event handler registered via withEventHandler fires on publishEvent', () => {
             let received = false;
-            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 })
+            _router.modelBuilder<SimpleModel>('myModel', { value: 0 })
                 .withEventHandler('AnEvent', () => { received = true; })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('myModel', 'AnEvent', {});
             expect(received).toBe(true);
         });
@@ -68,15 +67,15 @@ describe('ModelBuilder', () => {
         });
 
         it('isModelRegistered returns false after removeModel', () => {
-            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 }).registerWithRouter();
+            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             _router.removeModel('myModel');
             expect(_router.isModelRegistered('myModel')).toBe(false);
         });
 
         it('throws if the same modelId is registered twice', () => {
-            new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 }).registerWithRouter();
+            _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             expect(() => {
-                new ModelBuilder<SimpleModel>(_router, 'myModel', { value: 0 }).registerWithRouter();
+                _router.modelBuilder<SimpleModel>('myModel', { value: 0 }).build();
             }).toThrow();
         });
     });

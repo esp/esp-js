@@ -17,7 +17,6 @@
 // notice_end
 
 import {Router, DefaultModelAddress, EventContext} from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
@@ -39,7 +38,7 @@ describe('Router', () => {
 
         it('queues and processes events received during event loop by model id', () => {
             let model1ProcessorReceived = 0, testPassed = false;
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler('startEvent', () => {
                     // publish events for other models while processing modelId1
                     _router.publishEvent('modelId2', 'Event1', 'theEvent'); // should be processed second
@@ -48,12 +47,12 @@ describe('Router', () => {
                 .withEventHandler('Event1', () => {
                     model1ProcessorReceived++;
                 })
-                .registerWithRouter();
-            new ModelBuilder(_router, 'modelId2', {})
+                .build();
+            _router.modelBuilder('modelId2', {})
                 .withEventHandler('Event1', () => {
                     testPassed = model1ProcessorReceived === 1;
                 })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
             expect(testPassed).toBe(true);
         });
@@ -61,7 +60,7 @@ describe('Router', () => {
         it('should reset the EventContext for each event', () => {
             let testPassed = false;
             let lastEventDelivered = false;
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler('startEvent', (draft, event, ctx) => {
                     ctx.commit();
                     _router.publishEvent('modelId1', 'Event1', 'theEvent1');
@@ -80,7 +79,7 @@ describe('Router', () => {
                     testPassed = testPassed && ctx.isCommitted === false;
                     lastEventDelivered = true;
                 })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('modelId1', 'startEvent', 'theEvent');
             expect(testPassed).toBe(true);
             expect(lastEventDelivered).toBe(true);
@@ -92,9 +91,9 @@ describe('Router', () => {
             }).toThrow();
 
             let receivedEvents: any[] = [];
-            new ModelBuilder(_router, 'fooModel', {})
+            _router.modelBuilder('fooModel', {})
                 .withEventHandler('startEvent', (draft, event) => { receivedEvents.push(event); })
-                .registerWithRouter();
+                .build();
 
             _router.publishEvent('fooModel', 'startEvent', 'start');
 
@@ -103,9 +102,9 @@ describe('Router', () => {
 
         it('can publish with ModelAddress and DefaultModelAddress', () => {
             let handlerCallCount = 0;
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler('startEvent', () => { handlerCallCount++; })
-                .registerWithRouter();
+                .build();
             _router.publishEvent({ modelId: 'modelId1' }, 'startEvent', 'theEvent');
             expect(handlerCallCount).toBe(1);
             _router.publishEvent(new DefaultModelAddress('modelId1'), 'startEvent', 'theEvent');
@@ -114,11 +113,11 @@ describe('Router', () => {
 
         it('can publish including entityKey', () => {
             let receivedEntityKeys: (string | undefined)[] = [];
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler('startEvent', (draft, event, ctx) => {
                     receivedEntityKeys.push(ctx.entityKey);
                 })
-                .registerWithRouter();
+                .build();
             _router.publishEvent({ modelId: 'modelId1', entityKey: 'the-key-1' }, 'startEvent', 'theEvent');
             expect(receivedEntityKeys.length).toBe(1);
             expect(receivedEntityKeys[0]).toBe('the-key-1');

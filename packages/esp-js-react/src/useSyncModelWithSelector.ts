@@ -177,7 +177,7 @@ const createNoopSubscriptionState = () => ({
 });
 
 const warnIfModelInstanceHasNotChanged = (modelId: string, lastModel: any, nextModel: string) => {
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.MODE === 'production') {
         return;
     }
     if (utils.stringIsEmpty(modelId)) {

@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
@@ -45,7 +44,7 @@ describe('Router', () => {
             _updateReceivedCount = 0;
             _flags = { throwAtPre: false, throwAtUpdate: false, throwAtPost: false, throwADispatch: false };
             const model = {};
-            new ModelBuilder(_router, 'modelId1', model)
+            _router.modelBuilder('modelId1', model)
                 .withPreEventProcessor(() => {
                     if (_flags.throwAtPre) {
                         throw new Error('Boom:Pre');
@@ -62,7 +61,7 @@ describe('Router', () => {
                         throw new Error('Boom:Dispatch');
                     }
                 })
-                .registerWithRouter();
+                .build();
             _router.getModelObservable('modelId1').subscribe(
                 (model: any) => {
                     _updateReceivedCount++;

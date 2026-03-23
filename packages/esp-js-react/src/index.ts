@@ -17,46 +17,50 @@
 // notice_end
 //
 
-export {
-    connect,
-    ConnectableComponentFactory
-} from './connect';
-export {
+export { connect } from './connect';
+export type { ConnectableComponentFactory } from './connect';
+export { ConnectableComponent } from './connectableComponent';
+export type {
     CreatePublishEventProps,
     MapModelToProps,
     ConnectableComponentProps,
     ConnectableComponentChildProps,
-    ConnectableComponent,
 } from './connectableComponent';
 export {
     useSyncModelWithSelector,
-    SyncModelWithSelectorOptionsBuilder,
     syncModelWithSelectorOptions,
+} from './useSyncModelWithSelector';
+export type {
+    SyncModelWithSelectorOptionsBuilder,
     SyncModelWithSelectorOptions,
     SyncModelWithSelectorEqualityFn,
 } from './useSyncModelWithSelector';
 export {
     RouterProvider,
-    RouterProviderProps,
     EspRouterContextProvider,
-    EspRouterContextProviderProps,
     RouterContext,
     useRouter,
-    PublishEventDelegate,
     PublishEventContext,
     usePublishEvent,
+} from './espRouterContextProvider';
+export type {
+    RouterProviderProps,
+    EspRouterContextProviderProps,
+    PublishEventDelegate,
 } from './espRouterContextProvider';
 export {
     useGetModelId,
     GetModelIdContext,
     useGetModel,
     GetModelContext,
-    PublishModelEventDelegate,
     PublishModelEventContext,
     usePublishModelEvent,
-    PublishModelEventWithEntityKeyDelegate,
     PublishModelEventWithEntityKeyContext,
     usePublishModelEventWithEntityKey,
     EspModelContextProvider,
+} from './espModelContextProvider';
+export type {
+    PublishModelEventDelegate,
+    PublishModelEventWithEntityKeyDelegate,
     EspModelContextProviderProps,
 } from './espModelContextProvider';

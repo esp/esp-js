@@ -27,6 +27,7 @@ import {DefaultEventContext} from './eventContext';
 import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor, reduxDevToolsDetectedAndEnabledInEsp} from './devtools';
 import {ModelConfig, PublishDelegate} from '../model/types';
 import {Subscribable} from '../model/subscribable';
+import {ModelBuilder} from '../model/modelBuilder';
 import {produce, freeze} from 'immer';
 
 let _log = Logger.create('Router');
@@ -60,7 +61,15 @@ export class Router extends DisposableBase {
         return this._state.currentStatus;
     }
 
-    public addModel<TModel>(modelId: string, initialModel: TModel, config: ModelConfig<TModel>): void {
+    public modelBuilder<TModel>(modelId: string, initialModel: TModel): ModelBuilder<TModel> {
+        return ModelBuilder._create(
+            (id: string, m: TModel, config: ModelConfig<TModel>) => this.addModel(id, m, config),
+            modelId,
+            initialModel
+        );
+    }
+
+    private addModel<TModel>(modelId: string, initialModel: TModel, config: ModelConfig<TModel>): void {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isDefined(initialModel, 'The model argument must be defined');

@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -49,7 +48,7 @@ describe('Router', () => {
                 removeAtPost: false,
                 removeAtDispatch: false
             };
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withPreEventProcessor(() => {
                     _preProcessorReceivedCount++;
                     if (_flags.removeAtPre) {
@@ -68,7 +67,7 @@ describe('Router', () => {
                         _router.removeModel('modelId1');
                     }
                 })
-                .registerWithRouter();
+                .build();
             _router.getModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount1++;
                 if (_flags.removeAtUpdate) {

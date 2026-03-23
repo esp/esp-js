@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 interface OrderModel {
     orderId: string;
@@ -39,7 +38,7 @@ describe('ModelBuilder', () => {
             let effectModelSnapshot: Readonly<OrderModel> = null;
             let effectEventReceived: any = null;
 
-            new ModelBuilder<OrderModel>(_router, 'orders', { orderId: 'o1', status: 'new' })
+            _router.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEventHandler<{ newStatus: string }>('StatusChanged', (draft, event) => {
                     draft.status = event.newStatus;
                 })
@@ -51,7 +50,7 @@ describe('ModelBuilder', () => {
                 .withEventHandler<{ triggeredBy: string }>('StatusEffect', (draft, event) => {
                     effectEventReceived = event;
                 })
-                .registerWithRouter();
+                .build();
 
             _router.publishEvent('orders', 'StatusChanged', { newStatus: 'confirmed' });
 
@@ -61,11 +60,11 @@ describe('ModelBuilder', () => {
 
         it('effect handler receives readonly model — mutation throws', () => {
             let effectModel: Readonly<OrderModel> = null;
-            new ModelBuilder<OrderModel>(_router, 'orders', { orderId: 'o1', status: 'new' })
+            _router.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEffect<any>('AnEvent', (model, event, ctx, publish) => {
                     effectModel = model;
                 })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('orders', 'AnEvent', {});
             expect(effectModel).toBeDefined();
             expect(() => { (effectModel as any).status = 'mutated'; }).toThrow();
@@ -73,24 +72,24 @@ describe('ModelBuilder', () => {
 
         it('multiple effect handlers for the same event are all called', () => {
             const calls: string[] = [];
-            new ModelBuilder<OrderModel>(_router, 'orders', { orderId: 'o1', status: 'new' })
+            _router.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEffect<any>('AnEvent', () => { calls.push('effect1'); })
                 .withEffect<any>('AnEvent', () => { calls.push('effect2'); })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('orders', 'AnEvent', {});
             expect(calls).toEqual(['effect1', 'effect2']);
         });
 
         it('effect runs after normal handlers complete (model reflects mutations)', () => {
             let effectSawStatus = '';
-            new ModelBuilder<OrderModel>(_router, 'orders', { orderId: 'o1', status: 'new' })
+            _router.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEventHandler<{ newStatus: string }>('StatusChanged', (draft, event) => {
                     draft.status = event.newStatus;
                 })
                 .withEffect<{ newStatus: string }>('StatusChanged', (model) => {
                     effectSawStatus = model.status;
                 })
-                .registerWithRouter();
+                .build();
             _router.publishEvent('orders', 'StatusChanged', { newStatus: 'shipped' });
             // The effect runs after normal dispatch, so model.status should already be 'shipped'
             expect(effectSawStatus).toEqual('shipped');

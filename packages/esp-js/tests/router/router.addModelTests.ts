@@ -17,7 +17,6 @@
 // notice_end
 
 import * as esp from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('Router', () => {
@@ -28,22 +27,14 @@ describe('Router', () => {
         _router = new esp.Router();
     });
 
-    describe('.addModel()', () => {
+    describe('.modelBuilder()', () => {
         it('throws if modelId not a string', () => {
             expect(() => { registerModel(_router, undefined, {}); }).toThrow();
             expect(() => { registerModel(_router, <any>{}, {}); }).toThrow();
         });
 
-        it('router.addModel throws if modelId not a string', () => {
-            expect(() => { _router.addModel(<any>{}, {}, {eventHandlers: new Map(), previewHandlers: new Map(), effectHandlers: new Map(), subscriptionFactories: []}); }).toThrow(new Error('The modelId argument should be a string'));
-        });
-
         it('throws if model is undefined', () => {
             expect(() => { registerModel(_router, 'foo', undefined); }).toThrow();
-        });
-
-        it('throws if config is undefined', () => {
-            expect(() => { _router.addModel('modelId', {}, undefined); }).toThrow();
         });
 
         it('should throw if model already registered', () => {
@@ -53,13 +44,13 @@ describe('Router', () => {
 
         it('ModelBuilder throws if handler undefined', () => {
             expect(() => {
-                new ModelBuilder(_router, 'modelId', {}).withEventHandler('evt', undefined);
+                _router.modelBuilder('modelId', {}).withEventHandler('evt', undefined);
             }).toThrow();
         });
 
         it('ModelBuilder throws if eventType not a string', () => {
             expect(() => {
-                new ModelBuilder(_router, 'modelId', {}).withEventHandler(undefined, () => {});
+                _router.modelBuilder('modelId', {}).withEventHandler(undefined, () => {});
             }).toThrow();
         });
     });

@@ -18,7 +18,6 @@
 
 import * as reactive from '../../src/reactive/index';
 import {Router} from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('.merge', () => {
     let subject1,
@@ -102,11 +101,11 @@ describe('.merge', () => {
             myEvent3: [],
         };
 
-        new ModelBuilder<{}>(router, modelId, {})
+        router.modelBuilder<{}>(modelId, {})
             .withEventHandler<number>('myEvent1', (draft, event) => { receivedByHandler.myEvent1.push(event); })
             .withEventHandler<number>('myEvent2', (draft, event) => { receivedByHandler.myEvent2.push(event); })
             .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })
-            .registerWithRouter();
+            .build();
 
         router.getModelObservable(modelId).subscribe(() => {});
 

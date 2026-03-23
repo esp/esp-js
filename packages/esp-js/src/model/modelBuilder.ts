@@ -1,4 +1,3 @@
-import {Router} from '../router/router';
 import {
     ModelConfig,
     EventHandler,
@@ -18,14 +17,23 @@ export class ModelBuilder<TModel> {
     private _preEventProcessor: PreEventProcessorFn<TModel> = null;
     private _postEventProcessor: PostEventProcessorFn<TModel> = null;
 
-    constructor(
-        private _router: Router,
+    private constructor(
+        private _addModelFn: (modelId: string, initialModel: TModel, config: ModelConfig<TModel>) => void,
         private _modelId: string,
         private _initialModel: TModel
     ) {
-        Guard.isDefined(_router, 'router must be defined');
+        Guard.isDefined(_addModelFn, 'addModelFn must be defined');
         Guard.isString(_modelId, 'modelId must be a string');
         Guard.isDefined(_initialModel, 'initialModel must be defined');
+    }
+
+    /** @internal */
+    static _create<TModel>(
+        addModelFn: (modelId: string, initialModel: TModel, config: ModelConfig<TModel>) => void,
+        modelId: string,
+        initialModel: TModel
+    ): ModelBuilder<TModel> {
+        return new ModelBuilder(addModelFn, modelId, initialModel);
     }
 
     withEventHandler<TEvent>(eventType: string, handler: EventHandler<TModel, TEvent>): this {
@@ -76,7 +84,7 @@ export class ModelBuilder<TModel> {
         return this;
     }
 
-    registerWithRouter(): void {
+    build(): void {
         const config: ModelConfig<TModel> = {
             eventHandlers: this._eventHandlers,
             previewHandlers: this._previewHandlers,
@@ -85,6 +93,6 @@ export class ModelBuilder<TModel> {
             preEventProcessor: this._preEventProcessor,
             postEventProcessor: this._postEventProcessor,
         };
-        return this._router.addModel(this._modelId, this._initialModel, config);
+        this._addModelFn(this._modelId, this._initialModel, config);
     }
 }

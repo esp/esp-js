@@ -16,4 +16,10 @@
  */
 // notice_end
 
-module.exports = require('../../__jest__/jest.config');
+// esp-js-di is a pure JavaScript package — no dts plugin needed.
+// The vite config itself is TypeScript because the shared base uses ESM exports.
+import { createBaseConfig } from '../../vite.config.base';
+
+const packageDir = __dirname;
+
+export default createBaseConfig(packageDir, 'src/index.js', 'espJsDi', 'esp-js-di');

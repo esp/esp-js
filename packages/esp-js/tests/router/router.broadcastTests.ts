@@ -17,7 +17,6 @@
 // notice_end
 
 import {Router} from '../../src';
-import {ModelBuilder} from '../../src/model/modelBuilder';
 
 describe('Router', () => {
 
@@ -35,12 +34,12 @@ describe('Router', () => {
 
         it('should deliver the event to all models observing event', () => {
             let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler<number>('Event1', (draft, event) => { model1ProcessorReceived += event; })
-                .registerWithRouter();
-            new ModelBuilder(_router, 'modelId2', {})
+                .build();
+            _router.modelBuilder('modelId2', {})
                 .withEventHandler<number>('Event1', (draft, event) => { model2ProcessorReceived += event; })
-                .registerWithRouter();
+                .build();
             _router.broadcastEvent('Event1', 10);
             expect(model1ProcessorReceived).toEqual(10);
             expect(model2ProcessorReceived).toEqual(10);
@@ -51,18 +50,18 @@ describe('Router', () => {
             let model1ReceivedEvents: string[] = [];
             let model2ReceivedEvents: string[] = [];
             // first: model1 observes Event1, model2 does not
-            new ModelBuilder(_router, 'modelId1', {})
+            _router.modelBuilder('modelId1', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model1ProcessorReceivedCount++;
                     model1ReceivedEvents.push(ctx.modelId);
                 })
-                .registerWithRouter();
-            new ModelBuilder(_router, 'modelId2', {})
+                .build();
+            _router.modelBuilder('modelId2', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model2ProcessorReceivedCount++;
                     model2ReceivedEvents.push(ctx.modelId);
                 })
-                .registerWithRouter();
+                .build();
 
             _router.broadcastEvent('Event1', 10);
             expect(model1ProcessorReceivedCount).toEqual(1);

@@ -1,22 +1,12 @@
-let isWindows = require('is-os').isWindows();
 module.exports = {
     scripts: {
-        // Scripts shared by each package under examples & packages
-        dev: 'cross-env NODE_ENV=dev webpack --display "normal" --color --watch',
-        buildDev: 'cross-env NODE_ENV=dev webpack && npm run test-ci',
-        buildProd: 'cross-env NODE_ENV=prod webpack && npm run test-ci',
-        buildPack: 'cross-env NODE_ENV=prod npm pack',
-        buildDocs: 'cross-env NODE_ENV=dev BUILD_DOCS=true webpack',
-        test: 'cross-env NODE_OPTIONS=--expose-gc jest --color --no-cache -c ./jest.config.js --rootDir . --watchAll',
-        testCi: 'cross-env NODE_OPTIONS=--expose-gc jest --color --no-cache -c ./jest.config.js --rootDir .',
-        clean: isWindows
-            ? 'rmdir -r ./.dist && rmdir -r ./.tsbuild && del /s /q esp*.tgz'
-            : `rm -rf ./.dist && rm -rf ./.tsbuild && find . -name 'esp*.tgz' -delete`,
-        // Scrips only called from the root package.json
-        trash: isWindows
-            ? 'echo \'Trash script not supported on windows\''
-            : './scripts/trash.sh && lerna run clean && lerna clean && rm -rf ./node_modules',
-        publishAll: 'npm run clean && npm run build-prod && lerna publish',
-        createPackage: 'npm run clean && npm run build-prod && lerna run build-pack'
+        // Scripts shared by each package under packages/
+        dev: 'vite build --watch',
+        'build-dev': 'vite build && vitest run',
+        'build-prod': 'vite build && vitest run',
+        'build-pack': 'npm pack',
+        test: 'vitest --watch',
+        'test-ci': 'vitest run',
+        clean: `rm -rf ./.dist && rm -rf ./.tsbuild && find . -maxdepth 1 -name 'esp*.tgz' -delete`,
     }
 };

@@ -8,7 +8,7 @@ export const createTestModel = (bus: EventBus, modelId: string): TestModelState 
         entityKey: '',
         modelId,
     };
-    bus.modelBuilder<TestModelState>(modelId, initialState)
+    bus.storeBuilder<TestModelState>(modelId, initialState)
         .withEventHandler('test-event', (draft, ev: string) => {
             draft.value = ev;
         })

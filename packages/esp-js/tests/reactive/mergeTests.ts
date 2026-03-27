@@ -101,7 +101,7 @@ describe('.merge', () => {
             myEvent3: [],
         };
 
-        bus.modelBuilder<{}>(modelId, {})
+        bus.storeBuilder<{}>(modelId, {})
             .withEventHandler<number>('myEvent1', (draft, event) => { receivedByHandler.myEvent1.push(event); })
             .withEventHandler<number>('myEvent2', (draft, event) => { receivedByHandler.myEvent2.push(event); })
             .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })

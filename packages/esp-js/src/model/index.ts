@@ -1,3 +1,3 @@
 export * from './subscribable';
 export * from './types';
-export * from './modelBuilder';
+export * from './storeBuilder';

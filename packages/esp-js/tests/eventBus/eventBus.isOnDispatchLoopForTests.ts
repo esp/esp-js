@@ -39,13 +39,13 @@ describe('EventBus', () => {
                 model1EventHandler_isOnModel2DispatchLoop = null,
                 model2EventHandler_isOnModel1DispatchLoop = null,
                 model2EventHandler_isOnModel2DispatchLoop = null;
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler('Event1', () => {
                     model1EventHandler_isOnModel1DispatchLoop = _bus.isOnDispatchLoopFor('modelId1');
                     model1EventHandler_isOnModel2DispatchLoop = _bus.isOnDispatchLoopFor('modelId2');
                 })
                 .build();
-            _bus.modelBuilder('modelId2', {})
+            _bus.storeBuilder('modelId2', {})
                 .withEventHandler('Event1', () => {
                     model2EventHandler_isOnModel1DispatchLoop = _bus.isOnDispatchLoopFor('modelId1');
                     model2EventHandler_isOnModel2DispatchLoop = _bus.isOnDispatchLoopFor('modelId2');

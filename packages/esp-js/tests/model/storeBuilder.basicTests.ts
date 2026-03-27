@@ -23,7 +23,7 @@ interface Counter {
     label: string;
 }
 
-describe('ModelBuilder', () => {
+describe('StoreBuilder', () => {
 
     let _bus: esp.EventBus;
 
@@ -35,7 +35,7 @@ describe('ModelBuilder', () => {
 
         it('registers a model and dispatches events to withEventHandler', () => {
             let receivedEvent: any = null;
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler('Increment', (draft, event) => {
                     draft.count += event.amount;
                     receivedEvent = event;
@@ -47,7 +47,7 @@ describe('ModelBuilder', () => {
 
         it('applies immer draft mutations — model emitted is updated', () => {
             let lastModel: Counter = null;
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler<{ amount: number }>('Increment', (draft, event) => {
                     draft.count += event.amount;
                 })
@@ -60,7 +60,7 @@ describe('ModelBuilder', () => {
 
         it('accumulated mutations are reflected in model', () => {
             let lastModel: Counter = null;
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler<{ amount: number }>('Increment', (draft, event) => {
                     draft.count += event.amount;
                 })
@@ -72,7 +72,7 @@ describe('ModelBuilder', () => {
         });
 
         it('model is frozen — direct mutation outside handler throws', () => {
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .build();
             let frozenModel: Counter = null;
             _bus.getModelObservable<Counter>('counter').subscribe(m => { frozenModel = m; });
@@ -84,7 +84,7 @@ describe('ModelBuilder', () => {
 
         it('supports multiple event handlers for the same event type', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler('AnEvent', () => { calls.push('handler1'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler2'); })
                 .build();
@@ -94,7 +94,7 @@ describe('ModelBuilder', () => {
 
         it('supports multiple event types on the same model', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withEventHandler('EventA', () => { calls.push('A'); })
                 .withEventHandler('EventB', () => { calls.push('B'); })
                 .build();
@@ -105,14 +105,14 @@ describe('ModelBuilder', () => {
 
         it('withEventHandler throws if eventType is not a string', () => {
             expect(() => {
-                _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+                _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                     .withEventHandler(undefined, () => {});
             }).toThrow();
         });
 
         it('withEventHandler throws if handler is not a function', () => {
             expect(() => {
-                _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+                _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                     .withEventHandler('AnEvent', undefined);
             }).toThrow();
         });
@@ -122,7 +122,7 @@ describe('ModelBuilder', () => {
 
         it('withPreEventProcessor is called before each event batch', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withPreEventProcessor(() => { calls.push('pre'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler'); })
                 .build();
@@ -132,7 +132,7 @@ describe('ModelBuilder', () => {
 
         it('withPostEventProcessor is called after each event batch', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withPostEventProcessor(() => { calls.push('post'); })
                 .withEventHandler('AnEvent', () => { calls.push('handler'); })
                 .build();
@@ -142,7 +142,7 @@ describe('ModelBuilder', () => {
 
         it('withPostEventProcessor receives the list of processed event types', () => {
             let processedEvents: string[] = null;
-            _bus.modelBuilder<Counter>('counter', { count: 0, label: 'test' })
+            _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .withPostEventProcessor((model, events) => { processedEvents = events; })
                 .withEventHandler('Foo', () => {})
                 .build();

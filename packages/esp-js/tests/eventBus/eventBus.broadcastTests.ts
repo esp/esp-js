@@ -34,10 +34,10 @@ describe('EventBus', () => {
 
         it('should deliver the event to all models observing event', () => {
             let model1ProcessorReceived = 0, model2ProcessorReceived = 0;
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler<number>('Event1', (draft, event) => { model1ProcessorReceived += event; })
                 .build();
-            _bus.modelBuilder('modelId2', {})
+            _bus.storeBuilder('modelId2', {})
                 .withEventHandler<number>('Event1', (draft, event) => { model2ProcessorReceived += event; })
                 .build();
             _bus.broadcastEvent('Event1', 10);
@@ -50,13 +50,13 @@ describe('EventBus', () => {
             let model1ReceivedEvents: string[] = [];
             let model2ReceivedEvents: string[] = [];
             // first: model1 observes Event1, model2 does not
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model1ProcessorReceivedCount++;
                     model1ReceivedEvents.push(ctx.modelId);
                 })
                 .build();
-            _bus.modelBuilder('modelId2', {})
+            _bus.storeBuilder('modelId2', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model2ProcessorReceivedCount++;
                     model2ReceivedEvents.push(ctx.modelId);

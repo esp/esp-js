@@ -60,7 +60,7 @@ describe('EventBus', () => {
             _model3Event1Count = 0;
             _model1PreEventPreProcessingLen = 0;
 
-            _bus.modelBuilder('modelId1', _model1)
+            _bus.storeBuilder('modelId1', _model1)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('startEvent', () => {
@@ -73,26 +73,26 @@ describe('EventBus', () => {
                     _model1PreEventPreProcessingLen = _modelsSentForPreProcessing.length;
                 })
                 .build();
-            _bus.modelBuilder('modelId2', _model2)
+            _bus.storeBuilder('modelId2', _model2)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     _model2Event1Count++;
                 })
                 .build();
-            _bus.modelBuilder('modelId3', _model3)
+            _bus.storeBuilder('modelId3', _model3)
                 .withPreEventProcessor((model) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     _model3Event1Count++;
                 })
                 .build();
-            _bus.modelBuilder('modelId5', _model5)
+            _bus.storeBuilder('modelId5', _model5)
                 .withPreEventProcessor(() => { _model5PreProcessCount++; })
                 .withPostEventProcessor((model, eventsProcessed) => { _model5PostProcessCount++; _model5EventsProcessed = eventsProcessed; })
                 .withEventHandler('startEvent', () => { /* noop */ })
                 .build();
-            _bus.modelBuilder('modelId6', _model6)
+            _bus.storeBuilder('modelId6', _model6)
                 .withPreEventProcessor((model: any) => { _modelsSentForPreProcessing.push(model._id); })
                 .withPostEventProcessor((model: any, eventsProcessed) => { _modelsSentForPostProcessing.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('startEvent', () => { /* noop */ })
@@ -139,7 +139,7 @@ describe('EventBus', () => {
         it('calls a models post processors in order before processing the next models events', () => {
             let passed = true;
             // modelId3's Event1 handler checks that modelId1's postProcessor ran before modelId3's
-            _bus.modelBuilder('modelId3Check', _model3)
+            _bus.storeBuilder('modelId3Check', _model3)
                 .withEventHandler('Event1', () => {
                     passed = passed && _modelsSentForPostProcessing.length === 1 && _modelsSentForPostProcessing[0].modelId === 'model1';
                 })
@@ -165,7 +165,7 @@ describe('EventBus', () => {
             const m1 = {_id: 'm1'}, m2 = {_id: 'm2'}, m3 = {_id: 'm3'};
             const postProcessors = [];
 
-            bus2.modelBuilder('modelId1', m1)
+            bus2.storeBuilder('modelId1', m1)
                 .withPreEventProcessor((model) => {})
                 .withPostEventProcessor((model: any, eventsProcessed) => { postProcessors.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('startEvent', () => {
@@ -175,13 +175,13 @@ describe('EventBus', () => {
                 })
                 .withEventHandler('Event1', () => {})
                 .build();
-            bus2.modelBuilder('modelId2', m2)
+            bus2.storeBuilder('modelId2', m2)
                 .withPostEventProcessor((model: any, eventsProcessed) => { postProcessors.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     model2Passed = postProcessors.length === 2 && postProcessors[1].modelId === 'm3';
                 })
                 .build();
-            bus2.modelBuilder('modelId3', m3)
+            bus2.storeBuilder('modelId3', m3)
                 .withPostEventProcessor((model: any, eventsProcessed) => { postProcessors.push({modelId: model._id, eventsProcessed}); })
                 .withEventHandler('Event1', () => {
                     model3Passed = postProcessors.length === 1 && postProcessors[0].modelId === 'm1';
@@ -212,7 +212,7 @@ describe('EventBus', () => {
 
         it('should allow a preEventProcessor to publish an event', () => {
             let wasPublished = false;
-            _bus.modelBuilder('modelId4', _model1)
+            _bus.storeBuilder('modelId4', _model1)
                 .withPreEventProcessor(() => { _bus.publishEvent('modelId4', 'Event2', 'theEvent'); })
                 .withEventHandler('Event1', () => { /* noop */ })
                 .withEventHandler('Event2', () => { wasPublished = true; })
@@ -226,7 +226,7 @@ describe('EventBus', () => {
                 postProcessorPublished = false,
                 preProcessorCalledCount = 0;
             const innerModel = { version: 1 };
-            _bus.modelBuilder('modelId4', innerModel)
+            _bus.storeBuilder('modelId4', innerModel)
                 .withPreEventProcessor(() => { preProcessorCalledCount++; })
                 .withPostEventProcessor(() => {
                     if (!postProcessorPublished) {

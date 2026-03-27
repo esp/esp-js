@@ -52,7 +52,7 @@ describe('EventBus', () => {
 
         beforeEach(()=> {
             _flags = { throwAtPre: false, throwAtUpdate: false, throwAtPost: false, throwADispatch: false };
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withPreEventProcessor(() => {
                     if (_flags.throwAtPre) {
                         throw new Error('Boom:Pre');

@@ -22,7 +22,7 @@ interface SimpleModel {
     value: number;
 }
 
-describe('ModelBuilder', () => {
+describe('StoreBuilder', () => {
 
     let _bus: esp.EventBus;
 
@@ -34,7 +34,7 @@ describe('ModelBuilder', () => {
 
         it('preview handler is called before event dispatch, normal handler fires after', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withPreviewHandler('AnEvent', (model, event, ctx) => {
                     calls.push('preview');
                 })
@@ -46,7 +46,7 @@ describe('ModelBuilder', () => {
 
         it('preview handler can cancel the event', () => {
             let normalCalled = false;
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withPreviewHandler('AnEvent', (model, event, ctx) => {
                     ctx.cancel();
                 })
@@ -61,7 +61,7 @@ describe('ModelBuilder', () => {
             // beyond the handler — the draft proxy is revoked after produce completes.
             let receivedValue: number = null;
             let handlerCalled = false;
-            _bus.modelBuilder<SimpleModel>('model', { value: 42 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 42 })
                 .withPreviewHandler('AnEvent', (model) => {
                     handlerCalled = true;
                     receivedValue = model.value;
@@ -74,7 +74,7 @@ describe('ModelBuilder', () => {
 
         it('multiple preview handlers are all called', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withPreviewHandler('AnEvent', () => { calls.push('preview1'); })
                 .withPreviewHandler('AnEvent', () => { calls.push('preview2'); })
                 .build();

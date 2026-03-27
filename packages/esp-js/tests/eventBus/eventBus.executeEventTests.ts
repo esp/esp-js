@@ -39,7 +39,7 @@ describe('EventBus', () => {
         beforeEach(() => {
             _model1 = {};
             _model2 = {};
-            _bus.modelBuilder('modelId1', _model1)
+            _bus.storeBuilder('modelId1', _model1)
                 .withEventHandler('triggerExecuteEvent', () => {
                     _bus.executeEvent('ExecutedEvent', {});
                 })
@@ -51,7 +51,7 @@ describe('EventBus', () => {
             // Track values accumulated across execute calls
             let accumulatedValues: string[] = [];
             let updateStreamTestRan = false;
-            _bus.modelBuilder('myModel', {value: ''})
+            _bus.storeBuilder('myModel', {value: ''})
                 .withPreEventProcessor(() => { _bus.executeEvent('ExecutedEvent', 'a'); })
                 .withPostEventProcessor(() => { _bus.executeEvent('ExecutedEvent', 'c'); })
                 .withEventHandler('TriggerExecuteEvent', () => {
@@ -74,7 +74,7 @@ describe('EventBus', () => {
 
         it('should throw if an execute handler raises another event', () => {
             let didTest = false;
-            _bus.modelBuilder('modelId1b', {})
+            _bus.storeBuilder('modelId1b', {})
                 .withEventHandler('ExecutedEvent', () => {
                     didTest = true;
                     expect(() => {
@@ -84,7 +84,7 @@ describe('EventBus', () => {
                 .build();
             // Use a fresh model to avoid double-registration
             const bus2 = new esp.EventBus();
-            bus2.modelBuilder('modelId1', {})
+            bus2.storeBuilder('modelId1', {})
                 .withEventHandler('triggerExecuteEvent', () => {
                     bus2.executeEvent('ExecutedEvent', {});
                 })
@@ -104,7 +104,7 @@ describe('EventBus', () => {
             // The model passed to handler is the current frozen model
             const bus2 = new esp.EventBus();
             const theModel = {};
-            bus2.modelBuilder('modelId1', theModel)
+            bus2.storeBuilder('modelId1', theModel)
                 .withEventHandler('triggerExecuteEvent', () => {
                     bus2.executeEvent('ExecutedEvent', {});
                 })
@@ -120,7 +120,7 @@ describe('EventBus', () => {
         it('should execute the event immediately', () => {
             let counter = 0, testPassed = false;
             const bus2 = new esp.EventBus();
-            bus2.modelBuilder('modelId1', {})
+            bus2.storeBuilder('modelId1', {})
                 .withEventHandler('triggerExecuteEvent2', () => {
                     counter = 1;
                     bus2.executeEvent('ExecutedEvent', {});
@@ -138,7 +138,7 @@ describe('EventBus', () => {
         it('should execute the event against preview, normal, and final stages', () => {
             let previewReceived = false, normalReceived = false, finalReceived = false;
             const bus2 = new esp.EventBus();
-            bus2.modelBuilder('modelId1', {})
+            bus2.storeBuilder('modelId1', {})
                 .withEventHandler('triggerExecuteEvent', () => {
                     bus2.executeEvent('ExecutedEvent', {});
                 })

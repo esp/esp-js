@@ -23,7 +23,7 @@ interface OrderModel {
     status: string;
 }
 
-describe('ModelBuilder', () => {
+describe('StoreBuilder', () => {
 
     let _bus: esp.EventBus;
 
@@ -38,7 +38,7 @@ describe('ModelBuilder', () => {
             let effectModelSnapshot: Readonly<OrderModel> = null;
             let effectEventReceived: any = null;
 
-            _bus.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
+            _bus.storeBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEventHandler<{ newStatus: string }>('StatusChanged', (draft, event) => {
                     draft.status = event.newStatus;
                 })
@@ -60,7 +60,7 @@ describe('ModelBuilder', () => {
 
         it('effect handler receives readonly model — mutation throws', () => {
             let effectModel: Readonly<OrderModel> = null;
-            _bus.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
+            _bus.storeBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEffect<any>('AnEvent', (model, event, ctx, publish) => {
                     effectModel = model;
                 })
@@ -72,7 +72,7 @@ describe('ModelBuilder', () => {
 
         it('multiple effect handlers for the same event are all called', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
+            _bus.storeBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEffect<any>('AnEvent', () => { calls.push('effect1'); })
                 .withEffect<any>('AnEvent', () => { calls.push('effect2'); })
                 .build();
@@ -82,7 +82,7 @@ describe('ModelBuilder', () => {
 
         it('effect runs after normal handlers complete (model reflects mutations)', () => {
             let effectSawStatus = '';
-            _bus.modelBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
+            _bus.storeBuilder<OrderModel>('orders', { orderId: 'o1', status: 'new' })
                 .withEventHandler<{ newStatus: string }>('StatusChanged', (draft, event) => {
                     draft.status = event.newStatus;
                 })

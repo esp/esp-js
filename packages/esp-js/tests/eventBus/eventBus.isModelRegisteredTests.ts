@@ -44,7 +44,7 @@ describe('EventBus', () => {
 
         it('returns false if model NOT unregistered', () => {
             registerModel(_bus, 'modelId1', {});
-            _bus.removeModel('modelId1');
+            _bus.removeStore('modelId1');
             expect(_bus.isModelRegistered('modelId1')).toEqual(false);
         });
     });

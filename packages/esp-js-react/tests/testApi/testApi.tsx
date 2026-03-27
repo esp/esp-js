@@ -48,7 +48,7 @@ export const testApi = ()=> {
             return this;
         },
         setupModel<TModel>(modelId: string, model: TModel): TModel {
-            bus.modelBuilder<TModel>(modelId, model).build();
+            bus.storeBuilder<TModel>(modelId, model).build();
             return model;
         },
         setupTestModel(modelId: string): TestModelState {

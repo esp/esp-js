@@ -50,14 +50,14 @@ describe('EventBus', () => {
             _model1OptionsHelper = createOptionsHelper();
             _model2OptionsHelper = createOptionsHelper();
             _model3OptionsHelper = createOptionsHelper();
-            _bus.modelBuilder(_model1.id, _model1)
+            _bus.storeBuilder(_model1.id, _model1)
                 .withPreEventProcessor(_model1OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model1OptionsHelper.options.postEventProcessor)
                 .withEventHandler('fooEvent', () => {
                     _model1ReceivedEvent = true;
                 })
                 .build();
-            _bus.modelBuilder(_model2.id, _model2)
+            _bus.storeBuilder(_model2.id, _model2)
                 .withPreEventProcessor(_model2OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model2OptionsHelper.options.postEventProcessor)
                 .withEventHandler<number>('fooEvent', (draft, event, ctx) => {
@@ -65,7 +65,7 @@ describe('EventBus', () => {
                     _receivedEvent2 = event;
                 })
                 .build();
-            _bus.modelBuilder(_model3.id, _model3)
+            _bus.storeBuilder(_model3.id, _model3)
                 .withPreEventProcessor(_model3OptionsHelper.options.preEventProcessor)
                 .withPostEventProcessor(_model3OptionsHelper.options.postEventProcessor)
                 .build();

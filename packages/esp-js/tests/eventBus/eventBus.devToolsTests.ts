@@ -24,7 +24,7 @@ describe('EventBus Dev Tools', () => {
 
     const setup = () => {
         _bus = new EventBus();
-        _bus.modelBuilder('modelId1', {})
+        _bus.storeBuilder('modelId1', {})
             .withEventHandler('startEvent', () => {})
             .build();
         _bus.getModelObservable('modelId1').subscribe(m => {

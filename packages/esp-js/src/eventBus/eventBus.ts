@@ -25,9 +25,9 @@ import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {EventRecord, StoreRecord} from './storeRecord';
 import {DefaultEventContext} from './eventContext';
 import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor, reduxDevToolsDetectedAndEnabledInEsp} from './devtools';
-import {ModelConfig, PublishDelegate} from '../model/types';
+import {StoreConfig, PublishDelegate} from '../model/types';
 import {Subscribable} from '../model/subscribable';
-import {ModelBuilder} from '../model/modelBuilder';
+import {StoreBuilder} from '../model/storeBuilder';
 import {produce, freeze} from 'immer';
 
 let _log = Logger.create('EventBus');
@@ -61,19 +61,19 @@ export class EventBus extends DisposableBase {
         return this._state.currentStatus;
     }
 
-    public modelBuilder<TModel>(modelId: string, initialModel: TModel): ModelBuilder<TModel> {
-        return ModelBuilder._create(
-            (id: string, m: TModel, config: ModelConfig<TModel>) => this.addModel(id, m, config),
+    public storeBuilder<TModel>(modelId: string, initialModel: TModel): StoreBuilder<TModel> {
+        return StoreBuilder._create(
+            (id: string, m: TModel, storeConfig: StoreConfig<TModel>) => this.addStore(id, m, storeConfig),
             modelId,
             initialModel
         );
     }
 
-    private addModel<TModel>(modelId: string, initialModel: TModel, config: ModelConfig<TModel>): void {
+    private addStore<TModel>(modelId: string, initialModel: TModel, storeConfig: StoreConfig<TModel>): void {
         this._throwIfHaltedOrDisposed();
         Guard.isString(modelId, 'The modelId argument should be a string');
         Guard.isDefined(initialModel, 'The model argument must be defined');
-        Guard.isDefined(config, 'The config argument must be defined');
+        Guard.isDefined(storeConfig, 'The storeConfig argument must be defined');
 
         const storeRecord = this._getOrCreateStoreRecord(modelId) as StoreRecord<TModel>;
         if (storeRecord.hasModel) {
@@ -85,22 +85,22 @@ export class EventBus extends DisposableBase {
         };
 
         const frozenModel = freeze(initialModel, true) as TModel;
-        storeRecord.upgradeToFullModel(frozenModel, config, publishDelegate);
+        storeRecord.upgradeToFullModel(frozenModel, storeConfig, publishDelegate);
 
         // Pre-register event streams for all known event types
-        for (const eventType of config.eventHandlers.keys()) {
+        for (const eventType of storeConfig.eventHandlers.keys()) {
             storeRecord.getOrCreateEventStreamsRegistration(
                 eventType,
                 <Observable<EventEnvelope<any, any>>>this._dispatchSubject
             );
         }
-        for (const eventType of config.previewHandlers.keys()) {
+        for (const eventType of storeConfig.previewHandlers.keys()) {
             storeRecord.getOrCreateEventStreamsRegistration(
                 eventType,
                 <Observable<EventEnvelope<any, any>>>this._dispatchSubject
             );
         }
-        for (const eventType of config.effectHandlers.keys()) {
+        for (const eventType of storeConfig.effectHandlers.keys()) {
             storeRecord.getOrCreateEventStreamsRegistration(
                 eventType,
                 <Observable<EventEnvelope<any, any>>>this._dispatchSubject
@@ -108,7 +108,7 @@ export class EventBus extends DisposableBase {
         }
 
         // Start subscription factories
-        for (const factory of config.subscriptionFactories) {
+        for (const factory of storeConfig.subscriptionFactories) {
             const disposable = factory(publishDelegate);
             if (disposable) {
                 storeRecord.subscriptionDisposables.add(disposable);
@@ -117,15 +117,15 @@ export class EventBus extends DisposableBase {
 
         // Emit initial model update
         this._dispatchSubject.onNext({modelId: modelId, model: frozenModel, dispatchType: DispatchType.ModelUpdate});
-        this._diagnosticMonitor.addModel(modelId);
+        this._diagnosticMonitor.addStore(modelId);
 
     }
 
-    public removeModel(modelId: string) {
+    public removeStore(modelId: string) {
         Guard.isString(modelId, 'The modelId argument should be a string');
         let storeRecord = this._models.get(modelId);
         if (storeRecord) {
-            this._diagnosticMonitor.removeModel(modelId);
+            this._diagnosticMonitor.removeStore(modelId);
             storeRecord.wasRemoved = true;
             this._models.delete(modelId);
             storeRecord.dispose();
@@ -265,9 +265,9 @@ export class EventBus extends DisposableBase {
     private _getOrCreateStoreRecord(modelId: string): StoreRecord {
         let storeRecord: StoreRecord = this._models.get(modelId);
         if (!storeRecord) {
-            // Create a shell record for lazy observation registration (getEventObservable / getModelObservable called before addModel)
-            // This record has no handlers — it will be a proper record once addModel is called.
-            // We create a minimal placeholder; however since we removed lazy addModel support,
+            // Create a shell record for lazy observation registration (getEventObservable / getModelObservable called before addStore)
+            // This record has no handlers — it will be a proper record once addStore is called.
+            // We create a minimal placeholder; however since we removed lazy addStore support,
             // we just create a modelObservationStream-only record with empty config.
             let modelObservationStream = this._dispatchSubject
                 .cast<ModelEnvelope<any>>()

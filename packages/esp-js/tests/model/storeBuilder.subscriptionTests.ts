@@ -23,7 +23,7 @@ interface SimpleModel {
     value: number;
 }
 
-describe('ModelBuilder', () => {
+describe('StoreBuilder', () => {
 
     let _bus: esp.EventBus;
 
@@ -35,7 +35,7 @@ describe('ModelBuilder', () => {
 
         it('subscription factory is called when model is registered', () => {
             let factoryCalled = false;
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish) => {
                     factoryCalled = true;
                     return { dispose: () => {} };
@@ -48,7 +48,7 @@ describe('ModelBuilder', () => {
             let publishCalledWith: { eventType: string; event: any } = null;
             let factoryPublish: (eventType: string, event: any) => void = null;
 
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withEventHandler<{ amount: number }>('Add', (draft, event) => {
                     draft.value += event.amount;
                 })
@@ -70,20 +70,20 @@ describe('ModelBuilder', () => {
 
         it('dispose returned from subscription factory is called on model removal', () => {
             let disposeCalled = false;
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish): Disposable => {
                     return {
                         dispose: () => { disposeCalled = true; }
                     };
                 })
                 .build();
-            _bus.removeModel('model');
+            _bus.removeStore('model');
             expect(disposeCalled).toBe(true);
         });
 
         it('multiple subscription factories are all called', () => {
             const calls: string[] = [];
-            _bus.modelBuilder<SimpleModel>('model', { value: 0 })
+            _bus.storeBuilder<SimpleModel>('model', { value: 0 })
                 .withEventSubscription((publish) => {
                     calls.push('factory1');
                     return { dispose: () => {} };

@@ -20,8 +20,8 @@ import {DisposableBase} from '../../system/disposables';
 import {ModelAddress} from '../modelAddress';
 
 export interface DiagnosticMonitor extends DisposableBase {
-    addModel(modelId: string): void;
-    removeModel(modelId: string): void;
+    addStore(modelId: string): void;
+    removeStore(modelId: string): void;
     publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void;
     broadcastEvent(eventType: string): void;
     executingEvent(eventType: string): void;

@@ -21,11 +21,11 @@ import {DisposableBase} from '../../system/disposables';
 import { ModelAddress } from '../modelAddress';
 
 export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
-    addModel(modelId: string): void {
-        
+    addStore(modelId: string): void {
+
     }
-    removeModel(modelId: string): void {
-        
+    removeStore(modelId: string): void {
+
     }
     publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void {
         

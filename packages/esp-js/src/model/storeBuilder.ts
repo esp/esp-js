@@ -1,5 +1,5 @@
 import {
-    ModelConfig,
+    StoreConfig,
     EventHandler,
     PreviewHandler,
     EffectHandler,
@@ -9,7 +9,7 @@ import {
 } from './types';
 import {Guard} from '../system/guard';
 
-export class ModelBuilder<TModel> {
+export class StoreBuilder<TModel> {
     private _eventHandlers: Map<string, EventHandler<TModel, any>[]> = new Map();
     private _previewHandlers: Map<string, PreviewHandler<TModel, any>[]> = new Map();
     private _effectHandlers: Map<string, EffectHandler<TModel, any>[]> = new Map();
@@ -18,22 +18,22 @@ export class ModelBuilder<TModel> {
     private _postEventProcessor: PostEventProcessorFn<TModel> = null;
 
     private constructor(
-        private _addModelFn: (modelId: string, initialModel: TModel, config: ModelConfig<TModel>) => void,
+        private _addStoreFn: (modelId: string, initialModel: TModel, config: StoreConfig<TModel>) => void,
         private _modelId: string,
         private _initialModel: TModel
     ) {
-        Guard.isDefined(_addModelFn, 'addModelFn must be defined');
+        Guard.isDefined(_addStoreFn, 'addStoreFn must be defined');
         Guard.isString(_modelId, 'modelId must be a string');
         Guard.isDefined(_initialModel, 'initialModel must be defined');
     }
 
     /** @internal */
     static _create<TModel>(
-        addModelFn: (modelId: string, initialModel: TModel, config: ModelConfig<TModel>) => void,
+        addStoreFn: (modelId: string, initialModel: TModel, config: StoreConfig<TModel>) => void,
         modelId: string,
         initialModel: TModel
-    ): ModelBuilder<TModel> {
-        return new ModelBuilder(addModelFn, modelId, initialModel);
+    ): StoreBuilder<TModel> {
+        return new StoreBuilder(addStoreFn, modelId, initialModel);
     }
 
     withEventHandler<TEvent>(eventType: string, handler: EventHandler<TModel, TEvent>): this {
@@ -85,7 +85,7 @@ export class ModelBuilder<TModel> {
     }
 
     build(): void {
-        const config: ModelConfig<TModel> = {
+        const storeConfig: StoreConfig<TModel> = {
             eventHandlers: this._eventHandlers,
             previewHandlers: this._previewHandlers,
             effectHandlers: this._effectHandlers,
@@ -93,6 +93,6 @@ export class ModelBuilder<TModel> {
             preEventProcessor: this._preEventProcessor,
             postEventProcessor: this._postEventProcessor,
         };
-        this._addModelFn(this._modelId, this._initialModel, config);
+        this._addStoreFn(this._modelId, this._initialModel, storeConfig);
     }
 }

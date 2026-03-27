@@ -8,7 +8,7 @@ import {
     DisposableBase,
     DisposableWrapper,
     Guard,
-    ModelBuilder,
+    StoreBuilder,
     Subscribable,
 } from '../src';
 
@@ -52,15 +52,15 @@ describe('index exports', () => {
         expect(Guard).toBeDefined();
     });
 
-    it('should export ModelBuilder', () => {
-        expect(esp.ModelBuilder).toBeDefined();
-        expect(ModelBuilder).toBeDefined();
+    it('should export StoreBuilder', () => {
+        expect(esp.StoreBuilder).toBeDefined();
+        expect(StoreBuilder).toBeDefined();
     });
 
     it('should export Subscribable type', () => {
         // Subscribable is a type/interface, verify it is usable as a type annotation
         const bus = new EventBus();
-        bus.modelBuilder('test', { value: 0 }).build();
+        bus.storeBuilder('test', { value: 0 }).build();
         const s: Subscribable<{ value: number }> = bus.getModelObservable('test');
         expect(s).toBeDefined();
     });

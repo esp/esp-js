@@ -44,7 +44,7 @@ describe('EventBus', () => {
             _updateReceivedCount = 0;
             _flags = { throwAtPre: false, throwAtUpdate: false, throwAtPost: false, throwADispatch: false };
             const model = {};
-            _bus.modelBuilder('modelId1', model)
+            _bus.storeBuilder('modelId1', model)
                 .withPreEventProcessor(() => {
                     if (_flags.throwAtPre) {
                         throw new Error('Boom:Pre');

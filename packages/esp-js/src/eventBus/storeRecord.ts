@@ -21,7 +21,7 @@ import {DispatchType, EventEnvelope, ModelEnvelope} from './envelopes';
 import {AutoConnectedObservable} from '../reactive/autoConnectedObservable';
 import {ObservationStage} from './index';
 import {
-    ModelConfig,
+    StoreConfig,
     EventHandler,
     PreviewHandler,
     EffectHandler,
@@ -67,7 +67,7 @@ export class StoreRecord<TModel = any> {
         modelId: string,
         initialModel: TModel,
         modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>,
-        config: ModelConfig<TModel>,
+        storeConfig: StoreConfig<TModel>,
         publishDelegate: PublishDelegate
     ) {
         this._modelId = modelId;
@@ -79,13 +79,13 @@ export class StoreRecord<TModel = any> {
         this._eventQueueDirtyEpochMs = null;
         this._currentModel = initialModel;
 
-        this.eventHandlers = config.eventHandlers;
-        this.previewHandlers = config.previewHandlers;
-        this.effectHandlers = config.effectHandlers;
+        this.eventHandlers = storeConfig.eventHandlers;
+        this.previewHandlers = storeConfig.previewHandlers;
+        this.effectHandlers = storeConfig.effectHandlers;
         this.subscriptionDisposables = new CompositeDisposable();
         this.publishDelegate = publishDelegate;
-        this.preEventProcessorFn = config.preEventProcessor || null;
-        this.postEventProcessorFn = config.postEventProcessor || null;
+        this.preEventProcessorFn = storeConfig.preEventProcessor || null;
+        this.postEventProcessorFn = storeConfig.postEventProcessor || null;
     }
 
     public get modelId() {
@@ -208,16 +208,16 @@ export class StoreRecord<TModel = any> {
 
     /**
      * Upgrades a placeholder (lazy) StoreRecord to a full store record with actual config.
-     * Called when addModel() is called after getEventObservable() was called first.
+     * Called when addStore() is called after getEventObservable() was called first.
      */
-    public upgradeToFullModel(initialModel: TModel, config: ModelConfig<TModel>, publishDelegateArg: PublishDelegate) {
+    public upgradeToFullModel(initialModel: TModel, storeConfig: StoreConfig<TModel>, publishDelegateArg: PublishDelegate) {
         this._currentModel = initialModel;
-        this.eventHandlers = config.eventHandlers;
-        this.previewHandlers = config.previewHandlers;
-        this.effectHandlers = config.effectHandlers;
+        this.eventHandlers = storeConfig.eventHandlers;
+        this.previewHandlers = storeConfig.previewHandlers;
+        this.effectHandlers = storeConfig.effectHandlers;
         this.publishDelegate = publishDelegateArg;
-        this.preEventProcessorFn = config.preEventProcessor || null;
-        this.postEventProcessorFn = config.postEventProcessor || null;
+        this.preEventProcessorFn = storeConfig.preEventProcessor || null;
+        this.postEventProcessorFn = storeConfig.postEventProcessor || null;
     }
 
     public dispose() {

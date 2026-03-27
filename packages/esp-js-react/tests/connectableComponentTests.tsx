@@ -50,10 +50,10 @@ describe('ConnectableComponentTests', () => {
         api = testApi();
         testModel = new TestModel();
         testModel2 = new TestModel2();
-        api.bus.modelBuilder<TestModel>('model-id1', testModel)
+        api.bus.storeBuilder<TestModel>('model-id1', testModel)
             .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
             .build();
-        api.bus.modelBuilder<TestModel2>('model-id2', testModel2)
+        api.bus.storeBuilder<TestModel2>('model-id2', testModel2)
             .withEventHandler('test-event', (draft, ev: string) => { draft.value = ev; })
             .build();
     });

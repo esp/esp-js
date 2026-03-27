@@ -26,7 +26,7 @@ describe('EventBus', () => {
         _bus = new esp.EventBus();
     });
 
-    describe('.removeModel()', () => {
+    describe('.removeStore()', () => {
 
         let _preProcessorReceivedCount = 0;
         let _eventReceivedCount1 = 0;
@@ -48,30 +48,30 @@ describe('EventBus', () => {
                 removeAtPost: false,
                 removeAtDispatch: false
             };
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withPreEventProcessor(() => {
                     _preProcessorReceivedCount++;
                     if (_flags.removeAtPre) {
-                        _bus.removeModel('modelId1');
+                        _bus.removeStore('modelId1');
                     }
                 })
                 .withPostEventProcessor(() => {
                     _postProcessorReceivedCount++;
                     if (_flags.removeAtPost) {
-                        _bus.removeModel('modelId1');
+                        _bus.removeStore('modelId1');
                     }
                 })
                 .withEventHandler('Event1', () => {
                     _eventReceivedCount1++;
                     if (_flags.removeAtDispatch) {
-                        _bus.removeModel('modelId1');
+                        _bus.removeStore('modelId1');
                     }
                 })
                 .build();
             _bus.getModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount1++;
                 if (_flags.removeAtUpdate) {
-                    _bus.removeModel('modelId1');
+                    _bus.removeStore('modelId1');
                 }
             });
             _bus.getModelObservable('modelId1').subscribe(() => {
@@ -86,7 +86,7 @@ describe('EventBus', () => {
         });
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.removeModel(); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_bus.removeStore(); }).toThrow(new Error('The modelId argument should be a string'));
         });
 
         it('should onComplete all update streams when the model is removed', () => {
@@ -95,7 +95,7 @@ describe('EventBus', () => {
                 () => {},
                 () => didComplete = true
             );
-            _bus.removeModel('modelId1');
+            _bus.removeStore('modelId1');
             expect(didComplete).toEqual(true);
         });
 
@@ -109,7 +109,7 @@ describe('EventBus', () => {
                 expect(_updateReceivedCount2).toEqual(options.atUpdate2);
             }
 
-            it('should allow a preprocessor to removeModel', () => {
+            it('should allow a preprocessor to removeStore', () => {
                 _flags.removeAtPre = true;
                 _bus.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
@@ -121,7 +121,7 @@ describe('EventBus', () => {
                 });
             });
 
-            it('should allow an eventProcessor to removeModel', () => {
+            it('should allow an eventProcessor to removeStore', () => {
                 _flags.removeAtDispatch = true;
                 _bus.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
@@ -133,7 +133,7 @@ describe('EventBus', () => {
                 });
             });
 
-            it('should allow a postprocessor to removeModel', () => {
+            it('should allow a postprocessor to removeStore', () => {
                 _flags.removeAtPost = true;
                 _bus.publishEvent('modelId1', 'Event1', { });
                 expectReceived({
@@ -145,7 +145,7 @@ describe('EventBus', () => {
                 });
             });
 
-            it('should allow a model update observer to removeModel', () => {
+            it('should allow a model update observer to removeStore', () => {
                 _flags.removeAtUpdate = true;
                 _bus.publishEvent('modelId1', 'Event1', { });
                 expectReceived({

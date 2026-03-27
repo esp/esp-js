@@ -38,7 +38,7 @@ describe('EventBus', () => {
 
         it('queues and processes events received during event loop by model id', () => {
             let model1ProcessorReceived = 0, testPassed = false;
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler('startEvent', () => {
                     // publish events for other models while processing modelId1
                     _bus.publishEvent('modelId2', 'Event1', 'theEvent'); // should be processed second
@@ -48,7 +48,7 @@ describe('EventBus', () => {
                     model1ProcessorReceived++;
                 })
                 .build();
-            _bus.modelBuilder('modelId2', {})
+            _bus.storeBuilder('modelId2', {})
                 .withEventHandler('Event1', () => {
                     testPassed = model1ProcessorReceived === 1;
                 })
@@ -60,7 +60,7 @@ describe('EventBus', () => {
         it('should reset the EventContext for each event', () => {
             let testPassed = false;
             let lastEventDelivered = false;
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler('startEvent', (draft, event, ctx) => {
                     ctx.commit();
                     _bus.publishEvent('modelId1', 'Event1', 'theEvent1');
@@ -91,7 +91,7 @@ describe('EventBus', () => {
             }).toThrow();
 
             let receivedEvents: any[] = [];
-            _bus.modelBuilder('fooModel', {})
+            _bus.storeBuilder('fooModel', {})
                 .withEventHandler('startEvent', (draft, event) => { receivedEvents.push(event); })
                 .build();
 
@@ -102,7 +102,7 @@ describe('EventBus', () => {
 
         it('can publish with ModelAddress and DefaultModelAddress', () => {
             let handlerCallCount = 0;
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler('startEvent', () => { handlerCallCount++; })
                 .build();
             _bus.publishEvent({ modelId: 'modelId1' }, 'startEvent', 'theEvent');
@@ -113,7 +113,7 @@ describe('EventBus', () => {
 
         it('can publish including entityKey', () => {
             let receivedEntityKeys: (string | undefined)[] = [];
-            _bus.modelBuilder('modelId1', {})
+            _bus.storeBuilder('modelId1', {})
                 .withEventHandler('startEvent', (draft, event, ctx) => {
                     receivedEntityKeys.push(ctx.entityKey);
                 })

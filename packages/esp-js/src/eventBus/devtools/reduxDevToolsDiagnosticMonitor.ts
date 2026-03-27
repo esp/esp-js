@@ -61,7 +61,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
         this._sendDevToolsUpdate('@@INIT', null);
     }
 
-    addModel(modelId: string): void {
+    addStore(modelId: string): void {
         const registeredModelState = {
             modelId: modelId,
             eventCount: 0,
@@ -80,7 +80,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
         this._sendDevToolsUpdate('eventBus:add_model', {modelId: modelId});
     }
 
-    removeModel(modelId: string): void {
+    removeStore(modelId: string): void {
         this._noisyModelMap.delete(modelId);
         delete this._state.registeredModelsMap[modelId];
         const registeredModelsMap = {

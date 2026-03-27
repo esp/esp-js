@@ -30,10 +30,10 @@ describe('EventBus', () => {
     describe('.getModelObservable()', () => {
 
         beforeEach(() => {
-            _bus.modelBuilder('modelId1', {number:0})
+            _bus.storeBuilder('modelId1', {number:0})
                 .withEventHandler('Event1', () => {})
                 .build();
-            _bus.modelBuilder('modelId2', {number:0})
+            _bus.storeBuilder('modelId2', {number:0})
                 .withEventHandler('Event1', () => {})
                 .build();
         });
@@ -45,7 +45,7 @@ describe('EventBus', () => {
 
         it('dispatches model once registered', () => {
             let model3UpdateCount = 0;
-            _bus.modelBuilder('modelId3', {number:0}).build();
+            _bus.storeBuilder('modelId3', {number:0}).build();
             _bus.getModelObservable('modelId1').subscribe(() => {
                 model3UpdateCount++;
             });
@@ -98,7 +98,7 @@ describe('EventBus', () => {
             const bus2 = new esp.EventBus();
             let m1UpdateCount = 0, m2UpdateCount = 0, m1EventCount = 0, m2EventCount = 0;
             let c1 = false, c2 = false;
-            bus2.modelBuilder('modelId1', {number: 0})
+            bus2.storeBuilder('modelId1', {number: 0})
                 .withEventHandler('StartEvent', () => {
                     bus2.publishEvent('modelId1', 'Event1', 1);
                     bus2.publishEvent('modelId2', 'Event1', 2);
@@ -110,7 +110,7 @@ describe('EventBus', () => {
                     c1 = m1UpdateCount === 1 && m2UpdateCount === 1;
                 })
                 .build();
-            bus2.modelBuilder('modelId2', {number: 0})
+            bus2.storeBuilder('modelId2', {number: 0})
                 .withEventHandler('Event1', () => {
                     m2EventCount++;
                     c2 = m1UpdateCount === 2 && m2UpdateCount === 1 && m1EventCount === 2;
@@ -135,7 +135,7 @@ describe('EventBus', () => {
             // modelId1 already has Event1 handler registered in beforeEach
             // Need a new bus for this test to add Event2 handler
             const bus2 = new esp.EventBus();
-            bus2.modelBuilder('modelId1', {number: 0})
+            bus2.storeBuilder('modelId1', {number: 0})
                 .withEventHandler('Event1', () => {})
                 .withEventHandler('Event2', () => {
                     event2Received = true;
@@ -155,10 +155,10 @@ describe('EventBus', () => {
             // Uses fresh router to avoid conflicts with beforeEach registered models
             const bus2 = new esp.EventBus();
             let m1UpdateCount = 0, m2UpdateCount = 0;
-            bus2.modelBuilder('modelId1', {number: 0})
+            bus2.storeBuilder('modelId1', {number: 0})
                 .withEventHandler('Event1', () => {})
                 .build();
-            bus2.modelBuilder('modelId2', {number: 0})
+            bus2.storeBuilder('modelId2', {number: 0})
                 .withEventHandler('StartEvent', () => {
                     bus2.publishEvent('modelId2', 'Event1', 'payload');
                 })
@@ -177,7 +177,7 @@ describe('EventBus', () => {
             // Uses a fresh router since we need a model without any Event1 handler
             const bus2 = new esp.EventBus();
             let m1UpdateCount = 0;
-            bus2.modelBuilder('modelId1', {number: 0})
+            bus2.storeBuilder('modelId1', {number: 0})
                 .withEventHandler('StartEvent', () => {})
                 .build();
             bus2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });

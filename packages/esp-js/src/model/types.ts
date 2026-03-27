@@ -29,7 +29,7 @@ export type PreEventProcessorFn<TModel> = (model: Readonly<TModel>) => void;
 
 export type PostEventProcessorFn<TModel> = (model: Readonly<TModel>, eventsProcessed: string[]) => void;
 
-export interface ModelConfig<TModel> {
+export interface StoreConfig<TModel> {
     eventHandlers: Map<string, EventHandler<TModel, any>[]>;
     previewHandlers: Map<string, PreviewHandler<TModel, any>[]>;
     effectHandlers: Map<string, EffectHandler<TModel, any>[]>;

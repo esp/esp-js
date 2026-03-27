@@ -27,7 +27,7 @@ describe('EventBus', () => {
         _bus = new esp.EventBus();
     });
 
-    describe('.modelBuilder()', () => {
+    describe('.storeBuilder()', () => {
         it('throws if modelId not a string', () => {
             expect(() => { registerModel(_bus, undefined, {}); }).toThrow();
             expect(() => { registerModel(_bus, <any>{}, {}); }).toThrow();
@@ -42,15 +42,15 @@ describe('EventBus', () => {
             expect(() => { registerModel(_bus, 'modelId', {}); }).toThrow(new Error('The model with id [modelId] is already registered'));
         });
 
-        it('ModelBuilder throws if handler undefined', () => {
+        it('StoreBuilder throws if handler undefined', () => {
             expect(() => {
-                _bus.modelBuilder('modelId', {}).withEventHandler('evt', undefined);
+                _bus.storeBuilder('modelId', {}).withEventHandler('evt', undefined);
             }).toThrow();
         });
 
-        it('ModelBuilder throws if eventType not a string', () => {
+        it('StoreBuilder throws if eventType not a string', () => {
             expect(() => {
-                _bus.modelBuilder('modelId', {}).withEventHandler(undefined, () => {});
+                _bus.storeBuilder('modelId', {}).withEventHandler(undefined, () => {});
             }).toThrow();
         });
     });

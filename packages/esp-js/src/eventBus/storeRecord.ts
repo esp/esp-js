@@ -45,7 +45,7 @@ interface InternalEventStreamsRegistration {
     streams: EventStreamsRegistration;
 }
 
-export class ModelRecord<TModel = any> {
+export class StoreRecord<TModel = any> {
     private readonly _modelId: string;
     private readonly _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
     private readonly _eventQueue: EventRecord[];
@@ -207,7 +207,7 @@ export class ModelRecord<TModel = any> {
     }
 
     /**
-     * Upgrades a placeholder (lazy) ModelRecord to a full model record with actual config.
+     * Upgrades a placeholder (lazy) StoreRecord to a full store record with actual config.
      * Called when addModel() is called after getEventObservable() was called first.
      */
     public upgradeToFullModel(initialModel: TModel, config: ModelConfig<TModel>, publishDelegateArg: PublishDelegate) {

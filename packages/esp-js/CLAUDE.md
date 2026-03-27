@@ -33,7 +33,7 @@ src/
     subscribable.ts         # Subscribable<T> — minimal public subscription interface
   eventBus/
     eventBus.ts             # EventBus class — the central event bus
-    modelRecord.ts          # Internal per-model state: event queue, streams, processors
+    storeRecord.ts          # Internal per-model state: event queue, streams, processors
     observationStage.ts     # ObservationStage enum: preview | normal | committed | final | all
     eventProcessors.ts      # PreEventProcessor, PostEventProcessor interfaces
     eventContext.ts         # EventContext — passed to handlers; exposes commit(), cancel(), entityKey
@@ -214,6 +214,6 @@ bus.getEventObservable('my-id', 'MyEvent').subscribe(envelope => {
 - `bus.publishEvent()` throws if called from within a `normal`/`preview` event handler — use `withEffect` to publish side-effect events instead
 - `bus.getModelObservable()` returns `Subscribable<T>` — do NOT use `Observable.create` or import from the `reactive/` module (it is internal and not part of the public API)
 - Class instances used as model state **must** have `[immerable] = true` from `immer`, otherwise `produce` throws at runtime
-- `ModelRecord` maintains an event queue per model — events published during another model's dispatch are queued and processed after the current model finishes
+- `StoreRecord` maintains an event queue per model — events published during another model's dispatch are queued and processed after the current model finishes
 - `broadcastEvent` dispatches to all registered models; models not observing the event simply ignore it
 - `bus.getModel(modelId)` returns the latest frozen snapshot; **do not hold references** across event dispatches — the reference becomes stale after the next dispatch

@@ -18,14 +18,14 @@
 
 import {Guard} from '../system';
 import {Status} from './status';
-import {ModelRecord} from './modelRecord';
+import {StoreRecord} from './storeRecord';
 
 // note: perhaps some validation on state transition could be added here, but the tests cover most edges cases already
 export class State {
     private _currentStatus: string;
     private _eventsDispatched: any[];
     private _currentModelId: string;
-    private _currentModelRecord: ModelRecord;
+    private _currentStoreRecord: StoreRecord;
     private _circularEventDispatchLimit = 10000;
     private _currentDispatchCount = 0;
     private _pendingEffects: any[];
@@ -44,8 +44,8 @@ export class State {
         return this._currentModelId;
     }
 
-    public get currentModelRecord(): ModelRecord {
-        return this._currentModelRecord;
+    public get currentStoreRecord(): StoreRecord {
+        return this._currentStoreRecord;
     }
 
     public get eventsProcessed(): string[] {
@@ -62,11 +62,11 @@ export class State {
         this._currentDispatchCount = 0;
     }
 
-    public moveToPreProcessing(modelId: string, modelRecord: ModelRecord) {
+    public moveToPreProcessing(modelId: string, storeRecord: StoreRecord) {
         Guard.isString(modelId, 'modelId should be a string');
-        Guard.isDefined(modelRecord, 'modelRecord should be defined');
+        Guard.isDefined(storeRecord, 'storeRecord should be defined');
         this._currentModelId = modelId;
-        this._currentModelRecord = modelRecord;
+        this._currentStoreRecord = storeRecord;
         this._currentStatus = Status.PreEventProcessing;
     }
 
@@ -114,7 +114,7 @@ export class State {
 
     private _clear() {
         this._currentModelId = undefined;
-        this._currentModelRecord = undefined;
+        this._currentStoreRecord = undefined;
         this.clearEventDispatchQueue();
         this.clearPendingEffects();
     }

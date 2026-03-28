@@ -20,11 +20,9 @@ import * as espReact from '../src/index';
 
 describe('index exports', () => {
     it('check exports', () => {
-        expect(espReact.connect).toBeDefined();
         expect(espReact.ConnectableComponent).toBeDefined();
         expect(espReact.useSyncModelWithSelector).toBeDefined();
         expect(espReact.syncModelWithSelectorOptions).toBeDefined();
-        expect(espReact.EventBusProvider).toBeDefined();
         expect(espReact.EspEventBusContextProvider).toBeDefined();
         expect(espReact.EventBusContext).toBeDefined();
         expect(espReact.useEventBus).toBeDefined();

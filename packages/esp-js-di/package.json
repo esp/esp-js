@@ -22,6 +22,7 @@
     "dev": "nps dev"
   },
   "main": ".dist/esp-js-di.js",
+  "module": ".dist/esp-js-di.esm.js",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "typings": "./esp-js-di.d.ts",

@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `EventBus` sits between event publishers and models: publishers call `bus.publishEvent(modelId, eventType, event)`, the bus queues and dispatches events through ordered observation stages, and a frozen immutable snapshot of the mutated model is then pushed to model observers. The framework uses an immer-based functional modeling pattern (`ModelBuilder`) and is designed for complex composite single-page applications.
+ESP is a TypeScript/JavaScript framework for managing model state changes in a deterministic, event-driven manner. A central `EventBus` sits between event publishers and stores: publishers call `bus.publishEvent(storeId, eventType, event)`, the bus queues and dispatches events through ordered observation stages, and a frozen immutable snapshot of the mutated store is then pushed to store observers. The framework uses an immer-based functional modeling pattern (`StoreBuilder`) and is designed for complex composite single-page applications.
 
-The monorepo contains the core event bus, dependency injection container, and React integration.
+The monorepo contains the core event bus, dependency injection container, React integration, application bootstrapping, and example apps.
 
 ## Monorepo Structure
 
@@ -12,21 +12,27 @@ The monorepo contains the core event bus, dependency injection container, and Re
 packages/
   esp-js              # Core event bus — foundational, no dependencies on other esp-* packages
   esp-js-di           # Standalone IoC container (JavaScript, not TypeScript)
-  esp-js-react        # React bindings (ConnectableComponent, hooks); depends on esp-js
+  esp-js-ui           # Module loading and app bootstrapping (AppBuilder, ModuleBuilder)
+  esp-js-react        # React bindings (ConnectableComponent, hooks, RegionView, EspApp)
+examples/
+  example-app         # Todo app demonstrating AppBuilder, ModuleBuilder, StoreBuilder, and React integration
 ```
 
 ### Package CLAUDE.md files
 
 - @packages/esp-js/CLAUDE.md
 - @packages/esp-js-di/CLAUDE.md
+- @packages/esp-js-ui/CLAUDE.md
 - @packages/esp-js-react/CLAUDE.md
+- @examples/example-app/CLAUDE.md
 
 ### Dependency graph (simplified)
 
 ```
 esp-js-di       (no esp deps)
 esp-js          (no esp deps)
-  └── esp-js-react
+esp-js-ui       (peer: esp-js, esp-js-di)
+  └── esp-js-react  (peer: esp-js, esp-js-ui)
 ```
 
 ## Monorepo Tooling
@@ -115,19 +121,27 @@ npm run test-ci              # vitest run (no watch, CI mode)
    - `final` — fires regardless of commit; observe after all mutation
 3. After all events for a model are processed, a frozen immutable snapshot of the model is pushed to model observers (`bus.getModelObservable(modelId)`)
 
-### Functional model pattern (esp-js core)
+### Functional store pattern (esp-js core)
 
 - Create a plain object or class instance as the initial state
-- Register with `bus.modelBuilder(modelId, initialState).withEventHandler(...).build()`
+- Register with `bus.storeBuilder(storeId, initialState).withEventHandler(...).build()`
 - Event handlers receive an immer `draft` — mutate it directly; the bus produces a new frozen snapshot after all handlers run
 - Preview handlers and effect handlers receive `Readonly<TModel>` (no draft)
 - Class instances used as model state must include `[immerable] = true` (from `immer`) for immer to handle them
 
+### Application bootstrapping (esp-js-ui)
+
+- `AppBuilder.create(appName).withModule(module).build()` — creates an `App` with a root IoC container and EventBus
+- `ModuleBuilder.create(moduleId).withView(storeId, Component, region).withInitialisation(...).build()` — declares a module's views and lifecycle hooks
+- `app.start()` — runs the full lifecycle: container configuration → module load → initialise → start
+
 ### React integration (esp-js-react)
 
-- `<EspEventBusContextProvider bus={bus}>` — provides bus via context
-- `ConnectableComponent` / `connect()` — subscribes to a model by `modelId`, re-renders on model updates; requires explicit `view` prop
+- `<EspApp app={app}>` — wraps the tree with EventBus context and modules context after `app.start()`
+- `<RegionView regionName="main" />` — renders all views registered to a region by loaded modules
+- `ConnectableComponent` — subscribes to a store by `storeId`, re-renders on model updates; requires explicit `view` prop
 - `useSyncModelWithSelector` — hook-based subscription with selector and equality function
+- `usePublishStoreEvent()` — hook to publish events to the store connected at a higher point in the V-DOM
 
 ## Coding Conventions
 

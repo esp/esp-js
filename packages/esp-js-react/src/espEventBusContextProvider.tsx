@@ -80,17 +80,3 @@ export const EspEventBusContextProvider = ({children, bus}: EspEventBusContextPr
         </EventBusContext.Provider>
     );
 };
-
-/**
- * Used to set the bus on the EventBusContext making it available to components down the tree (via useEventBus()).
- *
- * @deprecated use EspEventBusContextProvider
- */
-export const EventBusProvider = EspEventBusContextProvider;
-
-/**
- * Props for EventBusProvider
- *
- * @deprecated use EspEventBusContextProviderProps
- */
-export type EventBusProviderProps = EspEventBusContextProviderProps;

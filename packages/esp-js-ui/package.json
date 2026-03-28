@@ -1,0 +1,40 @@
+{
+  "name": "esp-js-ui",
+  "version": "8.1.0",
+  "description": "Module loading and bootstrapping for ESP applications",
+  "keywords": [
+    "esp",
+    "state processor",
+    "evented state processor",
+    "module loader",
+    "bootstrapper"
+  ],
+  "scripts": {
+    "clean": "nps clean",
+    "build-dev": "nps build-dev",
+    "build-prod": "nps build-prod",
+    "build-pack": "nps build-pack",
+    "test": "nps test",
+    "test-ci": "nps test-ci",
+    "dev": "nps dev"
+  },
+  "main": ".dist/esp-js-ui.js",
+  "module": ".dist/esp-js-ui.esm.js",
+  "typings": ".dist/typings/index.d.ts",
+  "author": "Keith Woods",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/esp/esp-js",
+  "peerDependencies": {
+    "esp-js": "^8.0.0",
+    "esp-js-di": "^8.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "esp-js": "*",
+    "esp-js-di": "*",
+    "typescript": "^5.8.0",
+    "vite": "^5.4.6",
+    "vite-plugin-dts": "^4.2.1",
+    "vitest": "^2.1.1"
+  }
+}

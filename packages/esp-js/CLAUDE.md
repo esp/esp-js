@@ -2,12 +2,12 @@
 
 ## Package Purpose
 
-The core Evented State Processor library. Provides the `EventBus`, all event dispatch infrastructure, `ModelBuilder` (immer-based functional model registration), `ObservationStage`, disposable lifecycle utilities, logging, and `Guard`. Every other esp-* package depends on this one.
+The core Evented State Processor library. Provides the `EventBus`, all event dispatch infrastructure, `StoreBuilder` (immer-based functional store registration), `ObservationStage`, disposable lifecycle utilities, logging, and `Guard`. Every other esp-* package depends on this one.
 
 ## Role in Monorepo
 
 - **Foundational** — no dependencies on other esp-* packages
-- Direct dependents: `esp-js-react`
+- Direct dependents: `esp-js-ui`, `esp-js-react`
 - Published as `esp-js` on npm
 
 ## Build and Test
@@ -28,17 +28,17 @@ Output: `.dist/esp-js.js` (UMD), `.dist/esp-js.esm.js` (ESM), `.dist/esp-js.min.
 src/
   index.ts                  # Re-exports from model/, eventBus/, system/
   model/
-    modelBuilder.ts         # ModelBuilder<TModel> — fluent builder to register models with the bus
+    storeBuilder.ts         # StoreBuilder<TModel> — fluent builder to register stores with the bus
     types.ts                # EventHandler, PreviewHandler, EffectHandler, SubscriptionFactory, etc.
     subscribable.ts         # Subscribable<T> — minimal public subscription interface
   eventBus/
     eventBus.ts             # EventBus class — the central event bus
-    storeRecord.ts          # Internal per-model state: event queue, streams, processors
+    storeRecord.ts          # Internal per-store state: event queue, streams, processors
     observationStage.ts     # ObservationStage enum: preview | normal | committed | final | all
     eventProcessors.ts      # PreEventProcessor, PostEventProcessor interfaces
     eventContext.ts         # EventContext — passed to handlers; exposes commit(), cancel(), entityKey
     envelopes.ts            # EventEnvelope<TEvent, TModel>, ModelEnvelope types
-    modelAddress.ts         # ModelAddress / DefaultModelAddress for targeted event dispatch
+    storeAddress.ts         # StoreAddress / DefaultStoreAddress for targeted event dispatch
     devtools/               # Redux DevTools integration (auto-detected)
     state.ts                # Internal EventBus state machine
     status.ts               # Status enum for EventBus lifecycle
@@ -61,15 +61,15 @@ src/
 The `EventBus` is the central event bus. Key methods:
 
 ```typescript
-bus.modelBuilder<TModel>(modelId, initialModel)   // create a ModelBuilder for this model (preferred)
-bus.removeModel(modelId)
-bus.getModel<TModel>(modelId)                     // get the current frozen model snapshot
-bus.publishEvent(modelId, eventType, event)        // enqueue an event
-bus.broadcastEvent(eventType, event)              // send to all models
-bus.getEventObservable(modelId, eventType, stage) // subscribe to events imperatively
-bus.getModelObservable(modelId)                   // subscribe to model snapshots (Subscribable<TModel>)
+bus.storeBuilder<TModel>(storeId, initialModel)   // create a StoreBuilder for this store (preferred)
+bus.removeModel(storeId)
+bus.getModel<TModel>(storeId)                     // get the current frozen model snapshot
+bus.publishEvent(storeId, eventType, event)        // enqueue an event
+bus.broadcastEvent(eventType, event)              // send to all stores
+bus.getEventObservable(storeId, eventType, stage) // subscribe to events imperatively
+bus.getModelObservable(storeId)                   // subscribe to model snapshots (Subscribable<TModel>)
 bus.executeEvent(eventType, event)                // dispatch an event synchronously within current dispatch context
-bus.isOnDispatchLoopFor(modelId)                  // check if currently executing for model
+bus.isOnDispatchLoopFor(storeId)                  // check if currently executing for store
 ```
 
 ### ObservationStage
@@ -84,14 +84,14 @@ Events pass through up to four stages in order:
 | `final` | Always fires after `normal` (and `committed` if it ran) |
 | `all` | Fires at every stage |
 
-### ModelBuilder (preferred pattern)
+### StoreBuilder (preferred pattern)
 
-`ModelBuilder` is the primary way to register models. It builds an immer-based immutable model pipeline where each event handler receives an immer `Draft<TModel>` and mutates it directly. After all handlers run for a dispatch cycle, the bus emits a new frozen snapshot to `getModelObservable()`.
+`StoreBuilder` is the primary way to register stores. It builds an immer-based immutable model pipeline where each event handler receives an immer `Draft<TModel>` and mutates it directly. After all handlers run for a dispatch cycle, the bus emits a new frozen snapshot to `getModelObservable()`.
 
 ```typescript
 // Plain object state (no immer config needed)
 type CounterState = { count: number };
-bus.modelBuilder<CounterState>('counter', { count: 0 })
+bus.storeBuilder<CounterState>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, event: { amount: number }) => {
         draft.count += event.amount;
     })
@@ -114,7 +114,7 @@ bus.modelBuilder<CounterState>('counter', { count: 0 })
 | `withEventHandler` | `(draft: Draft<TModel>, event, ctx) => void` | Mutate state via immer draft |
 | `withPreviewHandler` | `(model: Readonly<TModel>, event, ctx) => void` | Observe/cancel before mutation |
 | `withEffect` | `(model: Readonly<TModel>, event, ctx, publish) => void` | Side effects after mutation; can publish new events |
-| `withEventSubscription` | `(publish) => Disposable` | Subscribe to external streams on model startup |
+| `withEventSubscription` | `(publish) => Disposable` | Subscribe to external streams on store startup |
 
 **Class instances as model state** must include `[immerable] = true` from `immer`:
 
@@ -126,14 +126,14 @@ class MyState {
     value: string = 'initial';
 }
 
-bus.modelBuilder<MyState>('my-id', new MyState())
+bus.storeBuilder<MyState>('my-id', new MyState())
     .withEventHandler('Update', (draft, event: string) => { draft.value = event; })
     .build();
 ```
 
 ### EventProcessors
 
-Lower-level lifecycle hooks — prefer `withPreEventProcessor`/`withPostEventProcessor` on `ModelBuilder` for new code. The interfaces remain available for advanced/internal use.
+Lower-level lifecycle hooks — prefer `withPreEventProcessor`/`withPostEventProcessor` on `StoreBuilder` for new code. The interfaces remain available for advanced/internal use.
 
 ### Subscribable\<T\>
 
@@ -159,10 +159,10 @@ The bus auto-detects Redux DevTools extension. If `window.__REDUX_DEVTOOLS_EXTEN
 All exports flow through `src/index.ts`:
 
 - `EventBus`
-- `ModelBuilder`
-- `EventHandler`, `PreviewHandler`, `EffectHandler`, `SubscriptionFactory`, `PreEventProcessorFn`, `PostEventProcessorFn`, `ModelConfig`
+- `StoreBuilder`
+- `EventHandler`, `PreviewHandler`, `EffectHandler`, `SubscriptionFactory`, `PreEventProcessorFn`, `PostEventProcessorFn`, `StoreConfig`
 - `Subscribable`
-- `ObservationStage`, `EventContext`, `EventEnvelope`, `ModelAddress`, `DefaultModelAddress`
+- `ObservationStage`, `EventContext`, `EventEnvelope`, `StoreAddress`, `DefaultStoreAddress`
 - `EventProcessors`, `PreEventProcessor`, `PostEventProcessor`
 - `DisposableBase`, `CompositeDisposable`, `Disposable`
 - `Logger`, `Level`, `LoggingConfig`
@@ -171,22 +171,22 @@ All exports flow through `src/index.ts`:
 
 **Not exported (internal):** `Observable`, `Subject`, `EventBusObservable`, `EventBusSubject` — the `reactive/` module is internal. Do not import from it directly.
 
-**Removed in v9:** `ModelBase`, `SingleModelEventBus`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `bus.runAction()`, `bus.observeEventsOn()`. `bus.addModel()` is now private — use `bus.modelBuilder()` instead.
+**Removed in v9:** `ModelBase`, `SingleModelEventBus`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `bus.runAction()`, `bus.observeEventsOn()`. `bus.addModel()` is now private — use `bus.storeBuilder()` instead. `ModelBuilder` renamed to `StoreBuilder`; `ModelAddress`/`DefaultModelAddress` renamed to `StoreAddress`/`DefaultStoreAddress`.
 
 ## Testing Approach
 
 - Test files: `tests/**/*Tests.ts`
 - Organized to mirror `src/`: `tests/eventBus/`, `tests/model/`, `tests/system/`
 - Tests instantiate `EventBus` directly — no mocks required for the core
-- `ModelBuilder` is used in tests to register models
+- `StoreBuilder` is used in tests to register stores
 
 ## Common Tasks
 
-**Register a model and subscribe:**
+**Register a store and subscribe:**
 ```typescript
 const bus = new EventBus();
 
-bus.modelBuilder<{ count: number }>('counter', { count: 0 })
+bus.storeBuilder<{ count: number }>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, e: { amount: number }) => { draft.count += e.amount; })
     .build();
 
@@ -214,6 +214,6 @@ bus.getEventObservable('my-id', 'MyEvent').subscribe(envelope => {
 - `bus.publishEvent()` throws if called from within a `normal`/`preview` event handler — use `withEffect` to publish side-effect events instead
 - `bus.getModelObservable()` returns `Subscribable<T>` — do NOT use `Observable.create` or import from the `reactive/` module (it is internal and not part of the public API)
 - Class instances used as model state **must** have `[immerable] = true` from `immer`, otherwise `produce` throws at runtime
-- `StoreRecord` maintains an event queue per model — events published during another model's dispatch are queued and processed after the current model finishes
-- `broadcastEvent` dispatches to all registered models; models not observing the event simply ignore it
-- `bus.getModel(modelId)` returns the latest frozen snapshot; **do not hold references** across event dispatches — the reference becomes stale after the next dispatch
+- `StoreRecord` maintains an event queue per store — events published during another store's dispatch are queued and processed after the current store finishes
+- `broadcastEvent` dispatches to all registered stores; stores not observing the event simply ignore it
+- `bus.getModel(storeId)` returns the latest frozen snapshot; **do not hold references** across event dispatches — the reference becomes stale after the next dispatch

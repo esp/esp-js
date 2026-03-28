@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {act} from 'react';
 import {
-    connect,
     ConnectableComponent,
     ConnectableComponentProps,
     PublishStoreEventDelegate,
@@ -35,7 +34,6 @@ class TestModel2 extends TestModel {
 
 interface ConnectedComponentElementCreationProperties {
     storeId: string;
-    useConnectFunction?: boolean;
     useMapModelToProps?: boolean;
     useCreatePublishEventProps?: boolean;
     passOtherProps?: boolean;
@@ -89,23 +87,14 @@ describe('ConnectableComponentTests', () => {
             };
             createPublishEventProps = (publishEvent: PublishStoreEventDelegate) => publishEventProps;
         }
-        let viewElement: React.JSX.Element;
-        if (options.useConnectFunction) {
-            const TestModelView2ConnectedComponent = connect(
-                mapModelToProps,
-                createPublishEventProps
-            )(viewFactory('View2'));
-            viewElement = (<TestModelView2ConnectedComponent {...otherProps} {...connectableComponentProps}/>);
-        } else {
-            viewElement = (
-                <ConnectableComponent
-                    {...connectableComponentProps}
-                    view={viewFactory('View1')}
-                    mapModelToProps={mapModelToProps}
-                    {...otherProps}
-                />
-            );
-        }
+        let viewElement: React.JSX.Element = (
+            <ConnectableComponent
+                {...connectableComponentProps}
+                view={viewFactory('View1')}
+                mapModelToProps={mapModelToProps}
+                {...otherProps}
+            />
+        );
         return viewElement;
     };
 
@@ -115,88 +104,7 @@ describe('ConnectableComponentTests', () => {
         });
     };
 
-    describe('ConnectableComponent via connect()', () => {
-        beforeEach(() => {
-            let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                storeId: 'model-id1',
-                useConnectFunction: true,
-                useMapModelToProps: true,
-                useCreatePublishEventProps: true
-            };
-            api.doRender(
-                createConnectedComponentElement(elementCreationProperties),
-                elementCreationProperties.storeId
-            );
-        });
-
-        it('Renders the view provided to connect', () => {
-            api.asserts.view.viewNameElementTextIs('View2');
-        });
-
-        describe('Child view props', () => {
-
-            it('renders only once', () => {
-                api.asserts.props
-                    .receivedPropCountIs(1);
-            });
-
-            it('passes mapped props', () => {
-                api.asserts.props
-                    .propAtIndex(
-                        0,
-                        props => {
-                            expect(props.foo).toBe('initial-value');
-                        }
-                    );
-            });
-
-            it('passes results of publishEventProps to mapModelToProps', () => {
-                api.asserts.props
-                    .propAtIndex(
-                        0,
-                        props => {
-                            expect(props.publishEventPropsPassedMapModelToProps).toBeTruthy();
-                        }
-                    );
-            });
-
-            it('passes model', () => {
-                api.asserts.props
-                    .propAtIndex(
-                        0,
-                        props => {
-                            expect(props.model).toBeDefined();
-                            expect(props.model instanceof TestModel).toBeTruthy();
-                        }
-                    );
-            });
-
-            it('flattens and passes results of createPublishEventProps', () => {
-                api.asserts.props
-                    .receivedPropCountIs(1)
-                    .propAtIndex(
-                        0,
-                        props => {
-                            expect(props.publishEvent1).toBeDefined();
-                            expect(typeof props.publishEvent1).toBe('function');
-                        }
-                    );
-            });
-
-            it('passes other props', () => {
-                api.asserts.props
-                    .propAtIndex(
-                        0,
-                        props => {
-                            expect(props.other1).toBeDefined();
-                            expect(props.other1).toBe('other-value');
-                        }
-                    );
-            });
-        });
-    });
-
-    describe('ConnectableComponent directly', () => {
+    describe('ConnectableComponent', () => {
 
         describe('Child view props', () => {
             beforeEach(() => {

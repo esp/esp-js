@@ -127,34 +127,43 @@ const createSubscriptionState = <TModel, TSelected>(
     // React calls that when it deems it needs to.
     // Given that, we need to cache the state which getSnapshot will return.
     //
-    // Another edge case with useSyncExternalStore:
-    // It will call getSnapshot before it calls subscribe, to account for this we need to fetch the model first.
+    // Note: the bus subscription is created inside the `subscribe` callback (not here at factory time).
+    // This is important for correctness with React StrictMode: StrictMode intentionally unmounts and remounts
+    // components to surface side-effect bugs.  When the cleanup returned by `subscribe` is called, it disposes
+    // the bus subscription and clears `currentModel`.  Because the `dependencies` object created by useMemo is
+    // reused across the remount (deps haven't changed), any bus subscription created eagerly at useMemo time
+    // would already be disposed on remount, leaving `currentModel` permanently null.
+    //
+    // useSyncExternalStore guarantees that `getSnapshot` is called before `subscribe`, so we initialise
+    // `currentModel` lazily from `bus.getModel()` inside `getSnapshot` when it is still null.
     let currentModel: TModel;
-    let onStateChanged: () => void = null;
-    const modelSubscriptionDisposable = bus
-        .getModelObservable<TModel>(storeId)
-        .subscribe(
-            (m: TModel) => {
-                // The model is a frozen immutable snapshot produced by immer after each dispatch cycle.
-                // Each update is a new object reference, so useSyncExternalStoreWithSelector will detect the change naturally.
-                warnIfModelInstanceHasNotChanged(storeId, currentModel, m as any);
-                currentModel = m;
-                if (onStateChanged) {
-                    onStateChanged();
-                }
-            }
-        );
     return {
         subscribe: (stateChanged: () => void) => {
-            onStateChanged = stateChanged;
+            // Subscribe to future model updates from the EventBus.
+            // This is called by React when the component mounts (and remounts after StrictMode teardown).
+            const modelSubscriptionDisposable = bus
+                .getModelObservable<TModel>(storeId)
+                .subscribe(
+                    (m: TModel) => {
+                        // The model is a frozen immutable snapshot produced by immer after each dispatch cycle.
+                        // Each update is a new object reference, so useSyncExternalStoreWithSelector will detect the change naturally.
+                        warnIfModelInstanceHasNotChanged(storeId, currentModel, m as any);
+                        currentModel = m;
+                        stateChanged();
+                    }
+                );
             return () => {
-                onStateChanged = null;
                 currentModel = null;
                 modelSubscriptionDisposable.dispose();
             };
         },
-        // React expects getSnapshot to be immutable, it'll only re-render if the instance changes
+        // React expects getSnapshot to be pure and stable between renders unless the store has changed.
+        // We seed currentModel from bus.getModel() on first call (before subscribe has been called),
+        // then keep it up-to-date via the subscription callback above.
         getSnapshot: () => {
+            if (currentModel == null) {
+                currentModel = bus.getModel<TModel>(storeId);
+            }
             return currentModel;
         },
         // While getSnapshot needs to model to be immutable,

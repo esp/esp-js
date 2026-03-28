@@ -17,8 +17,6 @@
 // notice_end
 //
 
-export { connect } from './connect';
-export type { ConnectableComponentFactory } from './connect';
 export { ConnectableComponent } from './connectableComponent';
 export type {
     CreatePublishEventProps,
@@ -36,7 +34,6 @@ export type {
     SyncModelWithSelectorEqualityFn,
 } from './useSyncModelWithSelector';
 export {
-    EventBusProvider,
     EspEventBusContextProvider,
     EventBusContext,
     useEventBus,
@@ -44,7 +41,6 @@ export {
     usePublishEvent,
 } from './espEventBusContextProvider';
 export type {
-    EventBusProviderProps,
     EspEventBusContextProviderProps,
     PublishEventDelegate,
 } from './espEventBusContextProvider';
@@ -64,3 +60,8 @@ export type {
     PublishStoreEventWithEntityKeyDelegate,
     EspStoreContextProviderProps,
 } from './espStoreContextProvider';
+export { EspModulesContext } from './espModulesContext';
+export { RegionView } from './regionView';
+export type { RegionViewProps } from './regionView';
+export { EspApp } from './espApp';
+export type { EspAppProps } from './espApp';

@@ -94,28 +94,28 @@ describe('.merge', () => {
     it('test with router', () => {
         const receivedEvents: number[] = [];
         const bus = new EventBus();
-        const modelId = 'testModel';
+        const storeId = 'testModel';
         const receivedByHandler: { [key: string]: number[] } = {
             myEvent1: [],
             myEvent2: [],
             myEvent3: [],
         };
 
-        bus.storeBuilder<{}>(modelId, {})
+        bus.storeBuilder<{}>(storeId, {})
             .withEventHandler<number>('myEvent1', (draft, event) => { receivedByHandler.myEvent1.push(event); })
             .withEventHandler<number>('myEvent2', (draft, event) => { receivedByHandler.myEvent2.push(event); })
             .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })
             .build();
 
-        bus.getModelObservable(modelId).subscribe(() => {});
+        bus.getModelObservable(storeId).subscribe(() => {});
 
-        bus.publishEvent(modelId, 'myEvent1', 1);
+        bus.publishEvent(storeId, 'myEvent1', 1);
         expect(receivedByHandler.myEvent1).toEqual([1]);
 
-        bus.publishEvent(modelId, 'myEvent2', 2);
+        bus.publishEvent(storeId, 'myEvent2', 2);
         expect(receivedByHandler.myEvent2).toEqual([2]);
 
-        bus.publishEvent(modelId, 'myEvent3', 3);
+        bus.publishEvent(storeId, 'myEvent3', 3);
         expect(receivedByHandler.myEvent3).toEqual([3]);
     });
 });

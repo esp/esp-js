@@ -5,7 +5,7 @@ import {EventBusSpy} from './eventBusSpy';
 import {TestPropStore} from './useStoreReceivedProps';
 
 export type ViewAsserts = {
-    modelIdIs(expected: string): ViewAsserts
+    storeIdIs(expected: string): ViewAsserts
     modelIdIsNotInDom(): ViewAsserts
     valueIs(expected: string): ViewAsserts;
     valueIsNotInDom(): ViewAsserts;
@@ -16,7 +16,7 @@ export type ViewAsserts = {
 
 export const viewAsserts = (renderResult: RenderResult) => {
     return {
-        modelIdIs(expected: string) {
+        storeIdIs(expected: string) {
             let idElement = renderResult.getByTestId('modelIdDisplay');
             expect(idElement).toHaveTextContent(expected);
             return this;
@@ -49,7 +49,6 @@ export const viewAsserts = (renderResult: RenderResult) => {
         viewNameElementTextIs(viewName: string) {
             let span = renderResult.getByTestId('view-name');
             expect(span).toHaveTextContent(viewName);
-            return this;
         },
         htmlElementInnerTextIs(elementsTestId: string, expectedText: string) {
             let span = renderResult.getByTestId(elementsTestId);
@@ -61,17 +60,17 @@ export const viewAsserts = (renderResult: RenderResult) => {
 };
 
 export type EventBusAsserts = {
-    subscriberCountIs(modelId: string, expectedCount: number): EventBusAsserts
+    subscriberCountIs(storeId: string, expectedCount: number): EventBusAsserts
 };
 
 export const eventBusAsserts = (eventBusSpy: EventBusSpy) => {
     return {
-        subscriberCountIs(modelId: string, expectedCount: number) {
+        subscriberCountIs(storeId: string, expectedCount: number) {
             if (expectedCount === 0) {
-                let modelNotSubscribed = eventBusSpy.getSubscriberCount(modelId) === undefined || eventBusSpy.getSubscriberCount(modelId) === 0;
+                let modelNotSubscribed = eventBusSpy.getSubscriberCount(storeId) === undefined || eventBusSpy.getSubscriberCount(storeId) === 0;
                 expect(modelNotSubscribed).toBeTruthy();
             } else {
-                expect(eventBusSpy.getSubscriberCount(modelId)).toEqual(expectedCount);
+                expect(eventBusSpy.getSubscriberCount(storeId)).toEqual(expectedCount);
             }
             return this;
         },
@@ -81,7 +80,7 @@ export const eventBusAsserts = (eventBusSpy: EventBusSpy) => {
 export type PropAsserts = {
     receivedPropCountIs(expectedCount: number): PropAsserts;
     propAtIndex(index: number, asserter: (props) => void): PropAsserts
-    propAtIndexHasModelId(index: number, expectedModelId: string): PropAsserts
+    propAtIndexHasStoreId(index: number, expectedStoreId: string): PropAsserts
 };
 
 export const propAsserts = (testPropStore: TestPropStore) => {
@@ -94,8 +93,8 @@ export const propAsserts = (testPropStore: TestPropStore) => {
             asserter(testPropStore.receivedProps[index]);
             return this;
         },
-        propAtIndexHasModelId(index: number, expectedModelId: string): PropAsserts {
-            expect(testPropStore.receivedProps[index].modelId).toBe(expectedModelId);
+        propAtIndexHasStoreId(index: number, expectedStoreId: string): PropAsserts {
+            expect(testPropStore.receivedProps[index].storeId).toBe(expectedStoreId);
             return this;
         },
     } as PropAsserts;

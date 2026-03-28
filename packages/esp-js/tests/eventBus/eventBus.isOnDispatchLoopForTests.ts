@@ -28,10 +28,10 @@ describe('EventBus', () => {
 
     describe('.isOnDispatchLoopFor()', function() {
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.isOnDispatchLoopFor(); }).toThrow(new Error('modelId must be a string'));
-            expect(() => {_bus.isOnDispatchLoopFor(1); }).toThrow(new Error('modelId must be a string'));
-            expect(() => {_bus.isOnDispatchLoopFor({}); }).toThrow(new Error('modelId must be a string'));
-            expect(() => {_bus.isOnDispatchLoopFor(''); }).toThrow(new Error('modelId must not be empty'));
+            expect(() => {_bus.isOnDispatchLoopFor(); }).toThrow(new Error('storeId must be a string'));
+            expect(() => {_bus.isOnDispatchLoopFor(1); }).toThrow(new Error('storeId must be a string'));
+            expect(() => {_bus.isOnDispatchLoopFor({}); }).toThrow(new Error('storeId must be a string'));
+            expect(() => {_bus.isOnDispatchLoopFor(''); }).toThrow(new Error('storeId must not be empty'));
         });
 
         it('returns true when on models dispatch loop', () => {

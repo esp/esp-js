@@ -86,7 +86,7 @@ describe('EventBus', () => {
         });
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.removeStore(); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_bus.removeStore(); }).toThrow(new Error('The storeId argument should be a string'));
         });
 
         it('should onComplete all update streams when the model is removed', () => {

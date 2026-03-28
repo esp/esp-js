@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {EventBus, DefaultModelAddress, EventContext} from '../../src';
+import {EventBus, DefaultStoreAddress, EventContext} from '../../src';
 import {registerModel} from '../testApi/testHelpers';
 
 describe('EventBus', () => {
@@ -32,8 +32,8 @@ describe('EventBus', () => {
             expect(() => {_bus.publishEvent(undefined, 'Foo', 'Foo'); }).toThrow();
             expect(() => {_bus.publishEvent('Foo', undefined, 'Foo'); }).toThrow();
             expect(() => {_bus.publishEvent('Foo', 'Foo', undefined); }).toThrow();
-            expect(() => {_bus.publishEvent({ },'foo', 'foo'); }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
-            expect(() => {_bus.publishEvent({ entityKey: 'theKey' },'foo', 'foo'); }).toThrow('Invalid ModelAddress provided, expected modelId property to be defined, received undefined');
+            expect(() => {_bus.publishEvent({ },'foo', 'foo'); }).toThrow('Invalid StoreAddress provided, expected storeId property to be defined, received undefined');
+            expect(() => {_bus.publishEvent({ entityKey: 'theKey' },'foo', 'foo'); }).toThrow('Invalid StoreAddress provided, expected storeId property to be defined, received undefined');
         });
 
         it('queues and processes events received during event loop by model id', () => {
@@ -100,14 +100,14 @@ describe('EventBus', () => {
             expect(receivedEvents.length).toEqual(1);
         });
 
-        it('can publish with ModelAddress and DefaultModelAddress', () => {
+        it('can publish with StoreAddress and DefaultStoreAddress', () => {
             let handlerCallCount = 0;
             _bus.storeBuilder('modelId1', {})
                 .withEventHandler('startEvent', () => { handlerCallCount++; })
                 .build();
-            _bus.publishEvent({ modelId: 'modelId1' }, 'startEvent', 'theEvent');
+            _bus.publishEvent({ storeId: 'modelId1' }, 'startEvent', 'theEvent');
             expect(handlerCallCount).toBe(1);
-            _bus.publishEvent(new DefaultModelAddress('modelId1'), 'startEvent', 'theEvent');
+            _bus.publishEvent(new DefaultStoreAddress('modelId1'), 'startEvent', 'theEvent');
             expect(handlerCallCount).toBe(2);
         });
 
@@ -118,10 +118,10 @@ describe('EventBus', () => {
                     receivedEntityKeys.push(ctx.entityKey);
                 })
                 .build();
-            _bus.publishEvent({ modelId: 'modelId1', entityKey: 'the-key-1' }, 'startEvent', 'theEvent');
+            _bus.publishEvent({ storeId: 'modelId1', entityKey: 'the-key-1' }, 'startEvent', 'theEvent');
             expect(receivedEntityKeys.length).toBe(1);
             expect(receivedEntityKeys[0]).toBe('the-key-1');
-            _bus.publishEvent(new DefaultModelAddress('modelId1', 'the-key-2'), 'startEvent', 'theEvent');
+            _bus.publishEvent(new DefaultStoreAddress('modelId1', 'the-key-2'), 'startEvent', 'theEvent');
             expect(receivedEntityKeys.length).toBe(2);
             expect(receivedEntityKeys[1]).toBe('the-key-2');
         });

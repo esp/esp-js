@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {ModelAddress, EventBus} from 'esp-js';
+import {StoreAddress, EventBus} from 'esp-js';
 import {PropsWithChildren, createContext, useContext, useCallback} from 'react';
 
 export const EventBusContext = createContext<EventBus>(null);
@@ -34,10 +34,10 @@ export const useEventBus = () => {
     return useContext(EventBusContext);
 };
 
-export type PublishEventDelegate = {(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any): void; (eventData: { address: string | ModelAddress, eventType: string, event: any }): void; };
+export type PublishEventDelegate = {(storeIdOrStoreAddress: string | StoreAddress, eventType: string, event: any): void; (eventData: { address: string | StoreAddress, eventType: string, event: any }): void; };
 const createPublishEvent = (bus: EventBus) => {
-    function publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: any): void;
-    function publishEvent(eventData: { address: string | ModelAddress, eventType: string, event: any }): void;
+    function publishEvent(storeIdOrStoreAddress: string | StoreAddress, eventType: string, event: any): void;
+    function publishEvent(eventData: { address: string | StoreAddress, eventType: string, event: any }): void;
     function publishEvent(...args: any[]): void {
         if (args.length === 1) {
             bus.publishEvent(args[0].address, args[0].eventType, args[0].event);

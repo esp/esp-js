@@ -2,7 +2,7 @@ import {createTestModel, TestModelState} from './testModel';
 import {EventBusSpy} from './eventBusSpy';
 import {render, RenderResult} from '@testing-library/react';
 import * as React from 'react';
-import {EspModelContextProvider, EspEventBusContextProvider} from '../../src';
+import {EspStoreContextProvider, EspEventBusContextProvider} from '../../src';
 import {EventBusAsserts, eventBusAsserts, PropAsserts, propAsserts, ViewAsserts, viewAsserts} from './asserts';
 import {isValidElement, ReactElement} from 'react';
 import {TestPropStore, TestPropStoreContext} from './useStoreReceivedProps';
@@ -15,13 +15,13 @@ export type TestApi = {
         view: ViewAsserts,
         props: PropAsserts,
     };
-    setupModel<TModel>(modelId: string, model: TModel): TModel;
-    setupTestModel(modelId: string): TestModelState;
-    setupModelAndRender(modelId: string, Component: React.ComponentType): TestApi;
-    doRender(Component: React.ComponentType, modelIdForContext?: string): TestApi
-    doRender(Component: React.JSX.Element, modelIdForContext?: string): TestApi
-    doReRender(Component: React.ComponentType, modelIdForContext?: string, nextProps?: any): TestApi;
-    doReRender(Component: React.JSX.Element, modelIdForContext?: string, nextProps?: any): TestApi;
+    setupModel<TModel>(storeId: string, model: TModel): TModel;
+    setupTestModel(storeId: string): TestModelState;
+    setupModelAndRender(storeId: string, Component: React.ComponentType): TestApi;
+    doRender(Component: React.ComponentType, storeIdForContext?: string): TestApi
+    doRender(Component: React.JSX.Element, storeIdForContext?: string): TestApi
+    doReRender(Component: React.ComponentType, storeIdForContext?: string, nextProps?: any): TestApi;
+    doReRender(Component: React.JSX.Element, storeIdForContext?: string, nextProps?: any): TestApi;
 };
 
 export const testApi = ()=> {
@@ -42,19 +42,19 @@ export const testApi = ()=> {
                 return propAsserts(propStore);
             }
         },
-        setupModelAndRender(modelId: string, view: React.ComponentType) {
-            this.setupTestModel(modelId);
-            this.doRender(view, modelId);
+        setupModelAndRender(storeId: string, view: React.ComponentType) {
+            this.setupTestModel(storeId);
+            this.doRender(view, storeId);
             return this;
         },
-        setupModel<TModel>(modelId: string, model: TModel): TModel {
-            bus.storeBuilder<TModel>(modelId, model).build();
+        setupModel<TModel>(storeId: string, model: TModel): TModel {
+            bus.storeBuilder<TModel>(storeId, model).build();
             return model;
         },
-        setupTestModel(modelId: string): TestModelState {
-            return createTestModel(bus, modelId);
+        setupTestModel(storeId: string): TestModelState {
+            return createTestModel(bus, storeId);
         },
-        doRender(ComponentOrElement: any, modelIdForContext?: string, nextProps?: any) {
+        doRender(ComponentOrElement: any, storeIdForContext?: string, nextProps?: any) {
             let element: React.JSX.Element;
             if (isValidElement(ComponentOrElement)) {
                 element = ComponentOrElement;
@@ -65,15 +65,15 @@ export const testApi = ()=> {
             renderResult = render((
                 <TestPropStoreContext.Provider value={propStore}>
                     <EspEventBusContextProvider bus={bus}>
-                        <EspModelContextProvider modelId={modelIdForContext}>
+                        <EspStoreContextProvider storeId={storeIdForContext}>
                             {elementWithProps},
-                        </EspModelContextProvider>
+                        </EspStoreContextProvider>
                     </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             return this;
         },
-        doReRender(ComponentOrElement: any, modelIdForContext?: string, nextProps?: any) {
+        doReRender(ComponentOrElement: any, storeIdForContext?: string, nextProps?: any) {
             let element: React.JSX.Element;
             if (isValidElement(ComponentOrElement)) {
                 element = ComponentOrElement;
@@ -84,9 +84,9 @@ export const testApi = ()=> {
             renderResult.rerender((
                 <TestPropStoreContext.Provider value={propStore}>
                     <EspEventBusContextProvider bus={bus}>
-                        <EspModelContextProvider modelId={modelIdForContext}>
+                        <EspStoreContextProvider storeId={storeIdForContext}>
                             {elementWithProps},
-                        </EspModelContextProvider>
+                        </EspStoreContextProvider>
                     </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));

@@ -2,13 +2,13 @@ import {useTestPropStore} from './useStoreReceivedProps';
 import * as React from 'react';
 
 export const viewFactory = (name: string) => {
-    return (props: { modelId?: string; value?: string, [key: string]: any }) => {
+    return (props: { storeId?: string; value?: string, [key: string]: any }) => {
         let testPropStore = useTestPropStore();
         testPropStore.pushProps(props);
         return (
             <>
                 <span data-testid='view-name'>{name}</span>
-                <ViewMetadata modelId={props.modelId} modelValue={props.value} {...props}/>
+                <ViewMetadata modelId={props.storeId} modelValue={props.value} {...props}/>
             </>
         );
     };

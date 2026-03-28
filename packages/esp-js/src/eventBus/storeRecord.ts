@@ -46,7 +46,7 @@ interface InternalEventStreamsRegistration {
 }
 
 export class StoreRecord<TModel = any> {
-    private readonly _modelId: string;
+    private readonly _storeId: string;
     private readonly _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
     private readonly _eventQueue: EventRecord[];
     private _currentModel: TModel;
@@ -64,13 +64,13 @@ export class StoreRecord<TModel = any> {
     public postEventProcessorFn: PostEventProcessorFn<TModel>;
 
     constructor(
-        modelId: string,
+        storeId: string,
         initialModel: TModel,
         modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>,
         storeConfig: StoreConfig<TModel>,
         publishDelegate: PublishDelegate
     ) {
-        this._modelId = modelId;
+        this._storeId = storeId;
         this._eventQueue = [];
         this._hasReceivedEvent = false;
         this._wasRemoved = false;
@@ -88,8 +88,8 @@ export class StoreRecord<TModel = any> {
         this.postEventProcessorFn = storeConfig.postEventProcessor || null;
     }
 
-    public get modelId() {
-        return this._modelId;
+    public get storeId() {
+        return this._storeId;
     }
 
     public get hasModel() {
@@ -157,7 +157,7 @@ export class StoreRecord<TModel = any> {
         let eventStreamsRegistration = this._eventStreams.get(eventType);
         if (!eventStreamsRegistration) {
             const modelStream = dispatchObservable.filter(
-                envelope => envelope.modelId === this.modelId
+                envelope => envelope.storeId === this.storeId
             ).share(false);
             const eventStream = modelStream.filter(
                 envelope =>

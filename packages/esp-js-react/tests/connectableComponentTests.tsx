@@ -4,7 +4,7 @@ import {
     connect,
     ConnectableComponent,
     ConnectableComponentProps,
-    PublishModelEventDelegate,
+    PublishStoreEventDelegate,
     MapModelToProps,
     CreatePublishEventProps,
 } from '../src';
@@ -34,7 +34,7 @@ class TestModel2 extends TestModel {
 }
 
 interface ConnectedComponentElementCreationProperties {
-    modelId: string;
+    storeId: string;
     useConnectFunction?: boolean;
     useMapModelToProps?: boolean;
     useCreatePublishEventProps?: boolean;
@@ -67,7 +67,7 @@ describe('ConnectableComponentTests', () => {
         // however, having an 'options' object just binds/funnels all the tests into one confusing API.
         // It'd be best to take a Partial<ConnectableComponentProps> and have more localized `beforeEach` calls invoke function this using new structure.
         let connectableComponentProps: ConnectableComponentProps<TestModel> = {
-            modelId: options.modelId
+            storeId: options.storeId
         };
         let mapModelToProps: MapModelToProps<any, any, any>;
         let createPublishEventProps: CreatePublishEventProps<any>;
@@ -87,7 +87,7 @@ describe('ConnectableComponentTests', () => {
                 publishEvent1: () => {
                 }
             };
-            createPublishEventProps = (publishEvent: PublishModelEventDelegate) => publishEventProps;
+            createPublishEventProps = (publishEvent: PublishStoreEventDelegate) => publishEventProps;
         }
         let viewElement: React.JSX.Element;
         if (options.useConnectFunction) {
@@ -109,23 +109,23 @@ describe('ConnectableComponentTests', () => {
         return viewElement;
     };
 
-    const publishTestEvent = (modelId: string, eventData: string) => {
+    const publishTestEvent = (storeId: string, eventData: string) => {
         act(() => {
-            api.bus.publishEvent(modelId, 'test-event', eventData);
+            api.bus.publishEvent(storeId, 'test-event', eventData);
         });
     };
 
     describe('ConnectableComponent via connect()', () => {
         beforeEach(() => {
             let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                modelId: 'model-id1',
+                storeId: 'model-id1',
                 useConnectFunction: true,
                 useMapModelToProps: true,
                 useCreatePublishEventProps: true
             };
             api.doRender(
                 createConnectedComponentElement(elementCreationProperties),
-                elementCreationProperties.modelId
+                elementCreationProperties.storeId
             );
         });
 
@@ -201,21 +201,21 @@ describe('ConnectableComponentTests', () => {
         describe('Child view props', () => {
             beforeEach(() => {
                 let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                    modelId: 'model-id1',
+                    storeId: 'model-id1',
                     useConnectFunction: false
                 };
                 api.doRender(
                     createConnectedComponentElement(elementCreationProperties),
-                    elementCreationProperties.modelId
+                    elementCreationProperties.storeId
                 );
             });
 
-            it('passes modelId', () => {
+            it('passes storeId', () => {
                 api.asserts.props
                     .propAtIndex(
                         0,
                         props => {
-                            expect(props.modelId).toBe('model-id1');
+                            expect(props.storeId).toBe('model-id1');
                         }
                     );
             });
@@ -270,12 +270,12 @@ describe('ConnectableComponentTests', () => {
         describe('Re-renders', () => {
             beforeEach(() => {
                 let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                    modelId: 'model-id1',
+                    storeId: 'model-id1',
                     useConnectFunction: false,
                 };
                 api.doRender(
                     createConnectedComponentElement(elementCreationProperties),
-                    elementCreationProperties.modelId
+                    elementCreationProperties.storeId
                 );
             });
 
@@ -293,19 +293,19 @@ describe('ConnectableComponentTests', () => {
             });
         });
 
-        describe('Model Subscription - modelId source', () => {
-            it('subscribes to modelId via props', () => {
+        describe('Model Subscription - storeId source', () => {
+            it('subscribes to storeId via props', () => {
                 api.doRender(
                     (
-                        <ConnectableComponent view={viewFactory('View1')} modelId={'model-id1'} />
+                        <ConnectableComponent view={viewFactory('View1')} storeId={'model-id1'} />
                     )
                 );
                 api.asserts.props
                     .receivedPropCountIs(1)
-                    .propAtIndexHasModelId(0, 'model-id1');
+                    .propAtIndexHasStoreId(0, 'model-id1');
             });
 
-            it('subscribes to modelId via context', () => {
+            it('subscribes to storeId via context', () => {
                 api.doRender(
                     (
                         <ConnectableComponent view={viewFactory('View1')} />
@@ -314,36 +314,36 @@ describe('ConnectableComponentTests', () => {
                 );
                 api.asserts.props
                     .receivedPropCountIs(1)
-                    .propAtIndexHasModelId(0, 'model-id1');
+                    .propAtIndexHasStoreId(0, 'model-id1');
             });
         });
 
-        describe('Model Subscription - when modelId changes', () => {
+        describe('Model Subscription - when storeId changes', () => {
             beforeEach(() => {
                 let elementCreationProperties: ConnectedComponentElementCreationProperties = {
-                    modelId: 'model-id1',
+                    storeId: 'model-id1',
                     useConnectFunction: false,
                     useMapModelToProps: true
                 };
                 api.doRender(
                     createConnectedComponentElement(elementCreationProperties),
-                    elementCreationProperties.modelId
+                    elementCreationProperties.storeId
                 );
             });
 
-            it('Re-subscribes to new model when modelId changes', () => {
+            it('Re-subscribes to new model when storeId changes', () => {
                 api.asserts.props
                     .receivedPropCountIs(1)
-                    .propAtIndexHasModelId(0,'model-id1');
-                const element = createConnectedComponentElement({modelId: 'model-id2', useConnectFunction: false, useMapModelToProps: true});
+                    .propAtIndexHasStoreId(0,'model-id1');
+                const element = createConnectedComponentElement({storeId: 'model-id2', useConnectFunction: false, useMapModelToProps: true});
                 api.doReRender(element, 'model-id2');
                 api.asserts.props
                     .receivedPropCountIs(2)
-                    .propAtIndexHasModelId(1,'model-id2');
+                    .propAtIndexHasStoreId(1,'model-id2');
                 publishTestEvent( 'model-id2', 'the-event-value2');
                 api.asserts.props
                     .receivedPropCountIs(3)
-                    .propAtIndexHasModelId(2,'model-id2')
+                    .propAtIndexHasStoreId(2,'model-id2')
                     .propAtIndex(
                         2,
                         props => {

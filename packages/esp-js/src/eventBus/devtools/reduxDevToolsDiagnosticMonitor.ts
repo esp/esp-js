@@ -18,11 +18,11 @@
 
 import {DisposableBase} from '../../system/disposables';
 import {DiagnosticMonitor} from './diagnosticMonitor';
-import {ModelAddress} from '../modelAddress';
+import {StoreAddress} from '../storeAddress';
 import {connectReduxDevTools, sendUpdateToReduxDevTools} from './reduxDevToolsConnector';
 
 interface RegisteredModel {
-    modelId: string;
+    storeId: string;
     eventCount: number;
     modelUpdateCount: number;
     lastEventTimestamp: Date;
@@ -32,8 +32,8 @@ interface DevToolsState {
     busName: string;
     totalEventCount: number;
     stateTimestamp: Date;
-    registeredModelsMap: { [modelId: string]: RegisteredModel };
-    top20NoisyModelsEventCount: { [modelId: string]: number };
+    registeredModelsMap: { [storeId: string]: RegisteredModel };
+    top20NoisyModelsEventCount: { [storeId: string]: number };
     top20NoisyEventsCount: { [eventName: string]: number };
 }
 
@@ -61,28 +61,28 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
         this._sendDevToolsUpdate('@@INIT', null);
     }
 
-    addStore(modelId: string): void {
+    addStore(storeId: string): void {
         const registeredModelState = {
-            modelId: modelId,
+            storeId: storeId,
             eventCount: 0,
             lastEventTimestamp: new Date(),
             modelUpdateCount: 0
         };
         const registeredModelsMap = {
             ...this._state.registeredModelsMap,
-            [modelId]: registeredModelState
+            [storeId]: registeredModelState
         };
         this._state = {
             ...this._state,
             registeredModelsMap
         };
-        this._noisyModelMap.set(modelId, 0);
-        this._sendDevToolsUpdate('eventBus:add_model', {modelId: modelId});
+        this._noisyModelMap.set(storeId, 0);
+        this._sendDevToolsUpdate('eventBus:add_model', {storeId: storeId});
     }
 
-    removeStore(modelId: string): void {
-        this._noisyModelMap.delete(modelId);
-        delete this._state.registeredModelsMap[modelId];
+    removeStore(storeId: string): void {
+        this._noisyModelMap.delete(storeId);
+        delete this._state.registeredModelsMap[storeId];
         const registeredModelsMap = {
             ...this._state.registeredModelsMap
         };
@@ -90,10 +90,10 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
             ...this._state,
             registeredModelsMap
         };
-        this._sendDevToolsUpdate('eventBus:remove_model', {modelId: modelId});
+        this._sendDevToolsUpdate('eventBus:remove_model', {storeId: storeId});
     }
 
-    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void {
+    publishEvent(storeIdOrStoreAddress: string | StoreAddress, eventType: string, event: string): void {
 
     }
 
@@ -105,9 +105,9 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    eventEnqueued(modelId: string, entityKey: string, eventType: string, event: any): void {
-        let modelEventCount = this._noisyModelMap.get(modelId);
-        this._noisyModelMap.set(modelId, modelEventCount + 1);
+    eventEnqueued(storeId: string, entityKey: string, eventType: string, event: any): void {
+        let modelEventCount = this._noisyModelMap.get(storeId);
+        this._noisyModelMap.set(storeId, modelEventCount + 1);
         let noisyEventCount = this._noisyEventMap.get(eventType) || 0;
         this._noisyEventMap.set(eventType, noisyEventCount + 1);
         this._state = {
@@ -115,7 +115,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
             totalEventCount: this._state.totalEventCount + 1
         };
         this._updateRegisteredModel(
-            modelId,
+            storeId,
             rm => {
                 return {
                     ...rm,
@@ -130,7 +130,7 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    startingModelEventLoop(modelId: string, entityKey: string, initiatingEventType: string): void {
+    startingModelEventLoop(storeId: string, entityKey: string, initiatingEventType: string): void {
 
     }
 
@@ -158,9 +158,9 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    dispatchingModelUpdates(modelId: string, model: any): void {
+    dispatchingModelUpdates(storeId: string, model: any): void {
         this._updateRegisteredModel(
-            modelId,
+            storeId,
             rm => {
                 return {
                     ...rm,
@@ -174,15 +174,15 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
 
     }
 
-    halted(modelIds: string[], err: string): void {
+    halted(storeIds: string[], err: string): void {
 
     }
 
-    private _updateRegisteredModel = (modelId: string, modelModifier: (rm: RegisteredModel) => RegisteredModel): void => {
-        const registeredModelUpdate = modelModifier(this._state.registeredModelsMap[modelId]);
+    private _updateRegisteredModel = (storeId: string, modelModifier: (rm: RegisteredModel) => RegisteredModel): void => {
+        const registeredModelUpdate = modelModifier(this._state.registeredModelsMap[storeId]);
         const registeredModelsMap = {
             ...this._state.registeredModelsMap,
-            [modelId]: registeredModelUpdate
+            [storeId]: registeredModelUpdate
         };
         this._state = {
             ...this._state,
@@ -226,8 +226,8 @@ export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements Di
             .slice(0, 20)
             .reduce(
                 (state, currentValue) => {
-                    let modelId = currentValue[0];
-                    state[modelId] = currentValue[1];
+                    let storeId = currentValue[0];
+                    state[storeId] = currentValue[1];
                     return state;
                 },
                 {}

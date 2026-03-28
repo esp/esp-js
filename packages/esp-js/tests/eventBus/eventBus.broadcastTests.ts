@@ -53,13 +53,13 @@ describe('EventBus', () => {
             _bus.storeBuilder('modelId1', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model1ProcessorReceivedCount++;
-                    model1ReceivedEvents.push(ctx.modelId);
+                    model1ReceivedEvents.push(ctx.storeId);
                 })
                 .build();
             _bus.storeBuilder('modelId2', {})
                 .withEventHandler('Event1', (draft, event, ctx) => {
                     model2ProcessorReceivedCount++;
-                    model2ReceivedEvents.push(ctx.modelId);
+                    model2ReceivedEvents.push(ctx.storeId);
                 })
                 .build();
 

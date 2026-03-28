@@ -18,58 +18,58 @@
 
 import {DiagnosticMonitor} from './diagnosticMonitor';
 import {DisposableBase} from '../../system/disposables';
-import { ModelAddress } from '../modelAddress';
+import { StoreAddress } from '../storeAddress';
 
 export class NoopDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
-    addStore(modelId: string): void {
+    addStore(storeId: string): void {
 
     }
-    removeStore(modelId: string): void {
+    removeStore(storeId: string): void {
 
     }
-    publishEvent(modelIdOrModelAddress: string | ModelAddress, eventType: string, event: string): void {
-        
+    publishEvent(storeIdOrStoreAddress: string | StoreAddress, eventType: string, event: string): void {
+
     }
     broadcastEvent(eventType: string): void {
-        
+
     }
     executingEvent(eventType: string): void {
-        
+
     }
-    eventEnqueued(modelId: string, entityKey: string, eventType: string): void {
-        
+    eventEnqueued(storeId: string, entityKey: string, eventType: string): void {
+
     }
     dispatchLoopStart(): void {
-        
+
     }
-    startingModelEventLoop(modelId: string, entityKey: string, initiatingEventType: string): void {
-        
+    startingModelEventLoop(storeId: string, entityKey: string, initiatingEventType: string): void {
+
     }
     preProcessingModel(): void {
-        
+
     }
     dispatchingEvents(): void {
-        
+
     }
     dispatchingEvent(eventType: string, stage: string): void {
 
     }
     finishDispatchingEvent(): void {
-        
+
     }
     postProcessingModel(): void {
-        
+
     }
     endingModelEventLoop(): void {
-        
+
     }
-    dispatchingModelUpdates(modelId: string, model: any): void {
-        
+    dispatchingModelUpdates(storeId: string, model: any): void {
+
     }
     dispatchLoopEnd(): void {
-        
+
     }
-    halted(modelIds: string[], err: string): void {
-        
+    halted(storeIds: string[], err: string): void {
+
     }
 }

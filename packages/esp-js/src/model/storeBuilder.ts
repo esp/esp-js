@@ -18,22 +18,22 @@ export class StoreBuilder<TModel> {
     private _postEventProcessor: PostEventProcessorFn<TModel> = null;
 
     private constructor(
-        private _addStoreFn: (modelId: string, initialModel: TModel, config: StoreConfig<TModel>) => void,
-        private _modelId: string,
+        private _addStoreFn: (storeId: string, initialModel: TModel, config: StoreConfig<TModel>) => void,
+        private _storeId: string,
         private _initialModel: TModel
     ) {
         Guard.isDefined(_addStoreFn, 'addStoreFn must be defined');
-        Guard.isString(_modelId, 'modelId must be a string');
+        Guard.isString(_storeId, 'storeId must be a string');
         Guard.isDefined(_initialModel, 'initialModel must be defined');
     }
 
     /** @internal */
     static _create<TModel>(
-        addStoreFn: (modelId: string, initialModel: TModel, config: StoreConfig<TModel>) => void,
-        modelId: string,
+        addStoreFn: (storeId: string, initialModel: TModel, config: StoreConfig<TModel>) => void,
+        storeId: string,
         initialModel: TModel
     ): StoreBuilder<TModel> {
-        return new StoreBuilder(addStoreFn, modelId, initialModel);
+        return new StoreBuilder(addStoreFn, storeId, initialModel);
     }
 
     withEventHandler<TEvent>(eventType: string, handler: EventHandler<TModel, TEvent>): this {
@@ -93,6 +93,6 @@ export class StoreBuilder<TModel> {
             preEventProcessor: this._preEventProcessor,
             postEventProcessor: this._postEventProcessor,
         };
-        this._addStoreFn(this._modelId, this._initialModel, storeConfig);
+        this._addStoreFn(this._storeId, this._initialModel, storeConfig);
     }
 }

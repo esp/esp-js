@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {act} from 'react';
-import {EspModelContextProvider, EspEventBusContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
+import {EspStoreContextProvider, EspEventBusContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
 import {TestModelState} from './testApi/testModel';
 import {viewFactory, ViewMetadata} from './testApi/viewFactory';
 import {eventBusAsserts} from './testApi/asserts';
@@ -17,7 +17,7 @@ describe('useSyncModelWithSelector', () => {
     });
 
     describe('Default API case', () => {
-        const modelId = 'modelId';
+        const storeId = 'modelId';
 
         const View = () => {
             const valuesObj = useSyncModelWithSelector<TestModelState, SelectedObject>(
@@ -34,32 +34,32 @@ describe('useSyncModelWithSelector', () => {
         };
 
         beforeEach(() => {
-           api.setupModelAndRender(modelId, View);
+           api.setupModelAndRender(storeId, View);
         });
 
-        it('renders immutable model based on modelId found on context', () => {
+        it('renders immutable model based on storeId found on context', () => {
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('initial-value');
         });
 
         it('updates are rendered', () => {
             act(() => {
-                api.bus.publishEvent(modelId, 'test-event', 'new-value');
+                api.bus.publishEvent(storeId, 'test-event', 'new-value');
             });
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('new-value');
         });
     });
 
-    describe('modelId can be passed via selector', () => {
-        const modelId = 'modelId';
+    describe('storeId can be passed via selector', () => {
+        const storeId = 'modelId';
 
         const View = () => {
             const values: string[] = useSyncModelWithSelector<TestModelState, string[]>(
                 model => [model.modelId, model.value],
-                syncModelWithSelectorOptions().setModelId(modelId)
+                syncModelWithSelectorOptions().setStoreId(storeId)
             );
             if (!values) {
                 return;
@@ -70,19 +70,19 @@ describe('useSyncModelWithSelector', () => {
         };
 
         beforeEach(() => {
-            api.setupTestModel(modelId);
+            api.setupTestModel(storeId);
             api.doRender(View, undefined);
         });
 
         it('renders correct model data', () => {
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('initial-value');
         });
     });
 
     describe('equalityFn is invoked to determine if changed should be propagated', () => {
-        const modelId = 'modelId';
+        const storeId = 'modelId';
 
         const View = () => {
             const values = useSyncModelWithSelector<TestModelState, SelectedObject>(
@@ -106,42 +106,42 @@ describe('useSyncModelWithSelector', () => {
         };
 
         beforeEach(() => {
-           api.setupModelAndRender(modelId, View);
+           api.setupModelAndRender(storeId, View);
         });
 
         it('renders initial model data', () => {
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('initial-value');
         });
 
         it('updates are ignored due to equalityFn', () => {
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('initial-value');
             act(() => {
-                api.bus.publishEvent(modelId, 'test-event', 'assume-no-change');
+                api.bus.publishEvent(storeId, 'test-event', 'assume-no-change');
             });
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('initial-value'); // event data WAS NOT propagated
             act(() => {
-                api.bus.publishEvent(modelId, 'test-event', 'do-change');
+                api.bus.publishEvent(storeId, 'test-event', 'do-change');
             });
             api.asserts.view
-                .modelIdIs(modelId)
+                .storeIdIs(storeId)
                 .valueIs('do-change'); // event data WAS propagated
         });
     });
 
-    describe('selector internal caching is based on modelId', () => {
-        const modelId1 = 'modelId1';
-        const modelId2 = 'modelId2';
+    describe('selector internal caching is based on storeId', () => {
+        const storeId1 = 'modelId1';
+        const storeId2 = 'modelId2';
 
-        const View = (props: {modelId: string}) => {
+        const View = (props: {storeId: string}) => {
             const values = useSyncModelWithSelector<TestModelState, SelectedObject>(
                 model => ({id: model.modelId, value: model.value}),
-                syncModelWithSelectorOptions().setModelId(props.modelId)
+                syncModelWithSelectorOptions().setStoreId(props.storeId)
             );
             if (!values) {
                 return;
@@ -152,37 +152,37 @@ describe('useSyncModelWithSelector', () => {
         };
 
         beforeEach(() => {
-            api.setupTestModel(modelId1);
-            api.doRender(View, modelId1);
+            api.setupTestModel(storeId1);
+            api.doRender(View, storeId1);
         });
 
         it('selector subscribed to EventBus', () => {
-            eventBusAsserts(api.bus).subscriberCountIs(modelId1, 1);
+            eventBusAsserts(api.bus).subscriberCountIs(storeId1, 1);
         });
 
-        it('unsubscribes when modelId changes', () => {
+        it('unsubscribes when storeId changes', () => {
             api.doReRender(View, undefined);
-            api.asserts.bus.subscriberCountIs(modelId1, 0);
+            api.asserts.bus.subscriberCountIs(storeId1, 0);
         });
 
-        it('resubscribes to new model when modelId changes', () => {
+        it('resubscribes to new model when storeId changes', () => {
             api.asserts.view
-                .modelIdIs(modelId1)
+                .storeIdIs(storeId1)
                 .valueIs('initial-value');
             api.doReRender(View, undefined);
             api.asserts.view
                 .modelIdIsNotInDom()
                 .valueIsNotInDom();
-            api.setupTestModel(modelId2);
-            api.doReRender(View, modelId2);
+            api.setupTestModel(storeId2);
+            api.doReRender(View, storeId2);
             api.asserts.view
-                .modelIdIs(modelId2)
+                .storeIdIs(storeId2)
                 .valueIs('initial-value');
             act(() => {
-                api.bus.publishEvent(modelId2, 'test-event', 'updated');
+                api.bus.publishEvent(storeId2, 'test-event', 'updated');
             });
             api.asserts.view
-                .modelIdIs(modelId2)
+                .storeIdIs(storeId2)
                 .valueIs('updated');
         });
     });
@@ -194,36 +194,36 @@ describe('useSyncModelWithSelector', () => {
             api.doRender((
                 <TestPropStoreContext.Provider value={api.propStore}>
                     <EspEventBusContextProvider bus={undefined}>
-                        <EspModelContextProvider modelId={'some-modelId'}>
+                        <EspStoreContextProvider storeId={'some-modelId'}>
                             <View  />,
-                        </EspModelContextProvider>
+                        </EspStoreContextProvider>
                     </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             api.asserts.props
                 .receivedPropCountIs(1)
-                .propAtIndexHasModelId(0, undefined)
+                .propAtIndexHasStoreId(0, undefined)
                 .propAtIndex(0, props => {
-                    expect(props.modelId).not.toBeDefined();
+                    expect(props.storeId).not.toBeDefined();
                     expect(props.value).not.toBeDefined();
                 });
         });
 
-        it('falsey modelId', () => {
+        it('falsey storeId', () => {
             api.doRender((
                 <TestPropStoreContext.Provider value={api.propStore}>
                     <EspEventBusContextProvider bus={api.bus}>
-                        <EspModelContextProvider modelId={undefined}>
+                        <EspStoreContextProvider storeId={undefined}>
                             <View  />,
-                        </EspModelContextProvider>
+                        </EspStoreContextProvider>
                     </EspEventBusContextProvider>
                 </TestPropStoreContext.Provider>
             ));
             api.asserts.props
                 .receivedPropCountIs(1)
-                .propAtIndexHasModelId(0, undefined)
+                .propAtIndexHasStoreId(0, undefined)
                 .propAtIndex(0, props => {
-                    expect(props.modelId).not.toBeDefined();
+                    expect(props.storeId).not.toBeDefined();
                     expect(props.value).not.toBeDefined();
                 });
         });
@@ -253,7 +253,7 @@ describe('useSyncModelWithSelector', () => {
                 useSyncModelWithSelector(
                     (m) => m,
                     {
-                        modelId: '',
+                        storeId: '',
                         equalityFn: null,
                  });
             }).toThrow(new Error('You must provide an equalityFn when using useSyncModelWithSelector'));

@@ -1,10 +1,10 @@
 import {
     EspEventBusContextProvider,
-    EspModelContextProvider,
-    useGetModelId,
-    useGetModel,
-    usePublishModelEvent,
-    usePublishModelEventWithEntityKey
+    EspStoreContextProvider,
+    useGetStoreId,
+    useGetStore,
+    usePublishStoreEvent,
+    usePublishStoreEventWithEntityKey
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
 import {renderHook} from '@testing-library/react';
@@ -12,7 +12,7 @@ import * as React from 'react';
 import {EventBus} from 'esp-js';
 import {TestModelState} from './testApi/testModel';
 
-describe('EspModelContextProviderTests tests', () => {
+describe('EspStoreContextProviderTests tests', () => {
     let api: TestApi,
         testModel1: TestModelState,
         testModel2: TestModelState;
@@ -28,32 +28,32 @@ describe('EspModelContextProviderTests tests', () => {
     const createEspEventBusContextProviderWrapper = (
         bus: EventBus,
         modelsForContextPerRender: TestModelState[],
-        modelIdForContextPerRender: string[]
+        storeIdForContextPerRender: string[]
     ) => {
 
         return ({children}: React.PropsWithChildren) => {
-            // Each re-render we pop a model ID out of modelIdForContextPerRender for our context.
+            // Each re-render we pop a store ID out of storeIdForContextPerRender for our context.
             // This is the only way to inject some re-render differences using RTL with renderHook
             let modelForContext = modelsForContextPerRender.length === 1
                 ? modelsForContextPerRender[0]
                 : modelsForContextPerRender.shift();
-            let modelIdForContext = modelIdForContextPerRender.length === 1
-                ? modelIdForContextPerRender[0]
-                : modelIdForContextPerRender.shift();
+            let storeIdForContext = storeIdForContextPerRender.length === 1
+                ? storeIdForContextPerRender[0]
+                : storeIdForContextPerRender.shift();
             return (
                 <EspEventBusContextProvider bus={bus}>
-                    <EspModelContextProvider modelId={modelIdForContext} model={modelForContext}>
+                    <EspStoreContextProvider storeId={storeIdForContext} model={modelForContext}>
                         {children},
-                    </EspModelContextProvider>
+                    </EspStoreContextProvider>
                 </EspEventBusContextProvider>
             );
         };
     };
 
-    it('useGetModelId returns new modelId and changes on re-render', () => {
+    it('useGetStoreId returns new storeId and changes on re-render', () => {
         const {result, rerender} = renderHook(
             props => {
-                return useGetModelId();
+                return useGetStoreId();
             },
             {
                 wrapper: createEspEventBusContextProviderWrapper(
@@ -68,10 +68,10 @@ describe('EspModelContextProviderTests tests', () => {
         expect(result.current).toBe('model-id2');
     });
 
-    it('useGetModel returns model and changes on re-render', () => {
+    it('useGetStore returns model and changes on re-render', () => {
         const {result, rerender} = renderHook(
             props => {
-                return useGetModel<TestModelState>();
+                return useGetStore<TestModelState>();
             },
             {
                 wrapper: createEspEventBusContextProviderWrapper(
@@ -86,10 +86,10 @@ describe('EspModelContextProviderTests tests', () => {
         expect(result.current).toBe(testModel2);
     });
 
-    it('publishModelEvent publishes to correct model and changes on re-render', () => {
+    it('publishStoreEvent publishes to correct model and changes on re-render', () => {
         const {result, rerender} = renderHook(
             props => {
-                return usePublishModelEvent();
+                return usePublishStoreEvent();
             },
             {
                 wrapper: createEspEventBusContextProviderWrapper(
@@ -115,10 +115,10 @@ describe('EspModelContextProviderTests tests', () => {
         expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('updated2');
     });
 
-    it('publishModelEventWithEntityKey publishes to correct model and changes on re-render', () => {
+    it('publishStoreEventWithEntityKey publishes to correct model and changes on re-render', () => {
         const {result, rerender} = renderHook(
             props => {
-                return usePublishModelEventWithEntityKey();
+                return usePublishStoreEventWithEntityKey();
             },
             {
                 wrapper: createEspEventBusContextProviderWrapper(

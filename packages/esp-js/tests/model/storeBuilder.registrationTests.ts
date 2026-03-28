@@ -72,7 +72,7 @@ describe('StoreBuilder', () => {
             expect(_bus.isModelRegistered('myModel')).toBe(false);
         });
 
-        it('throws if the same modelId is registered twice', () => {
+        it('throws if the same storeId is registered twice', () => {
             _bus.storeBuilder<SimpleModel>('myModel', { value: 0 }).build();
             expect(() => {
                 _bus.storeBuilder<SimpleModel>('myModel', { value: 0 }).build();

@@ -2,7 +2,7 @@ import {useMemo} from 'react';
 import {useSyncExternalStoreWithSelector} from 'use-sync-external-store/with-selector';
 import {Logger, EventBus, utils} from 'esp-js';
 import {useEventBus} from './espEventBusContextProvider';
-import {useGetModelId} from './espModelContextProvider';
+import {useGetStoreId} from './espStoreContextProvider';
 
 export type SyncModelWithSelectorEqualityFn<T> = (last: T, next: T) => boolean;
 
@@ -13,11 +13,11 @@ export const logger = Logger.create('useSyncModelWithSelector');
  *
  * Use syncModelWithSelectorOptions() to create an instance of this type with sensible defaults.
  *
- * @param modelId - the modelId of the model to be observed via the esp EventBus.
+ * @param storeId - the storeId of the store to be observed via the esp EventBus.
  * @param equalityFn - Equality function which will be applied against TSelected, defaults to instance equality (a === b).
  */
 export type SyncModelWithSelectorOptions<TSelected> = {
-    modelId?: string,
+    storeId?: string,
     equalityFn: SyncModelWithSelectorEqualityFn<TSelected>
 };
 
@@ -26,10 +26,10 @@ export type SyncModelWithSelectorOptions<TSelected> = {
  */
 export interface SyncModelWithSelectorOptionsBuilder<TSelected> extends SyncModelWithSelectorOptions<TSelected> {
     /**
-     * Sets the model ID
-     * @param modelId - default if unset: undefined
+     * Sets the store ID
+     * @param storeId - default if unset: undefined
      */
-    setModelId(modelId: string): this;
+    setStoreId(storeId: string): this;
 
     /**
      * Equality function used when comparing the last TSelected with the next.
@@ -42,14 +42,14 @@ export interface SyncModelWithSelectorOptionsBuilder<TSelected> extends SyncMode
  * Convenience API to create SyncModelWithSelectorOptions
  */
 export const syncModelWithSelectorOptions = <TSelected>() => {
-    let modelId = undefined;
+    let storeId = undefined;
     let equalityFn: SyncModelWithSelectorEqualityFn<TSelected> = (a: TSelected, b: TSelected) => a === b;
     return {
-        get modelId() {
-            return modelId;
+        get storeId() {
+            return storeId;
         },
-        setModelId(value: string) {
-            modelId = value;
+        setStoreId(value: string) {
+            storeId = value;
             return this;
         },
         get equalityFn() {
@@ -79,9 +79,9 @@ const checkArguments = (selector: (model: any) => any, options: SyncModelWithSel
  *
  * This hooks wih observe updates and re-render the component if the model changes.
  *
- * To use this, please ensure your V-DOM has the EspEventBusContextProvider at a higher node, and optionally EspModelContextProvider.
+ * To use this, please ensure your V-DOM has the EspEventBusContextProvider at a higher node, and optionally EspStoreContextProvider.
  *
- * @param selector - a function to select a selection of the model - the selector does not need to be memoized, this selector will be cached against the modelId.
+ * @param selector - a function to select a selection of the model - the selector does not need to be memoized, this selector will be cached against the storeId.
  * @param options
  */
 export const useSyncModelWithSelector = <TModel, TSelected>(
@@ -90,19 +90,19 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
 ): TSelected => {
     checkArguments(selector, options);
     const bus = useEventBus();
-    const modelIdFromContext = useGetModelId();
-    const modelId = options?.modelId || modelIdFromContext;
+    const storeIdFromContext = useGetStoreId();
+    const storeId = options?.storeId || storeIdFromContext;
     const equalityFn = options?.equalityFn;
     const dependencies = useMemo(
         () => {
-            const canSubscribe = bus && utils.isString(modelId) && bus.isModelRegistered(modelId);
+            const canSubscribe = bus && utils.isString(storeId) && bus.isModelRegistered(storeId);
             if (canSubscribe) {
-                return createSubscriptionState(bus, modelId, selector);
+                return createSubscriptionState(bus, storeId, selector);
             }
             return createNoopSubscriptionState();
         },
         // Don't add 'selector' to the dependency list as that will likely change unless the caller memoizes it.
-        [bus, modelId]
+        [bus, storeId]
     );
 
     // Docs on useSyncExternalStore https://github.com/reactwg/react-18/discussions/86
@@ -119,7 +119,7 @@ export const useSyncModelWithSelector = <TModel, TSelected>(
 
 const createSubscriptionState = <TModel, TSelected>(
     bus: EventBus,
-    modelId: string,
+    storeId: string,
     selector: (model: TModel) => TSelected,
 ) => {
     // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
@@ -132,12 +132,12 @@ const createSubscriptionState = <TModel, TSelected>(
     let currentModel: TModel;
     let onStateChanged: () => void = null;
     const modelSubscriptionDisposable = bus
-        .getModelObservable<TModel>(modelId)
+        .getModelObservable<TModel>(storeId)
         .subscribe(
             (m: TModel) => {
                 // The model is a frozen immutable snapshot produced by immer after each dispatch cycle.
                 // Each update is a new object reference, so useSyncExternalStoreWithSelector will detect the change naturally.
-                warnIfModelInstanceHasNotChanged(modelId, currentModel, m as any);
+                warnIfModelInstanceHasNotChanged(storeId, currentModel, m as any);
                 currentModel = m;
                 if (onStateChanged) {
                     onStateChanged();
@@ -176,11 +176,11 @@ const createNoopSubscriptionState = () => ({
     wrappedSelector: () => null
 });
 
-const warnIfModelInstanceHasNotChanged = (modelId: string, lastModel: any, nextModel: string) => {
+const warnIfModelInstanceHasNotChanged = (storeId: string, lastModel: any, nextModel: string) => {
     if (import.meta.env.MODE === 'production') {
         return;
     }
-    if (utils.stringIsEmpty(modelId)) {
+    if (utils.stringIsEmpty(storeId)) {
         return;
     }
     if (lastModel === nextModel) {
@@ -192,7 +192,7 @@ const warnIfModelInstanceHasNotChanged = (modelId: string, lastModel: any, nextM
             stack = (e as Error).stack;
         }
         logger.warn(
-            `useSyncModelWithSelector had detected the latest model update hasn't mutated. This will cause odd render bugs. modelId: ${modelId}`,
+            `useSyncModelWithSelector had detected the latest model update hasn't mutated. This will cause odd render bugs. storeId: ${storeId}`,
             stack
         );
     }

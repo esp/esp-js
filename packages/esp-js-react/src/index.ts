@@ -49,18 +49,18 @@ export type {
     PublishEventDelegate,
 } from './espEventBusContextProvider';
 export {
-    useGetModelId,
-    GetModelIdContext,
-    useGetModel,
-    GetModelContext,
-    PublishModelEventContext,
-    usePublishModelEvent,
-    PublishModelEventWithEntityKeyContext,
-    usePublishModelEventWithEntityKey,
-    EspModelContextProvider,
-} from './espModelContextProvider';
+    useGetStoreId,
+    GetStoreIdContext,
+    useGetStore,
+    GetStoreContext,
+    PublishStoreEventContext,
+    usePublishStoreEvent,
+    PublishStoreEventWithEntityKeyContext,
+    usePublishStoreEventWithEntityKey,
+    EspStoreContextProvider,
+} from './espStoreContextProvider';
 export type {
-    PublishModelEventDelegate,
-    PublishModelEventWithEntityKeyDelegate,
-    EspModelContextProviderProps,
-} from './espModelContextProvider';
+    PublishStoreEventDelegate,
+    PublishStoreEventWithEntityKeyDelegate,
+    EspStoreContextProviderProps,
+} from './espStoreContextProvider';

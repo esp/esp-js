@@ -30,7 +30,7 @@ describe('EventBus', () => {
     describe('.isModelRegistered()', () => {
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.isModelRegistered({ }); }).toThrow(new Error('The modelId argument should be a string'));
+            expect(() => {_bus.isModelRegistered({ }); }).toThrow(new Error('The storeId argument should be a string'));
         });
 
         it('returns true if model is registered', () => {

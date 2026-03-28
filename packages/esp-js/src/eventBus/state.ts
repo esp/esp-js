@@ -24,7 +24,7 @@ import {StoreRecord} from './storeRecord';
 export class State {
     private _currentStatus: string;
     private _eventsDispatched: any[];
-    private _currentModelId: string;
+    private _currentStoreId: string;
     private _currentStoreRecord: StoreRecord;
     private _circularEventDispatchLimit = 10000;
     private _currentDispatchCount = 0;
@@ -40,8 +40,8 @@ export class State {
         return this._currentStatus;
     }
 
-    public get currentModelId(): string {
-        return this._currentModelId;
+    public get currentStoreId(): string {
+        return this._currentStoreId;
     }
 
     public get currentStoreRecord(): StoreRecord {
@@ -62,10 +62,10 @@ export class State {
         this._currentDispatchCount = 0;
     }
 
-    public moveToPreProcessing(modelId: string, storeRecord: StoreRecord) {
-        Guard.isString(modelId, 'modelId should be a string');
+    public moveToPreProcessing(storeId: string, storeRecord: StoreRecord) {
+        Guard.isString(storeId, 'storeId should be a string');
         Guard.isDefined(storeRecord, 'storeRecord should be defined');
-        this._currentModelId = modelId;
+        this._currentStoreId = storeId;
         this._currentStoreRecord = storeRecord;
         this._currentStatus = Status.PreEventProcessing;
     }
@@ -113,7 +113,7 @@ export class State {
     }
 
     private _clear() {
-        this._currentModelId = undefined;
+        this._currentStoreId = undefined;
         this._currentStoreRecord = undefined;
         this.clearEventDispatchQueue();
         this.clearPendingEffects();

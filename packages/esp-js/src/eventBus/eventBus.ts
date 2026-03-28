@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import {DefaultModelAddress, ModelAddress, EventContext, ObservationStage, Status} from './';
+import {DefaultStoreAddress, StoreAddress, EventContext, ObservationStage, Status} from './';
 import {State} from './state';
 import {Observable, Subject} from '../reactive';
 import {Guard, Logger, utils} from '../system';
@@ -61,27 +61,27 @@ export class EventBus extends DisposableBase {
         return this._state.currentStatus;
     }
 
-    public storeBuilder<TModel>(modelId: string, initialModel: TModel): StoreBuilder<TModel> {
+    public storeBuilder<TModel>(storeId: string, initialModel: TModel): StoreBuilder<TModel> {
         return StoreBuilder._create(
             (id: string, m: TModel, storeConfig: StoreConfig<TModel>) => this.addStore(id, m, storeConfig),
-            modelId,
+            storeId,
             initialModel
         );
     }
 
-    private addStore<TModel>(modelId: string, initialModel: TModel, storeConfig: StoreConfig<TModel>): void {
+    private addStore<TModel>(storeId: string, initialModel: TModel, storeConfig: StoreConfig<TModel>): void {
         this._throwIfHaltedOrDisposed();
-        Guard.isString(modelId, 'The modelId argument should be a string');
+        Guard.isString(storeId, 'The storeId argument should be a string');
         Guard.isDefined(initialModel, 'The model argument must be defined');
         Guard.isDefined(storeConfig, 'The storeConfig argument must be defined');
 
-        const storeRecord = this._getOrCreateStoreRecord(modelId) as StoreRecord<TModel>;
+        const storeRecord = this._getOrCreateStoreRecord(storeId) as StoreRecord<TModel>;
         if (storeRecord.hasModel) {
-            throw new Error('The model with id [' + modelId + '] is already registered');
+            throw new Error('The store with id [' + storeId + '] is already registered');
         }
 
         const publishDelegate: PublishDelegate = (eventType: string, event: any) => {
-            this.publishEvent(modelId, eventType, event);
+            this.publishEvent(storeId, eventType, event);
         };
 
         const frozenModel = freeze(initialModel, true) as TModel;
@@ -116,31 +116,31 @@ export class EventBus extends DisposableBase {
         }
 
         // Emit initial model update
-        this._dispatchSubject.onNext({modelId: modelId, model: frozenModel, dispatchType: DispatchType.ModelUpdate});
-        this._diagnosticMonitor.addStore(modelId);
+        this._dispatchSubject.onNext({storeId: storeId, model: frozenModel, dispatchType: DispatchType.ModelUpdate});
+        this._diagnosticMonitor.addStore(storeId);
 
     }
 
-    public removeStore(modelId: string) {
-        Guard.isString(modelId, 'The modelId argument should be a string');
-        let storeRecord = this._models.get(modelId);
+    public removeStore(storeId: string) {
+        Guard.isString(storeId, 'The storeId argument should be a string');
+        let storeRecord = this._models.get(storeId);
         if (storeRecord) {
-            this._diagnosticMonitor.removeStore(modelId);
+            this._diagnosticMonitor.removeStore(storeId);
             storeRecord.wasRemoved = true;
-            this._models.delete(modelId);
+            this._models.delete(storeId);
             storeRecord.dispose();
-            this._dispatchSubject.onNext({modelId: modelId, model: undefined, dispatchType: DispatchType.ModelDelete});
+            this._dispatchSubject.onNext({storeId: storeId, model: undefined, dispatchType: DispatchType.ModelDelete});
         }
     }
 
-    public isModelRegistered(modelId: string): boolean {
-        Guard.isString(modelId, 'The modelId argument should be a string');
-        const record = this._models.get(modelId);
+    public isModelRegistered(storeId: string): boolean {
+        Guard.isString(storeId, 'The storeId argument should be a string');
+        const record = this._models.get(storeId);
         return record ? record.hasModel : false;
     }
 
-    public isModelDispatchStatus(modelId: string, status: Status): boolean {
-        return this._state.currentStoreRecord?.modelId === modelId && this._state.currentStatus === status;
+    public isModelDispatchStatus(storeId: string, status: Status): boolean {
+        return this._state.currentStoreRecord?.storeId === storeId && this._state.currentStatus === status;
     }
 
     /**
@@ -149,14 +149,14 @@ export class EventBus extends DisposableBase {
      * Note: given this is JavaScript, it's up to the caller to not write against the model.
      * If you want to modify the model, publish an event to it.
      *
-     * @param modelId
+     * @param storeId
      */
-    public getModel<TModel = object>(modelId: string): TModel {
-        Guard.isString(modelId, 'The modelId argument should be a string');
-        if (this._models.get(modelId)) {
-            let storeRecord = this._models.get(modelId);
+    public getModel<TModel = object>(storeId: string): TModel {
+        Guard.isString(storeId, 'The storeId argument should be a string');
+        if (this._models.get(storeId)) {
+            let storeRecord = this._models.get(storeId);
             if (!storeRecord.hasModel) {
-                throw new Error(`Model with id ${modelId} is registered, however it's model has not yet been set. Can not retrieve`);
+                throw new Error(`Store with id ${storeId} is registered, however its model has not yet been set. Can not retrieve`);
             }
             return storeRecord.model as unknown as TModel;
         }
@@ -185,22 +185,22 @@ export class EventBus extends DisposableBase {
         return null;
     }
 
-    public publishEvent(modelId: string, eventType: string, event: any): void;
-    public publishEvent(modelAddress: ModelAddress, eventType: string, event: any): void;
+    public publishEvent(storeId: string, eventType: string, event: any): void;
+    public publishEvent(storeAddress: StoreAddress, eventType: string, event: any): void;
     public publishEvent(...args: any[]): void {
         this._throwIfHaltedOrDisposed();
-        const modelAddress: ModelAddress = utils.isObject(args[0]) && args[0] instanceof DefaultModelAddress
+        const storeAddress: StoreAddress = utils.isObject(args[0]) && args[0] instanceof DefaultStoreAddress
             ? args[0]
-            : new DefaultModelAddress(args[0]);
+            : new DefaultStoreAddress(args[0]);
         const eventType = args[1];
         const event = args[2];
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument must be defined');
         if (this._state.currentStatus === Status.EventExecution) {
-            throw new Error('You can not publish further events when performing an event execution. modelAddress: [' + modelAddress + '], eventType:[' + eventType + ']');
+            throw new Error('You can not publish further events when performing an event execution. storeAddress: [' + storeAddress + '], eventType:[' + eventType + ']');
         }
-        this._diagnosticMonitor.publishEvent(modelAddress, eventType, event);
-        this._tryEnqueueEvent(modelAddress, eventType, event);
+        this._diagnosticMonitor.publishEvent(storeAddress, eventType, event);
+        this._tryEnqueueEvent(storeAddress, eventType, event);
     }
 
     public broadcastEvent(eventType: string, event: any) {
@@ -208,7 +208,7 @@ export class EventBus extends DisposableBase {
         Guard.isDefined(event, 'The event argument should be defined');
         this._diagnosticMonitor.broadcastEvent(eventType);
         for (let [key, value] of this._models) {
-            this._tryEnqueueEvent(new DefaultModelAddress(value.modelId), eventType, event);
+            this._tryEnqueueEvent(new DefaultStoreAddress(value.storeId), eventType, event);
         }
         try {
             this._purgeEventQueues();
@@ -232,11 +232,11 @@ export class EventBus extends DisposableBase {
         });
     }
 
-    public getModelObservable<TModel>(modelId: string): Subscribable<TModel> {
+    public getModelObservable<TModel>(storeId: string): Subscribable<TModel> {
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
-            Guard.isString(modelId, 'The modelId should be a string');
-            let storeRecord = this._getOrCreateStoreRecord(modelId);
+            Guard.isString(storeId, 'The storeId should be a string');
+            let storeRecord = this._getOrCreateStoreRecord(storeId);
             return storeRecord.modelObservationStream
                 .map(envelope => envelope.model)
                 .subscribe(o);
@@ -256,14 +256,14 @@ export class EventBus extends DisposableBase {
         }
     }
 
-    public isOnDispatchLoopFor(modelId: string) {
-        Guard.isString(modelId, 'modelId must be a string');
-        Guard.isFalsey(modelId === '', 'modelId must not be empty');
-        return this._state.currentModelId === modelId;
+    public isOnDispatchLoopFor(storeId: string) {
+        Guard.isString(storeId, 'storeId must be a string');
+        Guard.isFalsey(storeId === '', 'storeId must not be empty');
+        return this._state.currentStoreId === storeId;
     }
 
-    private _getOrCreateStoreRecord(modelId: string): StoreRecord {
-        let storeRecord: StoreRecord = this._models.get(modelId);
+    private _getOrCreateStoreRecord(storeId: string): StoreRecord {
+        let storeRecord: StoreRecord = this._models.get(storeId);
         if (!storeRecord) {
             // Create a shell record for lazy observation registration (getEventObservable / getModelObservable called before addStore)
             // This record has no handlers — it will be a proper record once addStore is called.
@@ -271,7 +271,7 @@ export class EventBus extends DisposableBase {
             // we just create a modelObservationStream-only record with empty config.
             let modelObservationStream = this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
-                .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate && envelope.modelId === modelId)
+                .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate && envelope.storeId === storeId)
                 .share(true);
             const emptyConfig = {
                 eventHandlers: new Map(),
@@ -280,23 +280,23 @@ export class EventBus extends DisposableBase {
                 subscriptionFactories: [],
             };
             const noopPublish: PublishDelegate = () => {};
-            storeRecord = new StoreRecord(modelId, null, modelObservationStream, emptyConfig as any, noopPublish);
-            this._models.set(modelId, storeRecord);
+            storeRecord = new StoreRecord(storeId, null, modelObservationStream, emptyConfig as any, noopPublish);
+            this._models.set(storeId, storeRecord);
         }
         return storeRecord;
     }
 
-    private _tryEnqueueEvent(modelAddress: ModelAddress, eventType: string, event: any) {
+    private _tryEnqueueEvent(storeAddress: StoreAddress, eventType: string, event: any) {
         // we allow for lazy model registration, you can observe a model but then register it later,
         // this means at this point when publishing an event we need to ensure the actual model is there.
-        if (!this._models.has(modelAddress.modelId) || !this._models.get(modelAddress.modelId).model) {
-            throw new Error('Can not publish event of type [' + eventType + '] as model with id [' + modelAddress.modelId + '] not registered');
+        if (!this._models.has(storeAddress.storeId) || !this._models.get(storeAddress.storeId).model) {
+            throw new Error('Can not publish event of type [' + eventType + '] as store with id [' + storeAddress.storeId + '] not registered');
         } else {
             try {
-                if (this._models.has(modelAddress.modelId)) {
-                    let storeRecord = this._getOrCreateStoreRecord(modelAddress.modelId);
-                    if (storeRecord.tryEnqueueEvent(modelAddress.entityKey, eventType, event)) {
-                        this._diagnosticMonitor.eventEnqueued(modelAddress.modelId, modelAddress.entityKey, eventType, event);
+                if (this._models.has(storeAddress.storeId)) {
+                    let storeRecord = this._getOrCreateStoreRecord(storeAddress.storeId);
+                    if (storeRecord.tryEnqueueEvent(storeAddress.entityKey, eventType, event)) {
+                        this._diagnosticMonitor.eventEnqueued(storeAddress.storeId, storeAddress.entityKey, eventType, event);
                         this._purgeEventQueues();
                     }
                 }
@@ -313,7 +313,7 @@ export class EventBus extends DisposableBase {
             this._diagnosticMonitor.dispatchLoopStart();
             while (hasEvents) {
                 let eventRecord: EventRecord = storeRecord.eventQueue.shift();
-                this._diagnosticMonitor.startingModelEventLoop(storeRecord.modelId, eventRecord.entityKey, eventRecord.eventType);
+                this._diagnosticMonitor.startingModelEventLoop(storeRecord.storeId, eventRecord.entityKey, eventRecord.eventType);
 
                 // Wrap the entire pre-processing → event dispatch → post-processing cycle in a
                 // single immer produce so the model is a mutable draft throughout. Effects are
@@ -321,7 +321,7 @@ export class EventBus extends DisposableBase {
                 const newModel = produce(storeRecord.currentModel, (draft: any) => {
                     storeRecord.currentModel = draft;
 
-                    this._state.moveToPreProcessing(storeRecord.modelId, storeRecord);
+                    this._state.moveToPreProcessing(storeRecord.storeId, storeRecord);
                     this._diagnosticMonitor.preProcessingModel();
                     storeRecord.preEventProcessor(draft);
 
@@ -385,7 +385,7 @@ export class EventBus extends DisposableBase {
 
     private _dispatchEventToEventProcessors(storeRecord: StoreRecord, entityKey: string, event: any, eventType: string): void {
         let eventContext = new DefaultEventContext(
-            storeRecord.modelId,
+            storeRecord.storeId,
             eventType,
             entityKey
         );
@@ -397,7 +397,7 @@ export class EventBus extends DisposableBase {
         }
         this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.preview);
         if (eventContext.isCommitted) {
-            throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], ModelId: [' + storeRecord.modelId + ']');
+            throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
         }
 
         if (!eventContext.isCanceled) {
@@ -410,7 +410,7 @@ export class EventBus extends DisposableBase {
             }
             this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
-                throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], ModelId: [' + storeRecord.modelId + ']');
+                throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
             }
 
             let wasCommittedAtNormalStage = eventContext.isCommitted;
@@ -418,7 +418,7 @@ export class EventBus extends DisposableBase {
                 eventContext.updateCurrentState(ObservationStage.committed);
                 this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.committed);
                 if (eventContext.isCanceled) {
-                    throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], ModelId: [' + storeRecord.modelId + ']');
+                    throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
                 }
             }
 
@@ -426,10 +426,10 @@ export class EventBus extends DisposableBase {
             eventContext.updateCurrentState(ObservationStage.final);
             this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.final);
             if (eventContext.isCanceled) {
-                throw new Error('You can\'t cancel an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + storeRecord.modelId + ']');
+                throw new Error('You can\'t cancel an event at the final stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
             }
             if (!wasCommittedAtNormalStage && eventContext.isCommitted) {
-                throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], ModelId: [' + storeRecord.modelId + ']');
+                throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
             }
 
             // --- collect effects to run after produce completes with the frozen model ---
@@ -446,7 +446,7 @@ export class EventBus extends DisposableBase {
         this._dispatchSubject.onNext({
             event: event,
             eventType: eventType,
-            modelId: storeRecord.modelId,
+            storeId: storeRecord.storeId,
             entityKey: entityKey,
             model: storeRecord.model,
             context: context,
@@ -466,9 +466,9 @@ export class EventBus extends DisposableBase {
         }
         for (let i = 0, len = updates.length; i < len; i++) {
             let storeRecord: StoreRecord = updates[i];
-            this._diagnosticMonitor.dispatchingModelUpdates(storeRecord.modelId, storeRecord.model);
+            this._diagnosticMonitor.dispatchingModelUpdates(storeRecord.storeId, storeRecord.model);
             this._dispatchSubject.onNext({
-                modelId: storeRecord.modelId,
+                storeId: storeRecord.storeId,
                 model: storeRecord.model,
                 dispatchType: DispatchType.ModelUpdate
             });
@@ -506,8 +506,8 @@ export class EventBus extends DisposableBase {
 
         this._state.moveToHalted();
 
-        let modelIds = [...this._models.keys()];
-        this._diagnosticMonitor.halted(modelIds, err);
+        let storeIds = [...this._models.keys()];
+        this._diagnosticMonitor.halted(storeIds, err);
         let errorMessage = 'The ESP event bus has caught an unhandled error and will halt';
         _log.error(errorMessage, err);
         this._haltingException = err;

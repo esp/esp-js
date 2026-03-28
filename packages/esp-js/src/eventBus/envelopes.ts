@@ -17,11 +17,11 @@ export interface EventEnvelope<TEvent, TModel> {
      */
     eventType: string;
     /**
-     * The target model's ID
+     * The target store's ID
      */
-    modelId: string;
+    storeId: string;
     /**
-     * An optional model path that may have been provided when the even was published to the EventBus
+     * An optional store path that may have been provided when the event was published to the EventBus
      */
     entityKey: string;
     /**
@@ -44,6 +44,6 @@ export interface EventEnvelope<TEvent, TModel> {
 
 export interface ModelEnvelope<TModel> {
     model: TModel;
-    modelId: string;
+    storeId: string;
     dispatchType: DispatchType;
 }

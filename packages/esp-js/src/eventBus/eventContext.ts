@@ -20,9 +20,9 @@ import {ObservationStage} from './observationStage';
 
 export interface EventContext {
     /**
-     * The model ID the event was delivered to.
+     * The store ID the event was delivered to.
      */
-    modelId: string;
+    storeId: string;
     /**
      * The current state in the dispatch loop
      */
@@ -54,15 +54,15 @@ export interface EventContext {
 }
 
 export class DefaultEventContext implements EventContext {
-    private _modelId: string;
+    private _storeId: string;
     private _eventType: string;
     private _entityKey: string;
     private _isCanceled: boolean;
     private _isCommitted: boolean;
     private _currentStage: ObservationStage;
 
-    public constructor(modelId: string, eventType: string, entityKey: string) {
-        this._modelId = modelId;
+    public constructor(storeId: string, eventType: string, entityKey: string) {
+        this._storeId = storeId;
         this._eventType = eventType;
         this._entityKey = entityKey;
         this._isCanceled = false;
@@ -78,8 +78,8 @@ export class DefaultEventContext implements EventContext {
         return this._eventType;
     }
 
-    get modelId() {
-        return this._modelId;
+    get storeId() {
+        return this._storeId;
     }
 
     get entityKey() {
@@ -102,7 +102,7 @@ export class DefaultEventContext implements EventContext {
         if (!this._isCanceled) {
             this._isCanceled = true;
         } else {
-            throw new Error('event [' + this._eventType + '] for model [' + this._modelId + '] is already cancelled');
+            throw new Error('event [' + this._eventType + '] for store [' + this._storeId + '] is already cancelled');
         }
     }
 
@@ -110,7 +110,7 @@ export class DefaultEventContext implements EventContext {
         if (!this._isCommitted) {
             this._isCommitted = true;
         } else {
-            throw new Error('event [' + this._eventType + '] for model [' + this._modelId + '] is already committed');
+            throw new Error('event [' + this._eventType + '] for store [' + this._storeId + '] is already committed');
         }
     }
 }

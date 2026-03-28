@@ -2,7 +2,7 @@ import * as React from 'react';
 import {useEventBus} from './espEventBusContextProvider';
 import {useMemo} from 'react';
 import {EventBus} from 'esp-js';
-import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
+import {EspStoreContextProvider, useGetStoreId} from './espStoreContextProvider';
 import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
@@ -10,7 +10,7 @@ export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (e
 export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
 export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
-    modelId?: string;
+    storeId?: string;
     view?: React.ComponentType;
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
     mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
@@ -18,7 +18,7 @@ export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {},
 }
 
 export interface ConnectableComponentChildProps<TModel = object> {
-    modelId: string;
+    storeId: string;
     model: TModel;
     bus: EventBus;
     [key: string]: any; // ...rest props
@@ -26,14 +26,14 @@ export interface ConnectableComponentChildProps<TModel = object> {
 
 const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
     bus: EventBus,
-    modelId: string,
+    storeId: string,
     restProps: object,
     model: TModel,
     mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     publishEventProps: TPublishEventProps
 ): ConnectableComponentChildProps<TModel> => {
     let childProps = {
-        modelId,
+        storeId,
         bus: bus,
         ...restProps,
         ...publishEventProps,
@@ -50,7 +50,7 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
 
 export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}>(
     {
-        modelId,
+        storeId,
         mapModelToProps,
         createPublishEventProps,
         view,
@@ -59,33 +59,33 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
 ) => {
     const bus = useEventBus();
     // Note: we always need to render the hooks else react will complain about a different count.
-    let modelIdFromContext = useGetModelId();
-    modelId = modelId || modelIdFromContext;
+    let storeIdFromContext = useGetStoreId();
+    storeId = storeId || storeIdFromContext;
     const publishEventProps: TPublishEventProps = useMemo(
         () => {
             if (createPublishEventProps) {
                 const publishModelEvent = (eventType: string, event: any) => {
-                    bus.publishEvent(modelId, eventType, event);
+                    bus.publishEvent(storeId, eventType, event);
                 };
                 return createPublishEventProps(publishModelEvent);
             }
             return {} as TPublishEventProps;
         },
-        [bus, modelId]
+        [bus, storeId]
     );
     const model = useSyncModelWithSelector<TModel, TModel>(
         m => m,
         syncModelWithSelectorOptions()
-            .setModelId(modelId)
+            .setStoreId(storeId)
     );
     if (model == null) {
         return null;
     }
-    let childProps = getChildProps(bus, modelId, rest, model, mapModelToProps, publishEventProps);
+    let childProps = getChildProps(bus, storeId, rest, model, mapModelToProps, publishEventProps);
     let viewElement = view ? React.createElement(view as React.ComponentType<any>, childProps) : null;
     return (
-        <EspModelContextProvider modelId={modelId} model={model} bus={bus} {...childProps}>
+        <EspStoreContextProvider storeId={storeId} model={model} bus={bus} {...childProps}>
             {viewElement}
-        </EspModelContextProvider>
+        </EspStoreContextProvider>
     );
 };

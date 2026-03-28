@@ -39,8 +39,8 @@ describe('EventBus', () => {
         });
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.getModelObservable(undefined).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
-            expect(() => {_bus.getModelObservable(<any>{}).subscribe(() => {}); }).toThrow(new Error('The modelId should be a string'));
+            expect(() => {_bus.getModelObservable(undefined).subscribe(() => {}); }).toThrow(new Error('The storeId should be a string'));
+            expect(() => {_bus.getModelObservable(<any>{}).subscribe(() => {}); }).toThrow(new Error('The storeId should be a string'));
         });
 
         it('dispatches model once registered', () => {

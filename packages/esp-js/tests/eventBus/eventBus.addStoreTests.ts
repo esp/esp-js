@@ -28,7 +28,7 @@ describe('EventBus', () => {
     });
 
     describe('.storeBuilder()', () => {
-        it('throws if modelId not a string', () => {
+        it('throws if storeId not a string', () => {
             expect(() => { registerModel(_bus, undefined, {}); }).toThrow();
             expect(() => { registerModel(_bus, <any>{}, {}); }).toThrow();
         });
@@ -39,7 +39,7 @@ describe('EventBus', () => {
 
         it('should throw if model already registered', () => {
             registerModel(_bus, 'modelId', {});
-            expect(() => { registerModel(_bus, 'modelId', {}); }).toThrow(new Error('The model with id [modelId] is already registered'));
+            expect(() => { registerModel(_bus, 'modelId', {}); }).toThrow(new Error('The store with id [modelId] is already registered'));
         });
 
         it('StoreBuilder throws if handler undefined', () => {

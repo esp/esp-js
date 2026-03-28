@@ -2,13 +2,13 @@ import {EventContext, EventBus} from 'esp-js';
 
 export type TestModelState = { value: string, modelId: string, entityKey: string };
 
-export const createTestModel = (bus: EventBus, modelId: string): TestModelState => {
+export const createTestModel = (bus: EventBus, storeId: string): TestModelState => {
     const initialState: TestModelState = {
         value: 'initial-value',
         entityKey: '',
-        modelId,
+        modelId: storeId,
     };
-    bus.storeBuilder<TestModelState>(modelId, initialState)
+    bus.storeBuilder<TestModelState>(storeId, initialState)
         .withEventHandler('test-event', (draft, ev: string) => {
             draft.value = ev;
         })

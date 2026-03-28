@@ -110,6 +110,49 @@ describe('Container', () =>  {
             expect(resolved.dependencies[1]).toEqual("Bar");
         });
 
+        describe('.resolveMany()', () => {
+
+            it('should resolve two dependencies and return an object keyed by their ids', () => {
+                let instanceA = {};
+                let instanceB = {};
+                container.registerInstance('serviceA', instanceA);
+                container.registerInstance('serviceB', instanceB);
+                let result = container.resolveMany('serviceA', 'serviceB');
+                expect(result.serviceA).toBe(instanceA);
+                expect(result.serviceB).toBe(instanceB);
+            });
+
+            it('should support destructuring assignment', () => {
+                let instanceA = { name: 'a' };
+                let instanceB = { name: 'b' };
+                container.registerInstance('serviceA', instanceA);
+                container.registerInstance('serviceB', instanceB);
+                const { serviceA, serviceB } = container.resolveMany('serviceA', 'serviceB');
+                expect(serviceA).toBe(instanceA);
+                expect(serviceB).toBe(instanceB);
+            });
+
+            it('should throw when resolving an unregistered id', () => {
+                expect(() => {
+                    container.resolveMany('notRegistered');
+                }).toThrow();
+            });
+
+            it('should throw a descriptive error when any one of the ids is not registered', () => {
+                let instanceA = {};
+                container.registerInstance('serviceA', instanceA);
+                expect(() => {
+                    container.resolveMany('serviceA', 'notRegistered');
+                }).toThrow();
+            });
+
+            it('should throw when called with no arguments', () => {
+                expect(() => {
+                    container.resolveMany();
+                }).toThrow();
+            });
+        });
+
         describe('groups', () =>  {
 
             it('should be able able to register/resolve many objects with the same key', () =>  {

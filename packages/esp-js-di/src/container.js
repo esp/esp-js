@@ -132,6 +132,24 @@ export default class Container {
         }
         return instance;
     }
+    resolveMany(...specs) {
+        this._throwIfDisposed();
+        Guard.isTrue(specs.length > 0, 'Error calling resolveMany(...specs). At least one spec argument must be provided');
+        const result = {};
+        for (let i = 0, len = specs.length; i < len; i++) {
+            const spec = specs[i];
+            if (utils.isString(spec)) {
+                Guard.isNonEmptyString(spec, `Error calling resolveMany(...specs). Spec at index [${i}] must be a non-empty string`);
+                result[spec] = this.resolve(spec);
+            } else {
+                Guard.isNotNullOrUndefined(spec, `Error calling resolveMany(...specs). Spec at index [${i}] must be a non-empty string or an object with a name property`);
+                Guard.isNonEmptyString(spec.name, `Error calling resolveMany(...specs). Spec at index [${i}] must have a non-empty string name property`);
+                const additionalDependencies = spec.additionalDependencies || [];
+                result[spec.name] = this.resolve(spec.name, ...additionalDependencies);
+            }
+        }
+        return result;
+    }
     resolveGroup(groupName, ...additionalDependencies) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(groupName, 'Error calling resolveGroup(groupName). The groupName argument must be a string and can not be \'\'');

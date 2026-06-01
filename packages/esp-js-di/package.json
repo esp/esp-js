@@ -25,6 +25,11 @@
   "module": ".dist/esp-js-di.esm.js",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esp/esp-js.git",
+    "directory": "packages/esp-js-di"
+  },
   "typings": "./esp-js-di.d.ts",
   "files": [
     ".dist",

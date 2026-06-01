@@ -27,7 +27,11 @@
   ],
   "author": "Keith Woods",
   "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esp/esp-js.git",
+    "directory": "packages/esp-js-ui"
+  },
   "peerDependencies": {
     "esp-js": "^9.0.0-beta.0",
     "esp-js-di": "^9.0.0-beta.0"

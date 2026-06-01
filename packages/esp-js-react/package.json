@@ -18,7 +18,11 @@
   ],
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esp/esp-js.git",
+    "directory": "packages/esp-js-react"
+  },
   "scripts": {
     "clean": "nps clean",
     "build-dev": "nps build-dev",

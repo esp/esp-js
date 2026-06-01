@@ -27,7 +27,11 @@
   ],
   "author": "Keith Woods",
   "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esp/esp-js.git",
+    "directory": "packages/esp-js"
+  },
   "dependencies": {
     "immer": "^10.1.1"
   },

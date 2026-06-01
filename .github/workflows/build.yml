@@ -10,10 +10,10 @@ on:
   workflow_dispatch:
   # Trigger on a push.
   push:
-    branches: [ $default-branch, 'feature/**', 'release/**' ]
+    branches: [ master, 'feature/**', 'release/**' ]
   # Trigger on default pull request events (created etc).
   pull_request:
-    branches: [ $default-branch, 'feature/**', 'release/**' ]
+    branches: [ master, 'feature/**', 'release/**' ]
 
 jobs:
   build:

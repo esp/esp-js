@@ -1,27 +1,54 @@
-[![Build Status](https://travis-ci.org/esp/esp-js.svg?branch=master)](https://travis-ci.org/esp/esp-js)
-![](https://img.shields.io/npm/types/esp-js)
-[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+![npm type definitions](https://img.shields.io/npm/types/esp-js)
 
 # Evented State Processor (ESP)
 
-ESP gives you the ability to manage changes to a model in a deterministic event driven manner.
-It does this by adding specific processing workflow around changes to a model's state. 
-It was born out of the need to manage complex UI and/or server state.
+ESP lets you manage changes to a store's state in a deterministic, event-driven manner.
+A central `EventBus` sits between event publishers and your stores: publishers publish events to the bus, the bus dispatches each event through ordered observation stages so the store can apply the change, and then a frozen immutable snapshot of the store is pushed to its observers.
+It's lightweight, easy to apply, and designed for complex UI and/or server state — including large composite single-page applications.
 
-At its core is a `EventBus` which sits between event publishers and the model.
-Those wanting to change the model publish events to the `EventBus`.
-The model observes the events and applies the changes.
-The model is then dispatched to model observers so new state can be applied.
-It's lightweight, easy to apply and puts the model at the forefront of your design.
+## Packages
 
-ESP 2.0 adds a host of other additional libraries to help you build composite single page application with React.
-It allows you to use either OO, and/or immutable pattens (Redux like) for modeling independent and decoupled screens within your composite application.
-Features include:
+ESP is published as a family of packages that share a single version:
 
-* The core EventBus - esp-js [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js) 
-* Dependency injection container - esp-js-di [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
-* React support - esp-js-react [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
+* **esp-js** — the core `EventBus` and the immer-based `StoreBuilder` [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
+* **esp-js-di** — a standalone IoC / dependency-injection container [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
+* **esp-js-ui** — application bootstrapping and module loading (`AppBuilder`, `ModuleBuilder`) [![npm](https://img.shields.io/npm/v/esp-js-ui.svg)](https://www.npmjs.com/package/esp-js-ui)
+* **esp-js-react** — React bindings (`EspApp`, `RegionView`, `ConnectableComponent`, hooks) [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
 
-It's built on typescript and type definitions are included in the npm packages.
+Everything is written in TypeScript and type definitions are included in each npm package.
 
-For full documentation please see [https://esp.github.io/](https://esp.github.io/).
+## A quick taste
+
+```ts
+import { EventBus } from 'esp-js';
+
+const bus = new EventBus();
+
+type CounterStore = { count: number };
+
+bus.storeBuilder<CounterStore>('counter', { count: 0 })
+    .withEventHandler('Increment', (draft, e: { by: number }) => {
+        draft.count += e.by;           // mutate the immer draft directly
+    })
+    .build();
+
+bus.getModelObservable<CounterStore>('counter')
+    .subscribe(store => console.log(store.count));
+
+bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
+```
+
+## This repository
+
+This is the ESP monorepo, managed with npm workspaces and Turborepo, built with Vite and tested with Vitest.
+
+```bash
+npm install          # link the workspace packages
+npm run build-dev    # build all packages in dependency order
+npm test             # run all package test suites
+npm run dev          # watch-mode build across all packages
+```
+
+The `examples/example-app` directory contains a TodoMVC-style app demonstrating the full stack end to end.
+
+For full documentation see [https://esp.github.io/](https://esp.github.io/), or browse the source at [github.com/esp/esp-js](https://github.com/esp/esp-js).

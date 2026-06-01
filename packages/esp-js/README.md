@@ -1,27 +1,59 @@
-[![Build Status](https://travis-ci.org/esp/esp-js.svg?branch=master)](https://travis-ci.org/esp/esp-js)
-![](https://img.shields.io/npm/types/esp-js)
-[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+[![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
+![npm type definitions](https://img.shields.io/npm/types/esp-js)
 
-# Evented State Processor (ESP) - Package esp-js
+# Evented State Processor (ESP) — esp-js
 
-ESP gives you the ability to manage changes to a model in a deterministic event driven manner.
-It does this by adding specific processing workflow around changes to a model's state. 
-It was born out of the need to manage complex UI and/or server state.
+`esp-js` is the core of ESP: the `EventBus` and the immer-based `StoreBuilder`.
 
-At its core is a `EventBus` which sits between event publishers and the model.
-Those wanting to change the model publish events to the `EventBus`.
-The model observes the events and applies the changes.
-The model is then dispatched to model observers so new state can be applied.
-It's lightweight, easy to apply and puts the model at the forefront of your design.
+ESP lets you manage changes to a store's state in a deterministic, event-driven manner.
+A central `EventBus` sits between event publishers and your stores: publishers publish events to the bus, the bus dispatches each event through ordered observation stages so the store can apply the change, and then a frozen immutable snapshot of the store is pushed to its observers.
+It's lightweight, easy to apply, and designed for complex UI and/or server state.
 
-ESP 2.0 adds a host of other additional libraries to help you build composite single page application with React.
-It allows you to use either OO, and/or immutable pattens (Redux like) for modeling independent and decoupled screens within your composite application.
-Features include:
+## Install
 
-* The core EventBus - esp-js [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js) 
-* Dependency injection container - esp-js-di [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
-* React support - esp-js-react [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
+```bash
+npm install esp-js
+```
 
-It's built on typescript and type definitions are included in the npm packages.
+## Usage
 
-For full documentation please see [https://esp.github.io/](https://esp.github.io/).
+Register a store with `storeBuilder`, then publish events to it. Event handlers receive an [immer](https://immerjs.github.io/immer/) draft and mutate it directly; the bus produces a new frozen snapshot after all handlers for a dispatch have run.
+
+```ts
+import { EventBus } from 'esp-js';
+
+const bus = new EventBus();
+
+type CounterStore = { count: number };
+
+bus.storeBuilder<CounterStore>('counter', { count: 0 })
+    .withEventHandler('Increment', (draft, e: { by: number }) => {
+        draft.count += e.by;
+    })
+    .withPreviewHandler('Increment', (store, e, ctx) => {
+        if (store.count >= 100) ctx.cancel();   // observe/cancel before mutation
+    })
+    .withEffect('Increment', (store, e, ctx, publish) => {
+        publish('Logged', { count: store.count }); // side effects after mutation
+    })
+    .build();
+
+bus.getModelObservable<CounterStore>('counter')
+    .subscribe(store => console.log(store.count));
+
+bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
+```
+
+Events pass through up to four ordered observation stages — `preview`, `normal`, `committed`, `final`.
+A class instance used as store state must include `[immerable] = true` from `immer`.
+
+## The ESP package family
+
+* **esp-js** — the core `EventBus` and `StoreBuilder` (this package)
+* **esp-js-di** — a standalone IoC / dependency-injection container [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
+* **esp-js-ui** — application bootstrapping and module loading [![npm](https://img.shields.io/npm/v/esp-js-ui.svg)](https://www.npmjs.com/package/esp-js-ui)
+* **esp-js-react** — React bindings [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
+
+Written in TypeScript; type definitions are included in the package.
+
+For full documentation see [https://esp.github.io/](https://esp.github.io/), or browse the source at [github.com/esp/esp-js](https://github.com/esp/esp-js).

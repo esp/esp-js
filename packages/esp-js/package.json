@@ -1,6 +1,6 @@
 {
   "name": "esp-js",
-  "version": "8.1.0",
+  "version": "9.0.0-beta.0",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",
@@ -21,6 +21,10 @@
   "main": ".dist/esp-js.js",
   "module": ".dist/esp-js.esm.js",
   "typings": ".dist/typings/index.d.ts",
+  "files": [
+    ".dist",
+    "NOTICE"
+  ],
   "author": "Keith Woods",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",

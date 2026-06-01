@@ -1,6 +1,6 @@
 {
   "name": "esp-js-di",
-  "version": "8.1.0",
+  "version": "9.0.0-beta.0",
   "description": "A tiny DI container (formally microdi-js)",
   "keywords": [
     "di",
@@ -26,6 +26,11 @@
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "typings": "./esp-js-di.d.ts",
+  "files": [
+    ".dist",
+    "esp-js-di.d.ts",
+    "NOTICE"
+  ],
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "typescript": "^5.8.0",

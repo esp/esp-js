@@ -17,8 +17,25 @@
 // notice_end
 
 import { defineConfig, type UserConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+
+/**
+ * True when Vite is run as `vite build --watch` (i.e. the `dev` task).
+ * Declaration generation is not needed during watch and, under concurrent
+ * watchers, racing reads/writes of sibling `.dist/typings` produce spurious
+ * TS2307 errors — so the dts plugin is skipped in this mode.
+ */
+export const isWatchBuild = process.argv.includes('--watch');
+
+/**
+ * Returns the `vite-plugin-dts` plugin, or nothing when running in watch mode.
+ * Spread into a `plugins` array: `plugins: [...dtsPlugin({...})]`.
+ */
+export function dtsPlugin(options: Parameters<typeof dts>[0]) {
+    return isWatchBuild ? [] : [dts(options)];
+}
 
 /**
  * Read peer dependencies from the package's own package.json and return

@@ -58,13 +58,21 @@ npm run dev             # watch-mode build across all packages (parallel)
 
 To bypass Turbo's cache for a command: `npm run build-dev -- --force`
 
-### Release commands
+### Release / publish commands
+
+All four public packages (`esp-js`, `esp-js-di`, `esp-js-ui`, `esp-js-react`) share one version and are published together. `scripts/publish-packages.js` **always** bumps that version, keeps the intra-repo `dependencies`/`peerDependencies` ranges in lockstep (`^<version>`), then runs `npm publish --workspaces` (the private `example-app` is skipped automatically). Every publish advances the version — there is no publish-without-bump path. Publishing requires `npm login`.
 
 ```bash
-npm run release-patch   # clean + build-prod + publish patch
-npm run release-minor   # clean + build-prod + publish minor
-npm run release-major   # clean + build-prod + publish major
+npm run release-patch    # clean + build-prod + bump patch + publish (tag: latest)
+npm run release-minor    # clean + build-prod + bump minor + publish (tag: latest)
+npm run release-major    # clean + build-prod + bump major + publish (tag: latest)
+
+npm run publish-beta     # clean + build-prod + bump prerelease (beta.N → beta.N+1) + publish (tag: beta)
 ```
+
+Direct invocation (e.g. to preview): `node scripts/publish-packages.js <patch|minor|major|prerelease> [--preid beta] [--tag <npmTag>] [--dry-run]`. Use `--dry-run` to run `npm publish` in dry-run mode without publishing.
+
+> Note: the legacy `pre-release-*` scripts only run `clean + build-prod` (no publish) and predate `publish-packages.js`.
 
 ## Build System
 

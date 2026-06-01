@@ -17,8 +17,7 @@
 // notice_end
 
 import { mergeConfig } from 'vite';
-import dts from 'vite-plugin-dts';
-import { createBaseConfig } from '../../vite.config.base';
+import { createBaseConfig, dtsPlugin } from '../../vite.config.base';
 
 const packageDir = __dirname;
 
@@ -26,7 +25,7 @@ export default mergeConfig(
     createBaseConfig(packageDir, 'src/index.ts', 'espJs', 'esp-js'),
     {
         plugins: [
-            dts({
+            ...dtsPlugin({
                 // Generate declarations from src/ only; output to .dist/typings/
                 include: ['src/**/*', 'typings/**/*'],
                 outDir: '.dist/typings',

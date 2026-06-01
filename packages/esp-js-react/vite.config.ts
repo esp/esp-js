@@ -18,8 +18,7 @@
 
 import { mergeConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import dts from 'vite-plugin-dts';
-import { createBaseConfig } from '../../vite.config.base';
+import { createBaseConfig, dtsPlugin } from '../../vite.config.base';
 
 const packageDir = __dirname;
 
@@ -31,7 +30,7 @@ export default mergeConfig(
         plugins: [
             // Vite needs the React plugin for JSX/TSX transformation in library mode
             react(),
-            dts({
+            ...dtsPlugin({
                 include: ['src/**/*'],
                 outDir: '.dist/typings',
                 tsconfigPath: './tsconfig.json',

@@ -1,6 +1,6 @@
 {
   "name": "esp-js-ui",
-  "version": "8.1.0",
+  "version": "9.0.0-beta.0",
   "description": "Module loading and bootstrapping for ESP applications",
   "keywords": [
     "esp",
@@ -21,12 +21,16 @@
   "main": ".dist/esp-js-ui.js",
   "module": ".dist/esp-js-ui.esm.js",
   "typings": ".dist/typings/index.d.ts",
+  "files": [
+    ".dist",
+    "NOTICE"
+  ],
   "author": "Keith Woods",
   "license": "Apache-2.0",
   "repository": "https://github.com/esp/esp-js",
   "peerDependencies": {
-    "esp-js": "^8.0.0",
-    "esp-js-di": "^8.0.0"
+    "esp-js": "^9.0.0-beta.0",
+    "esp-js-di": "^9.0.0-beta.0"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",

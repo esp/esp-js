@@ -47,11 +47,11 @@ import {Container} from 'esp-js-di';
 
 const container = new Container();
 
-// Register a class (transient by default)
+// Register a class (SINGLETON by default — see Gotchas)
 container.register('myService', MyService);
 
-// Register as singleton
-container.register('myService', MyService).singleton();
+// Make it transient (new instance per resolve)
+container.register('myService', MyService).transient();
 
 // Register with constructor injection
 container.register('myService', MyService).inject('depA', 'depB');
@@ -64,6 +64,11 @@ container.registerFactory('myService', (c) => new MyService(c.resolve('dep')));
 
 // Resolve
 const svc = container.resolve('myService');
+
+// Resolve several at once into a keyed object (destructure-friendly)
+const {bus, myService} = container.resolveMany('bus', 'myService');
+// Per-item constructor deps via object specs:
+const {svc} = container.resolveMany({name: 'svc', additionalDependencies: [arg]});
 
 // Resolve a group (returns array)
 const all = container.resolveGroup('myGroup');
@@ -96,8 +101,9 @@ container
 
 ### Instance Lifecycle Types
 
-- `transient` (default) — new instance per `resolve()`
-- `singleton` — one instance per container level
+- `singleton` (default) — one instance per container level
+- `transient` — new instance per `resolve()`
+- `singletonPerContainer` — one instance per container in a parent/child hierarchy (each child resolves its own)
 - `external` — pre-existing instance registered via `registerInstance()`
 
 ## Public API
@@ -140,6 +146,7 @@ if (!container.isRegistered('myService')) {
 
 ## Gotchas
 
+- **Registrations default to `singleton`, not transient** — call `.transient()` explicitly for per-resolve instances. The `RegistrationModifier` constructor sets singleton, and `register()` defaults the lifecycle to singleton
 - The source is JavaScript, not TypeScript. There are no TypeScript types in the source; type definitions are not generated
 - `resolve()` throws if the name is not registered — check `isRegistered()` first if registration is optional
 - Circular dependency detection is runtime-only — cycles throw with a descriptive error

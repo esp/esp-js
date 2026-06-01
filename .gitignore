@@ -13,7 +13,6 @@ npm-debug.log
 yarn-error.log
 dist/
 lerna-debug.log
-package-lock.json
 .DS_Store
 .yarn
 .yarn-local

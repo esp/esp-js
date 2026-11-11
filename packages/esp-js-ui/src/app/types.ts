@@ -23,18 +23,18 @@ import {Module} from '../modules/types';
 export interface App {
     readonly appName: string;
     /**
-     * The root IoC container. Available after start() resolves.
-     * The EventBus is pre-registered as 'bus'. App-wide services registered
-     * via withContainerConfiguration are also available here.
+     * The root IoC container. Created with the app, so it is available before start().
+     * start() registers the EventBus in it as 'bus', then runs the
+     * withContainerConfiguration hooks, so app-wide services are available after that.
      */
     readonly container: Container;
     /**
-     * The application EventBus. Pre-registered in the container as 'bus'.
-     * Available after start() resolves.
+     * The application EventBus. Created with the app, so it is available before start().
+     * Pre-registered in the container as 'bus' during start().
      */
     readonly eventBus: EventBus;
     /**
-     * All loaded modules. Available after start() resolves.
+     * All loaded modules. Empty until start() has loaded them.
      */
     readonly modules: ReadonlyArray<Module>;
     /**

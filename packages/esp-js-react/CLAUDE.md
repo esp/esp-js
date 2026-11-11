@@ -113,7 +113,7 @@ const publishWithKey = usePublishStoreEventWithEntityKey(); // (entityKey, event
 
 ### useSyncStoreModelWithSelector
 
-Hook-based subscription using React 18's `useSyncExternalStore`. Supports a selector and equality function to avoid unnecessary re-renders:
+Hook-based subscription using React's `useSyncExternalStore`. Supports a selector and equality function to avoid unnecessary re-renders:
 
 ```tsx
 const items = useSyncStoreModelWithSelector<MyModel, Item[]>(
@@ -121,7 +121,6 @@ const items = useSyncStoreModelWithSelector<MyModel, Item[]>(
     syncStoreModelWithSelectorOptions<Item[]>()
         .setStoreId('my-store')
         .setEqualityFn((a, b) => a.length === b.length)
-        .build()
 );
 ```
 
@@ -206,13 +205,13 @@ function CounterView() {
 ## Gotchas
 
 - The output bundle is named `esp-react.js` (not `esp-js-react.js`) — this is intentional and matches the `main` field in `package.json`
-- `useSyncStoreModelWithSelector` uses `useSyncExternalStoreWithSelector` — requires React 18 or the `use-sync-external-store` shim
+- `useSyncStoreModelWithSelector` uses `useSyncExternalStoreWithSelector` from the `use-sync-external-store` package (a dependency). The package needs React 19 (peer dependency `react ^19.0.0`)
 - `ConnectableComponent` re-renders on every model update regardless of selector — for performance-sensitive cases prefer `useSyncStoreModelWithSelector` with an equality function
 - `ConnectableComponent` requires an explicit `view` prop — there is no decorator-based view resolution in v9
 - The model received by hooks and `ConnectableComponent` is always a **frozen immutable snapshot** from immer — never mutate it directly, and do not hold references across dispatches
 - Class instances used as model state must include `[immerable] = true` from `immer`
 - `RegionView` requires `EspModulesContext` to be populated — use `EspApp` or provide `EspModulesContext.Provider` manually
-- `usePublishStoreEvent` / `useGetStoreModel` / `useGetStoreId` require `EspStoreContextProvider` (or `ConnectableComponent`) above them in the tree
+- `usePublishStoreEvent` / `useGetStoreModel` / `useGetStoreId` read from `EspStoreContextProvider` (or `ConnectableComponent`) above them in the tree. Without one they return `null`; they don't throw
 
 - Hooks that return a store's model say "StoreModel" (`useGetStoreModel`, `useSyncStoreModelWithSelector`); store-scoped hooks say "Store" (`useGetStoreId`, `usePublishStoreEvent`). Name values from them `model`, not `store`
 - `useSyncStoreModelWithSelector` skips updates whose model reference hasn't changed (immer returns the same reference when nothing changed), so the replay on subscribe doesn't re-render

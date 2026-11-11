@@ -153,7 +153,7 @@ export type { Module, ModuleContext, ModuleHook, ModuleViewBinding, ModuleLoadRe
 - `AppBuilder.build()` is one-shot — calling `build()` twice throws. Same for `ModuleBuilder.build()`.
 - `app.start()` is idempotent — safe to call multiple times, but only the first call does work.
 - Module `initialise` and `start` failures are isolated (caught and logged) — they do not abort the lifecycle. App-level `withInitialisation` and `withStart` failures are fatal.
-- The `EventBus` instance is created inside `DefaultApp` — you do not pass one in. Access it via `app.eventBus` after `start()`.
+- The `EventBus` instance is created inside `DefaultApp` — you do not pass one in. Access it via `app.eventBus`; it exists as soon as the app is built, before `start()`.
 - Each module gets its own child container (child of the root container). Modules can see root registrations but root cannot see module registrations. Resolve module services via `moduleContainer` from the `ModuleContext`, **not** `app.container` (that's the root).
 - `app.dispose()` also disposes the `EventBus` and root container — don't keep using either afterwards.
 - `withView` records metadata only — rendering is the caller's responsibility (done by `RegionView` in `esp-js-react`, or manually).

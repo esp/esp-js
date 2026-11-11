@@ -76,13 +76,13 @@ const all = container.resolveGroup('myGroup');
 
 ### Child Containers
 
-Child containers prototypically inherit registrations from their parent. Registrations in the child shadow the parent. Disposing a child container disposes its resolved singletons but does not affect the parent.
+Child containers prototypically inherit registrations from their parent, so a registration added to the parent later is visible in the child too. Registrations in the child shadow the parent. Disposing a child container disposes the instances it holds but does not affect the parent. Disposing a parent also disposes its child containers.
 
 ```javascript
 const child = container.createChildContainer();
 child.register('override', SpecialService).singleton();
 const svc = child.resolve('myService'); // falls through to parent if not in child
-child.dispose(); // cleans up child singletons
+child.dispose(); // disposes the instances the child holds
 ```
 
 This pattern is useful when an app has app-wide services in the root container and module-scoped services in child containers — child containers can see parent registrations but not vice versa.
@@ -134,7 +134,7 @@ container.register('myService', MyService).inject('bus').singleton();
 const moduleContainer = rootContainer.createChildContainer();
 moduleContainer.register('localService', LocalService).singleton();
 // ... use it ...
-moduleContainer.dispose(); // LocalService.dispose() called automatically if it implements Disposable
+moduleContainer.dispose(); // calls LocalService's dispose() if it has one
 ```
 
 **Check if registered:**
@@ -150,5 +150,5 @@ if (!container.isRegistered('myService')) {
 - The source is JavaScript, not TypeScript. Types live in the hand-written `esp-js-di.d.ts` — update it with any API change (e.g. `resolveMany`, `isDisposed`)
 - `resolve()` throws if the name is not registered — check `isRegistered()` first if registration is optional
 - Circular dependency detection is runtime-only — cycles throw with a descriptive error
-- Child containers use prototypal inheritance for `_registrations` — this means a child can see parent registrations but registering in the parent after child creation is not guaranteed to be visible in the child (depends on prototype chain timing)
-- `dispose()` on a container does not automatically call `dispose()` on resolved instances unless those instances implement the `Disposable` interface and were tracked
+- Child containers use prototypal inheritance (`Object.create`) for `_registrations` — the prototype chain is live, so a child sees parent registrations, including ones added after the child was created
+- `dispose()` on a container calls `dispose()` on every instance it holds in its own cache (not ones registered as externally owned) that has a `dispose` method — no interface needed. It then disposes its child containers

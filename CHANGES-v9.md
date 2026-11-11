@@ -119,15 +119,14 @@ The `EventProcessors` / `PreEventProcessor` / `PostEventProcessor` types are sti
 
 Health check infrastructure has been removed from `esp-js`.
 
-### `SingleModelEventBus` — removed
+### `router.createModelRouter()` — removed
 
-The `SingleModelEventBus` convenience wrapper is removed. Use `EventBus` directly with `storeBuilder()`.
+In v8, `router.createModelRouter(modelId)` returned a `SingleModelRouter` bound to one model. It is removed. Use `EventBus` directly with `storeBuilder()`.
 
 ### Removed exports from `esp-js`
 
 ```
 ModelBase
-SingleModelEventBus
 observeEvent
 observeEventEnvelope
 EspDecoratorUtil
@@ -417,14 +416,12 @@ Its `.setModelId()` option is renamed `.setStoreId()`.
 syncModelWithSelectorOptions<MyModel>()
     .setModelId('my-model')
     .setTryPreSelectPolimerImmutableModel(true) // removed
-    .build()
 ```
 
 **After (v9):**
 ```typescript
 syncStoreModelWithSelectorOptions<MyModel>()
     .setStoreId('my-store')
-    .build()
 ```
 
 ### `ConnectableComponent` — duck-typing removed

@@ -6,7 +6,7 @@
 `esp-js` is the core of ESP: the `EventBus` and the immer-based `StoreBuilder`.
 
 ESP lets you manage changes to a store's state in a deterministic, event-driven manner.
-A central `EventBus` sits between event publishers and your stores: publishers publish events to the bus, the bus dispatches each event through ordered observation stages so the store can apply the change, and then a frozen immutable snapshot of the store is pushed to its observers.
+A central `EventBus` sits between event publishers and your stores: publishers publish events to the bus, the bus dispatches each event through ordered observation stages so the store can apply the change, and then a frozen immutable snapshot of the store's model is pushed to its observers.
 It's lightweight, easy to apply, and designed for complex UI and/or server state.
 
 ## Install
@@ -24,23 +24,23 @@ import { EventBus } from 'esp-js';
 
 const bus = new EventBus();
 
-type CounterStore = { count: number };
+type Counter = { count: number };
 
-bus.storeBuilder<CounterStore>('counter', { count: 0 })
+bus.storeBuilder<Counter>('counter', { count: 0 })
     .withEventHandler('Increment', (draft, e: { by: number }) => {
         draft.count += e.by;
     })
-    .withPreviewHandler('Increment', (store, e, ctx) => {
-        if (store.count >= 100) ctx.cancel();   // observe/cancel before mutation
+    .withPreviewHandler('Increment', (model, e, ctx) => {
+        if (model.count >= 100) ctx.cancel();   // observe/cancel before mutation
     })
-    .withEffect('Increment', (store, e, ctx, publish) => {
-        // side effects after mutation; `store` is a frozen snapshot taken right after this event
-        if (store.count === 10) publish('Increment', { by: -10 });
+    .withEffect('Increment', (model, e, ctx, publish) => {
+        // side effects after mutation; `model` is a frozen snapshot taken right after this event
+        if (model.count === 10) publish('Increment', { by: -10 });
     })
     .build();
 
-bus.getStoreModelObservable<CounterStore>('counter')
-    .subscribe(store => console.log(store.count)); // logs: 0 (the current model is replayed on subscribe)
+bus.getStoreModelObservable<Counter>('counter')
+    .subscribe(model => console.log(model.count)); // logs: 0 (the current model is replayed on subscribe)
 
 bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
 ```

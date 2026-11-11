@@ -20,49 +20,37 @@
 //
 // Canonical bootstrap example:
 //
-// import { EventBus } from 'esp-js';
-// import { Container } from 'esp-js-di';
-// import { ModuleBuilder, AppBuilder } from 'esp-js-ui';
+// import { AppBuilder, ModuleBuilder } from 'esp-js-ui';
 //
 // const ordersModule = ModuleBuilder.create('orders-module')
 //     .withContainerConfiguration(container => {
-//         container.register('ordersService', OrdersService).singleton();
+//         // registered in the module's own child container
+//         container.register('ordersService', OrdersService).inject('bus').singleton();
 //     })
 //     .withView('orders-store', OrdersView, 'main-region')
-//     .withInitialisation(async () => { /* resolve services, load data */ })
-//     .withStart(async () => { bus.publishEvent('orders-store', 'AppStarted', {}); })
+//     .withInitialisation(async ({ moduleContainer, eventBus }) => {
+//         const ordersService = moduleContainer.resolve<OrdersService>('ordersService');
+//         registerOrdersStore(eventBus, ordersService, 'orders-store');
+//     })
+//     .withStart(async ({ eventBus }) => { eventBus.publishEvent('orders-store', 'AppStarted', {}); })
 //     .build();
 //
 // const app = AppBuilder.create('my-app')
 //     .withModule(ordersModule)
 //     .withModule(async () => import('./newsModule').then(m => m.newsModule))
-//     .withInitialisation(async () => { /* app-level init, runs before modules */ })
-//     .withStart(async () => { /* app-level start, runs after modules */ })
+//     .withInitialisation(async app => { /* app-level init, runs before modules */ })
+//     .withStart(async app => { /* app-level start, runs after modules */ })
 //     .build();
 //
-// const rootContainer = new Container();
-// rootContainer.registerInstance('bus', new EventBus());
+// await app.start();
 //
-// const modules = await app.loadModules();
-// for (const module of modules) {
-//     module.configureContainer(rootContainer.createChildContainer());
-// }
+// // Render views with esp-js-react: <EspApp app={app}><RegionView regionName="main-region" /></EspApp>
 //
-// const initResults = await app.initialise();
-// const startResults = await app.start();
-//
-// // Render views (caller's responsibility using esp-js-react):
-// // for (const module of modules) {
-// //     for (const binding of module.viewBindings) {
-// //         // <ConnectableComponent modelId={binding.storeId} view={binding.viewComponent} />
-// //         // placed in the shell slot identified by binding.region
-// //     }
-// // }
-//
-// // Cleanup: app.dispose();
+// // Cleanup (modules, then the EventBus and its stores, then the root container):
+// app.dispose();
 
 export { ModuleBuilder } from './modules/moduleBuilder';
-export type { Module, ModuleViewBinding, ModuleLoadResult, ModuleFactory, ModuleOrFactory } from './modules/types';
+export type { Module, ModuleContext, ModuleHook, ModuleViewBinding, ModuleLoadResult, ModuleFactory, ModuleOrFactory } from './modules/types';
 
 export { AppBuilder } from './app/appBuilder';
 export type { App } from './app/types';

@@ -28,14 +28,14 @@ import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor
 import {StoreConfig, PublishDelegate} from '../model/types';
 import {Subscribable} from '../model/subscribable';
 import {StoreBuilder} from '../model/storeBuilder';
-import {produce, freeze} from 'immer';
+import {produce, freeze, current, isDraft} from 'immer';
 
 let _log = Logger.create('EventBus');
 
 type Envelope = ModelEnvelope<any> | EventEnvelope<any, any>;
 
 export class EventBus extends DisposableBase {
-    private _models: Map<string, StoreRecord>;
+    private _stores: Map<string, StoreRecord>;
     private _dispatchSubject: Subject<Envelope>;
     private _haltingException: Error;
     private _state: State;
@@ -44,7 +44,7 @@ export class EventBus extends DisposableBase {
 
     public constructor() {
         super();
-        this._models = new Map();
+        this._stores = new Map();
         this._haltingException = undefined;
         this._dispatchSubject = new Subject<Envelope>();
         this._onErrorHandlers = [];
@@ -123,23 +123,23 @@ export class EventBus extends DisposableBase {
 
     public removeStore(storeId: string) {
         Guard.isString(storeId, 'The storeId argument should be a string');
-        let storeRecord = this._models.get(storeId);
+        let storeRecord = this._stores.get(storeId);
         if (storeRecord) {
             this._diagnosticMonitor.removeStore(storeId);
             storeRecord.wasRemoved = true;
-            this._models.delete(storeId);
+            this._stores.delete(storeId);
             storeRecord.dispose();
             this._dispatchSubject.onNext({storeId: storeId, model: undefined, dispatchType: DispatchType.ModelDelete});
         }
     }
 
-    public isModelRegistered(storeId: string): boolean {
+    public isStoreRegistered(storeId: string): boolean {
         Guard.isString(storeId, 'The storeId argument should be a string');
-        const record = this._models.get(storeId);
+        const record = this._stores.get(storeId);
         return record ? record.hasModel : false;
     }
 
-    public isModelDispatchStatus(storeId: string, status: Status): boolean {
+    public isStoreDispatchStatus(storeId: string, status: Status): boolean {
         return this._state.currentStoreRecord?.storeId === storeId && this._state.currentStatus === status;
     }
 
@@ -151,10 +151,10 @@ export class EventBus extends DisposableBase {
      *
      * @param storeId
      */
-    public getModel<TModel = object>(storeId: string): TModel {
+    public getStoreModel<TModel = object>(storeId: string): TModel {
         Guard.isString(storeId, 'The storeId argument should be a string');
-        if (this._models.get(storeId)) {
-            let storeRecord = this._models.get(storeId);
+        if (this._stores.get(storeId)) {
+            let storeRecord = this._stores.get(storeId);
             if (!storeRecord.hasModel) {
                 throw new Error(`Store with id ${storeId} is registered, however its model has not yet been set. Can not retrieve`);
             }
@@ -173,9 +173,9 @@ export class EventBus extends DisposableBase {
      *
      * @param predicate = a predicate which is used as a test against each model. Will stop on first match
      */
-    public findModel(predicate: (model: any) => boolean) {
+    public findStoreModel(predicate: (model: any) => boolean) {
         Guard.isFunction(predicate, 'predicate should be a function');
-        for (let [key, value] of this._models) {
+        for (let [key, value] of this._stores) {
             if (value.hasModel) {
                 if (predicate(value.model)) {
                     return value.model;
@@ -204,11 +204,16 @@ export class EventBus extends DisposableBase {
     }
 
     public broadcastEvent(eventType: string, event: any) {
+        this._throwIfHaltedOrDisposed();
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument should be defined');
         this._diagnosticMonitor.broadcastEvent(eventType);
-        for (let [key, value] of this._models) {
-            this._tryEnqueueEvent(new DefaultStoreAddress(value.storeId), eventType, event);
+        for (let [key, value] of this._stores) {
+            // Skip placeholder records, created when something observes a store before it is registered.
+            if (!value.hasModel) {
+                continue;
+            }
+            this._tryEnqueueEvent(new DefaultStoreAddress(value.storeId), eventType, event, true);
         }
         try {
             this._purgeEventQueues();
@@ -232,7 +237,7 @@ export class EventBus extends DisposableBase {
         });
     }
 
-    public getModelObservable<TModel>(storeId: string): Subscribable<TModel> {
+    public getStoreModelObservable<TModel>(storeId: string): Subscribable<TModel> {
         return Observable.create(o => {
             this._throwIfHaltedOrDisposed();
             Guard.isString(storeId, 'The storeId should be a string');
@@ -241,6 +246,22 @@ export class EventBus extends DisposableBase {
                 .map(envelope => envelope.model)
                 .subscribe(o);
         });
+    }
+
+    /**
+     * Disposes the bus and every registered store.
+     * Store subscriptions created via StoreBuilder.withEventSubscription() are disposed.
+     */
+    public dispose(): void {
+        if (this.isDisposed) {
+            return;
+        }
+        for (const storeRecord of this._stores.values()) {
+            storeRecord.wasRemoved = true;
+            storeRecord.dispose();
+        }
+        this._stores.clear();
+        super.dispose();
     }
 
     public addOnErrorHandler(handler: (error: Error) => void) {
@@ -263,12 +284,10 @@ export class EventBus extends DisposableBase {
     }
 
     private _getOrCreateStoreRecord(storeId: string): StoreRecord {
-        let storeRecord: StoreRecord = this._models.get(storeId);
+        let storeRecord: StoreRecord = this._stores.get(storeId);
         if (!storeRecord) {
-            // Create a shell record for lazy observation registration (getEventObservable / getModelObservable called before addStore)
-            // This record has no handlers — it will be a proper record once addStore is called.
-            // We create a minimal placeholder; however since we removed lazy addStore support,
-            // we just create a modelObservationStream-only record with empty config.
+            // Create a placeholder record so getStoreModelObservable() can be called before the store is registered.
+            // It has no model and no handlers (hasModel is false) until addStore() upgrades it.
             let modelObservationStream = this._dispatchSubject
                 .cast<ModelEnvelope<any>>()
                 .filter(envelope => envelope.dispatchType === DispatchType.ModelUpdate && envelope.storeId === storeId)
@@ -281,23 +300,26 @@ export class EventBus extends DisposableBase {
             };
             const noopPublish: PublishDelegate = () => {};
             storeRecord = new StoreRecord(storeId, null, modelObservationStream, emptyConfig as any, noopPublish);
-            this._models.set(storeId, storeRecord);
+            this._stores.set(storeId, storeRecord);
         }
         return storeRecord;
     }
 
-    private _tryEnqueueEvent(storeAddress: StoreAddress, eventType: string, event: any) {
+    private _tryEnqueueEvent(storeAddress: StoreAddress, eventType: string, event: any, isBroadcast: boolean = false) {
         // we allow for lazy model registration, you can observe a model but then register it later,
         // this means at this point when publishing an event we need to ensure the actual model is there.
-        if (!this._models.has(storeAddress.storeId) || !this._models.get(storeAddress.storeId).model) {
+        if (!this._stores.has(storeAddress.storeId) || !this._stores.get(storeAddress.storeId).hasModel) {
             throw new Error('Can not publish event of type [' + eventType + '] as store with id [' + storeAddress.storeId + '] not registered');
         } else {
             try {
-                if (this._models.has(storeAddress.storeId)) {
+                if (this._stores.has(storeAddress.storeId)) {
                     let storeRecord = this._getOrCreateStoreRecord(storeAddress.storeId);
                     if (storeRecord.tryEnqueueEvent(storeAddress.entityKey, eventType, event)) {
                         this._diagnosticMonitor.eventEnqueued(storeAddress.storeId, storeAddress.entityKey, eventType, event);
                         this._purgeEventQueues();
+                    } else if (!isBroadcast) {
+                        // Most stores ignore most broadcasts, so only warn for targeted publishes (likely a typo or missing handler).
+                        _log.warn(`Event [${eventType}] published to store [${storeAddress.storeId}] was dropped: the store has no handlers for this event type`);
                     }
                 }
             } catch (err) {
@@ -357,17 +379,25 @@ export class EventBus extends DisposableBase {
                 // Model is now frozen — restore it from the produce result
                 storeRecord.currentModel = newModel as any;
 
-                // Run collected effects against the frozen model, just before clearing the dispatch queue
+                // Run collected effects, each against the frozen snapshot taken right after its own event
                 if (!storeRecord.wasRemoved && this._state.pendingEffects.length > 0) {
                     this._state.moveToEffectsProcessing();
                     for (const pe of this._state.pendingEffects) {
-                        pe.handlers.forEach((h: any) => h(storeRecord.currentModel, pe.event, pe.eventContext, storeRecord.publishDelegate));
+                        pe.handlers.forEach((h: any) => h(pe.model, pe.event, pe.eventContext, storeRecord.publishDelegate));
                     }
                 }
                 this._state.clearPendingEffects();
 
                 if (!storeRecord.wasRemoved) {
                     this._state.clearEventDispatchQueue();
+                }
+
+                // If effects published events to this store, process them before dispatching the model update,
+                // so observers receive a single update.
+                if (!storeRecord.wasRemoved && storeRecord.eventQueue.length > 0) {
+                    this._diagnosticMonitor.endingModelEventLoop();
+                    hasEvents = true;
+                    continue;
                 }
 
                 storeRecord.eventQueuePurged();
@@ -435,7 +465,11 @@ export class EventBus extends DisposableBase {
             // --- collect effects to run after produce completes with the frozen model ---
             const effectHandlers = storeRecord.effectHandlers.get(eventType);
             if (effectHandlers && effectHandlers.length > 0) {
-                this._state.pendingEffects.push({handlers: effectHandlers, event, eventContext});
+                // Snapshot the model as it is right after this event, so each effect sees its own event's result
+                // (not the result of later events in the same batch).
+                const currentModel = storeRecord.currentModel;
+                const model = isDraft(currentModel) ? freeze(current(currentModel), true) : currentModel;
+                this._state.pendingEffects.push({handlers: effectHandlers, event, eventContext, model});
             }
         }
     }
@@ -458,7 +492,7 @@ export class EventBus extends DisposableBase {
 
     private _dispatchModelUpdates() {
         let updates: StoreRecord[] = [];
-        for (let [key, value] of this._models) {
+        for (let [key, value] of this._stores) {
             if (value.hasReceivedEvent) {
                 value.hasReceivedEvent = false;
                 updates.push(value);
@@ -483,7 +517,7 @@ export class EventBus extends DisposableBase {
     private _getNextStoreRecordWithQueuedEvents(): StoreRecord {
         let candidate: StoreRecord = null;
         let dirtyEpochMs: number = Date.now();
-        for (let [key, value] of this._models) {
+        for (let [key, value] of this._stores) {
             if (value.eventQueue.length > 0 && value.eventQueueDirtyEpochMs <= dirtyEpochMs) {
                 candidate = value;
                 dirtyEpochMs = value.eventQueueDirtyEpochMs;
@@ -506,7 +540,7 @@ export class EventBus extends DisposableBase {
 
         this._state.moveToHalted();
 
-        let storeIds = [...this._models.keys()];
+        let storeIds = [...this._stores.keys()];
         this._diagnosticMonitor.halted(storeIds, err);
         let errorMessage = 'The ESP event bus has caught an unhandled error and will halt';
         _log.error(errorMessage, err);

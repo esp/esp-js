@@ -48,7 +48,7 @@ src/
       stores/
         weatherEvents.ts               # WeatherEvents constants + WeatherEventType
         weatherModel.ts                # WeatherModel ([immerable]) + WeatherData + weatherCodeToDescription
-        weatherStore.ts                # registerWeatherStore(app, storeId) — StoreBuilder w/ preview, effect, subscription
+        weatherStore.ts                # registerWeatherStore(eventBus, service, storeId) — StoreBuilder w/ preview, effect, subscription
       views/
         weatherView.tsx                # WeatherView — loading/error/data states, refresh button
 ```
@@ -62,9 +62,10 @@ main.tsx
     .withModule(todoModule)
     .build()
   → app.start()
-      → weatherModule.withInitialisation: registerWeatherStore(app, 'weather-store-id'),
+      → weatherModule.withInitialisation: resolve weatherService from moduleContainer,
+                                          registerWeatherStore(eventBus, service, 'weather-store-id'),
                                           resolve location, publish SetLocation + FetchWeather
-      → todoModule.withInitialisation:    registerTodoStore(app.eventBus, 'todo-store-id')
+      → todoModule.withInitialisation:    registerTodoStore(eventBus, 'todo-store-id')
   → ReactDOM.render(
         <EspApp app={app}>         ← provides EventBus + modules contexts
             <AppShell />
@@ -124,7 +125,7 @@ const publishStoreEvent = usePublishStoreEvent();
 
 The `weather` module is the counterpoint to `todo`: where todo shows the minimal store/view loop, weather exercises the parts of the stack todo does not.
 
-- **esp-js-di** — `weatherModule.ts` registers `WeatherService` as a singleton via `withContainerConfiguration`, then resolves it (`app.container.resolve('weatherService')`) in both `withInitialisation` and `registerWeatherStore`.
+- **esp-js-di** — `weatherModule.ts` registers `WeatherService` as a singleton via `withContainerConfiguration`, then resolves it from the module's own child container (`moduleContainer.resolve('weatherService')` via the `ModuleContext`) in `withInitialisation` and passes it to `registerWeatherStore`.
 - **Async `withInitialisation`** — resolves the user's location (geolocation → reverse-geocode, falling back to Perth, WA), then publishes `SetLocation` followed by `FetchWeather`.
 - **`withPreviewHandler` (cancel)** — cancels `FetchWeather` if a fetch is already in flight (`if (model.isLoading) ctx.cancel()`).
 - **`withEffect`** — performs the async `fetch` against open-meteo and publishes `FetchWeatherSuccess` / `FetchWeatherError` (you cannot `publishEvent` from a normal handler — side effects go here).
@@ -134,7 +135,7 @@ The `weather` module is the counterpoint to `todo`: where todo shows the minimal
 `weatherStore.ts` wires these together:
 
 ```typescript
-app.eventBus.storeBuilder<WeatherModel>(storeId, new WeatherModel())
+eventBus.storeBuilder<WeatherModel>(storeId, new WeatherModel())
     .withEventHandler(WeatherEvents.SetLocation, (draft, e: { lat: number; lon: number; name: string }) => {
         draft.latitude = e.lat; draft.longitude = e.lon; draft.locationName = e.name;
     })

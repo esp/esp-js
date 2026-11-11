@@ -27,7 +27,7 @@ describe('EventBus', () => {
         _bus = new esp.EventBus();
     });
 
-    describe('.getModelObservable()', () => {
+    describe('.getStoreModelObservable()', () => {
 
         beforeEach(() => {
             _bus.storeBuilder('modelId1', {number:0})
@@ -39,14 +39,14 @@ describe('EventBus', () => {
         });
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.getModelObservable(undefined).subscribe(() => {}); }).toThrow(new Error('The storeId should be a string'));
-            expect(() => {_bus.getModelObservable(<any>{}).subscribe(() => {}); }).toThrow(new Error('The storeId should be a string'));
+            expect(() => {_bus.getStoreModelObservable(undefined).subscribe(() => {}); }).toThrow(new Error('The storeId should be a string'));
+            expect(() => {_bus.getStoreModelObservable(<any>{}).subscribe(() => {}); }).toThrow(new Error('The storeId should be a string'));
         });
 
         it('dispatches model once registered', () => {
             let model3UpdateCount = 0;
             _bus.storeBuilder('modelId3', {number:0}).build();
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model3UpdateCount++;
             });
             expect(model3UpdateCount).toBe(1);
@@ -54,10 +54,10 @@ describe('EventBus', () => {
 
         it('dispatches model updates to observers by modelid', () => {
             let model1UpdateCount = 0, model2UpdateCount = 0;
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
-            _bus.getModelObservable('modelId2').subscribe(() => {
+            _bus.getStoreModelObservable('modelId2').subscribe(() => {
                 model2UpdateCount++;
             });
             _bus.publishEvent('modelId1', 'Event1', 'payload');
@@ -68,7 +68,7 @@ describe('EventBus', () => {
 
         it('doesn\'t dispatch to disposed update observers', () => {
             let model1UpdateCount = 0;
-            let disposable = _bus.getModelObservable('modelId1').subscribe(() => {
+            let disposable = _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
             _bus.publishEvent('modelId1', 'Event1', 'payload');
@@ -85,10 +85,10 @@ describe('EventBus', () => {
                 model2EventCount = 0,
                 check1 = false,
                 check2 = false;
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
-            _bus.getModelObservable('modelId2').subscribe(() => {
+            _bus.getStoreModelObservable('modelId2').subscribe(() => {
                 model2UpdateCount++;
             });
             expect(model1UpdateCount).toBe(1);
@@ -116,8 +116,8 @@ describe('EventBus', () => {
                     c2 = m1UpdateCount === 2 && m2UpdateCount === 1 && m1EventCount === 2;
                 })
                 .build();
-            bus2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
-            bus2.getModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
+            bus2.getStoreModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
+            bus2.getStoreModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
             expect(m1UpdateCount).toBe(1);
             expect(m2UpdateCount).toBe(1);
             bus2.publishEvent('modelId1', 'StartEvent', 'payload');
@@ -141,7 +141,7 @@ describe('EventBus', () => {
                     event2Received = true;
                 })
                 .build();
-            bus2.getModelObservable('modelId1').subscribe(() => {
+            bus2.getStoreModelObservable('modelId1').subscribe(() => {
                 if (!publishedEvent2) {
                     publishedEvent2 = true;
                     bus2.publishEvent('modelId1', 'Event2', 1);
@@ -164,9 +164,9 @@ describe('EventBus', () => {
                 })
                 .withEventHandler('Event1', () => {})
                 .build();
-            bus2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
+            bus2.getStoreModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
             expect(m1UpdateCount).toBe(1);
-            bus2.getModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
+            bus2.getStoreModelObservable('modelId2').subscribe(() => { m2UpdateCount++; });
             expect(m2UpdateCount).toBe(1);
             bus2.publishEvent('modelId2', 'StartEvent', 'payload');
             expect(m1UpdateCount).toBe(1);
@@ -180,7 +180,7 @@ describe('EventBus', () => {
             bus2.storeBuilder('modelId1', {number: 0})
                 .withEventHandler('StartEvent', () => {})
                 .build();
-            bus2.getModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
+            bus2.getStoreModelObservable('modelId1').subscribe(() => { m1UpdateCount++; });
             expect(m1UpdateCount).toBe(1);
             // publish an event the model does NOT listen to — no model update
             bus2.publishEvent('modelId1', 'NotObservedEvent', 'payload');
@@ -197,13 +197,13 @@ describe('EventBus', () => {
 
         it('should pump the last model on observation', () => {
             let model1UpdateCount = 0, model1UpdateCount2 = 0;
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
             expect(model1UpdateCount).toBe(1);
             _bus.publishEvent('modelId1', 'Event1', 'payload');
             expect(model1UpdateCount).toBe(2);
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount2++;
             });
             expect(model1UpdateCount).toBe(2);
@@ -217,7 +217,7 @@ describe('EventBus', () => {
             let model1UpdateCount = 0;
             expect(model1UpdateCount).toBe(0);
             _bus.publishEvent('modelId1', 'Event1', 'payload');
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 model1UpdateCount++;
             });
             expect(model1UpdateCount).toBe(1);

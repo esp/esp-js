@@ -59,7 +59,7 @@ describe('StoreBuilder', () => {
                 .build();
 
             let lastModel: SimpleModel = null;
-            _bus.getModelObservable<SimpleModel>('model').subscribe(m => { lastModel = m; });
+            _bus.getStoreModelObservable<SimpleModel>('model').subscribe(m => { lastModel = m; });
 
             // Use the captured publish delegate to publish outside normal flow
             factoryPublish('Add', { amount: 10 });

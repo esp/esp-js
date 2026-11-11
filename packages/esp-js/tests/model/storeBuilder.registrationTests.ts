@@ -34,14 +34,14 @@ describe('StoreBuilder', () => {
 
         it('model is registered with the router after build', () => {
             _bus.storeBuilder<SimpleModel>('myModel', { value: 0 }).build();
-            expect(_bus.isModelRegistered('myModel')).toBe(true);
+            expect(_bus.isStoreRegistered('myModel')).toBe(true);
         });
 
         it('bus.removeStore() removes the model', () => {
             _bus.storeBuilder<SimpleModel>('myModel', { value: 0 }).build();
-            expect(_bus.isModelRegistered('myModel')).toBe(true);
+            expect(_bus.isStoreRegistered('myModel')).toBe(true);
             _bus.removeStore('myModel');
-            expect(_bus.isModelRegistered('myModel')).toBe(false);
+            expect(_bus.isStoreRegistered('myModel')).toBe(false);
         });
 
         it('bus.removeStore() disposes subscription factories', () => {
@@ -62,14 +62,14 @@ describe('StoreBuilder', () => {
             expect(received).toBe(true);
         });
 
-        it('isModelRegistered returns false before registration', () => {
-            expect(_bus.isModelRegistered('notYet')).toBe(false);
+        it('isStoreRegistered returns false before registration', () => {
+            expect(_bus.isStoreRegistered('notYet')).toBe(false);
         });
 
-        it('isModelRegistered returns false after removeStore', () => {
+        it('isStoreRegistered returns false after removeStore', () => {
             _bus.storeBuilder<SimpleModel>('myModel', { value: 0 }).build();
             _bus.removeStore('myModel');
-            expect(_bus.isModelRegistered('myModel')).toBe(false);
+            expect(_bus.isStoreRegistered('myModel')).toBe(false);
         });
 
         it('throws if the same storeId is registered twice', () => {

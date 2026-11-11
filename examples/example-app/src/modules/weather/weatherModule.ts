@@ -1,5 +1,5 @@
 import { Container } from 'esp-js-di';
-import { App, ModuleBuilder } from 'esp-js-ui';
+import { ModuleBuilder, ModuleContext } from 'esp-js-ui';
 import { registerWeatherStore } from './stores/weatherStore';
 import { WeatherEvents } from './stores/weatherEvents';
 import { WeatherService } from './services/weatherService';
@@ -13,11 +13,12 @@ export const weatherModule = ModuleBuilder
         container.register('weatherService', WeatherService).singleton();
     })
     .withView(WEATHER_STORE_ID, WeatherView, 'weather')
-    .withInitialisation(async (app: App) => {
-        registerWeatherStore(app, WEATHER_STORE_ID);
-        const service = app.container.resolve<WeatherService>('weatherService');
+    .withInitialisation(async ({ moduleContainer, eventBus }: ModuleContext) => {
+        // weatherService was registered in this module's own child container (see withContainerConfiguration above)
+        const service = moduleContainer.resolve<WeatherService>('weatherService');
+        registerWeatherStore(eventBus, service, WEATHER_STORE_ID);
         const location = await service.resolveLocation();
-        app.eventBus.publishEvent(WEATHER_STORE_ID, WeatherEvents.SetLocation, location);
-        app.eventBus.publishEvent(WEATHER_STORE_ID, WeatherEvents.FetchWeather, {});
+        eventBus.publishEvent(WEATHER_STORE_ID, WeatherEvents.SetLocation, location);
+        eventBus.publishEvent(WEATHER_STORE_ID, WeatherEvents.FetchWeather, {});
     })
     .build();

@@ -19,8 +19,18 @@
     "dev": "nps dev"
   },
   "main": ".dist/esp-js.js",
-  "module": ".dist/esp-js.esm.js",
+  "module": ".dist/esp-js.esm.mjs",
   "typings": ".dist/typings/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./.dist/typings/index.d.ts",
+      "import": "./.dist/esp-js.esm.mjs",
+      "require": "./.dist/esp-js.js",
+      "default": "./.dist/esp-js.js"
+    },
+    "./.dist/*": "./.dist/*",
+    "./package.json": "./package.json"
+  },
   "files": [
     ".dist",
     "NOTICE"

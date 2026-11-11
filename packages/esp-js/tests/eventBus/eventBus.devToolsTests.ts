@@ -27,7 +27,7 @@ describe('EventBus Dev Tools', () => {
         _bus.storeBuilder('modelId1', {})
             .withEventHandler('startEvent', () => {})
             .build();
-        _bus.getModelObservable('modelId1').subscribe(m => {
+        _bus.getStoreModelObservable('modelId1').subscribe(m => {
         });
     };
 

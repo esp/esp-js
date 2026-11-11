@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {act} from 'react';
-import {EspStoreContextProvider, EspEventBusContextProvider, syncModelWithSelectorOptions, useSyncModelWithSelector} from '../src';
+import {EspStoreContextProvider, EspEventBusContextProvider, syncStoreModelWithSelectorOptions, useSyncStoreModelWithSelector} from '../src';
 import {TestModelState} from './testApi/testModel';
 import {viewFactory, ViewMetadata} from './testApi/viewFactory';
 import {eventBusAsserts} from './testApi/asserts';
@@ -9,7 +9,7 @@ import {TestPropStoreContext} from './testApi/useStoreReceivedProps';
 
 type SelectedObject = { id: string, value: string };
 
-describe('useSyncModelWithSelector', () => {
+describe('useSyncStoreModelWithSelector', () => {
     let api: TestApi;
 
     beforeEach(() => {
@@ -20,7 +20,7 @@ describe('useSyncModelWithSelector', () => {
         const storeId = 'modelId';
 
         const View = () => {
-            const valuesObj = useSyncModelWithSelector<TestModelState, SelectedObject>(
+            const valuesObj = useSyncStoreModelWithSelector<TestModelState, SelectedObject>(
                 model => {
                     return {id: model.modelId, value: model.value};
                 },
@@ -57,9 +57,9 @@ describe('useSyncModelWithSelector', () => {
         const storeId = 'modelId';
 
         const View = () => {
-            const values: string[] = useSyncModelWithSelector<TestModelState, string[]>(
+            const values: string[] = useSyncStoreModelWithSelector<TestModelState, string[]>(
                 model => [model.modelId, model.value],
-                syncModelWithSelectorOptions().setStoreId(storeId)
+                syncStoreModelWithSelectorOptions().setStoreId(storeId)
             );
             if (!values) {
                 return;
@@ -85,15 +85,15 @@ describe('useSyncModelWithSelector', () => {
         const storeId = 'modelId';
 
         const View = () => {
-            const values = useSyncModelWithSelector<TestModelState, SelectedObject>(
+            const values = useSyncStoreModelWithSelector<TestModelState, SelectedObject>(
                 model => ({id: model.modelId, value: model.value}),
-                syncModelWithSelectorOptions<SelectedObject>()
+                syncStoreModelWithSelectorOptions<SelectedObject>()
                     .setEqualityFn((a, b) => {
                         if (!a) {
                             return false; // first time
                         }
                         // delegate to model, set via the test, to see if we're 'equal'
-                        // If this returns true, useSyncModelWithSelector internally assume the last snapshot is the same thus doesn't propagate the last snapshot.
+                        // If this returns true, useSyncStoreModelWithSelector internally assume the last snapshot is the same thus doesn't propagate the last snapshot.
                         return b.value === 'assume-no-change';
                     })
             );
@@ -139,9 +139,9 @@ describe('useSyncModelWithSelector', () => {
         const storeId2 = 'modelId2';
 
         const View = (props: {storeId: string}) => {
-            const values = useSyncModelWithSelector<TestModelState, SelectedObject>(
+            const values = useSyncStoreModelWithSelector<TestModelState, SelectedObject>(
                 model => ({id: model.modelId, value: model.value}),
-                syncModelWithSelectorOptions().setStoreId(props.storeId)
+                syncStoreModelWithSelectorOptions().setStoreId(props.storeId)
             );
             if (!values) {
                 return;
@@ -232,31 +232,31 @@ describe('useSyncModelWithSelector', () => {
     describe('argument checking', () => {
         it('throws if selector incorrect', () => {
             expect(() => {
-                useSyncModelWithSelector(null, syncModelWithSelectorOptions());
-            }).toThrow(new Error('You must pass a selector function to useSyncModelWithSelector'));
+                useSyncStoreModelWithSelector(null, syncStoreModelWithSelectorOptions());
+            }).toThrow(new Error('You must pass a selector function to useSyncStoreModelWithSelector'));
             expect(() => {
-                useSyncModelWithSelector(undefined, syncModelWithSelectorOptions());
-            }).toThrow(new Error('You must pass a selector function to useSyncModelWithSelector'));
+                useSyncStoreModelWithSelector(undefined, syncStoreModelWithSelectorOptions());
+            }).toThrow(new Error('You must pass a selector function to useSyncStoreModelWithSelector'));
             expect(() => {
                 const x: any = {};
-                useSyncModelWithSelector(x, syncModelWithSelectorOptions());
-            }).toThrow(new Error('You must pass a selector function to useSyncModelWithSelector'));
+                useSyncStoreModelWithSelector(x, syncStoreModelWithSelectorOptions());
+            }).toThrow(new Error('You must pass a selector function to useSyncStoreModelWithSelector'));
         });
         it('throws if options incorrect', () => {
             expect(() => {
-                useSyncModelWithSelector((m) => m, null);
-            }).toThrow(new Error('You must provide options when using useSyncModelWithSelector'));
+                useSyncStoreModelWithSelector((m) => m, null);
+            }).toThrow(new Error('You must provide options when using useSyncStoreModelWithSelector'));
             expect(() => {
-                useSyncModelWithSelector((m) => m, syncModelWithSelectorOptions().setEqualityFn(null));
-            }).toThrow(new Error('You must provide an equalityFn when using useSyncModelWithSelector'));
+                useSyncStoreModelWithSelector((m) => m, syncStoreModelWithSelectorOptions().setEqualityFn(null));
+            }).toThrow(new Error('You must provide an equalityFn when using useSyncStoreModelWithSelector'));
             expect(() => {
-                useSyncModelWithSelector(
+                useSyncStoreModelWithSelector(
                     (m) => m,
                     {
                         storeId: '',
                         equalityFn: null,
                  });
-            }).toThrow(new Error('You must provide an equalityFn when using useSyncModelWithSelector'));
+            }).toThrow(new Error('You must provide an equalityFn when using useSyncStoreModelWithSelector'));
         });
     });
 });

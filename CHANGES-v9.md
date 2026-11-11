@@ -54,10 +54,19 @@ Throughout the API, the concept of a "model" registered with a "router" has been
 | `router` / `Router` | `bus` / `EventBus` |
 | `modelId` | `storeId` |
 | `bus.addModel(modelId, ...)` | `bus.storeBuilder(storeId, ...)` |
-| `bus.getModelObservable(modelId)` | `bus.getModelObservable(storeId)` (same method, new param name) |
+| `router.getModel(modelId)` | `bus.getStoreModel(storeId)` |
+| `router.getModelObservable(modelId)` | `bus.getStoreModelObservable(storeId)` |
+| `router.findModel(predicate)` | `bus.findStoreModel(predicate)` |
 | `ModelBuilder` | `StoreBuilder` |
 | `ModelRecord` | `StoreRecord` |
 | `ModelAddress` / `DefaultModelAddress` | `StoreAddress` / `DefaultStoreAddress` |
+| `router.removeModel(modelId)` | `bus.removeStore(storeId)` |
+| `router.isModelRegistered(modelId)` | `bus.isStoreRegistered(storeId)` |
+| `router.isModelDispatchStatus(modelId, status)` | `bus.isStoreDispatchStatus(storeId, status)` |
+
+Rule of thumb: an API about the registered **store** says "Store" (`storeBuilder`, `removeStore`, `isStoreRegistered`).
+An API that returns a store's **model** (its state snapshot) says "StoreModel" (`getStoreModel`, `getStoreModelObservable`, `findStoreModel`, `useGetStoreModel`, `useSyncStoreModelWithSelector`, `mapStoreModelToProps`).
+What those return is a model, so name variables `model`: `const model = bus.getStoreModel('orders')`.
 
 ### `bus.addModel()` — now private
 
@@ -91,9 +100,20 @@ The method that scanned an object for `@observeEvent` decorated methods and wire
 
 The `runAction` escape hatch for running arbitrary mutable code on the dispatch loop is removed. Effects registered via `withEffect` replace this pattern for side effects that need to happen after a state change.
 
-### `EventProcessors` interface — removed from public API
+### `bus.getEventObservable()` / `bus.getAllEventsObservable()` — removed
 
-The `EventProcessors` bag (`preEventProcessor`, `postEventProcessor`, `eventDispatchProcessor`, `eventDispatchedProcessor`) is no longer passed to `addModel`. Pre and post processors are registered via `StoreBuilder.withPreEventProcessor()` and `withPostEventProcessor()`. The per-event-per-stage dispatch processors (`eventDispatchProcessor`, `eventDispatchedProcessor`) are removed from the public API.
+Stores no longer observe events through observables.
+Use `StoreBuilder.withEventHandler()` / `withPreviewHandler()` / `withEffect()` instead.
+
+### Events with no handler log a warning
+
+`bus.publishEvent()` to a store with no handler for that event type still drops the event, but now logs a warning (usually a typo or a missing handler).
+`bus.broadcastEvent()` doesn't warn, as most stores ignore most broadcasts.
+
+### `EventProcessors` — no longer passed to the bus
+
+The `EventProcessors` bag (`preEventProcessor`, `postEventProcessor`, `eventDispatchProcessor`, `eventDispatchedProcessor`) is no longer passed to `addModel`.
+The `EventProcessors` / `PreEventProcessor` / `PostEventProcessor` types are still exported for advanced use, but nothing in the public API takes them. Pre and post processors are registered via `StoreBuilder.withPreEventProcessor()` and `withPostEventProcessor()`. The per-event-per-stage dispatch processors (`eventDispatchProcessor`, `eventDispatchedProcessor`) are removed from the public API.
 
 ### `Health` / `HealthIndicator` — removed
 
@@ -170,8 +190,12 @@ bus.storeBuilder<MyState>('my-id', new MyState())
 | Builder method | Stage | Receives | Can mutate? |
 |---|---|---|---|
 | `withEventHandler(eventType, handler)` | `normal` | `Draft<TModel>` (immer draft) | Yes — via draft only |
-| `withPreviewHandler(eventType, handler)` | `preview` | `Readonly<TModel>` (frozen) | No — can only call `cancel()` |
-| `withEffect(eventType, handler)` | `final` | `Readonly<TModel>` (frozen post-mutation) | No — can call `publish()` |
+| `withPreviewHandler(eventType, handler)` | `preview` | `Readonly<TModel>` (typed read-only; the live draft at runtime) | No — can only call `cancel()` |
+| `withEffect(eventType, handler)` | after the dispatch round | `Readonly<TModel>` — a frozen snapshot taken right after **this** event | No — can call `publish()` |
+| `withPreEventProcessor(fn)` / `withPostEventProcessor(fn)` | start / end of each round | `Readonly<TModel>` (typed read-only; the live draft at runtime) | Don't |
+
+Effects are the v9 equivalent of polimer's `@eventTransformFor` (which ran at the `final` stage): each effect sees the model as it was right after its own event, not after later events in the same batch.
+
 
 ### New exports from `esp-js`
 
@@ -194,51 +218,55 @@ DefaultStoreAddress
 
 ### Dispatch cycle
 
-Every store registered via `StoreBuilder` follows this dispatch cycle for each event:
+When a store has queued events, the bus processes it in **rounds** until its queue is empty, then pushes **one** model update:
 
 ```
-preEventProcessor(frozenModel)                    ← optional, once per queue drain
+repeat while the store has queued events:            ← one "round"
 
-for each event in queue:
+  immer produce(currentModel, draft => {
+    preEventProcessor(draft)                         ← optional, once per round
 
-  preview stage
-    → previewHandlers fire with frozen model
-    → eventContext.cancel() stops all further stages
+    for each event in the queue (including events queued meanwhile):
+      preview stage   → previewHandlers(draft)       ← eventContext.cancel() stops all further stages
+      normal stage    → eventHandlers(draft)         ← mutate the draft
+      committed stage → only if eventContext.commit() was called in normal
+      final stage
+      if the event has effects:
+        snapshot = freeze(current(draft))            ← the model right after THIS event
 
-  normal stage (if not cancelled)
-    → immer produce(currentModel, draft => {
-        all withEventHandler handlers for this eventType, in order
-      })
-    → currentModel updated to new frozen snapshot
-    → getEventObservable(normal) subscribers notified with post-mutation model
+    postEventProcessor(draft, eventsProcessed)       ← optional, once per round
+  })
+  → currentModel = the new frozen model
 
-  committed stage (if eventContext.commit() was called)
-    → getEventObservable(committed) subscribers notified
+  run effects, each with its own snapshot
+    → events an effect publishes synchronously to this store are queued,
+      so they're handled in the next round (before the model update)
 
-  final stage
-    → getEventObservable(final) subscribers notified
-    → withEffect handlers fire with frozen post-mutation model
-    → events published via publish() are enqueued for next drain
-
-postEventProcessor(frozenModel, eventsProcessed)  ← optional, once per queue drain
-
-getModelObservable subscribers notified           ← receives raw frozen POJO, no unwrapping
+getStoreModelObservable subscribers notified once   ← the raw frozen POJO, no unwrapping
+then the next store with queued events is processed (e.g. events effects published to other stores)
 ```
+
+Notes:
+
+- One immer `produce` covers a whole round, so pre/post processors, preview and event handlers all work on the same draft.
+- Events published by an async effect (e.g. after an `await`) start a new dispatch loop and a separate model update.
+- If nothing changed, immer returns the same model reference.
+- The existing 10,000-dispatch limit still stops effects that publish in an endless loop.
 
 ### StoreRecord
 
 Previously, `ModelRecord` was an internal routing record and polimer's `PolimerModel` was a separate wrapper sitting alongside it. In v9 all per-store state lives directly in `StoreRecord`:
 
-- `currentModel` — the live frozen snapshot
+- `currentModel` — the latest frozen snapshot (the draft while a round is running)
 - `eventHandlers`, `previewHandlers`, `effectHandlers` — maps populated from `StoreConfig`
 - `subscriptionDisposables` — disposables from subscription factories
 - `publishDelegate` — pre-bound publish function
 
-`getModelObservable(storeId)` now emits the raw frozen POJO directly. There is no `PolimerModel` wrapper to unwrap, no side-effect import to patch the observable.
+`getStoreModelObservable(storeId)` now emits the raw frozen POJO directly. There is no `PolimerModel` wrapper to unwrap, no side-effect import to patch the observable.
 
 ### immer integration
 
-`immer` is now a direct runtime dependency of `esp-js` (bundled into the UMD output). The EventBus calls `produce()` at the normal observation stage internally. Consumers do not need to import or configure immer themselves — except when using class instances as store state, where `[immerable] = true` must be set on the class.
+`immer` is now a direct runtime dependency of `esp-js` (bundled into the UMD output). The EventBus calls `produce()` once per dispatch round internally (see Dispatch cycle). Consumers do not need to import or configure immer themselves — except when using class instances as store state, where `[immerable] = true` must be set on the class.
 
 In development, immer's auto-freeze is active: any attempt to mutate a model snapshot outside a handler draft will throw. In production, structural sharing keeps memory overhead low.
 
@@ -279,6 +307,9 @@ await app.start();
 6. Run `module.start()` on all modules (parallel, failures isolated)
 7. Run app-level `withStart` hooks (sequential, fatal on error)
 
+`app.dispose()` disposes modules (reverse load order, each disposing its child container), then the `EventBus` (which disposes every store and its `withEventSubscription` subscriptions), then the root container.
+It's safe to call at any time; `start()` throws once the app is disposed.
+
 ### `ModuleBuilder`
 
 Declares a module's container registrations, view bindings, and lifecycle hooks:
@@ -293,19 +324,30 @@ export const ordersModule = ModuleBuilder
     })
     .withView('orders-store', OrdersView, 'main')    // storeId, Component, regionName
     .withView('orders-summary', SummaryView, 'sidebar')
-    .withInitialisation(async (app) => {
-        const svc = app.container.resolve('ordersService');
-        app.eventBus.storeBuilder<OrdersState>('orders-store', new OrdersState())
+    .withInitialisation(async ({ moduleContainer, eventBus }) => {
+        const svc = moduleContainer.resolve<OrdersService>('ordersService');
+        eventBus.storeBuilder<OrdersState>('orders-store', new OrdersState())
             .withEventHandler(/* ... */)
             .build();
     })
-    .withStart(async (app) => {
-        app.eventBus.publishEvent('orders-store', 'AppStarted', {});
+    .withStart(async ({ eventBus }) => {
+        eventBus.publishEvent('orders-store', 'AppStarted', {});
     })
     .build();
 ```
 
-Each module gets its own child container (child of the root). Modules can see root registrations but the root cannot see module registrations.
+Each module gets its own child container (child of the root).
+Modules can see root registrations (e.g. `'bus'`), but the root and other modules can't see a module's registrations.
+
+Module `withInitialisation` / `withStart` hooks receive a `ModuleContext`:
+
+| Property | What it is |
+|---|---|
+| `app` | the `App` |
+| `moduleContainer` | the module's own child container |
+| `eventBus` | the app's `EventBus` (same as `app.eventBus`) |
+
+App-level `AppBuilder.withInitialisation` / `withStart` hooks still receive the `App`.
 
 ### Removed from `esp-js-ui`
 
@@ -347,23 +389,26 @@ const AppShell = () => (
 
 ### Renamed: `EspModelContextProvider` → `EspStoreContextProvider`
 
-All model-scoped context APIs have been renamed to use the `store` terminology:
+React APIs now use the `store` terminology; APIs that return a store's model say "StoreModel":
 
 | v8 | v9 |
 |---|---|
 | `EspModelContextProvider` | `EspStoreContextProvider` |
-| `useGetModel` | `useGetStore` |
+| `useGetModel` / `GetModelContext` | `useGetStoreModel` / `GetStoreModelContext` |
 | `useGetModelId` | `useGetStoreId` |
 | `usePublishModelEvent` | `usePublishStoreEvent` |
 | `usePublishModelEventWithEntityKey` | `usePublishStoreEventWithEntityKey` |
 
 ### Renamed context options: `modelId` → `storeId`
 
-`syncModelWithSelectorOptions()` option `.setModelId()` is renamed `.setStoreId()`.
+`useSyncModelWithSelector` is renamed `useSyncStoreModelWithSelector` (and `syncModelWithSelectorOptions` / `SyncModelWithSelector*` types → `syncStoreModelWithSelectorOptions` / `SyncStoreModelWithSelector*`).
+Its `.setModelId()` option is renamed `.setStoreId()`.
 
-### `useSyncModelWithSelector` — removed option
+`ConnectableComponent`'s `mapModelToProps` prop / `MapModelToProps` type are renamed `mapStoreModelToProps` / `MapStoreModelToProps`.
 
-`tryPreSelectPolimerImmutableModel` has been removed from `SyncModelWithSelectorOptions`. This option previously called `model.getEspPolimerImmutableModel()` before applying the selector. Since the model is now the direct frozen snapshot from immer, no pre-selection is necessary.
+### `useSyncStoreModelWithSelector` — removed option
+
+`tryPreSelectPolimerImmutableModel` has been removed from `SyncStoreModelWithSelectorOptions`. This option previously called `model.getEspPolimerImmutableModel()` before applying the selector. Since the model is now the direct frozen snapshot from immer, no pre-selection is necessary.
 
 **Before (v8 with polimer):**
 ```typescript
@@ -375,14 +420,14 @@ syncModelWithSelectorOptions<MyModel>()
 
 **After (v9):**
 ```typescript
-syncModelWithSelectorOptions<MyModel>()
+syncStoreModelWithSelectorOptions<MyModel>()
     .setStoreId('my-store')
     .build()
 ```
 
 ### `ConnectableComponent` — duck-typing removed
 
-`ConnectableComponent` previously checked for `getEspPolimerImmutableModel` on the model and unwrapped it before passing to `mapModelToProps`. This duck-typing is removed. The raw frozen model is passed directly.
+`ConnectableComponent` previously checked for `getEspPolimerImmutableModel` on the model and unwrapped it before passing to `mapModelToProps` (now `mapStoreModelToProps`). This duck-typing is removed. The raw frozen model is passed directly.
 
 `ConnectableComponent` now requires an explicit `view` prop — there is no decorator-based view resolution in v9.
 
@@ -394,14 +439,14 @@ The `@viewBinding` decorator and associated `ViewBinder`, `createViewForModel`, 
 
 The `reactive/` module in `esp-js` is now internal-only and is not exported from `src/index.ts`. `Observable`, `Subject`, `RouterObservable`, and `RouterSubject` are no longer part of the public API.
 
-Code that previously used `Observable.create` to wrap `bus.getModelObservable()` must be updated to wrap the `subscribe` method directly:
+Code that previously used `Observable.create` to wrap `router.getModelObservable()` must be updated to wrap the `subscribe` method directly:
 
 ```typescript
 // Before (broken — Observable is no longer exported):
-const wrapped = Observable.create<MyModel>(o => bus.getModelObservable('id').subscribe(o));
+const wrapped = Observable.create<MyModel>(o => router.getModelObservable('id').subscribe(o));
 
 // After:
-const upstream = bus.getModelObservable<MyModel>('id');
+const upstream = bus.getStoreModelObservable<MyModel>('id');
 const wrapped = {
     subscribe(observer: any) {
         return upstream.subscribe(observer);
@@ -450,7 +495,7 @@ bus.storeBuilder<CounterState>('counter', { count: 0 })
     })
     .build();
 
-bus.getModelObservable<CounterState>('counter').subscribe(m => render(m));
+bus.getStoreModelObservable<CounterState>('counter').subscribe(m => render(m));
 bus.publishEvent('counter', 'Increment', { amount: 1 });
 ```
 
@@ -515,8 +560,8 @@ export const myModule = ModuleBuilder
     .create('my-module')
     .withContainerConfiguration(container => { /* register services */ })
     .withView('my-store', MyView, 'main')
-    .withInitialisation(async (app) => {
-        app.eventBus.storeBuilder<MyState>('my-store', new MyState())
+    .withInitialisation(async ({ eventBus, moduleContainer }) => {
+        eventBus.storeBuilder<MyState>('my-store', new MyState())
             .withEventHandler(/* ... */)
             .build();
     })
@@ -548,4 +593,4 @@ Migration reference:
 | `PolimerModelBuilder` | `StoreBuilder` / `bus.storeBuilder()` |
 | `withStateHandlers(key, handlers)` (per-slice) | `withEventHandler` on the full model |
 | `@eventTransformFor` (RxJS observable transforms) | `withEffect` + `withEventSubscription` |
-| `PolimerModel.getImmutableModel()` | `bus.getModelObservable()` — emits the POJO directly |
+| `PolimerModel.getImmutableModel()` | `bus.getStoreModelObservable()` — emits the POJO directly |

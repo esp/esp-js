@@ -52,7 +52,7 @@ describe('StoreBuilder', () => {
                     draft.count += event.amount;
                 })
                 .build();
-            _bus.getModelObservable<Counter>('counter').subscribe(m => { lastModel = m; });
+            _bus.getStoreModelObservable<Counter>('counter').subscribe(m => { lastModel = m; });
             _bus.publishEvent('counter', 'Increment', { amount: 3 });
             expect(lastModel).toBeDefined();
             expect(lastModel.count).toEqual(3);
@@ -65,7 +65,7 @@ describe('StoreBuilder', () => {
                     draft.count += event.amount;
                 })
                 .build();
-            _bus.getModelObservable<Counter>('counter').subscribe(m => { lastModel = m; });
+            _bus.getStoreModelObservable<Counter>('counter').subscribe(m => { lastModel = m; });
             _bus.publishEvent('counter', 'Increment', { amount: 3 });
             _bus.publishEvent('counter', 'Increment', { amount: 7 });
             expect(lastModel.count).toEqual(10);
@@ -75,7 +75,7 @@ describe('StoreBuilder', () => {
             _bus.storeBuilder<Counter>('counter', { count: 0, label: 'test' })
                 .build();
             let frozenModel: Counter = null;
-            _bus.getModelObservable<Counter>('counter').subscribe(m => { frozenModel = m; });
+            _bus.getStoreModelObservable<Counter>('counter').subscribe(m => { frozenModel = m; });
             expect(frozenModel).toBeDefined();
             expect(() => {
                 (frozenModel as any).count = 99;

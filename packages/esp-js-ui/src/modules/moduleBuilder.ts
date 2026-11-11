@@ -19,9 +19,8 @@
 import {Guard, Logger} from 'esp-js';
 import type React from 'react';
 import type {Container} from 'esp-js-di';
-import {Module, ModuleViewBinding} from './types';
+import {Module, ModuleHook, ModuleViewBinding} from './types';
 import {DefaultModule} from './defaultModule';
-import {App} from '../app';
 
 const _log = Logger.create('ModuleBuilder');
 
@@ -29,8 +28,8 @@ export interface ModuleBuilderState {
     moduleId: string;
     viewBindings: ModuleViewBinding[];
     containerConfigurators: Array<(container: Container) => void>;
-    initialiseFns: Array<(app: App) => Promise<void>>;
-    startFns: Array<(app: App) => Promise<void>>;
+    initialiseFns: ModuleHook[];
+    startFns: ModuleHook[];
 }
 
 export class ModuleBuilder {
@@ -58,6 +57,9 @@ export class ModuleBuilder {
         }
     }
 
+    /**
+     * Registers services in the module's own child container (a child of the app's root container).
+     */
     withContainerConfiguration(fn: (container: Container) => void): this {
         this._guardNotBuilt();
         Guard.isDefined(fn, 'withContainerConfiguration fn must be defined');
@@ -74,14 +76,14 @@ export class ModuleBuilder {
         return this;
     }
 
-    withInitialisation(fn: (app: App) => Promise<void>): this {
+    withInitialisation(fn: ModuleHook): this {
         this._guardNotBuilt();
         Guard.isDefined(fn, 'withInitialisation fn must be defined');
         this._state.initialiseFns.push(fn);
         return this;
     }
 
-    withStart(fn: (app: App) => Promise<void>): this {
+    withStart(fn: ModuleHook): this {
         this._guardNotBuilt();
         Guard.isDefined(fn, 'withStart fn must be defined');
         this._state.startFns.push(fn);

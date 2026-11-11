@@ -13,14 +13,14 @@ A standalone IoC (Inversion of Control) dependency injection container. Supports
 ## Build and Test
 
 ```bash
-npm run build-dev      # vite build → .dist/esp-js-di.js + .dist/esp-js-di.esm.js
+npm run build-dev      # vite build → .dist/esp-js-di.js + .dist/esp-js-di.esm.mjs
 npm run build-prod     # adds .dist/esp-js-di.min.js (minified UMD)
 npm test               # vitest --watch
 npm run test-ci        # vitest run (CI)
 npm run dev            # vite build --watch
 ```
 
-Output: `.dist/esp-js-di.js` (UMD), `.dist/esp-js-di.esm.js` (ESM). No TypeScript declarations generated (JavaScript source).
+Output: `.dist/esp-js-di.js` (UMD), `.dist/esp-js-di.esm.mjs` (ESM). TypeScript declarations are hand-written in `esp-js-di.d.ts` (package root) — keep it in sync when changing the `Container` API.
 
 ## Source Structure
 
@@ -110,7 +110,7 @@ container
 
 ```javascript
 import {Container} from 'esp-js-di';           // named export
-import Container from 'esp-js-di';             // default export (same class)
+import di from 'esp-js-di';                    // default export is an object: di.Container
 ```
 
 Primary surface: `Container` class. `RegistrationModifier` is returned by `register()` but not typically imported directly.
@@ -147,7 +147,7 @@ if (!container.isRegistered('myService')) {
 ## Gotchas
 
 - **Registrations default to `singleton`, not transient** — call `.transient()` explicitly for per-resolve instances. The `RegistrationModifier` constructor sets singleton, and `register()` defaults the lifecycle to singleton
-- The source is JavaScript, not TypeScript. There are no TypeScript types in the source; type definitions are not generated
+- The source is JavaScript, not TypeScript. Types live in the hand-written `esp-js-di.d.ts` — update it with any API change (e.g. `resolveMany`, `isDisposed`)
 - `resolve()` throws if the name is not registered — check `isRegistered()` first if registration is optional
 - Circular dependency detection is runtime-only — cycles throw with a descriptive error
 - Child containers use prototypal inheritance for `_registrations` — this means a child can see parent registrations but registering in the parent after child creation is not guaranteed to be visible in the child (depends on prototype chain timing)

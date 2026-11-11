@@ -100,10 +100,11 @@ export function createBaseConfig(
                         globals: buildGlobals(external),
                         plugins: [terserPlugin()],
                     },
-                    // ESM (bonus — tree-shakeable for bundler consumers)
+                    // ESM — tree-shakeable for bundlers. The .mjs extension lets Node load it as ESM
+                    // (the packages are not "type": "module", so a .js file would be treated as CommonJS).
                     {
                         format: 'es',
-                        entryFileNames: `${fileName}.esm.js`,
+                        entryFileNames: `${fileName}.esm.mjs`,
                     },
                 ],
             },

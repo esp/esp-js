@@ -20,19 +20,19 @@
 export { ConnectableComponent } from './connectableComponent';
 export type {
     CreatePublishEventProps,
-    MapModelToProps,
+    MapStoreModelToProps,
     ConnectableComponentProps,
     ConnectableComponentChildProps,
 } from './connectableComponent';
 export {
-    useSyncModelWithSelector,
-    syncModelWithSelectorOptions,
-} from './useSyncModelWithSelector';
+    useSyncStoreModelWithSelector,
+    syncStoreModelWithSelectorOptions,
+} from './useSyncStoreModelWithSelector';
 export type {
-    SyncModelWithSelectorOptionsBuilder,
-    SyncModelWithSelectorOptions,
-    SyncModelWithSelectorEqualityFn,
-} from './useSyncModelWithSelector';
+    SyncStoreModelWithSelectorOptionsBuilder,
+    SyncStoreModelWithSelectorOptions,
+    SyncStoreModelWithSelectorEqualityFn,
+} from './useSyncStoreModelWithSelector';
 export {
     EspEventBusContextProvider,
     EventBusContext,
@@ -47,8 +47,8 @@ export type {
 export {
     useGetStoreId,
     GetStoreIdContext,
-    useGetStore,
-    GetStoreContext,
+    useGetStoreModel,
+    GetStoreModelContext,
     PublishStoreEventContext,
     usePublishStoreEvent,
     PublishStoreEventWithEntityKeyContext,

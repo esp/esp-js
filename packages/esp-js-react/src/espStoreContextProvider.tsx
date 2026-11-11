@@ -10,13 +10,13 @@ export const GetStoreIdContext = createContext<string>(null);
  */
 export const useGetStoreId = () => useContext(GetStoreIdContext);
 
-export const GetStoreContext = createContext<object>(null);
+export const GetStoreModelContext = createContext<object>(null);
 /**
- * Returns a function which will return the store connected at a higher point in the V-DOM.
+ * Returns the current model (frozen snapshot) of the store connected at a higher point in the V-DOM.
  *
  * To use this, please ensure your V-DOM has the EspStoreContextProvider at a higher node.
  */
-export const useGetStore = <TModel,>() => useContext(GetStoreContext) as TModel;
+export const useGetStoreModel = <TModel,>() => useContext(GetStoreModelContext) as TModel;
 
 export type PublishStoreEventDelegate = { (eventType: string, event: any): void; (eventData: {eventType: string, event: any}): void; };
 const createPublishStoreEvent = (bus: EventBus, storeId: string) => {
@@ -90,9 +90,9 @@ export const EspStoreContextProvider = ({storeId, children, model}: PropsWithChi
         <GetStoreIdContext.Provider value={storeId}>
             <PublishStoreEventContext.Provider value={publishStoreEvent}>
                 <PublishStoreEventWithEntityKeyContext.Provider value={publishStoreEventWithEntityKey}>
-                    <GetStoreContext.Provider value={model}>
+                    <GetStoreModelContext.Provider value={model}>
                         {children}
-                    </GetStoreContext.Provider>
+                    </GetStoreModelContext.Provider>
                 </PublishStoreEventWithEntityKeyContext.Provider>
             </PublishStoreEventContext.Provider>
         </GetStoreIdContext.Provider>

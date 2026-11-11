@@ -39,15 +39,32 @@ export class DefaultApp implements App {
     }
 
     async start(): Promise<void> {
+        if (this._disposed) {
+            throw new Error(`App [${this.appName}] has been disposed and can not be started`);
+        }
         if (this._started) {
             return;
         }
         this._started = true;
-        this._configureContainer()
+        this._configureContainer();
         await this._loadModules();
-        this._configureModuleContainers()
+        if (this._abortIfDisposed('loading modules')) {
+            return;
+        }
+        this._configureModuleContainers();
         await this._initialiseModules();
+        if (this._abortIfDisposed('initialising modules')) {
+            return;
+        }
         await this._doStart(this._modules);
+    }
+
+    private _abortIfDisposed(stage: string): boolean {
+        if (this._disposed) {
+            _log.warn(`App [${this.appName}] was disposed while ${stage}, start() aborted`);
+            return true;
+        }
+        return false;
     }
 
     private _configureContainer(): void {
@@ -59,7 +76,8 @@ export class DefaultApp implements App {
 
     private _configureModuleContainers() {
         for (const module of this._modules) {
-            module.configureContainer(this.container);
+            // Each module gets its own child container: it can see root registrations, but not other modules' registrations.
+            module.configureContainer(this.container.createChildContainer());
         }
     }
 
@@ -75,6 +93,11 @@ export class DefaultApp implements App {
                     : Promise.resolve(entry)
             )
         );
+        if (this._disposed) {
+            // disposed while lazy modules were loading, dispose what loaded as they'll never be tracked.
+            resolved.forEach(m => this._tryDisposeModule(m));
+            return resolved;
+        }
         this._modules = resolved;
         _log.info(`App [${this.appName}] loaded ${resolved.length} module(s)`);
         return this._modules;
@@ -113,18 +136,37 @@ export class DefaultApp implements App {
         }
     }
 
+    /**
+     * Disposes modules (reverse load order), then the EventBus, then the root container.
+     */
     dispose(): void {
-        if (this._disposed || this._modules === null) {
+        if (this._disposed) {
             return;
         }
         this._disposed = true;
-        const reversed = [...this._modules].reverse();
-        for (const module of reversed) {
-            try {
-                module.dispose();
-            } catch (e) {
-                _log.error(`Error disposing module [${module.moduleId}]: ${e}`);
+        if (this._modules !== null) {
+            const reversed = [...this._modules].reverse();
+            for (const module of reversed) {
+                this._tryDisposeModule(module);
             }
+        }
+        try {
+            this._eventBus.dispose();
+        } catch (e) {
+            _log.error(`Error disposing EventBus for app [${this.appName}]: ${e}`);
+        }
+        try {
+            this._container.dispose();
+        } catch (e) {
+            _log.error(`Error disposing root container for app [${this.appName}]: ${e}`);
+        }
+    }
+
+    private _tryDisposeModule(module: Module) {
+        try {
+            module.dispose();
+        } catch (e) {
+            _log.error(`Error disposing module [${module.moduleId}]: ${e}`);
         }
     }
 }

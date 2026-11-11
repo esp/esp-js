@@ -19,3 +19,4 @@ lerna-debug.log
 .claude
 .turbo
 specs
+.planning/

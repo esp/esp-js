@@ -11,7 +11,7 @@ Key building blocks:
 * `EspApp` — wraps the app root with the EventBus and modules contexts
 * `RegionView` — renders the views that loaded modules registered for a named region
 * `ConnectableComponent` — subscribes a view to a store by `storeId`
-* hooks — `useSyncModelWithSelector`, `usePublishStoreEvent`, `useGetStore`, `useEventBus`, and more
+* hooks — `useSyncStoreModelWithSelector`, `usePublishStoreEvent`, `useGetStoreModel`, `useEventBus`, and more
 
 > Peer dependencies: `esp-js`, `esp-js-ui` and `react` (19).
 
@@ -53,7 +53,7 @@ import { EspEventBusContextProvider, ConnectableComponent } from 'esp-js-react';
 ```
 
 The model handed to views and hooks is always a frozen immutable snapshot — never mutate it directly.
-For fine-grained re-rendering, prefer `useSyncModelWithSelector` with a selector and equality function.
+For fine-grained re-rendering, prefer `useSyncStoreModelWithSelector` with a selector and equality function.
 
 > The published bundle is named `esp-react.js` (matching the `main` field), not `esp-js-react.js`.
 

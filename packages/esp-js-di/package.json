@@ -22,7 +22,7 @@
     "dev": "nps dev"
   },
   "main": ".dist/esp-js-di.js",
-  "module": ".dist/esp-js-di.esm.js",
+  "module": ".dist/esp-js-di.esm.mjs",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
   "repository": {
@@ -31,6 +31,16 @@
     "directory": "packages/esp-js-di"
   },
   "typings": "./esp-js-di.d.ts",
+  "exports": {
+    ".": {
+      "types": "./esp-js-di.d.ts",
+      "import": "./.dist/esp-js-di.esm.mjs",
+      "require": "./.dist/esp-js-di.js",
+      "default": "./.dist/esp-js-di.js"
+    },
+    "./.dist/*": "./.dist/*",
+    "./package.json": "./package.json"
+  },
   "files": [
     ".dist",
     "esp-js-di.d.ts",

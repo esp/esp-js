@@ -61,7 +61,7 @@ describe('index exports', () => {
         // Subscribable is a type/interface, verify it is usable as a type annotation
         const bus = new EventBus();
         bus.storeBuilder('test', { value: 0 }).build();
-        const s: Subscribable<{ value: number }> = bus.getModelObservable('test');
+        const s: Subscribable<{ value: number }> = bus.getStoreModelObservable('test');
         expect(s).toBeDefined();
     });
 });

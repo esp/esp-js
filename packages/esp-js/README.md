@@ -34,17 +34,20 @@ bus.storeBuilder<CounterStore>('counter', { count: 0 })
         if (store.count >= 100) ctx.cancel();   // observe/cancel before mutation
     })
     .withEffect('Increment', (store, e, ctx, publish) => {
-        publish('Logged', { count: store.count }); // side effects after mutation
+        // side effects after mutation; `store` is a frozen snapshot taken right after this event
+        if (store.count === 10) publish('Increment', { by: -10 });
     })
     .build();
 
-bus.getModelObservable<CounterStore>('counter')
-    .subscribe(store => console.log(store.count));
+bus.getStoreModelObservable<CounterStore>('counter')
+    .subscribe(store => console.log(store.count)); // logs: 0 (the current model is replayed on subscribe)
 
 bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
 ```
 
 Events pass through up to four ordered observation stages — `preview`, `normal`, `committed`, `final`.
+Events an effect publishes straight away to its own store are processed before observers are notified, so they get a single model update.
+Publishing an event the store has no handler for logs a warning.
 A class instance used as store state must include `[immerable] = true` from `immer`.
 
 ## The ESP package family

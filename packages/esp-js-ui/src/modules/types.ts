@@ -18,16 +18,35 @@
 
 import type React from 'react';
 import type { Container } from 'esp-js-di';
+import type { EventBus } from 'esp-js';
 import {App} from '../app';
 
 export interface ModuleViewBinding {
-    /** The EventBus storeId (modelId) this view is connected to */
+    /** The EventBus storeId this view is connected to */
     readonly storeId: string;
     /** The React component to render for this view */
     readonly viewComponent: React.ComponentType<any>;
     /** A string token identifying the shell region this view belongs to (metadata only) */
     readonly region: string;
 }
+
+/**
+ * Passed to a module's withInitialisation / withStart hooks.
+ */
+export interface ModuleContext {
+    /** The application */
+    readonly app: App;
+    /**
+     * The module's own child container (a child of app.container).
+     * Registrations from the module's withContainerConfiguration live here.
+     * It can resolve root registrations (e.g. 'bus'), but other modules can't see its registrations.
+     */
+    readonly moduleContainer: Container;
+    /** The application EventBus (same as app.eventBus) */
+    readonly eventBus: EventBus;
+}
+
+export type ModuleHook = (context: ModuleContext) => Promise<void>;
 
 export interface Module {
     readonly moduleId: string;

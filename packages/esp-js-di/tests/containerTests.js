@@ -536,6 +536,17 @@ describe('Container', () =>  {
             });
         }
 
+        it('isDisposed reflects container and child container disposal', () =>  {
+            let child = container.createChildContainer();
+            expect(container.isDisposed).toBe(false);
+            expect(child.isDisposed).toBe(false);
+            child.dispose();
+            expect(child.isDisposed).toBe(true);
+            expect(container.isDisposed).toBe(false);
+            container.dispose();
+            expect(container.isDisposed).toBe(true);
+        });
+
         it('should dispose all singleton objects on container dispose', () =>  {
             let A = createDisposable();
             container.register('a', A).singleton();

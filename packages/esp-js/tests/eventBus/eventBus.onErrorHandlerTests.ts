@@ -69,7 +69,7 @@ describe('EventBus', () => {
                     }
                 })
                 .build();
-            _bus.getModelObservable('modelId1').subscribe(
+            _bus.getStoreModelObservable('modelId1').subscribe(
                 (model: any) => {
                     if (_flags.throwAtUpdate) {
                         throw new Error('Boom:Update');
@@ -145,8 +145,8 @@ describe('EventBus', () => {
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
-            it('should not call onErrorHandler on getModelObservable subscribe', () => {
-                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
+            it('should not call onErrorHandler on getStoreModelObservable subscribe', () => {
+                ignoreErrors(() => _bus.getStoreModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
@@ -160,8 +160,8 @@ describe('EventBus', () => {
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
-            it('should not call onErrorHandler on getModelObservable()', () => {
-                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
+            it('should not call onErrorHandler on getStoreModelObservable()', () => {
+                ignoreErrors(() => _bus.getStoreModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });
@@ -176,8 +176,8 @@ describe('EventBus', () => {
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
-            it('should not call onErrorHandler on getModelObservable subscribe', () => {
-                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
+            it('should not call onErrorHandler on getStoreModelObservable subscribe', () => {
+                ignoreErrors(() => _bus.getStoreModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
@@ -191,8 +191,8 @@ describe('EventBus', () => {
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
 
-            it('should not call onErrorHandler on getModelObservable()', () => {
-                ignoreErrors(() => _bus.getModelObservable('modelId1').subscribe(() => {}));
+            it('should not call onErrorHandler on getStoreModelObservable()', () => {
+                ignoreErrors(() => _bus.getStoreModelObservable('modelId1').subscribe(() => {}));
                 expect(_onErrorHandlerCallCount).toEqual(0);
             });
         });

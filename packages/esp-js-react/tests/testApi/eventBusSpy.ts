@@ -7,8 +7,8 @@ export class EventBusSpy extends EventBus {
         return this._modelSubscriptionCountByStoreId.get(storeId);
     }
 
-    public getModelObservable<TModel>(storeId: string) {
-        const upstream = super.getModelObservable<TModel>(storeId);
+    public getStoreModelObservable<TModel>(storeId: string) {
+        const upstream = super.getStoreModelObservable<TModel>(storeId);
         const self = this;
         return {
             subscribe(observer: any) {

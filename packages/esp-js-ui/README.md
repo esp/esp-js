@@ -27,8 +27,10 @@ const ordersModule = ModuleBuilder.create('orders')
         container.register('ordersService', OrdersService).inject('bus').singleton();
     })
     .withView('orders-store', OrdersView, 'main')   // storeId, component, region
-    .withInitialisation(async app => {
-        registerOrdersStore(app.eventBus, 'orders-store');
+    .withInitialisation(async ({ moduleContainer, eventBus }) => {
+        // ordersService lives in this module's own child container
+        const ordersService = moduleContainer.resolve<OrdersService>('ordersService');
+        registerOrdersStore(eventBus, ordersService, 'orders-store');
     })
     .build();
 
@@ -44,6 +46,9 @@ await app.start();
 
 `app.start()` configures the root container, loads modules, runs app- and module-level `initialise` then `start` hooks, and is idempotent.
 Each module gets its own child container (a child of the root), so modules can see root registrations but not each other's.
+Module hooks receive a `ModuleContext`: `{ app, moduleContainer, eventBus }`.
+
+`app.dispose()` disposes the modules, then the `EventBus` and its stores, then the root container.
 
 Views are rendered by `esp-js-react` — see `RegionView`, which mounts the views every loaded module registered for a given region.
 

@@ -51,8 +51,9 @@ export interface App {
      */
     start(): Promise<void>;
     /**
-     * Disposes all loaded modules in reverse load order.
-     * Safe to call before start() (no-op). Errors per module are caught and logged.
+     * Disposes all loaded modules in reverse load order, then the EventBus (and its stores), then the root container.
+     * Safe to call at any time, including before or during start(). Errors are caught and logged.
+     * start() throws once the app is disposed.
      */
     dispose(): void;
 }

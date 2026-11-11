@@ -68,13 +68,13 @@ describe('EventBus', () => {
                     }
                 })
                 .build();
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount1++;
                 if (_flags.removeAtUpdate) {
                     _bus.removeStore('modelId1');
                 }
             });
-            _bus.getModelObservable('modelId1').subscribe(() => {
+            _bus.getStoreModelObservable('modelId1').subscribe(() => {
                 _updateReceivedCount2++;
             });
             // the model gets pumped on initial observe so reset these here
@@ -91,7 +91,7 @@ describe('EventBus', () => {
 
         it('should onComplete all update streams when the model is removed', () => {
             let didComplete = false;
-            _bus.getModelObservable('modelId1').subscribe(
+            _bus.getStoreModelObservable('modelId1').subscribe(
                 () => {},
                 () => didComplete = true
             );

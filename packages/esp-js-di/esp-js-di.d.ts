@@ -20,6 +20,11 @@ export class Container {
     registerInstance<T>(name: String, instance: T, isExternallyOwned?): void;
     registerFactory<T>(name: String, factory:(context: Container, ...additionalDependencies: any[]) => T): RegistrationModifier;
     resolve<T>(name: String, ...additionalDependencies: any[]): T;
+    /**
+     * Resolves several items at once into an object keyed by name, e.g. `const {bus, svc} = container.resolveMany('bus', 'svc')`.
+     * Pass a ResolveManySpec to provide additional dependencies for an item.
+     */
+    resolveMany<T extends object = Record<string, any>>(...specs: Array<string | ResolveManySpec>): T;
     resolveGroup<T>(groupName: String,  ...additionalDependencies: any[]): Array<T>;
     isRegistered(name: string, options?: IsRegisteredQueryOptions) : boolean;
     isGroupRegistered(groupName: string, options?: IsRegisteredQueryOptions) : boolean;
@@ -27,7 +32,14 @@ export class Container {
     on<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void);
     off<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void);
     dispose():void;
-    isDisposed: boolean;
+    readonly isDisposed: boolean;
+}
+
+export interface ResolveManySpec {
+    /** The registered name to resolve, also used as the key in the result */
+    name: string;
+    /** Additional dependencies passed to the item's constructor/factory */
+    additionalDependencies?: any[];
 }
 
 export type Key = string | LiteralResolverKey | FactoryResolverKey | DelegateResolverKey | ExternalFactoryResolverKey | CustomResolverKey;

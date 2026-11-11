@@ -27,25 +27,25 @@ describe('EventBus', () => {
         _bus = new esp.EventBus();
     });
 
-    describe('.isModelRegistered()', () => {
+    describe('.isStoreRegistered()', () => {
 
         it('throws if arguments incorrect', () => {
-            expect(() => {_bus.isModelRegistered({ }); }).toThrow(new Error('The storeId argument should be a string'));
+            expect(() => {_bus.isStoreRegistered({ }); }).toThrow(new Error('The storeId argument should be a string'));
         });
 
         it('returns true if model is registered', () => {
             registerModel(_bus, 'modelId1', {});
-            expect(_bus.isModelRegistered('modelId1')).toEqual(true);
+            expect(_bus.isStoreRegistered('modelId1')).toEqual(true);
         });
 
         it('returns false if model NOT registered', () => {
-            expect(_bus.isModelRegistered('modelId1')).toEqual(false);
+            expect(_bus.isStoreRegistered('modelId1')).toEqual(false);
         });
 
         it('returns false if model NOT unregistered', () => {
             registerModel(_bus, 'modelId1', {});
             _bus.removeStore('modelId1');
-            expect(_bus.isModelRegistered('modelId1')).toEqual(false);
+            expect(_bus.isStoreRegistered('modelId1')).toEqual(false);
         });
     });
 });

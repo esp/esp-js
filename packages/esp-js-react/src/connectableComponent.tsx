@@ -3,17 +3,17 @@ import {useEventBus} from './espEventBusContextProvider';
 import {useMemo} from 'react';
 import {EventBus} from 'esp-js';
 import {EspStoreContextProvider, useGetStoreId} from './espStoreContextProvider';
-import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
+import {syncStoreModelWithSelectorOptions, useSyncStoreModelWithSelector} from './useSyncStoreModelWithSelector';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
-export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
+export type MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
 export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     storeId?: string;
     view?: React.ComponentType;
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
-    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
+    mapStoreModelToProps?: MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
     [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
 }
 
@@ -29,7 +29,7 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
     storeId: string,
     restProps: object,
     model: TModel,
-    mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
+    mapStoreModelToProps: MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     publishEventProps: TPublishEventProps
 ): ConnectableComponentChildProps<TModel> => {
     let childProps = {
@@ -39,10 +39,10 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
         ...publishEventProps,
         model
     };
-    if (mapModelToProps) {
+    if (mapStoreModelToProps) {
         childProps = {
             ...childProps,
-            ...(mapModelToProps(model, publishEventProps) as TModelMappedToProps)
+            ...(mapStoreModelToProps(model, publishEventProps) as TModelMappedToProps)
         };
     }
     return childProps;
@@ -51,7 +51,7 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
 export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}>(
     {
         storeId,
-        mapModelToProps,
+        mapStoreModelToProps,
         createPublishEventProps,
         view,
         ...rest
@@ -73,15 +73,15 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         },
         [bus, storeId]
     );
-    const model = useSyncModelWithSelector<TModel, TModel>(
+    const model = useSyncStoreModelWithSelector<TModel, TModel>(
         m => m,
-        syncModelWithSelectorOptions()
+        syncStoreModelWithSelectorOptions()
             .setStoreId(storeId)
     );
     if (model == null) {
         return null;
     }
-    let childProps = getChildProps(bus, storeId, rest, model, mapModelToProps, publishEventProps);
+    let childProps = getChildProps(bus, storeId, rest, model, mapStoreModelToProps, publishEventProps);
     let viewElement = view ? React.createElement(view as React.ComponentType<any>, childProps) : null;
     return (
         <EspStoreContextProvider storeId={storeId} model={model} bus={bus} {...childProps}>

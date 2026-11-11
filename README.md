@@ -32,8 +32,8 @@ bus.storeBuilder<CounterStore>('counter', { count: 0 })
     })
     .build();
 
-bus.getModelObservable<CounterStore>('counter')
-    .subscribe(store => console.log(store.count));
+bus.getStoreModelObservable<CounterStore>('counter')
+    .subscribe(store => console.log(store.count)); // logs: 0 (the current model is replayed on subscribe)
 
 bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
 ```

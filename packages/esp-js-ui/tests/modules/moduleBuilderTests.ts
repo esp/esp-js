@@ -15,6 +15,14 @@ function makeFakeContainer() {
     };
 }
 
+const fakeApp = { appName: 'app', eventBus: { fake: 'bus' } } as any;
+
+/** Modules need a container before initialise()/start(), as the app would give them. */
+function configured(m: Module, container: any = makeFakeContainer()): Module {
+    m.configureContainer(container);
+    return m;
+}
+
 describe('ModuleBuilder', () => {
 
     describe('create() validation', () => {
@@ -146,7 +154,7 @@ describe('ModuleBuilder', () => {
             const m = ModuleBuilder.create('x')
                 .withInitialisation(async () => { called = true; })
                 .build();
-            await m.initialise();
+            await configured(m).initialise(fakeApp);
             expect(called).toBe(true);
         });
 
@@ -156,7 +164,7 @@ describe('ModuleBuilder', () => {
                 .withInitialisation(async () => { order.push(1); })
                 .withInitialisation(async () => { order.push(2); })
                 .build();
-            await m.initialise();
+            await configured(m).initialise(fakeApp);
             expect(order).toEqual([1, 2]);
         });
 
@@ -164,12 +172,37 @@ describe('ModuleBuilder', () => {
             const m = ModuleBuilder.create('x')
                 .withInitialisation(async () => { throw new Error('init-boom'); })
                 .build();
-            await expect(m.initialise()).rejects.toThrow('init-boom');
+            await expect(configured(m).initialise(fakeApp)).rejects.toThrow('init-boom');
         });
 
         it('resolves when no hooks registered', async () => {
             const m = ModuleBuilder.create('x').build();
-            await expect(m.initialise()).resolves.toBeUndefined();
+            await expect(configured(m).initialise(fakeApp)).resolves.toBeUndefined();
+        });
+    });
+
+    describe('module context', () => {
+        it('initialise and start hooks receive app, moduleContainer and eventBus', async () => {
+            const container = makeFakeContainer();
+            const contexts: any[] = [];
+            const m = ModuleBuilder.create('x')
+                .withInitialisation(async ctx => { contexts.push(ctx); })
+                .withStart(async ctx => { contexts.push(ctx); })
+                .build();
+            configured(m, container);
+            await m.initialise(fakeApp);
+            await m.start(fakeApp);
+            expect(contexts.length).toBe(2);
+            for (const ctx of contexts) {
+                expect(ctx.app).toBe(fakeApp);
+                expect(ctx.moduleContainer).toBe(container);
+                expect(ctx.eventBus).toBe(fakeApp.eventBus);
+            }
+        });
+
+        it('initialise rejects if configureContainer was never called', async () => {
+            const m = ModuleBuilder.create('x').build();
+            await expect(m.initialise(fakeApp)).rejects.toThrow(/no container/);
         });
     });
 
@@ -179,7 +212,7 @@ describe('ModuleBuilder', () => {
             const m = ModuleBuilder.create('x')
                 .withStart(async () => { called = true; })
                 .build();
-            await m.start();
+            await configured(m).start(fakeApp);
             expect(called).toBe(true);
         });
 
@@ -189,7 +222,7 @@ describe('ModuleBuilder', () => {
                 .withStart(async () => { order.push(1); })
                 .withStart(async () => { order.push(2); })
                 .build();
-            await m.start();
+            await configured(m).start(fakeApp);
             expect(order).toEqual([1, 2]);
         });
 
@@ -197,12 +230,12 @@ describe('ModuleBuilder', () => {
             const m = ModuleBuilder.create('x')
                 .withStart(async () => { throw new Error('start-boom'); })
                 .build();
-            await expect(m.start()).rejects.toThrow('start-boom');
+            await expect(configured(m).start(fakeApp)).rejects.toThrow('start-boom');
         });
 
         it('resolves when no hooks registered', async () => {
             const m = ModuleBuilder.create('x').build();
-            await expect(m.start()).resolves.toBeUndefined();
+            await expect(configured(m).start(fakeApp)).resolves.toBeUndefined();
         });
     });
 

@@ -37,24 +37,24 @@ describe('EventBus', () => {
 
     });
 
-    describe('.findModel()', () => {
+    describe('.findStoreModel()', () => {
         it('finds model', () => {
-            const foundM1 =_bus.findModel(m => m.id === 'm1');
+            const foundM1 =_bus.findStoreModel(m => m.id === 'm1');
             expect(foundM1).toBe(m1);
-            const foundM2 =_bus.findModel(m => m.id === 'm2');
+            const foundM2 =_bus.findStoreModel(m => m.id === 'm2');
             expect(foundM2).toBe(m2);
-            const foundM3 =_bus.findModel(m => m.id === 'm3');
+            const foundM3 =_bus.findStoreModel(m => m.id === 'm3');
             expect(foundM3).toBe(m3);
         });
 
         it('returns null if model not found', () => {
-            const shouldBeNull =_bus.findModel(m => m.id === 'not-there');
+            const shouldBeNull =_bus.findStoreModel(m => m.id === 'not-there');
             expect(shouldBeNull).toBeNull();
         });
 
         it('should throw if predicate not a function', () => {
-            expect(() => {_bus.findModel(<any>'boom'); }).toThrow(new Error('predicate should be a function'));
-            expect(() => {_bus.findModel(undefined); }).toThrow(new Error('predicate should be a function'));
+            expect(() => {_bus.findStoreModel(<any>'boom'); }).toThrow(new Error('predicate should be a function'));
+            expect(() => {_bus.findStoreModel(undefined); }).toThrow(new Error('predicate should be a function'));
         });
     });
 });

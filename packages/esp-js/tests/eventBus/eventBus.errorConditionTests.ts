@@ -62,7 +62,7 @@ describe('EventBus', () => {
                     }
                 })
                 .build();
-            _bus.getModelObservable('modelId1').subscribe(
+            _bus.getStoreModelObservable('modelId1').subscribe(
                 (model: any) => {
                     _updateReceivedCount++;
                     if (_flags.throwAtUpdate) {
@@ -134,9 +134,9 @@ describe('EventBus', () => {
                 }).toThrow(new Error('ESP event bus halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
-            it('should throw on getModelObservable subscribe', () => {
+            it('should throw on getStoreModelObservable subscribe', () => {
                 expect(() => {
-                    _bus.getModelObservable('modelId1').subscribe(() => {});
+                    _bus.getStoreModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error('ESP event bus halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
@@ -152,9 +152,9 @@ describe('EventBus', () => {
                 }).toThrow(new Error('ESP event bus halted due to previous unhandled error [Error: Boom:Pre]'));
             });
 
-            it('should throw on getModelObservable()', () => {
+            it('should throw on getStoreModelObservable()', () => {
                 expect(() => {
-                    _bus.getModelObservable('modelId1').subscribe(() => {});
+                    _bus.getStoreModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error('ESP event bus halted due to previous unhandled error [Error: Boom:Pre]'));
             });
         });
@@ -170,9 +170,9 @@ describe('EventBus', () => {
                 }).toThrow(new Error('ESP event bus has been disposed'));
             });
 
-            it('should throw on getModelObservable subscribe', () => {
+            it('should throw on getStoreModelObservable subscribe', () => {
                 expect(() => {
-                    _bus.getModelObservable('modelId1').subscribe(() => {});
+                    _bus.getStoreModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error('ESP event bus has been disposed'));
             });
 
@@ -188,9 +188,9 @@ describe('EventBus', () => {
                 }).toThrow(new Error('ESP event bus has been disposed'));
             });
 
-            it('should throw on getModelObservable()', () => {
+            it('should throw on getStoreModelObservable()', () => {
                 expect(() => {
-                    _bus.getModelObservable('modelId1').subscribe(() => {});
+                    _bus.getStoreModelObservable('modelId1').subscribe(() => {});
                 }).toThrow(new Error('ESP event bus has been disposed'));
             });
         });

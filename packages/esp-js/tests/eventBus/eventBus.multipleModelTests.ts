@@ -98,11 +98,11 @@ describe('EventBus', () => {
 
         it('should dispatch updates for the child model only', () => {
             let model1UpdateCount = 0, model2UpdateCount = 0;
-            _bus.getModelObservable(_model1.id).subscribe(() => {
+            _bus.getStoreModelObservable(_model1.id).subscribe(() => {
                 model1UpdateCount++;
             });
             expect(model1UpdateCount).toEqual(1);
-            _bus.getModelObservable(_model2.id).subscribe(() => {
+            _bus.getStoreModelObservable(_model2.id).subscribe(() => {
                 model2UpdateCount++;
             });
             expect(model2UpdateCount).toEqual(1);

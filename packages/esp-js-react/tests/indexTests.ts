@@ -21,8 +21,8 @@ import * as espReact from '../src/index';
 describe('index exports', () => {
     it('check exports', () => {
         expect(espReact.ConnectableComponent).toBeDefined();
-        expect(espReact.useSyncModelWithSelector).toBeDefined();
-        expect(espReact.syncModelWithSelectorOptions).toBeDefined();
+        expect(espReact.useSyncStoreModelWithSelector).toBeDefined();
+        expect(espReact.syncStoreModelWithSelectorOptions).toBeDefined();
         expect(espReact.EspEventBusContextProvider).toBeDefined();
         expect(espReact.EventBusContext).toBeDefined();
         expect(espReact.useEventBus).toBeDefined();
@@ -30,8 +30,8 @@ describe('index exports', () => {
         expect(espReact.usePublishEvent).toBeDefined();
         expect(espReact.useGetStoreId).toBeDefined();
         expect(espReact.GetStoreIdContext).toBeDefined();
-        expect(espReact.useGetStore).toBeDefined();
-        expect(espReact.GetStoreContext).toBeDefined();
+        expect(espReact.useGetStoreModel).toBeDefined();
+        expect(espReact.GetStoreModelContext).toBeDefined();
         expect(espReact.PublishStoreEventContext).toBeDefined();
         expect(espReact.usePublishStoreEvent).toBeDefined();
         expect(espReact.PublishStoreEventWithEntityKeyContext).toBeDefined();

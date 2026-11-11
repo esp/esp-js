@@ -4,7 +4,7 @@ import {
     ConnectableComponent,
     ConnectableComponentProps,
     PublishStoreEventDelegate,
-    MapModelToProps,
+    MapStoreModelToProps,
     CreatePublishEventProps,
 } from '../src';
 import {testApi, TestApi} from './testApi/testApi';
@@ -34,7 +34,7 @@ class TestModel2 extends TestModel {
 
 interface ConnectedComponentElementCreationProperties {
     storeId: string;
-    useMapModelToProps?: boolean;
+    useMapStoreModelToProps?: boolean;
     useCreatePublishEventProps?: boolean;
     passOtherProps?: boolean;
 }
@@ -67,16 +67,16 @@ describe('ConnectableComponentTests', () => {
         let connectableComponentProps: ConnectableComponentProps<TestModel> = {
             storeId: options.storeId
         };
-        let mapModelToProps: MapModelToProps<any, any, any>;
+        let mapStoreModelToProps: MapStoreModelToProps<any, any, any>;
         let createPublishEventProps: CreatePublishEventProps<any>;
         const otherProps = {other1: 'other-value'};
         let publishEventProps: { publishEvent1: () => void };
-        if (options.useMapModelToProps) {
-            mapModelToProps = (model: TestModel, publishEventProps2: any) => {
+        if (options.useMapStoreModelToProps) {
+            mapStoreModelToProps = (model: TestModel, publishEventProps2: any) => {
                 return {
                     ...model,
                     foo: model.value,
-                    publishEventPropsPassedMapModelToProps: publishEventProps2 && typeof publishEventProps2.publishEvent1 === 'function',
+                    publishEventPropsPassedMapStoreModelToProps: publishEventProps2 && typeof publishEventProps2.publishEvent1 === 'function',
                 };
             };
         }
@@ -91,7 +91,7 @@ describe('ConnectableComponentTests', () => {
             <ConnectableComponent
                 {...connectableComponentProps}
                 view={viewFactory('View1')}
-                mapModelToProps={mapModelToProps}
+                mapStoreModelToProps={mapStoreModelToProps}
                 {...otherProps}
             />
         );
@@ -231,7 +231,7 @@ describe('ConnectableComponentTests', () => {
                 let elementCreationProperties: ConnectedComponentElementCreationProperties = {
                     storeId: 'model-id1',
                     useConnectFunction: false,
-                    useMapModelToProps: true
+                    useMapStoreModelToProps: true
                 };
                 api.doRender(
                     createConnectedComponentElement(elementCreationProperties),
@@ -243,7 +243,7 @@ describe('ConnectableComponentTests', () => {
                 api.asserts.props
                     .receivedPropCountIs(1)
                     .propAtIndexHasStoreId(0,'model-id1');
-                const element = createConnectedComponentElement({storeId: 'model-id2', useConnectFunction: false, useMapModelToProps: true});
+                const element = createConnectedComponentElement({storeId: 'model-id2', useConnectFunction: false, useMapStoreModelToProps: true});
                 api.doReRender(element, 'model-id2');
                 api.asserts.props
                     .receivedPropCountIs(2)

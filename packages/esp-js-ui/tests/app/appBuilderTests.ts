@@ -169,7 +169,41 @@ describe('AppBuilder', () => {
             const app = AppBuilder.create('app').withModule(mod).build();
             await app.start();
             expect(childContainer).toBeDefined();
+            expect(childContainer).not.toBe(app.container);
             expect(childContainer.resolve('bus')).toBe(app.eventBus);
+        });
+
+        it('modules registering the same key are isolated from each other and from the root', async () => {
+            class SvcA {}
+            class SvcB {}
+            let resolvedInA: any = null;
+            let resolvedInB: any = null;
+            const modA = ModuleBuilder.create('A')
+                .withContainerConfiguration(c => c.register('svc', SvcA))
+                .withInitialisation(async ({moduleContainer}) => { resolvedInA = moduleContainer.resolve('svc'); })
+                .build();
+            const modB = ModuleBuilder.create('B')
+                .withContainerConfiguration(c => c.register('svc', SvcB))
+                .withInitialisation(async ({moduleContainer}) => { resolvedInB = moduleContainer.resolve('svc'); })
+                .build();
+            const app = AppBuilder.create('app').withModule(modA).withModule(modB).build();
+            await app.start();
+            expect(resolvedInA).toBeInstanceOf(SvcA);
+            expect(resolvedInB).toBeInstanceOf(SvcB);
+            expect(app.container.isRegistered('svc')).toBe(false);
+        });
+
+        it('module hooks receive a ModuleContext with app, moduleContainer and eventBus', async () => {
+            let ctx: any = null;
+            const mod = ModuleBuilder.create('A')
+                .withInitialisation(async c => { ctx = c; })
+                .build();
+            const app = AppBuilder.create('app').withModule(mod).build();
+            await app.start();
+            expect(ctx.app).toBe(app);
+            expect(ctx.eventBus).toBe(app.eventBus);
+            expect(ctx.moduleContainer).not.toBe(app.container);
+            expect(ctx.moduleContainer.resolve('bus')).toBe(app.eventBus);
         });
 
         it('full lifecycle order: configureContainer → initialise hooks → module initialise → module start → start hooks', async () => {
@@ -306,6 +340,58 @@ describe('AppBuilder', () => {
             app.dispose();
             app.dispose();
             expect(disposeOrder).toHaveLength(1);
+        });
+
+        it('disposes the EventBus, its store subscriptions and the root container', async () => {
+            let subscriptionDisposed = false;
+            const mod = ModuleBuilder.create('A')
+                .withInitialisation(async ({eventBus}) => {
+                    eventBus.storeBuilder('s', {n: 0})
+                        .withEventHandler('E', () => {})
+                        .withEventSubscription(() => ({dispose: () => { subscriptionDisposed = true; }}))
+                        .build();
+                })
+                .build();
+            const app = AppBuilder.create('app').withModule(mod).build();
+            await app.start();
+            app.dispose();
+            expect(subscriptionDisposed).toBe(true);
+            expect(app.eventBus.isDisposed).toBe(true);
+            expect(app.container.isDisposed).toBe(true);
+        });
+
+        it('disposing one module does not dispose the root container', async () => {
+            const modA = makeModule('A');
+            const modB = makeModule('B');
+            const app = AppBuilder.create('app').withModule(modA).withModule(modB).build();
+            await app.start();
+            modA.dispose();
+            expect(app.container.isDisposed).toBe(false);
+            expect(app.container.resolve('bus')).toBe(app.eventBus);
+        });
+
+        it('disposes the EventBus even if start() was never called', () => {
+            const app = AppBuilder.create('app').build();
+            app.dispose();
+            expect(app.eventBus.isDisposed).toBe(true);
+        });
+
+        it('start() throws after dispose()', async () => {
+            const app = AppBuilder.create('app').build();
+            app.dispose();
+            await expect(app.start()).rejects.toThrow(/disposed/);
+        });
+
+        it('start() stops if the app is disposed while modules load', async () => {
+            let initialised = false;
+            let resolveLoad: (m: Module) => void;
+            const lazy = () => new Promise<Module>(r => { resolveLoad = r; });
+            const app = AppBuilder.create('app').withModule(lazy).build();
+            const startPromise = app.start();
+            app.dispose();
+            resolveLoad!(makeModule('A', {onInitialise: async () => { initialised = true; }}));
+            await startPromise;
+            expect(initialised).toBe(false);
         });
     });
 });

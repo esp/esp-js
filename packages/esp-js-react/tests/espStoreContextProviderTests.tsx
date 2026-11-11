@@ -2,7 +2,7 @@ import {
     EspEventBusContextProvider,
     EspStoreContextProvider,
     useGetStoreId,
-    useGetStore,
+    useGetStoreModel,
     usePublishStoreEvent,
     usePublishStoreEventWithEntityKey
 } from '../src';
@@ -68,10 +68,10 @@ describe('EspStoreContextProviderTests tests', () => {
         expect(result.current).toBe('model-id2');
     });
 
-    it('useGetStore returns model and changes on re-render', () => {
+    it('useGetStoreModel returns model and changes on re-render', () => {
         const {result, rerender} = renderHook(
             props => {
-                return useGetStore<TestModelState>();
+                return useGetStoreModel<TestModelState>();
             },
             {
                 wrapper: createEspEventBusContextProviderWrapper(
@@ -100,19 +100,19 @@ describe('EspStoreContextProviderTests tests', () => {
             }
         );
 
-        expect(api.bus.getModel<TestModelState>('model-id1').value).toBe('initial-value');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').value).toBe('initial-value');
         result.current('test-event', 'updated');
-        expect(api.bus.getModel<TestModelState>('model-id1').value).toBe('updated');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').value).toBe('updated');
         result.current({eventType: 'test-event', event: 'updated2' });
-        expect(api.bus.getModel<TestModelState>('model-id1').value).toBe('updated2');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').value).toBe('updated2');
 
         rerender();
 
-        expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('initial-value');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').value).toBe('initial-value');
         result.current('test-event', 'updated');
-        expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('updated');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').value).toBe('updated');
         result.current({eventType: 'test-event', event: 'updated2' });
-        expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('updated2');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').value).toBe('updated2');
     });
 
     it('publishStoreEventWithEntityKey publishes to correct model and changes on re-render', () => {
@@ -129,22 +129,22 @@ describe('EspStoreContextProviderTests tests', () => {
             }
         );
 
-        expect(api.bus.getModel<TestModelState>('model-id1').value).toBe('initial-value');
-        expect(api.bus.getModel<TestModelState>('model-id1').entityKey).toBe('');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').value).toBe('initial-value');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').entityKey).toBe('');
         result.current('the-entity-key', 'test-event-with-entity-key', 'updated');
-        expect(api.bus.getModel<TestModelState>('model-id1').value).toBe('updated');
-        expect(api.bus.getModel<TestModelState>('model-id1').entityKey).toBe('the-entity-key');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').value).toBe('updated');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').entityKey).toBe('the-entity-key');
         result.current({ entityKey: 'the-entity-key', eventType: 'test-event-with-entity-key', event: 'updated2'});
-        expect(api.bus.getModel<TestModelState>('model-id1').value).toBe('updated2');
+        expect(api.bus.getStoreModel<TestModelState>('model-id1').value).toBe('updated2');
 
         rerender();
 
-        expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('initial-value');
-        expect(api.bus.getModel<TestModelState>('model-id2').entityKey).toBe('');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').value).toBe('initial-value');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').entityKey).toBe('');
         result.current('the-entity-key', 'test-event-with-entity-key', 'updated');
-        expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('updated');
-        expect(api.bus.getModel<TestModelState>('model-id2').entityKey).toBe('the-entity-key');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').value).toBe('updated');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').entityKey).toBe('the-entity-key');
         result.current({ entityKey: 'the-entity-key', eventType: 'test-event-with-entity-key', event: 'updated2'});
-        expect(api.bus.getModel<TestModelState>('model-id2').value).toBe('updated2');
+        expect(api.bus.getStoreModel<TestModelState>('model-id2').value).toBe('updated2');
     });
 });

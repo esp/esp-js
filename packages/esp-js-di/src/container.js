@@ -199,6 +199,9 @@ export default class Container {
     dispose() {
         this._disposeContainer();
     }
+    get isDisposed() {
+        return this._isDisposed;
+    }
     _tryRetrieveFromCache(name) {
         var registration = this._registrations[name],
             instance = this._instanceCache[name],

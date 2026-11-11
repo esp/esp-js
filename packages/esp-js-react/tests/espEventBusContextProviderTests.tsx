@@ -46,10 +46,10 @@ describe('EspEventBusContextProvider tests', () => {
                 wrapper: createEspEventBusContextProviderWrapper(api.bus),
             }
         );
-        expect(api.bus.getModel<TestModelState>('model-id').value).toBe('initial-value');
+        expect(api.bus.getStoreModel<TestModelState>('model-id').value).toBe('initial-value');
         result.current('model-id', 'test-event', 'updated');
-        expect(api.bus.getModel<TestModelState>('model-id').value).toBe('updated');
+        expect(api.bus.getStoreModel<TestModelState>('model-id').value).toBe('updated');
         result.current({ address: 'model-id', eventType: 'test-event', event: 'updated2'});
-        expect(api.bus.getModel<TestModelState>('model-id').value).toBe('updated2');
+        expect(api.bus.getStoreModel<TestModelState>('model-id').value).toBe('updated2');
     });
 });

@@ -1,4 +1,4 @@
-import {Module, ModuleViewBinding} from './types';
+import {Module, ModuleContext, ModuleHook, ModuleViewBinding} from './types';
 import type {Container} from 'esp-js-di';
 import {Logger} from 'esp-js';
 import { ModuleBuilderState } from './moduleBuilder';
@@ -11,8 +11,8 @@ export class DefaultModule implements Module {
     public readonly viewBindings: ReadonlyArray<ModuleViewBinding>;
 
     private _containerConfigurators: Array<(container: Container) => void>;
-    private _initialiseFns: Array<(app: App) => Promise<void>>;
-    private _startFns: Array<(app: App) => Promise<void>>;
+    private _initialiseFns: ModuleHook[];
+    private _startFns: ModuleHook[];
     private _childContainer: Container | null = null;
     private _disposed: boolean = false;
 
@@ -26,30 +26,39 @@ export class DefaultModule implements Module {
 
     configureContainer(container: Container): void {
         if (this._childContainer !== null) {
-            _log.warn('configureContainer called again on module [{0}] — disposing previous child container', this.moduleId);
+            _log.warn(`configureContainer called again on module [${this.moduleId}] — disposing previous child container`);
             this._childContainer.dispose();
         }
         this._childContainer = container;
         for (const fn of this._containerConfigurators) {
             fn(container);
         }
-        _log.debug('Module [{0}] container configured', this.moduleId);
+        _log.debug(`Module [${this.moduleId}] container configured`);
     }
 
     async initialise(app: App): Promise<void> {
-        _log.debug('Module [{0}] initialising', this.moduleId);
+        _log.debug(`Module [${this.moduleId}] initialising`);
+        const context = this._createContext(app);
         for (const fn of this._initialiseFns) {
-            await fn(app);
+            await fn(context);
         }
-        _log.debug('Module [{0}] initialised', this.moduleId);
+        _log.debug(`Module [${this.moduleId}] initialised`);
     }
 
     async start(app: App): Promise<void> {
-        _log.debug('Module [{0}] starting', this.moduleId);
+        _log.debug(`Module [${this.moduleId}] starting`);
+        const context = this._createContext(app);
         for (const fn of this._startFns) {
-            await fn(app);
+            await fn(context);
         }
-        _log.debug('Module [{0}] started', this.moduleId);
+        _log.debug(`Module [${this.moduleId}] started`);
+    }
+
+    private _createContext(app: App): ModuleContext {
+        if (this._childContainer === null) {
+            throw new Error(`Module [${this.moduleId}] has no container. configureContainer() must be called before initialise()/start()`);
+        }
+        return {app, moduleContainer: this._childContainer, eventBus: app.eventBus};
     }
 
     dispose(): void {
@@ -58,7 +67,7 @@ export class DefaultModule implements Module {
         }
         this._disposed = true;
         if (this._childContainer !== null) {
-            _log.debug('Module [{0}] disposing child container', this.moduleId);
+            _log.debug(`Module [${this.moduleId}] disposing child container`);
             this._childContainer.dispose();
             this._childContainer = null;
         }

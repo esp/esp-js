@@ -208,7 +208,7 @@ export class StoreRecord<TModel = any> {
 
     /**
      * Upgrades a placeholder (lazy) StoreRecord to a full store record with actual config.
-     * Called when addStore() is called after getEventObservable() was called first.
+     * Called by addStore(); the placeholder may have been created earlier by getStoreModelObservable().
      */
     public upgradeToFullModel(initialModel: TModel, storeConfig: StoreConfig<TModel>, publishDelegateArg: PublishDelegate) {
         this._currentModel = initialModel;
@@ -227,6 +227,7 @@ export class StoreRecord<TModel = any> {
             streamsRegistration.streams.preview.disconnect();
             streamsRegistration.streams.normal.disconnect();
             streamsRegistration.streams.committed.disconnect();
+            streamsRegistration.streams.final.disconnect();
             streamsRegistration.streams.all.disconnect();
         });
         this.subscriptionDisposables.dispose();

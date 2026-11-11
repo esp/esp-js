@@ -107,7 +107,7 @@ describe('.merge', () => {
             .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })
             .build();
 
-        bus.getModelObservable(storeId).subscribe(() => {});
+        bus.getStoreModelObservable(storeId).subscribe(() => {});
 
         bus.publishEvent(storeId, 'myEvent1', 1);
         expect(receivedByHandler.myEvent1).toEqual([1]);

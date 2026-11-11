@@ -61,7 +61,7 @@ describe('EventBus', () => {
                     accumulatedValues.push(event);
                 })
                 .build();
-            _bus.getModelObservable('myModel').subscribe(() => {
+            _bus.getStoreModelObservable('myModel').subscribe(() => {
                 updateStreamTestRan = true;
                 expect(() => {
                     _bus.executeEvent('ExecutedEvent', {});

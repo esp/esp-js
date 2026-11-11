@@ -49,6 +49,7 @@ Events pass through up to four ordered observation stages — `preview`, `normal
 Events an effect publishes straight away to its own store are processed before observers are notified, so they get a single model update.
 Publishing an event the store has no handler for logs a warning.
 A class instance used as store state must include `[immerable] = true` from `immer`.
+Maps and Sets work in models; esp-js turns on immer's MapSet support for you.
 
 ## The ESP package family
 

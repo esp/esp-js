@@ -28,7 +28,10 @@ import {ReduxDevToolsDiagnosticMonitor, NoopDiagnosticMonitor, DiagnosticMonitor
 import {StoreConfig, PublishDelegate} from '../model/types';
 import {Subscribable} from '../model/subscribable';
 import {StoreBuilder} from '../model/storeBuilder';
-import {produce, freeze, current, isDraft} from 'immer';
+import {produce, freeze, current, isDraft, enableMapSet} from 'immer';
+
+// esp-js bundles its own copy of immer, so a call to enableMapSet() in the app's immer can't reach it. Turn it on here.
+enableMapSet();
 
 let _log = Logger.create('EventBus');
 

@@ -268,6 +268,8 @@ Previously, `ModelRecord` was an internal routing record and polimer's `PolimerM
 
 `immer` is now a direct runtime dependency of `esp-js` (bundled into the UMD output). The EventBus calls `produce()` once per dispatch round internally (see Dispatch cycle). Consumers do not need to import or configure immer themselves — except when using class instances as store state, where `[immerable] = true` must be set on the class.
 
+Maps and Sets work in models: esp-js turns on immer's MapSet support (`enableMapSet()`) itself. Because immer is bundled, calling `enableMapSet()` from your app's own copy of immer would not reach it.
+
 In development, immer's auto-freeze is active: any attempt to mutate a model snapshot outside a handler draft will throw. In production, structural sharing keeps memory overhead low.
 
 ---

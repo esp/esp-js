@@ -212,6 +212,7 @@ bus.dispose();
 - `bus.publishEvent()` throws if called from within a `normal`/`preview` event handler — use `withEffect` to publish side-effect events instead
 - `bus.getStoreModelObservable()` returns `Subscribable<T>` — do NOT use `Observable.create` or import from the `reactive/` module (it is internal and not part of the public API)
 - Class instances used as model state **must** have `[immerable] = true` from `immer`, otherwise `produce` throws at runtime
+- Maps and Sets in models work: `eventBus.ts` calls immer's `enableMapSet()` once at module load. immer is bundled into esp-js, so the app can't do this from its own immer copy
 - `StoreRecord` maintains an event queue per store — events published during another store's dispatch are queued and processed after the current store finishes
 - `broadcastEvent` dispatches to all registered stores; stores not observing the event simply ignore it (stores observed via `getStoreModelObservable` but not yet registered are skipped)
 - `publishEvent` to a store with no handler for that event type drops the event and logs a warning

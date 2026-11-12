@@ -1,29 +1,64 @@
-[![Build Status](https://travis-ci.org/esp/esp-js.svg?branch=master)](https://travis-ci.org/esp/esp-js)
-![](https://img.shields.io/npm/types/esp-js)
-[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+[![npm](https://img.shields.io/npm/v/esp-js-ui.svg)](https://www.npmjs.com/package/esp-js-ui)
+![npm type definitions](https://img.shields.io/npm/types/esp-js-ui)
 
-# Evented State Processor (ESP) - Package esp-js-ui
+# Evented State Processor (ESP) — esp-js-ui
 
-ESP gives you the ability to manage changes to a model in a deterministic event driven manner.
-It does this by adding specific processing workflow around changes to a model's state. 
-It was born out of the need to manage complex UI and/or server state.
+`esp-js-ui` provides application bootstrapping and module loading for ESP applications.
+It exposes two fluent builders — `AppBuilder` and `ModuleBuilder` — that wire up the root IoC container, the `EventBus`, the module lifecycle (configure → initialise → start → dispose), and view-to-region bindings consumed by `esp-js-react`.
 
-At its core is a `Router` which sits between event publishers and the model.
-Those wanting to change the model publish events to the `Router`.
-The model observes the events and applies the changes.
-The model is then dispatched to model observers so new state can be applied.
-It's lightweight, easy to apply and puts the model at the forefront of your design.
+> Peer dependencies: `esp-js` and `esp-js-di`.
 
-ESP 2.0 adds a host of other additional libraries to help you build composite single page application with React.
-It allows you to use either OO, and/or immutable pattens (Redux like) for modeling independent and decoupled screens within your composite application.
-Features include:
+## Install
 
-* The core event router - esp-js [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js) 
-* Dependency injection container - esp-js-di [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
-* Module loading system and composite application toolbox  - esp-js-ui [![npm](https://img.shields.io/npm/v/esp-js-ui.svg)](https://www.npmjs.com/package/esp-js-ui)
-* React support - esp-js-react [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
-* Immutable state models - esp-js-polimer [![npm](https://img.shields.io/npm/v/esp-js-polimer.svg)](https://www.npmjs.com/package/esp-js-polimer)   
+```bash
+npm install esp-js-ui esp-js esp-js-di
+```
 
-It's built on typescript and type definitions are included in the npm packages.
+## Usage
 
-For full documentation please see [https://esp.github.io/](https://esp.github.io/).
+A module declares its container registrations, view bindings, and lifecycle hooks.
+An app composes modules and runs the whole lifecycle from a single `start()` call.
+
+```ts
+import { AppBuilder, ModuleBuilder } from 'esp-js-ui';
+
+const ordersModule = ModuleBuilder.create('orders')
+    .withContainerConfiguration(container => {
+        container.register('ordersService', OrdersService).inject('bus').singleton();
+    })
+    .withView('orders-store', OrdersView, 'main')   // storeId, component, region
+    .withInitialisation(async ({ moduleContainer, eventBus }) => {
+        // ordersService lives in this module's own child container
+        const ordersService = moduleContainer.resolve<OrdersService>('ordersService');
+        registerOrdersStore(eventBus, ordersService, 'orders-store');
+    })
+    .build();
+
+const app = AppBuilder.create('my-app')
+    .withModule(ordersModule)
+    .withModule(async () => import('./newsModule').then(m => m.newsModule)) // lazy / code-split
+    .build();
+
+await app.start();
+// app.eventBus, app.container and app.modules are now available.
+// The EventBus is created for you and pre-registered in the container as 'bus'.
+```
+
+`app.start()` configures the root container, loads modules, runs app- and module-level `initialise` then `start` hooks, and is idempotent.
+Each module gets its own child container (a child of the root), so modules can see root registrations but not each other's.
+Module hooks receive a `ModuleContext`: `{ app, moduleContainer, eventBus }`.
+
+`app.dispose()` disposes the modules, then the `EventBus` and its stores, then the root container.
+
+Views are rendered by `esp-js-react` — see `RegionView`, which mounts the views every loaded module registered for a given region.
+
+## The ESP package family
+
+* **esp-js** — the core `EventBus` and `StoreBuilder` [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
+* **esp-js-di** — a standalone IoC / dependency-injection container [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
+* **esp-js-ui** — application bootstrapping and module loading (this package)
+* **esp-js-react** — React bindings [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
+
+Written in TypeScript; type definitions are included in the package.
+
+For full documentation see [https://esp.github.io/](https://esp.github.io/), or browse the source at [github.com/esp/esp-js](https://github.com/esp/esp-js).

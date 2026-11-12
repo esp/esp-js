@@ -1,0 +1,224 @@
+# esp-js-react
+
+## Package Purpose
+
+React bindings for ESP. Provides `ConnectableComponent` for subscribing views to stores, `RegionView` for rendering module-declared views into named shell regions, `EspApp` for wrapping the app root with all required contexts, and hooks (`useSyncStoreModelWithSelector`, `usePublishStoreEvent`, etc.) for fine-grained model access.
+
+## Role in Monorepo
+
+- **Depends on (peer)**: `esp-js`, `esp-js-ui`, `react`
+- **Bundled**: `use-sync-external-store` is compiled into the output, so it's a devDependency, not a runtime dependency
+- JSX uses the classic runtime (`React.createElement`, `"jsx": "react"`), so `react/jsx-runtime` isn't bundled — `.tsx` files in `src/` must `import * as React from 'react'`
+- Published as `esp-js-react` on npm
+
+## Build and Test
+
+```bash
+npm run build-dev   # vite build → .dist/esp-react.js + .dist/esp-react.esm.mjs
+npm run build-prod  # adds .dist/esp-react.min.js (minified UMD)
+npm test            # vitest --watch
+npm run test-ci     # vitest run (CI)
+npm run dev         # vite build --watch
+```
+
+Output: `.dist/esp-react.js` (UMD), `.dist/esp-react.esm.mjs` (ESM), `.dist/typings/index.d.ts`.
+
+Note: the Vite entry and output filename is `esp-react` (see `vite.config.ts`), not `esp-js-react`.
+
+## Source Structure
+
+```
+src/
+  index.ts                       # Public exports
+  connectableComponent.tsx       # ConnectableComponent — subscribes to a store; wraps view in EspStoreContextProvider
+  espEventBusContextProvider.tsx # EspEventBusContextProvider, EventBusContext, useEventBus, usePublishEvent
+  espStoreContextProvider.tsx    # EspStoreContextProvider, useGetStoreModel, useGetStoreId, usePublishStoreEvent, usePublishStoreEventWithEntityKey
+  espApp.tsx                     # EspApp — wraps app root with EventBus + modules contexts
+  regionView.tsx                 # RegionView — renders module views registered to a named region
+  espModulesContext.ts           # EspModulesContext — React context holding loaded Module[]
+  useSyncStoreModelWithSelector.ts    # useSyncStoreModelWithSelector hook + SyncStoreModelWithSelectorOptions
+```
+
+## Key Concepts and Patterns
+
+### EspApp
+
+The recommended root wrapper. Wrap the application after `app.start()` resolves:
+
+```tsx
+await app.start();
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <EspApp app={app}>
+        <AppShell />
+    </EspApp>
+);
+```
+
+`EspApp` sets up `EspEventBusContextProvider` (with `app.eventBus`) and `EspModulesContext` (with `app.modules`) — no manual setup needed.
+
+### RegionView
+
+Renders all views registered to a named region by loaded modules (via `ModuleBuilder.withView(storeId, Component, region)` in `esp-js-ui`):
+
+```tsx
+const AppShell = () => (
+    <div>
+        <RegionView regionName="main" />
+        <RegionView regionName="sidebar" />
+    </div>
+);
+```
+
+`RegionView` reads `EspModulesContext`, finds all `ModuleViewBinding` entries matching `regionName`, and mounts a `ConnectableComponent` for each. Requires `EspApp` (or manual `EspModulesContext.Provider`) above it.
+
+### EventBus Context
+
+Access the bus in any descendant of `EspApp` or `EspEventBusContextProvider`:
+```tsx
+const bus = useEventBus();
+const publishEvent = usePublishEvent(); // (storeId, eventType, event) => void
+```
+
+### ConnectableComponent
+
+Subscribes a view to a store by `storeId`. Re-renders on every model update. Also sets up `EspStoreContextProvider` so child hooks work without explicit `storeId`:
+
+```tsx
+<ConnectableComponent
+    storeId="my-store"
+    view={MyView}
+    mapStoreModelToProps={(model) => ({ items: model.items })}
+    createPublishEventProps={(publish) => ({ onAdd: (item) => publish('ItemAdded', { item }) })}
+/>
+```
+
+The view component receives `storeId`, `model`, `bus`, and any mapped props.
+
+### EspStoreContextProvider / Store Hooks
+
+For cases where a subtree shares a single store. Set up by `ConnectableComponent` automatically, or manually:
+
+```tsx
+<EspStoreContextProvider storeId="my-store" model={model}>
+    <ChildComponent />
+</EspStoreContextProvider>
+```
+
+In any descendant:
+```tsx
+const model = useGetStoreModel<MyModel>();
+const storeId = useGetStoreId();
+const publish = usePublishStoreEvent(); // (eventType, event) => void — no storeId needed
+const publishWithKey = usePublishStoreEventWithEntityKey(); // (entityKey, eventType, event) => void
+```
+
+### useSyncStoreModelWithSelector
+
+Hook-based subscription using React's `useSyncExternalStore`. Supports a selector and equality function to avoid unnecessary re-renders:
+
+```tsx
+const items = useSyncStoreModelWithSelector<MyModel, Item[]>(
+    model => model.items,
+    syncStoreModelWithSelectorOptions<Item[]>()
+        .setStoreId('my-store')
+        .setEqualityFn((a, b) => a.length === b.length)
+);
+```
+
+`storeId` can be omitted if `EspStoreContextProvider` is above in the tree.
+
+## Public API
+
+```typescript
+// App + region
+export { EspApp, EspAppProps }
+export { RegionView, RegionViewProps }
+export { EspModulesContext }
+
+// HOC approach
+export { ConnectableComponent, ConnectableComponentProps, MapStoreModelToProps, CreatePublishEventProps, ConnectableComponentChildProps }
+
+// Hook approach
+export { useSyncStoreModelWithSelector, syncStoreModelWithSelectorOptions, SyncStoreModelWithSelectorOptionsBuilder, SyncStoreModelWithSelectorOptions, SyncStoreModelWithSelectorEqualityFn }
+
+// EventBus context
+export { EspEventBusContextProvider, EspEventBusContextProviderProps, EventBusContext, useEventBus, PublishEventDelegate, PublishEventContext, usePublishEvent }
+
+// Store context
+export { EspStoreContextProvider, EspStoreContextProviderProps, GetStoreIdContext, useGetStoreId, GetStoreModelContext, useGetStoreModel, PublishStoreEventContext, usePublishStoreEvent, PublishStoreEventDelegate, PublishStoreEventWithEntityKeyContext, usePublishStoreEventWithEntityKey, PublishStoreEventWithEntityKeyDelegate }
+```
+
+## Testing Approach
+
+- Test files: `tests/**/*Tests.tsx`
+- Uses `@testing-library/react` for rendering and interaction
+- `tests/testApi/` — shared test fixtures including mock bus and model helpers
+  - `testModel.ts` — `createTestModel(bus, storeId)` registers a store via `StoreBuilder`
+  - `testApi.tsx` — `setupTestModel(storeId)` and `setupModel(storeId, model)` helpers
+  - `eventBusSpy.ts` — `EventBusSpy extends EventBus`, wraps `getStoreModelObservable()` to count subscriptions (does **not** use `Observable.create` — reactive module is internal)
+- Notable test files:
+  - `connectableComponentTests.tsx` — HOC subscription and re-render behaviour; models use `[immerable] = true`
+  - `useSyncStoreModelWithSelectorTests.tsx` — hook selector and equality function behaviour
+  - `espStoreContextProviderTests.tsx`, `espEventBusContextProviderTests.tsx` — context hook tests; use `bus.getStoreModel()` to read current snapshot after events
+
+## Common Tasks
+
+**Minimal setup with EspApp + RegionView (recommended):**
+```tsx
+// After app.start():
+ReactDOM.createRoot(root).render(
+    <EspApp app={app}>
+        <RegionView regionName="main" />
+    </EspApp>
+);
+
+// View component — receives model prop from ConnectableComponent:
+function MyView({ model }: { model: MyModel }) {
+    const publish = usePublishStoreEvent();
+    return <button onClick={() => publish('DoThing', {})}>{model.title}</button>;
+}
+```
+
+**Manual setup with ConnectableComponent:**
+```tsx
+function App() {
+    return (
+        <EspEventBusContextProvider bus={bus}>
+            <ConnectableComponent storeId="counter" view={CounterView} />
+        </EspEventBusContextProvider>
+    );
+}
+```
+
+**useSyncStoreModelWithSelector with EspStoreContextProvider:**
+```tsx
+<EspStoreContextProvider storeId="counter">
+    <CounterView />
+</EspStoreContextProvider>
+
+function CounterView() {
+    const count = useSyncStoreModelWithSelector<CounterModel, number>(m => m.count);
+    const publish = usePublishStoreEvent();
+    return <button onClick={() => publish('Increment', { amount: 1 })}>{count}</button>;
+}
+```
+
+## Gotchas
+
+- The output bundle is named `esp-react.js` (not `esp-js-react.js`) — this is intentional and matches the `main` field in `package.json`
+- `useSyncStoreModelWithSelector` uses `useSyncExternalStoreWithSelector` from the `use-sync-external-store` package (bundled into the output). The package needs React 19 (peer dependency `react ^19.0.0`)
+- `ConnectableComponent` re-renders on every model update regardless of selector — for performance-sensitive cases prefer `useSyncStoreModelWithSelector` with an equality function
+- `ConnectableComponent` requires an explicit `view` prop — there is no decorator-based view resolution in v9
+- The model received by hooks and `ConnectableComponent` is always a **frozen immutable snapshot** from immer — never mutate it directly, and do not hold references across dispatches
+- Class instances used as model state must include `[immerable] = true` from `immer`
+- `RegionView` requires `EspModulesContext` to be populated — use `EspApp` or provide `EspModulesContext.Provider` manually
+- `ConnectableComponent` / `useSyncStoreModelWithSelector` work for a store registered after mount: they render nothing (the hook returns `null`) until the store is registered, then pick it up
+- `useSyncStoreModelWithSelector` uses the latest selector on every render, so a selector may close over props; pass an `equalityFn` to avoid re-renders when a selector builds new objects
+- `ConnectableComponent` captures `createPublishEventProps` once per `bus`/`storeId` — it isn't re-run when the prop changes, so an inline function is fine but must not close over changing props
+- `usePublishStoreEvent` / `useGetStoreModel` / `useGetStoreId` read from `EspStoreContextProvider` (or `ConnectableComponent`) above them in the tree. Without one they return `null`; they don't throw
+
+- Hooks that return a store's model say "StoreModel" (`useGetStoreModel`, `useSyncStoreModelWithSelector`); store-scoped hooks say "Store" (`useGetStoreId`, `usePublishStoreEvent`). Name values from them `model`, not `store`
+- `useSyncStoreModelWithSelector` skips updates whose model reference hasn't changed (immer returns the same reference when nothing changed), so the replay on subscribe doesn't re-render
+- `esp-js` and `react` are **peer** dependencies only (plus devDependencies for local work) — never add them to `dependencies`, or consumers can end up with duplicate copies
+
+**Removed in v9:** `@viewBinding`, `ViewBinder`, `createViewForModel`, `DEFAULT_VIEW_KEY`, `viewContext` — OO decorator-based view binding is gone. `EspModelContextProvider`, `useGetModelId`, `usePublishModelEvent`, `usePublishModelEventWithEntityKey` — renamed to `EspStoreContextProvider`, `useGetStoreId`, `usePublishStoreEvent`, `usePublishStoreEventWithEntityKey`. Also `useGetModel` → `useGetStoreModel`, `useSyncModelWithSelector` → `useSyncStoreModelWithSelector`, `mapModelToProps` → `mapStoreModelToProps`.

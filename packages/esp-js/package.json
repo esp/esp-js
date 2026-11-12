@@ -1,15 +1,13 @@
 {
   "name": "esp-js",
-  "version": "8.1.0",
+  "version": "9.0.0-beta.3",
   "description": "Evented State Processor (ESP) adds specific processing workflow around changes to a model's state",
   "keywords": [
     "state processor",
     "evented state processor",
-    "reactive",
     "event loop",
     "complex state processor",
-    "router",
-    "event router"
+    "event bus"
   ],
   "scripts": {
     "clean": "nps clean",
@@ -21,16 +19,38 @@
     "dev": "nps dev"
   },
   "main": ".dist/esp-js.js",
+  "module": ".dist/esp-js.esm.mjs",
   "typings": ".dist/typings/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./.dist/typings/index.d.ts",
+      "import": "./.dist/esp-js.esm.mjs",
+      "require": "./.dist/esp-js.js",
+      "default": "./.dist/esp-js.js"
+    },
+    "./.dist/*": "./.dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    ".dist",
+    "NOTICE"
+  ],
   "author": "Keith Woods",
   "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esp/esp-js.git",
+    "directory": "packages/esp-js"
+  },
+  "dependencies": {
+    "immer": "^10.1.1"
+  },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "typescript": "^5.5.2",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "@rollup/plugin-terser": "^0.4.4",
+    "vite": "^5.4.6",
+    "vite-plugin-dts": "^4.2.1",
+    "vitest": "^2.1.1",
+    "typescript": "^5.8.0"
   },
   "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
 }

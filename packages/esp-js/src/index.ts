@@ -1,5 +1,4 @@
-// Auto-generated 
-export * from './decorators';
-export * from './reactive';
-export * from './router';
+// Auto-generated
+export * from './model';
+export * from './eventBus';
 export * from './system';

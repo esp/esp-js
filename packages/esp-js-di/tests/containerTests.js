@@ -110,6 +110,49 @@ describe('Container', () =>  {
             expect(resolved.dependencies[1]).toEqual("Bar");
         });
 
+        describe('.resolveMany()', () => {
+
+            it('should resolve two dependencies and return an object keyed by their ids', () => {
+                let instanceA = {};
+                let instanceB = {};
+                container.registerInstance('serviceA', instanceA);
+                container.registerInstance('serviceB', instanceB);
+                let result = container.resolveMany('serviceA', 'serviceB');
+                expect(result.serviceA).toBe(instanceA);
+                expect(result.serviceB).toBe(instanceB);
+            });
+
+            it('should support destructuring assignment', () => {
+                let instanceA = { name: 'a' };
+                let instanceB = { name: 'b' };
+                container.registerInstance('serviceA', instanceA);
+                container.registerInstance('serviceB', instanceB);
+                const { serviceA, serviceB } = container.resolveMany('serviceA', 'serviceB');
+                expect(serviceA).toBe(instanceA);
+                expect(serviceB).toBe(instanceB);
+            });
+
+            it('should throw when resolving an unregistered id', () => {
+                expect(() => {
+                    container.resolveMany('notRegistered');
+                }).toThrow();
+            });
+
+            it('should throw a descriptive error when any one of the ids is not registered', () => {
+                let instanceA = {};
+                container.registerInstance('serviceA', instanceA);
+                expect(() => {
+                    container.resolveMany('serviceA', 'notRegistered');
+                }).toThrow();
+            });
+
+            it('should throw when called with no arguments', () => {
+                expect(() => {
+                    container.resolveMany();
+                }).toThrow();
+            });
+        });
+
         describe('groups', () =>  {
 
             it('should be able able to register/resolve many objects with the same key', () =>  {
@@ -493,6 +536,17 @@ describe('Container', () =>  {
             });
         }
 
+        it('isDisposed reflects container and child container disposal', () =>  {
+            let child = container.createChildContainer();
+            expect(container.isDisposed).toBe(false);
+            expect(child.isDisposed).toBe(false);
+            child.dispose();
+            expect(child.isDisposed).toBe(true);
+            expect(container.isDisposed).toBe(false);
+            container.dispose();
+            expect(container.isDisposed).toBe(true);
+        });
+
         it('should dispose all singleton objects on container dispose', () =>  {
             let A = createDisposable();
             container.register('a', A).singleton();
@@ -635,6 +689,11 @@ describe('Container', () =>  {
                     let isRegistered = childContainer.isRegistered('a', { searchParentContainers: false });
                     expect(isRegistered).toBe(false);
                 });
+
+                it('Should return true when options omit searchParentContainers', () => {
+                    let isRegistered = childContainer.isRegistered('a', {});
+                    expect(isRegistered).toBe(true);
+                });
             });
 
             describe('when item is registered in child', () => {
@@ -698,6 +757,11 @@ describe('Container', () =>  {
                 it('Should return false when searchParentContainers is false', () => {
                     let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: false });
                     expect(isGroupRegistered).toBe(false);
+                });
+
+                it('Should return true when options omit searchParentContainers', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', {});
+                    expect(isGroupRegistered).toBe(true);
                 });
             });
 

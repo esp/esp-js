@@ -1,47 +1,63 @@
 {
-  "name": "esp-js-react",
-  "version": "8.1.0",
-  "description": "Evented State Processor (ESP) React Components",
-  "keywords": [
-    "esp",
-    "state processor",
-    "evented state processor",
-    "reactive",
-    "react"
-  ],
-  "main": ".dist/esp-react.js",
-  "types": ".dist/typings/index.d.ts",
-  "author": "Dev Shop Limited",
-  "license": "Apache-2.0",
-  "repository": "https://github.com/esp/esp-js",
-  "scripts": {
-    "clean": "nps clean",
-    "build-dev": "nps build-dev",
-    "build-prod": "nps build-prod",
-    "build-pack": "nps build-pack",
-    "test": "nps test",
-    "test-ci": "nps test-ci",
-    "dev": "nps dev"
-  },
-  "dependencies": {
-    "esp-js": "^8.1.0",
-    "esp-js-polimer": "^8.1.0",
-    "prop-types": "^15.7.2",
-    "react": "^18.3.1",
-    "use-sync-external-store": "^1.2.2"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "typescript": "^5.5.2",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
-  },
-  "peerDependencies": {
-    "esp-js": "^7.0.0",
-    "esp-js-polimer": "^7.0.0",
-    "prop-types": "^15.0.0",
-    "react": "^18.0.0 || ^19.0.0"
-  },
-  "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
+    "name": "esp-js-react",
+    "version": "9.0.0-beta.3",
+    "description": "Evented State Processor (ESP) React Components",
+    "keywords": [
+        "esp",
+        "state processor",
+        "evented state processor",
+        "reactive",
+        "react"
+    ],
+    "main": ".dist/esp-react.js",
+    "module": ".dist/esp-react.esm.mjs",
+    "types": ".dist/typings/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./.dist/typings/index.d.ts",
+            "import": "./.dist/esp-react.esm.mjs",
+            "require": "./.dist/esp-react.js",
+            "default": "./.dist/esp-react.js"
+        },
+        "./.dist/*": "./.dist/*",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        ".dist",
+        "NOTICE"
+    ],
+    "author": "Dev Shop Limited",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/esp/esp-js.git",
+        "directory": "packages/esp-js-react"
+    },
+    "scripts": {
+        "clean": "nps clean",
+        "build-dev": "nps build-dev",
+        "build-prod": "nps build-prod",
+        "build-pack": "nps build-pack",
+        "test": "nps test",
+        "test-ci": "nps test-ci",
+        "dev": "nps dev"
+    },
+    "devDependencies": {
+        "@rollup/plugin-terser": "^0.4.4",
+        "@vitejs/plugin-react": "^4.3.1",
+        "esp-js": "*",
+        "esp-js-ui": "*",
+        "react": "^19.0.0",
+        "typescript": "^5.8.0",
+        "use-sync-external-store": "^1.6.0",
+        "vite": "^5.4.6",
+        "vite-plugin-dts": "^4.2.1",
+        "vitest": "^2.1.1"
+    },
+    "peerDependencies": {
+        "esp-js": "^9.0.0-beta.3",
+        "esp-js-ui": "^9.0.0-beta.3",
+        "react": "^19.0.0"
+    },
+    "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
 }

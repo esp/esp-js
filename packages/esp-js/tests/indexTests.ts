@@ -1,42 +1,26 @@
 import * as esp from '../src';
 import {
-    Router,
+    EventBus,
     ObservationStage,
-    SingleModelRouter,
     DefaultEventContext,
     CompositeDisposable,
     DictionaryDisposable,
     DisposableBase,
-    Observable,
-    Subject,
-    RouterObservable,
-    RouterSubject,
-    observeEvent,
     DisposableWrapper,
     Guard,
-    EspDecoratorUtil,
-    DecoratorTypes,
-    EspMetadata,
-    EspDecoratedObject,
-    EventObservationMetadata,
-    isEspDecoratedObject
-
+    StoreBuilder,
+    Subscribable,
 } from '../src';
 
 describe('index exports', () => {
-    it('should export Router', () => {
-        expect(esp.Router).toBeDefined();
-        expect(Router).toBeDefined();
+    it('should export EventBus', () => {
+        expect(esp.EventBus).toBeDefined();
+        expect(EventBus).toBeDefined();
     });
 
     it('should export ObservationStage', () => {
         expect(esp.ObservationStage).toBeDefined();
         expect(ObservationStage).toBeDefined();
-    });
-
-    it('should export SingleModelRouter', () => {
-        expect(esp.SingleModelRouter).toBeDefined();
-        expect(SingleModelRouter).toBeDefined();
     });
 
     it('should export DefaultEventContext', () => {
@@ -64,42 +48,20 @@ describe('index exports', () => {
         expect(DisposableWrapper).toBeDefined();
     });
 
-    it('should export Observable', () => {
-        expect(esp.Observable).toBeDefined();
-        expect(Observable).toBeDefined();
-    });
-
-    it('should export Subject', () => {
-        expect(esp.Subject).toBeDefined();
-        expect(Subject).toBeDefined();
-    });
-
-    it('should export RouterSubject', () => {
-        expect(esp.RouterSubject).toBeDefined();
-        expect(RouterSubject).toBeDefined();
-    });
-
-    it('should export RouterObservable', () => {
-        expect(esp.RouterObservable).toBeDefined();
-        expect(RouterObservable).toBeDefined();
-    });
-
-    it('should export observeEvent', () => {
-        expect(esp.observeEvent).toBeDefined();
-        expect(observeEvent).toBeDefined();
-    });
-
     it('should export Guard', () => {
         expect(Guard).toBeDefined();
     });
 
-    it('should export decorator metadata', () => {
-        expect(esp.EspDecoratorUtil).toBeDefined();
-        expect(esp.DecoratorTypes).toBeDefined();
-        expect(esp.isEspDecoratedObject).toBeDefined();
+    it('should export StoreBuilder', () => {
+        expect(esp.StoreBuilder).toBeDefined();
+        expect(StoreBuilder).toBeDefined();
+    });
 
-        expect(EspDecoratorUtil).toBeDefined();
-        expect(DecoratorTypes).toBeDefined();
-        expect(isEspDecoratedObject).toBeDefined();
+    it('should export Subscribable type', () => {
+        // Subscribable is a type/interface, verify it is usable as a type annotation
+        const bus = new EventBus();
+        bus.storeBuilder('test', { value: 0 }).build();
+        const s: Subscribable<{ value: number }> = bus.getStoreModelObservable('test');
+        expect(s).toBeDefined();
     });
 });

@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir" : "./.tsbuild",
-    "declarationDir": "./.dist/typings"
+    "declarationDir": "./.dist/typings",
+    "jsx": "react",
+    "types": ["vite/client"]
   },
   "include": [
     "src/**/*"

@@ -96,7 +96,8 @@ export default class Container {
     isRegistered(name, options = DefaultIsRegisteredQueryOptions) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(name, 'Error calling isRegistered(name). The name argument must be a string and can not be \'\'');
-        const isRegistered = options.searchParentContainers
+        // searchParentContainers defaults to true: only an explicit false limits the search to this container
+        const isRegistered = options.searchParentContainers !== false
             ? !!this._registrations[name]
             : this._registrations.hasOwnProperty(name);
         return isRegistered;
@@ -104,7 +105,7 @@ export default class Container {
     isGroupRegistered(groupName, options = DefaultIsRegisteredQueryOptions) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(groupName, 'Error calling isGroupRegistered(groupName). The groupName argument must be a string and can not be \'\'');
-        const isGroupRegistered = options.searchParentContainers
+        const isGroupRegistered = options.searchParentContainers !== false
             ? !!this._registrationGroups[groupName]
             : this._registrationGroups.hasOwnProperty(groupName);
         return isGroupRegistered;
@@ -131,6 +132,24 @@ export default class Container {
             throw new Error("The provided additional dependencies can't be used to construct the instance as an existing instance was found in the container");
         }
         return instance;
+    }
+    resolveMany(...specs) {
+        this._throwIfDisposed();
+        Guard.isTrue(specs.length > 0, 'Error calling resolveMany(...specs). At least one spec argument must be provided');
+        const result = {};
+        for (let i = 0, len = specs.length; i < len; i++) {
+            const spec = specs[i];
+            if (utils.isString(spec)) {
+                Guard.isNonEmptyString(spec, `Error calling resolveMany(...specs). Spec at index [${i}] must be a non-empty string`);
+                result[spec] = this.resolve(spec);
+            } else {
+                Guard.isNotNullOrUndefined(spec, `Error calling resolveMany(...specs). Spec at index [${i}] must be a non-empty string or an object with a name property`);
+                Guard.isNonEmptyString(spec.name, `Error calling resolveMany(...specs). Spec at index [${i}] must have a non-empty string name property`);
+                const additionalDependencies = spec.additionalDependencies || [];
+                result[spec.name] = this.resolve(spec.name, ...additionalDependencies);
+            }
+        }
+        return result;
     }
     resolveGroup(groupName, ...additionalDependencies) {
         this._throwIfDisposed();
@@ -180,6 +199,9 @@ export default class Container {
     }
     dispose() {
         this._disposeContainer();
+    }
+    get isDisposed() {
+        return this._isDisposed;
     }
     _tryRetrieveFromCache(name) {
         var registration = this._registrations[name],

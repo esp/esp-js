@@ -17,52 +17,51 @@
 // notice_end
 //
 
-// import for side effects
-import './polimer/polimerModelBuilderExtentsions';
-
-export {ViewBinder} from './viewBinder';
-export {viewBinding, DEFAULT_VIEW_KEY} from './viewBindingDecorator';
-export {createViewForModel} from './viewBindingDecorator';
-export {
-    connect,
-    ConnectableComponentFactory
-} from './connect';
-export {
+export { ConnectableComponent } from './connectableComponent';
+export type {
     CreatePublishEventProps,
-    MapModelToProps,
+    MapStoreModelToProps,
     ConnectableComponentProps,
     ConnectableComponentChildProps,
-    ConnectableComponent,
 } from './connectableComponent';
 export {
-    useSyncModelWithSelector,
-    SyncModelWithSelectorOptionsBuilder,
-    syncModelWithSelectorOptions,
-    SyncModelWithSelectorOptions,
-    SyncModelWithSelectorEqualityFn,
-} from './useSyncModelWithSelector';
+    useSyncStoreModelWithSelector,
+    syncStoreModelWithSelectorOptions,
+} from './useSyncStoreModelWithSelector';
+export type {
+    SyncStoreModelWithSelectorOptionsBuilder,
+    SyncStoreModelWithSelectorOptions,
+    SyncStoreModelWithSelectorEqualityFn,
+} from './useSyncStoreModelWithSelector';
 export {
-    RouterProvider,
-    RouterProviderProps,
-    EspRouterContextProvider,
-    EspRouterContextProviderProps,
-    RouterContext,
-    useRouter,
-    PublishEventDelegate,
+    EspEventBusContextProvider,
+    EventBusContext,
+    useEventBus,
     PublishEventContext,
     usePublishEvent,
-} from './espRouterContextProvider';
+} from './espEventBusContextProvider';
+export type {
+    EspEventBusContextProviderProps,
+    PublishEventDelegate,
+} from './espEventBusContextProvider';
 export {
-    useGetModelId,
-    GetModelIdContext,
-    useGetModel,
-    GetModelContext,
-    PublishModelEventDelegate,
-    PublishModelEventContext,
-    usePublishModelEvent,
-    PublishModelEventWithEntityKeyDelegate,
-    PublishModelEventWithEntityKeyContext,
-    usePublishModelEventWithEntityKey,
-    EspModelContextProvider,
-    EspModelContextProviderProps,
-} from './espModelContextProvider';
+    useGetStoreId,
+    GetStoreIdContext,
+    useGetStoreModel,
+    GetStoreModelContext,
+    PublishStoreEventContext,
+    usePublishStoreEvent,
+    PublishStoreEventWithEntityKeyContext,
+    usePublishStoreEventWithEntityKey,
+    EspStoreContextProvider,
+} from './espStoreContextProvider';
+export type {
+    PublishStoreEventDelegate,
+    PublishStoreEventWithEntityKeyDelegate,
+    EspStoreContextProviderProps,
+} from './espStoreContextProvider';
+export { EspModulesContext } from './espModulesContext';
+export { RegionView } from './regionView';
+export type { RegionViewProps } from './regionView';
+export { EspApp } from './espApp';
+export type { EspAppProps } from './espApp';

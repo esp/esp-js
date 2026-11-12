@@ -1,29 +1,63 @@
-[![Build Status](https://travis-ci.org/esp/esp-js.svg?branch=master)](https://travis-ci.org/esp/esp-js)
-![](https://img.shields.io/npm/types/esp-js)
-[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lernajs.io/)
+[![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js)
+![npm type definitions](https://img.shields.io/npm/types/esp-js)
 
-# Evented State Processor (ESP) - Package esp-js
+# Evented State Processor (ESP) — esp-js
 
-ESP gives you the ability to manage changes to a model in a deterministic event driven manner.
-It does this by adding specific processing workflow around changes to a model's state. 
-It was born out of the need to manage complex UI and/or server state.
+`esp-js` is the core of ESP: the `EventBus` and the immer-based `StoreBuilder`.
 
-At its core is a `Router` which sits between event publishers and the model.
-Those wanting to change the model publish events to the `Router`.
-The model observes the events and applies the changes.
-The model is then dispatched to model observers so new state can be applied.
-It's lightweight, easy to apply and puts the model at the forefront of your design.
+ESP lets you manage changes to a store's state in a deterministic, event-driven manner.
+A central `EventBus` sits between event publishers and your stores: publishers publish events to the bus, the bus dispatches each event through ordered observation stages so the store can apply the change, and then a frozen immutable snapshot of the store's model is pushed to its observers.
+It's lightweight, easy to apply, and designed for complex UI and/or server state.
 
-ESP 2.0 adds a host of other additional libraries to help you build composite single page application with React.
-It allows you to use either OO, and/or immutable pattens (Redux like) for modeling independent and decoupled screens within your composite application.
-Features include:
+## Install
 
-* The core event router - esp-js [![npm](https://img.shields.io/npm/v/esp-js.svg)](https://www.npmjs.com/package/esp-js) 
-* Dependency injection container - esp-js-di [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
-* Module loading system and composite application toolbox  - esp-js-ui [![npm](https://img.shields.io/npm/v/esp-js-ui.svg)](https://www.npmjs.com/package/esp-js-ui)
-* React support - esp-js-react [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
-* Immutable state models - esp-js-polimer [![npm](https://img.shields.io/npm/v/esp-js-polimer.svg)](https://www.npmjs.com/package/esp-js-polimer)   
+```bash
+npm install esp-js
+```
 
-It's built on typescript and type definitions are included in the npm packages.
+## Usage
 
-For full documentation please see [https://esp.github.io/](https://esp.github.io/).
+Register a store with `storeBuilder`, then publish events to it. Event handlers receive an [immer](https://immerjs.github.io/immer/) draft and mutate it directly; the bus produces a new frozen snapshot after all handlers for a dispatch have run.
+
+```ts
+import { EventBus } from 'esp-js';
+
+const bus = new EventBus();
+
+type Counter = { count: number };
+
+bus.storeBuilder<Counter>('counter', { count: 0 })
+    .withEventHandler('Increment', (draft, e: { by: number }) => {
+        draft.count += e.by;
+    })
+    .withPreviewHandler('Increment', (model, e, ctx) => {
+        if (model.count >= 100) ctx.cancel();   // observe/cancel before mutation
+    })
+    .withEffect('Increment', (model, e, ctx, publish) => {
+        // side effects after mutation; `model` is a frozen snapshot taken right after this event
+        if (model.count === 10) publish('Increment', { by: -10 });
+    })
+    .build();
+
+bus.getStoreModelObservable<Counter>('counter')
+    .subscribe(model => console.log(model.count)); // logs: 0 (the current model is replayed on subscribe)
+
+bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
+```
+
+Events pass through two ordered observation stages: `preview` (preview handlers, which can cancel the event) and `normal` (event handlers). Effects then run after the dispatch round.
+Events an effect publishes straight away to its own store are processed before observers are notified, so they get a single model update.
+Publishing an event the store has no handler for logs a warning.
+A class instance used as store state must include `[immerable] = true` from `immer`.
+Maps and Sets work in models; esp-js turns on immer's MapSet support for you.
+
+## The ESP package family
+
+* **esp-js** — the core `EventBus` and `StoreBuilder` (this package)
+* **esp-js-di** — a standalone IoC / dependency-injection container [![npm](https://img.shields.io/npm/v/esp-js-di.svg)](https://www.npmjs.com/package/esp-js-di)
+* **esp-js-ui** — application bootstrapping and module loading [![npm](https://img.shields.io/npm/v/esp-js-ui.svg)](https://www.npmjs.com/package/esp-js-ui)
+* **esp-js-react** — React bindings [![npm](https://img.shields.io/npm/v/esp-js-react.svg)](https://www.npmjs.com/package/esp-js-react)
+
+Written in TypeScript; type definitions are included in the package.
+
+For full documentation see [https://esp.github.io/](https://esp.github.io/), or browse the source at [github.com/esp/esp-js](https://github.com/esp/esp-js).

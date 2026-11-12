@@ -1,0 +1,34 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build-dev": {
+      "dependsOn": ["^build-dev"],
+      "outputs": [".dist/**"]
+    },
+    "build-prod": {
+      "dependsOn": ["^build-prod"],
+      "outputs": [".dist/**"]
+    },
+    "build-pack": {
+      "dependsOn": ["build-prod"],
+      "outputs": ["*.tgz"]
+    },
+    "test-ci": {
+      "dependsOn": ["^build-dev"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build-dev"],
+      "cache": false,
+      "persistent": true
+    },
+    "dev": {
+      "dependsOn": ["^build-dev"],
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

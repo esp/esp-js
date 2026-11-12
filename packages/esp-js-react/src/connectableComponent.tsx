@@ -1,54 +1,48 @@
 import * as React from 'react';
-import {useRouter} from './espRouterContextProvider';
+import {useEventBus} from './espEventBusContextProvider';
 import {useMemo} from 'react';
-import {Router} from 'esp-js';
-import {EspModelContextProvider, useGetModelId} from './espModelContextProvider';
-import {createViewForModel} from './viewBindingDecorator';
-import {syncModelWithSelectorOptions, useSyncModelWithSelector} from './useSyncModelWithSelector';
-import {PolimerModel} from 'esp-js-polimer';
+import {EventBus} from 'esp-js';
+import {EspStoreContextProvider, useGetStoreId} from './espStoreContextProvider';
+import {syncStoreModelWithSelectorOptions, useSyncStoreModelWithSelector} from './useSyncStoreModelWithSelector';
 
 export type CreatePublishEventProps<TPublishEventProps> = (publishModelEvent: (eventType: string, event: any) => void) => TPublishEventProps;
 
-export type MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
+export type MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps = {}> = (model: TModel, publishEventProps: TPublishEventProps) => TModelMappedToProps;
 
 export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
-    modelId?: string;
-    viewContext?: string;
-    view?: React.ComponentType;
+    storeId?: string;
+    view?: React.ComponentType<any>;
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
-    mapModelToProps?: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
+    mapStoreModelToProps?: MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
     [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
 }
 
 export interface ConnectableComponentChildProps<TModel = object> {
-    modelId: string;
+    storeId: string;
     model: TModel;
-    router: Router;
+    bus: EventBus;
     [key: string]: any; // ...rest props
 }
 
 const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
-    router: Router,
-    modelId: string,
+    bus: EventBus,
+    storeId: string,
     restProps: object,
-    initialModel: TModel,
-    mapModelToProps: MapModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
+    model: TModel,
+    mapStoreModelToProps: MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps>,
     publishEventProps: TPublishEventProps
 ): ConnectableComponentChildProps<TModel> => {
-    const model = PolimerModel.isPolimerModel(initialModel)
-        ? initialModel.getEspPolimerImmutableModel()
-        : initialModel;
     let childProps = {
-        modelId,
-        router: router,
+        storeId,
+        bus: bus,
         ...restProps,
         ...publishEventProps,
         model
     };
-    if (mapModelToProps) {
+    if (mapStoreModelToProps) {
         childProps = {
             ...childProps,
-            ...(mapModelToProps(model, publishEventProps) as TModelMappedToProps)
+            ...(mapStoreModelToProps(model, publishEventProps) as TModelMappedToProps)
         };
     }
     return childProps;
@@ -56,44 +50,44 @@ const getChildProps = <TModel, TModelMappedToProps, TPublishEventProps>(
 
 export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}>(
     {
-        modelId,
-        mapModelToProps,
+        storeId,
+        mapStoreModelToProps,
         createPublishEventProps,
         view,
-        viewContext,
         ...rest
     }: ConnectableComponentProps<TModel, TPublishEventProps, TModelMappedToProps>
 ) => {
-    const router = useRouter();
+    const bus = useEventBus();
     // Note: we always need to render the hooks else react will complain about a different count.
-    let modelIdFromContext = useGetModelId();
-    modelId = modelId || modelIdFromContext;
+    let storeIdFromContext = useGetStoreId();
+    storeId = storeId || storeIdFromContext;
+    // createPublishEventProps is captured once per bus/storeId (not re-run when the prop changes),
+    // so callers can pass an inline function and still get stable publish props.
     const publishEventProps: TPublishEventProps = useMemo(
         () => {
             if (createPublishEventProps) {
                 const publishModelEvent = (eventType: string, event: any) => {
-                    router.publishEvent(modelId, eventType, event);
+                    bus.publishEvent(storeId, eventType, event);
                 };
                 return createPublishEventProps(publishModelEvent);
             }
             return {} as TPublishEventProps;
         },
-        [router, modelId]
+        [bus, storeId]
     );
-    const model = useSyncModelWithSelector<TModel, TModel>(
+    const model = useSyncStoreModelWithSelector<TModel, TModel>(
         m => m,
-        syncModelWithSelectorOptions()
-            .setModelId(modelId)
-            .setTryPreSelectPolimerImmutableModel(false)
+        syncStoreModelWithSelectorOptions()
+            .setStoreId(storeId)
     );
     if (model == null) {
         return null;
     }
-    let childProps = getChildProps(router, modelId, rest, model, mapModelToProps, publishEventProps);
-    let viewElement = createViewForModel(model, childProps, viewContext, view);
+    let childProps = getChildProps(bus, storeId, rest, model, mapStoreModelToProps, publishEventProps);
+    let viewElement = view ? React.createElement(view, childProps) : null;
     return (
-        <EspModelContextProvider modelId={modelId} model={model} router={router} {...childProps}>
+        <EspStoreContextProvider storeId={storeId} model={model} bus={bus} {...childProps}>
             {viewElement}
-        </EspModelContextProvider>
+        </EspStoreContextProvider>
     );
 };

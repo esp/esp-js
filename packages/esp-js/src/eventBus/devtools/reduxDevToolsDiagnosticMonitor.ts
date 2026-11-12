@@ -1,0 +1,236 @@
+// notice_start
+/*
+ * Copyright 2015 Dev Shop Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// notice_end
+
+import {DisposableBase} from '../../system/disposables';
+import {DiagnosticMonitor} from './diagnosticMonitor';
+import {StoreAddress} from '../storeAddress';
+import {connectReduxDevTools, sendUpdateToReduxDevTools} from './reduxDevToolsConnector';
+
+interface RegisteredModel {
+    storeId: string;
+    eventCount: number;
+    modelUpdateCount: number;
+    lastEventTimestamp: Date;
+}
+
+interface DevToolsState {
+    busName: string;
+    totalEventCount: number;
+    stateTimestamp: Date;
+    registeredModelsMap: { [storeId: string]: RegisteredModel };
+    top20NoisyModelsEventCount: { [storeId: string]: number };
+    top20NoisyEventsCount: { [eventName: string]: number };
+}
+
+const DEV_TOOLS_STATE_UPDATE_INTERVAL_MS = 30_000;
+
+export class ReduxDevToolsDiagnosticMonitor extends DisposableBase implements DiagnosticMonitor {
+    private _state: DevToolsState;
+    private _lastSentState: DevToolsState;
+    private _noisyModelMap: Map<string, number> = new Map();
+    private _noisyEventMap: Map<string, number> = new Map();
+
+    constructor(private _busName: string) {
+        super();
+        this._state = {
+            busName: this._busName,
+            totalEventCount: 0,
+            stateTimestamp: new Date(),
+            registeredModelsMap: {},
+            top20NoisyModelsEventCount: {},
+            top20NoisyEventsCount: {},
+        };
+        const disconnectDevTools = connectReduxDevTools(this._busName);
+        this.addDisposable(() => disconnectDevTools());
+        this._startStateUpdateTrigger();
+        this._sendDevToolsUpdate('@@INIT', null);
+    }
+
+    addStore(storeId: string): void {
+        const registeredModelState = {
+            storeId: storeId,
+            eventCount: 0,
+            lastEventTimestamp: new Date(),
+            modelUpdateCount: 0
+        };
+        const registeredModelsMap = {
+            ...this._state.registeredModelsMap,
+            [storeId]: registeredModelState
+        };
+        this._state = {
+            ...this._state,
+            registeredModelsMap
+        };
+        this._noisyModelMap.set(storeId, 0);
+        this._sendDevToolsUpdate('eventBus:add_model', {storeId: storeId});
+    }
+
+    removeStore(storeId: string): void {
+        this._noisyModelMap.delete(storeId);
+        delete this._state.registeredModelsMap[storeId];
+        const registeredModelsMap = {
+            ...this._state.registeredModelsMap
+        };
+        this._state = {
+            ...this._state,
+            registeredModelsMap
+        };
+        this._sendDevToolsUpdate('eventBus:remove_model', {storeId: storeId});
+    }
+
+    publishEvent(storeIdOrStoreAddress: string | StoreAddress, eventType: string, event: string): void {
+
+    }
+
+    broadcastEvent(eventType: string): void {
+
+    }
+
+    executingEvent(eventType: string): void {
+
+    }
+
+    eventEnqueued(storeId: string, entityKey: string, eventType: string, event: any): void {
+        let modelEventCount = this._noisyModelMap.get(storeId);
+        this._noisyModelMap.set(storeId, modelEventCount + 1);
+        let noisyEventCount = this._noisyEventMap.get(eventType) || 0;
+        this._noisyEventMap.set(eventType, noisyEventCount + 1);
+        this._state = {
+            ...this._state,
+            totalEventCount: this._state.totalEventCount + 1
+        };
+        this._updateRegisteredModel(
+            storeId,
+            rm => {
+                return {
+                    ...rm,
+                    eventCount: rm.eventCount + 1,
+                    lastEventTimestamp: new Date(),
+                };
+            }
+        );
+    }
+
+    dispatchLoopStart(): void {
+
+    }
+
+    startingModelEventLoop(storeId: string, entityKey: string, initiatingEventType: string): void {
+
+    }
+
+    preProcessingModel(): void {
+
+    }
+
+    dispatchingEvents(): void {
+
+    }
+
+    dispatchingEvent(eventType: string, stage: string): void {
+
+    }
+
+    finishDispatchingEvent(): void {
+
+    }
+
+    postProcessingModel(): void {
+
+    }
+
+    endingModelEventLoop(): void {
+
+    }
+
+    dispatchingModelUpdates(storeId: string, model: any): void {
+        this._updateRegisteredModel(
+            storeId,
+            rm => {
+                return {
+                    ...rm,
+                    modelUpdateCount: rm.eventCount + 1,
+                };
+            }
+        );
+    }
+
+    dispatchLoopEnd(): void {
+
+    }
+
+    halted(storeIds: string[], err: string): void {
+
+    }
+
+    private _updateRegisteredModel = (storeId: string, modelModifier: (rm: RegisteredModel) => RegisteredModel): void => {
+        const registeredModelUpdate = modelModifier(this._state.registeredModelsMap[storeId]);
+        const registeredModelsMap = {
+            ...this._state.registeredModelsMap,
+            [storeId]: registeredModelUpdate
+        };
+        this._state = {
+            ...this._state,
+            registeredModelsMap
+        };
+    };
+
+    private _startStateUpdateTrigger = () => {
+        if (this.isDisposed) {
+            return;
+        }
+        if (this._lastSentState !== this._state) {
+            const top20NoisyModelsEventCount = this._findTop20NoisyItems(this._noisyModelMap);
+            const top20NoisyEventsCount = this._findTop20NoisyItems(this._noisyEventMap);
+            this._state = {
+                ...this._state,
+                stateTimestamp: new Date(),
+                top20NoisyModelsEventCount,
+                top20NoisyEventsCount
+            };
+            this._lastSentState = this._state;
+            this._sendDevToolsUpdate('eventBus:state_update', null);
+        }
+        setTimeout(this._startStateUpdateTrigger, DEV_TOOLS_STATE_UPDATE_INTERVAL_MS);
+    };
+
+    private _sendDevToolsUpdate = (eventType: string, event: any) => {
+        sendUpdateToReduxDevTools(
+            {eventType: eventType, event: event},
+            // We don't always send the latest else to avoid smashing dev tools
+            // This gets updated on a timer elsewhere in this class.
+            this._lastSentState,
+            this._busName
+        );
+    };
+
+    private _findTop20NoisyItems(map: Map<string, number>) {
+        const entriesArray = Array.from(map.entries());
+        return entriesArray
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 20)
+            .reduce(
+                (state, currentValue) => {
+                    let storeId = currentValue[0];
+                    state[storeId] = currentValue[1];
+                    return state;
+                },
+                {}
+            );
+    }
+}

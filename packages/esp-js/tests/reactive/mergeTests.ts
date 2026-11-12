@@ -17,7 +17,7 @@
 // notice_end
 
 import * as reactive from '../../src/reactive/index';
-import {SingleModelRouter} from '../../src/router/singleModelRouter';
+import {EventBus} from '../../src';
 
 describe('.merge', () => {
     let subject1,
@@ -92,22 +92,30 @@ describe('.merge', () => {
     });
 
     it('test with router', () => {
-        let receivedEvents = [];
-        let router = SingleModelRouter.createWithModel({});
-        let mergedEventStream = reactive.Observable.merge(
-            router.getEventObservable('myEvent1'),
-            router.getEventObservable('myEvent2'),
-            router.getEventObservable('myEvent3'),
-        );
-        mergedEventStream.subscribe(({event}) => receivedEvents.push(event));
+        const receivedEvents: number[] = [];
+        const bus = new EventBus();
+        const storeId = 'testModel';
+        const receivedByHandler: { [key: string]: number[] } = {
+            myEvent1: [],
+            myEvent2: [],
+            myEvent3: [],
+        };
 
-        router.publishEvent('myEvent1', 1);
-        expect(receivedEvents).toEqual([1]);
+        bus.storeBuilder<{}>(storeId, {})
+            .withEventHandler<number>('myEvent1', (draft, event) => { receivedByHandler.myEvent1.push(event); })
+            .withEventHandler<number>('myEvent2', (draft, event) => { receivedByHandler.myEvent2.push(event); })
+            .withEventHandler<number>('myEvent3', (draft, event) => { receivedByHandler.myEvent3.push(event); })
+            .build();
 
-        router.publishEvent('myEvent2', 2);
-        expect(receivedEvents).toEqual([1, 2]);
+        bus.getStoreModelObservable(storeId).subscribe(() => {});
 
-        router.publishEvent('myEvent3', 3);
-        expect(receivedEvents).toEqual([1, 2, 3]);
+        bus.publishEvent(storeId, 'myEvent1', 1);
+        expect(receivedByHandler.myEvent1).toEqual([1]);
+
+        bus.publishEvent(storeId, 'myEvent2', 2);
+        expect(receivedByHandler.myEvent2).toEqual([2]);
+
+        bus.publishEvent(storeId, 'myEvent3', 3);
+        expect(receivedByHandler.myEvent3).toEqual([3]);
     });
 });

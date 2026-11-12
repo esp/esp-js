@@ -33,7 +33,6 @@ const directoryExclusions = [
 // At some point a few of these can be auto indexed
 const packagesExclusions = [
     'esp-js-di',
-    'esp-js-polimer',
     'esp-js-react',
     'esp-js-ui-rxcompat',
     'esp-js-api',

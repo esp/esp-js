@@ -1,6 +1,6 @@
 {
   "name": "esp-js-di",
-  "version": "8.1.0",
+  "version": "9.0.0-beta.3",
   "description": "A tiny DI container (formally microdi-js)",
   "keywords": [
     "di",
@@ -22,15 +22,35 @@
     "dev": "nps dev"
   },
   "main": ".dist/esp-js-di.js",
+  "module": ".dist/esp-js-di.esm.mjs",
   "author": "Dev Shop Limited",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esp/esp-js.git",
+    "directory": "packages/esp-js-di"
+  },
   "typings": "./esp-js-di.d.ts",
+  "exports": {
+    ".": {
+      "types": "./esp-js-di.d.ts",
+      "import": "./.dist/esp-js-di.esm.mjs",
+      "require": "./.dist/esp-js-di.js",
+      "default": "./.dist/esp-js-di.js"
+    },
+    "./.dist/*": "./.dist/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    ".dist",
+    "esp-js-di.d.ts",
+    "NOTICE"
+  ],
   "devDependencies": {
-    "jest": "^29.7.0",
-    "typescript": "^5.5.2",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "@rollup/plugin-terser": "^0.4.4",
+    "typescript": "^5.8.0",
+    "vite": "^5.4.6",
+    "vitest": "^2.1.1"
   },
   "gitHead": "f6791a488f3fc5f59f20e19445b848d5e2f415c4"
 }

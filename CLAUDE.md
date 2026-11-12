@@ -60,7 +60,9 @@ To bypass Turbo's cache for a command: `npm run build-dev -- --force`
 
 ### Release / publish commands
 
-All four public packages (`esp-js`, `esp-js-di`, `esp-js-ui`, `esp-js-react`) share one version and are published together. `scripts/publish-packages.js` **always** bumps that version, keeps the intra-repo `dependencies`/`peerDependencies` ranges in lockstep (`^<version>`), then runs `npm publish --workspaces` (the private `example-app` is skipped automatically). Every publish advances the version — there is no publish-without-bump path. Publishing requires `npm login`.
+All four public packages (`esp-js`, `esp-js-di`, `esp-js-ui`, `esp-js-react`) share one version and are published together. `scripts/publish-packages.js` bumps that version, keeps the intra-repo `dependencies`/`peerDependencies` ranges in lockstep (`^<version>`), then runs `npm publish -w <pkg>` for each package. Publishing requires `npm login`. The script does not commit or tag.
+
+If nothing was published (auth failure, Ctrl-C) or it's a `--dry-run`, the version files are restored, so a re-run doesn't skip a version. If some packages published and a later one failed, the bump is kept and the script prints the `npm publish -w ...` command for the rest.
 
 ```bash
 npm run release-patch    # clean + build-prod + bump patch + publish (tag: latest)
@@ -70,9 +72,7 @@ npm run release-major    # clean + build-prod + bump major + publish (tag: lates
 npm run publish-beta     # clean + build-prod + bump prerelease (beta.N → beta.N+1) + publish (tag: beta)
 ```
 
-Direct invocation (e.g. to preview): `node scripts/publish-packages.js <patch|minor|major|prerelease> [--preid beta] [--tag <npmTag>] [--dry-run]`. Use `--dry-run` to run `npm publish` in dry-run mode without publishing.
-
-> Note: the legacy `pre-release-*` scripts only run `clean + build-prod` (no publish) and predate `publish-packages.js`.
+Direct invocation (e.g. to preview): `node scripts/publish-packages.js <patch|minor|major|prerelease> [--preid beta] [--tag <npmTag>] [--dry-run]`. Use `--dry-run` to run `npm publish` in dry-run mode without publishing; the version files are restored afterwards.
 
 ## Build System
 

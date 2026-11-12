@@ -21,9 +21,6 @@
     "release-major": "npm run clean && npm run build-prod && npm run publish-packages -- major",
     "release-patch": "npm run clean && npm run build-prod && npm run publish-packages -- patch",
     "publish-beta": "npm run clean && npm run build-prod && npm run publish-packages -- prerelease --preid beta --tag beta",
-    "pre-release-major": "npm run clean && npm run build-prod",
-    "pre-release-minor": "npm run clean && npm run build-prod",
-    "pre-release-patch": "npm run clean && npm run build-prod",
     "start-sample": "turbo run dev --filter=example-app",
     "trash": "./scripts/trash.sh && turbo run clean && npm run bootstrap"
   },

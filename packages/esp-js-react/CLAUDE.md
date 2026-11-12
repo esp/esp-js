@@ -7,7 +7,8 @@ React bindings for ESP. Provides `ConnectableComponent` for subscribing views to
 ## Role in Monorepo
 
 - **Depends on (peer)**: `esp-js`, `esp-js-ui`, `react`
-- **Runtime dependency**: `use-sync-external-store`
+- **Bundled**: `use-sync-external-store` is compiled into the output, so it's a devDependency, not a runtime dependency
+- JSX uses the classic runtime (`React.createElement`, `"jsx": "react"`), so `react/jsx-runtime` isn't bundled — `.tsx` files in `src/` must `import * as React from 'react'`
 - Published as `esp-js-react` on npm
 
 ## Build and Test
@@ -205,7 +206,7 @@ function CounterView() {
 ## Gotchas
 
 - The output bundle is named `esp-react.js` (not `esp-js-react.js`) — this is intentional and matches the `main` field in `package.json`
-- `useSyncStoreModelWithSelector` uses `useSyncExternalStoreWithSelector` from the `use-sync-external-store` package (a dependency). The package needs React 19 (peer dependency `react ^19.0.0`)
+- `useSyncStoreModelWithSelector` uses `useSyncExternalStoreWithSelector` from the `use-sync-external-store` package (bundled into the output). The package needs React 19 (peer dependency `react ^19.0.0`)
 - `ConnectableComponent` re-renders on every model update regardless of selector — for performance-sensitive cases prefer `useSyncStoreModelWithSelector` with an equality function
 - `ConnectableComponent` requires an explicit `view` prop — there is no decorator-based view resolution in v9
 - The model received by hooks and `ConnectableComponent` is always a **frozen immutable snapshot** from immer — never mutate it directly, and do not hold references across dispatches

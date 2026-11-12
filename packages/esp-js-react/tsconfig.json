@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir" : "./.tsbuild",
     "declarationDir": "./.dist/typings",
+    "jsx": "react",
     "types": ["vite/client"]
   },
   "include": [

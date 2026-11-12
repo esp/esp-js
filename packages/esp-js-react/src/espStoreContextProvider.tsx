@@ -1,4 +1,5 @@
 import {DefaultStoreAddress, EventBus} from 'esp-js';
+import * as React from 'react';
 import {useContext, useCallback, createContext, PropsWithChildren} from 'react';
 import {useEventBus} from './espEventBusContextProvider';
 

@@ -28,8 +28,10 @@ export default mergeConfig(
     createBaseConfig(packageDir, 'src/index.ts', 'espReact', 'esp-react'),
     {
         plugins: [
-            // Vite needs the React plugin for JSX/TSX transformation in library mode
-            react(),
+            // Vite needs the React plugin for JSX/TSX transformation in library mode.
+            // Classic runtime (React.createElement) so only 'react' is needed: the automatic
+            // runtime imports 'react/jsx-runtime', which would be bundled (React 19 has no UMD global for it).
+            react({jsxRuntime: 'classic'}),
             ...dtsPlugin({
                 include: ['src/**/*'],
                 outDir: '.dist/typings',

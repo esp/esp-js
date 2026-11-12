@@ -17,6 +17,7 @@
 // notice_end
 
 import {StoreAddress, EventBus} from 'esp-js';
+import * as React from 'react';
 import {PropsWithChildren, createContext, useContext, useCallback} from 'react';
 
 export const EventBusContext = createContext<EventBus>(null);

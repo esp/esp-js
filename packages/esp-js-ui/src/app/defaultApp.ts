@@ -52,11 +52,12 @@ export class DefaultApp implements App {
             return;
         }
         this._configureModuleContainers();
-        await this._initialiseModules();
+        const initResults = await this._initialiseModules();
         if (this._abortIfDisposed('initialising modules')) {
             return;
         }
-        await this._doStart(this._modules);
+        // Only start modules that initialised; a module whose initialise() failed is left out (its failure was logged).
+        await this._doStart(this._modules.filter((_, i) => initResults[i].status === 'success'));
     }
 
     private _abortIfDisposed(stage: string): boolean {
@@ -86,13 +87,24 @@ export class DefaultApp implements App {
             return this._modules;
         }
         _log.info(`App [${this.appName}] loading modules`);
-        const resolved = await Promise.all(
+        // A lazy module factory can fail (e.g. a code-split chunk fails to load). Like initialise/start failures,
+        // that's isolated: the failure is logged and the app carries on with the modules that loaded.
+        const results = await Promise.allSettled(
             this._moduleEntries.map(entry =>
                 typeof entry === 'function'
                     ? (entry as ModuleFactory)()
                     : Promise.resolve(entry)
             )
         );
+        const resolved: Module[] = [];
+        results.forEach((result, i) => {
+            if (result.status === 'fulfilled') {
+                resolved.push(result.value);
+            } else {
+                const err = result.reason instanceof Error ? result.reason : new Error(String(result.reason));
+                _log.error(`App [${this.appName}] failed to load module at index [${i}], it will be skipped: ${err.message}`);
+            }
+        });
         if (this._disposed) {
             // disposed while lazy modules were loading, dispose what loaded as they'll never be tracked.
             resolved.forEach(m => this._tryDisposeModule(m));

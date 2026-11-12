@@ -149,6 +149,9 @@ if (!container.isRegistered('myService')) {
 - **Registrations default to `singleton`, not transient** — call `.transient()` explicitly for per-resolve instances. The `RegistrationModifier` constructor sets singleton, and `register()` defaults the lifecycle to singleton
 - The source is JavaScript, not TypeScript. Types live in the hand-written `esp-js-di.d.ts` — update it with any API change (e.g. `resolveMany`, `isDisposed`)
 - `resolve()` throws if the name is not registered — check `isRegistered()` first if registration is optional
+- `isRegistered()` / `isGroupRegistered()` search parent containers unless the options say `{searchParentContainers: false}` (`{}` searches parents)
+- Re-registering a name is allowed (overrides the registration), but if a singleton for that name was already resolved, `resolve()` keeps returning the cached instance
+- Container event handlers (`on('instanceRegistered' | 'instanceCreated')`) are shared by the whole container tree: a handler added on any container fires for registrations/creations in its parent and child containers too
 - Circular dependency detection is runtime-only — cycles throw with a descriptive error
 - Child containers use prototypal inheritance (`Object.create`) for `_registrations` — the prototype chain is live, so a child sees parent registrations, including ones added after the child was created
 - `dispose()` on a container calls `dispose()` on every instance it holds in its own cache (not ones registered as externally owned) that has a `dispose` method — no interface needed. It then disposes its child containers

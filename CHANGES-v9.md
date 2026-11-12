@@ -113,7 +113,11 @@ Use `StoreBuilder.withEventHandler()` / `withPreviewHandler()` / `withEffect()` 
 ### `EventProcessors` — no longer passed to the bus
 
 The `EventProcessors` bag (`preEventProcessor`, `postEventProcessor`, `eventDispatchProcessor`, `eventDispatchedProcessor`) is no longer passed to `addModel`.
-The `EventProcessors` / `PreEventProcessor` / `PostEventProcessor` types are still exported for advanced use, but nothing in the public API takes them. Pre and post processors are registered via `StoreBuilder.withPreEventProcessor()` and `withPostEventProcessor()`. The per-event-per-stage dispatch processors (`eventDispatchProcessor`, `eventDispatchedProcessor`) are removed from the public API.
+The `EventProcessors` / `PreEventProcessor` / `PostEventProcessor` types are removed. Pre and post processors are registered via `StoreBuilder.withPreEventProcessor()` and `withPostEventProcessor()`; they receive the immer draft (`Draft<TModel>`) and may write to it, as in v8. The per-event-per-stage dispatch processors (`eventDispatchProcessor`, `eventDispatchedProcessor`) are removed.
+
+### `committed` / `final` stages and `eventContext.commit()` — removed
+
+v9 has two observation stages: `preview` (preview handlers, which can cancel) and `normal` (event handlers). The v8 `committed`, `final` and `all` stages were only reachable via `getEventObservable()` / `@observeEvent(type, stage)`, both removed, so `eventContext.commit()` / `isCommitted` and those `ObservationStage` values are removed too. Use an effect for work that should happen after an event has been applied.
 
 ### `Health` / `HealthIndicator` — removed
 
@@ -191,9 +195,9 @@ bus.storeBuilder<MyState>('my-id', new MyState())
 | `withEventHandler(eventType, handler)` | `normal` | `Draft<TModel>` (immer draft) | Yes — via draft only |
 | `withPreviewHandler(eventType, handler)` | `preview` | `Readonly<TModel>` (typed read-only; the live draft at runtime) | No — can only call `cancel()` |
 | `withEffect(eventType, handler)` | after the dispatch round | `Readonly<TModel>` — a frozen snapshot taken right after **this** event | No — can call `publish()` |
-| `withPreEventProcessor(fn)` / `withPostEventProcessor(fn)` | start / end of each round | `Readonly<TModel>` (typed read-only; the live draft at runtime) | Don't |
+| `withPreEventProcessor(fn)` / `withPostEventProcessor(fn)` | start / end of each round | `Draft<TModel>` (immer draft) | Yes — e.g. recompute derived state |
 
-Effects are the v9 equivalent of polimer's `@eventTransformFor` (which ran at the `final` stage): each effect sees the model as it was right after its own event, not after later events in the same batch.
+Effects are the v9 equivalent of polimer's `@eventTransformFor` (which ran at the v8 `final` stage): each effect sees the model as it was right after its own event, not after later events in the same batch.
 
 
 ### New exports from `esp-js`
@@ -226,10 +230,8 @@ repeat while the store has queued events:            ← one "round"
     preEventProcessor(draft)                         ← optional, once per round
 
     for each event in the queue (including events queued meanwhile):
-      preview stage   → previewHandlers(draft)       ← eventContext.cancel() stops all further stages
+      preview stage   → previewHandlers(draft)       ← eventContext.cancel() stops the event here
       normal stage    → eventHandlers(draft)         ← mutate the draft
-      committed stage → only if eventContext.commit() was called in normal
-      final stage
       if the event has effects:
         snapshot = freeze(current(draft))            ← the model right after THIS event
 

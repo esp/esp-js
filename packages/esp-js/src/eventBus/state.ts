@@ -71,11 +71,19 @@ export class State {
     }
 
     public moveToEventDispatch() {
+        this._currentStatus = Status.EventProcessorDispatch;
+    }
+
+    /**
+     * Called once per event dispatched within a single purge of the event queues (i.e. before the bus goes idle again).
+     * Counting per event (not per dispatch round) catches a handler that keeps publishing to its own store,
+     * which would otherwise loop forever inside a single round.
+     */
+    public incrementDispatchCount() {
         this._currentDispatchCount++;
         if (this._currentDispatchCount >= this._circularEventDispatchLimit) {
             throw new Error(`Circular event dispatch detected, dispatch loop halted. ${this._currentDispatchCount}.`);
         }
-        this._currentStatus = Status.EventProcessorDispatch;
     }
 
     public moveToPostProcessing() {

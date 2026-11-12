@@ -45,7 +45,7 @@ bus.getStoreModelObservable<Counter>('counter')
 bus.publishEvent('counter', 'Increment', { by: 1 }); // logs: 1
 ```
 
-Events pass through up to four ordered observation stages — `preview`, `normal`, `committed`, `final`.
+Events pass through two ordered observation stages: `preview` (preview handlers, which can cancel the event) and `normal` (event handlers). Effects then run after the dispatch round.
 Events an effect publishes straight away to its own store are processed before observers are notified, so they get a single model update.
 Publishing an event the store has no handler for logs a warning.
 A class instance used as store state must include `[immerable] = true` from `immer`.

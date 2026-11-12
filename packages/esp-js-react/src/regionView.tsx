@@ -1,4 +1,5 @@
-import React, {useContext, useMemo} from 'react';
+import * as React from 'react';
+import {useContext, useMemo} from 'react';
 import { ConnectableComponent } from './connectableComponent';
 import { EspModulesContext } from './espModulesContext';
 
@@ -31,9 +32,11 @@ export const RegionView = ({ regionName }: RegionViewProps) => {
     );
     return (
         <>
-            {bindings.map(binding => (
+            {bindings.map((binding, index) => (
                 <ConnectableComponent
-                    key={binding.storeId}
+                    // storeId alone isn't unique: a region can hold several views over the same store.
+                    // Bindings are fixed once the modules are built, so the index is a stable key.
+                    key={`${binding.storeId}:${index}`}
                     storeId={binding.storeId}
                     view={binding.viewComponent}
                 />

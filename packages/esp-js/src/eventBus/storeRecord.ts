@@ -30,13 +30,12 @@ import {
     PostEventProcessorFn,
 } from '../model/types';
 import {CompositeDisposable} from '../system/disposables';
+import type {Draft} from 'immer';
 
 export interface EventStreamsRegistration {
     all: AutoConnectedObservable<EventEnvelope<any, any>>;
     preview: AutoConnectedObservable<EventEnvelope<any, any>>;
     normal: AutoConnectedObservable<EventEnvelope<any, any>>;
-    committed: AutoConnectedObservable<EventEnvelope<any, any>>;
-    final: AutoConnectedObservable<EventEnvelope<any, any>>;
 }
 
 export type EventRecord = {entityKey: string, eventType: string, event: any};
@@ -132,25 +131,16 @@ export class StoreRecord<TModel = any> {
         this._wasRemoved = value;
     }
 
-    public preEventProcessor(model: TModel): void {
+    public preEventProcessor(model: Draft<TModel>): void {
         if (this.preEventProcessorFn) {
             this.preEventProcessorFn(model);
         }
     }
 
-    public postEventProcessor(model: TModel, eventsProcessed: string[]): void {
+    public postEventProcessor(model: Draft<TModel>, eventsProcessed: string[]): void {
         if (this.postEventProcessorFn) {
             this.postEventProcessorFn(model, eventsProcessed);
         }
-    }
-
-    // no-op stubs kept for bus compatibility
-    public eventDispatchProcessor(_model: TModel, _eventType: string, _event: any, _stage?: ObservationStage): void {
-        // noop — no dispatch processor in functional model
-    }
-
-    public eventDispatchedProcessor(_model: TModel, _eventType: string, _event: any, _stage?: ObservationStage): void {
-        // noop — no dispatch processor in functional model
     }
 
     public getOrCreateEventStreamsRegistration(eventType: string, dispatchObservable: Observable<EventEnvelope<any, any>>): EventStreamsRegistration {
@@ -171,12 +161,6 @@ export class StoreRecord<TModel = any> {
                         .share(false),
                     normal: eventStream
                         .filter(envelope => ObservationStage.isNormal(envelope.observationStage))
-                        .share(false),
-                    committed: eventStream
-                        .filter(envelope => ObservationStage.isCommitted(envelope.observationStage))
-                        .share(false),
-                    final: eventStream
-                        .filter(envelope => ObservationStage.isFinal(envelope.observationStage))
                         .share(false),
                     all: eventStream
                         .share(false)
@@ -226,8 +210,6 @@ export class StoreRecord<TModel = any> {
         this._eventStreams.forEach(streamsRegistration => {
             streamsRegistration.streams.preview.disconnect();
             streamsRegistration.streams.normal.disconnect();
-            streamsRegistration.streams.committed.disconnect();
-            streamsRegistration.streams.final.disconnect();
             streamsRegistration.streams.all.disconnect();
         });
         this.subscriptionDisposables.dispose();

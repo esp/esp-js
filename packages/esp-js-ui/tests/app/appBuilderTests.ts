@@ -287,10 +287,36 @@ describe('AppBuilder', () => {
             expect(modStarted).toContain('A');
         });
 
-        it('rejects if a lazy module factory rejects', async () => {
+        it('lazy module factory failure is isolated: the module is skipped, the others load, start and later dispose', async () => {
+            const lifecycle: string[] = [];
+            const track = (id: string) => makeModule(id, {
+                onInitialise: async () => { lifecycle.push(`${id}:init`); },
+                onStart: async () => { lifecycle.push(`${id}:start`); },
+                onDispose: () => { lifecycle.push(`${id}:dispose`); },
+            });
             const badFactory = async (): Promise<Module> => { throw new Error('factory-fail'); };
-            const app = AppBuilder.create('app').withModule(badFactory).build();
-            await expect(app.start()).rejects.toThrow('factory-fail');
+            const app = AppBuilder.create('app')
+                .withModule(track('eager'))
+                .withModule(async () => track('lazy'))
+                .withModule(badFactory)
+                .build();
+            await app.start();
+            expect(app.modules.map(m => m.moduleId)).toEqual(['eager', 'lazy']);
+            expect(lifecycle).toEqual(expect.arrayContaining(['eager:init', 'lazy:init', 'eager:start', 'lazy:start']));
+            app.dispose();
+            expect(lifecycle).toEqual(expect.arrayContaining(['eager:dispose', 'lazy:dispose']));
+        });
+
+        it('module whose initialise() failed is not started; the other modules are', async () => {
+            const startCalled: string[] = [];
+            const modA = makeModule('A', { onStart: async () => { startCalled.push('A'); } });
+            const modB = makeModule('B', {
+                onInitialise: async () => { throw new Error('B-fail'); },
+                onStart: async () => { startCalled.push('B'); },
+            });
+            const app = AppBuilder.create('app').withModule(modA).withModule(modB).build();
+            await app.start();
+            expect(startCalled).toEqual(['A']);
         });
     });
 

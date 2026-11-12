@@ -211,6 +211,9 @@ function CounterView() {
 - The model received by hooks and `ConnectableComponent` is always a **frozen immutable snapshot** from immer — never mutate it directly, and do not hold references across dispatches
 - Class instances used as model state must include `[immerable] = true` from `immer`
 - `RegionView` requires `EspModulesContext` to be populated — use `EspApp` or provide `EspModulesContext.Provider` manually
+- `ConnectableComponent` / `useSyncStoreModelWithSelector` work for a store registered after mount: they render nothing (the hook returns `null`) until the store is registered, then pick it up
+- `useSyncStoreModelWithSelector` uses the latest selector on every render, so a selector may close over props; pass an `equalityFn` to avoid re-renders when a selector builds new objects
+- `ConnectableComponent` captures `createPublishEventProps` once per `bus`/`storeId` — it isn't re-run when the prop changes, so an inline function is fine but must not close over changing props
 - `usePublishStoreEvent` / `useGetStoreModel` / `useGetStoreId` read from `EspStoreContextProvider` (or `ConnectableComponent`) above them in the tree. Without one they return `null`; they don't throw
 
 - Hooks that return a store's model say "StoreModel" (`useGetStoreModel`, `useSyncStoreModelWithSelector`); store-scoped hooks say "Store" (`useGetStoreId`, `usePublishStoreEvent`). Name values from them `model`, not `store`

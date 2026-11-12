@@ -57,32 +57,24 @@ describe('EventBus', () => {
             expect(testPassed).toBe(true);
         });
 
-        it('should reset the EventContext for each event', () => {
-            let testPassed = false;
-            let lastEventDelivered = false;
+        it('should create a new EventContext for each event', () => {
+            const contexts: any[] = [];
             _bus.storeBuilder('modelId1', {})
                 .withEventHandler('startEvent', (draft, event, ctx) => {
-                    ctx.commit();
+                    contexts.push(ctx);
                     _bus.publishEvent('modelId1', 'Event1', 'theEvent1');
                     _bus.publishEvent('modelId1', 'Event2', 'theEvent2');
-                    _bus.publishEvent('modelId1', 'Event3', 'theEvent3');
                 })
                 .withEventHandler('Event1', (draft, event, ctx) => {
-                    testPassed = ctx.isCommitted === false;
-                    ctx.commit();
+                    contexts.push(ctx);
                 })
                 .withEventHandler('Event2', (draft, event, ctx) => {
-                    testPassed = testPassed && ctx.isCommitted === false;
-                    ctx.commit();
-                })
-                .withEventHandler('Event3', (draft, event, ctx) => {
-                    testPassed = testPassed && ctx.isCommitted === false;
-                    lastEventDelivered = true;
+                    contexts.push(ctx);
                 })
                 .build();
             _bus.publishEvent('modelId1', 'startEvent', 'theEvent');
-            expect(testPassed).toBe(true);
-            expect(lastEventDelivered).toBe(true);
+            expect(contexts.map(c => c.eventType)).toEqual(['startEvent', 'Event1', 'Event2']);
+            expect(new Set(contexts).size).toEqual(3);
         });
 
         it('should throw if you publish without registering the model', () => {

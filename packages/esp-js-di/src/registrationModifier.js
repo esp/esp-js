@@ -62,7 +62,7 @@ export default class RegistrationModifier  {
             this._registrationGroups[groupName] = lookup;
         }
         if(utils.indexOf(lookup, this._registration.name) !== -1) {
-            throw new Error(utils.sprintf('Instance already created for key [%s]', this._registration.name));
+            throw new Error(utils.sprintf('Item [%s] is already registered in group [%s]', this._registration.name, groupName));
         }
         lookup.push(this._registration.name);
         return this;

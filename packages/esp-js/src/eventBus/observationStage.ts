@@ -18,26 +18,13 @@
 
 export enum ObservationStage {
     /**
-     * Observe at the preview event stage only
+     * The preview stage: preview handlers run and can cancel the event
      */
     preview = 'preview',
     /**
-     * Observe at the normal event stage only
+     * The normal stage: event handlers mutate the model draft
      */
     normal = 'normal',
-    /**
-     * Observe an event only if it was committed (by calling eventContext.commit()) during the normal dispatch stage
-     */
-    committed = 'committed',
-    /**
-     * Observe after both the normal, and if it ran, the committed state.
-     * You can observe here regardless of if the even was committed or not
-     */
-    final = 'final',
-    /**
-     * Observe at all event stages
-     */
-    all = 'all'
 }
 
 export namespace ObservationStage {
@@ -47,17 +34,8 @@ export namespace ObservationStage {
     export function isNormal(stage: ObservationStage) {
         return stage === ObservationStage.normal;
     }
-    export function isCommitted(stage: ObservationStage) {
-        return stage === ObservationStage.committed;
-    }
-    export function isFinal(stage: ObservationStage) {
-        return stage === ObservationStage.final;
-    }
-    export function isAll(stage: ObservationStage) {
-        return stage === ObservationStage.all;
-    }
     export function isAny(stage: ObservationStage) {
-        return isPreview(stage) || isNormal(stage) || isCommitted(stage) || isAll(stage) || isFinal(stage);
+        return isPreview(stage) || isNormal(stage);
     }
     export function isObservationStage(stage: any): stage is ObservationStage {
         return isAny(<ObservationStage>stage);

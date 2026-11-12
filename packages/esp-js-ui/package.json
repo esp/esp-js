@@ -44,10 +44,21 @@
     },
     "peerDependencies": {
         "esp-js": "^9.0.0-beta.1",
-        "esp-js-di": "^9.0.0-beta.1"
+        "esp-js-di": "^9.0.0-beta.1",
+        "@types/react": "^19.0.0",
+        "react": "^19.0.0"
+    },
+    "peerDependenciesMeta": {
+        "@types/react": {
+            "optional": true
+        },
+        "react": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@rollup/plugin-terser": "^0.4.4",
+        "@types/react": "^19.0.0",
         "esp-js": "*",
         "esp-js-di": "*",
         "typescript": "^5.8.0",

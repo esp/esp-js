@@ -11,7 +11,7 @@ export type MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps
 
 export interface ConnectableComponentProps<TModel = {}, TPublishEventProps = {}, TModelMappedToProps = {}> {
     storeId?: string;
-    view?: React.ComponentType;
+    view?: React.ComponentType<any>;
     createPublishEventProps?: CreatePublishEventProps<TPublishEventProps>;
     mapStoreModelToProps?: MapStoreModelToProps<TModel, TModelMappedToProps, TPublishEventProps>;
     [key: string]: any;  // ...rest props, including the result of mapPublish and mapPublish if 'connect' was used
@@ -61,6 +61,8 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
     // Note: we always need to render the hooks else react will complain about a different count.
     let storeIdFromContext = useGetStoreId();
     storeId = storeId || storeIdFromContext;
+    // createPublishEventProps is captured once per bus/storeId (not re-run when the prop changes),
+    // so callers can pass an inline function and still get stable publish props.
     const publishEventProps: TPublishEventProps = useMemo(
         () => {
             if (createPublishEventProps) {
@@ -82,7 +84,7 @@ export const ConnectableComponent = <TModel = {}, TPublishEventProps = {}, TMode
         return null;
     }
     let childProps = getChildProps(bus, storeId, rest, model, mapStoreModelToProps, publishEventProps);
-    let viewElement = view ? React.createElement(view as React.ComponentType<any>, childProps) : null;
+    let viewElement = view ? React.createElement(view, childProps) : null;
     return (
         <EspStoreContextProvider storeId={storeId} model={model} bus={bus} {...childProps}>
             {viewElement}

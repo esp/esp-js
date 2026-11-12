@@ -81,7 +81,9 @@ const checkArguments = (selector: (model: any) => any, options: SyncStoreModelWi
  *
  * To use this, please ensure your V-DOM has the EspEventBusContextProvider at a higher node, and optionally EspStoreContextProvider.
  *
- * @param selector - a function to select a selection of the model - the selector does not need to be memoized, this selector will be cached against the storeId.
+ * If the store isn't registered yet, the hook returns null and picks up the model once the store is registered.
+ *
+ * @param selector - a function to select a selection of the model. It does not need to be memoized: the latest selector is used on each render, and the equalityFn (if any) decides whether a new selection re-renders.
  * @param options
  */
 export const useSyncStoreModelWithSelector = <TModel, TSelected>(
@@ -95,15 +97,19 @@ export const useSyncStoreModelWithSelector = <TModel, TSelected>(
     const equalityFn = options?.equalityFn;
     const dependencies = useMemo(
         () => {
-            const canSubscribe = bus && utils.isString(storeId) && bus.isStoreRegistered(storeId);
+            // Subscribe even if the store isn't registered yet: getStoreModelObservable() supports stores registered later,
+            // and emits the model when the store is added.
+            const canSubscribe = bus && utils.isString(storeId);
             if (canSubscribe) {
-                return createSubscriptionState(bus, storeId, selector);
+                return createSubscriptionState(bus, storeId);
             }
             return createNoopSubscriptionState();
         },
-        // Don't add 'selector' to the dependency list as that will likely change unless the caller memoizes it.
         [bus, storeId]
     );
+    // Wrap the caller's selector on every render so a selector that closes over props/state is never stale.
+    // useSyncExternalStoreWithSelector re-runs it when it changes and applies the equalityFn to the result.
+    const wrappedSelector = (snapshot: TModel) => snapshot ? selector(snapshot) : null;
 
     // Docs on useSyncExternalStore https://github.com/reactwg/react-18/discussions/86
     // Redux's usage of this: https://github.com/reduxjs/react-redux/blob/master/src/hooks/useSelector.ts
@@ -112,15 +118,14 @@ export const useSyncStoreModelWithSelector = <TModel, TSelected>(
         dependencies.subscribe,
         dependencies.getSnapshot,
         undefined,
-        dependencies.wrappedSelector,
+        wrappedSelector,
         equalityFn,
     );
 };
 
-const createSubscriptionState = <TModel, TSelected>(
+const createSubscriptionState = <TModel>(
     bus: EventBus,
     storeId: string,
-    selector: (model: TModel) => TSelected,
 ) => {
     // Because of how useSyncExternalStore works, there is an implicit dependency between the subscribe and getSnapshot functions.
     // When the subscription receives the new state from the EventBus, it can't pass this directly onto getSnapshot,
@@ -163,20 +168,13 @@ const createSubscriptionState = <TModel, TSelected>(
         // React expects getSnapshot to be pure and stable between renders unless the store has changed.
         // We seed currentModel from bus.getStoreModel() on first call (before subscribe has been called),
         // then keep it up-to-date via the subscription callback above.
+        // getStoreModel() throws for a store that's been observed but not registered yet, so check first; until then the snapshot is null.
         getSnapshot: () => {
-            if (currentModel == null) {
+            if (currentModel == null && bus.isStoreRegistered(storeId)) {
                 currentModel = bus.getStoreModel<TModel>(storeId);
             }
             return currentModel;
         },
-        // While getSnapshot needs to model to be immutable,
-        // useSyncExternalStoreWithSelector builds on top of this, so the TSelected can defer to an equality check to determine if the change is propagated.
-        // The selector here just maps the TSelected, useSyncExternalStoreWithSelector internally does the equality check.
-        wrappedSelector: (snapshot: TModel) => {
-            return snapshot
-                ? selector(snapshot)
-                : null;
-        }
     };
 };
 
@@ -184,6 +182,5 @@ const createNoopSubscriptionState = () => ({
     subscribe: () => {
         return () => {};
     },
-    getSnapshot: () => null,
-    wrappedSelector: () => null
+    getSnapshot: (): null => null,
 });

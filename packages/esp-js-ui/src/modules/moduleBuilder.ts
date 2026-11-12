@@ -17,7 +17,7 @@
 // notice_end
 
 import {Guard, Logger} from 'esp-js';
-import type React from 'react';
+import type {ComponentType} from 'react';
 import type {Container} from 'esp-js-di';
 import {Module, ModuleHook, ModuleViewBinding} from './types';
 import {DefaultModule} from './defaultModule';
@@ -67,7 +67,7 @@ export class ModuleBuilder {
         return this;
     }
 
-    withView(storeId: string, viewComponent: React.ComponentType<any>, region: string): this {
+    withView(storeId: string, viewComponent: ComponentType<any>, region: string): this {
         this._guardNotBuilt();
         Guard.stringIsNotEmpty(storeId, 'storeId must be a non-empty string');
         Guard.isDefined(viewComponent, 'viewComponent must be defined');

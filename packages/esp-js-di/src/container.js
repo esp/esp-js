@@ -96,7 +96,8 @@ export default class Container {
     isRegistered(name, options = DefaultIsRegisteredQueryOptions) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(name, 'Error calling isRegistered(name). The name argument must be a string and can not be \'\'');
-        const isRegistered = options.searchParentContainers
+        // searchParentContainers defaults to true: only an explicit false limits the search to this container
+        const isRegistered = options.searchParentContainers !== false
             ? !!this._registrations[name]
             : this._registrations.hasOwnProperty(name);
         return isRegistered;
@@ -104,7 +105,7 @@ export default class Container {
     isGroupRegistered(groupName, options = DefaultIsRegisteredQueryOptions) {
         this._throwIfDisposed();
         Guard.isNonEmptyString(groupName, 'Error calling isGroupRegistered(groupName). The groupName argument must be a string and can not be \'\'');
-        const isGroupRegistered = options.searchParentContainers
+        const isGroupRegistered = options.searchParentContainers !== false
             ? !!this._registrationGroups[groupName]
             : this._registrationGroups.hasOwnProperty(groupName);
         return isGroupRegistered;

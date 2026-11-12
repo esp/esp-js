@@ -36,10 +36,6 @@ export interface EventContext {
      */
     readonly isCanceled: boolean;
     /**
-     * True if the event has been committed.
-     */
-    readonly isCommitted: boolean;
-    /**
      * If the event was published using an entityKey, this will be that key.
      */
     readonly entityKey: string;
@@ -47,10 +43,6 @@ export interface EventContext {
      * Can be called to cancel further propagation of the event.
      */
     cancel(): void;
-    /**
-     * Can be called to commit the event allowing handlers subscribed at the commit stage to receive it.
-     */
-    commit(): void;
 }
 
 export class DefaultEventContext implements EventContext {
@@ -58,7 +50,6 @@ export class DefaultEventContext implements EventContext {
     private _eventType: string;
     private _entityKey: string;
     private _isCanceled: boolean;
-    private _isCommitted: boolean;
     private _currentStage: ObservationStage;
 
     public constructor(storeId: string, eventType: string, entityKey: string) {
@@ -66,7 +57,6 @@ export class DefaultEventContext implements EventContext {
         this._eventType = eventType;
         this._entityKey = entityKey;
         this._isCanceled = false;
-        this._isCommitted = false;
         this._currentStage = ObservationStage.preview; // initial state
     }
 
@@ -94,23 +84,11 @@ export class DefaultEventContext implements EventContext {
         return this._isCanceled;
     }
 
-    get isCommitted() {
-        return this._isCommitted;
-    }
-
     cancel() {
         if (!this._isCanceled) {
             this._isCanceled = true;
         } else {
             throw new Error('event [' + this._eventType + '] for store [' + this._storeId + '] is already cancelled');
-        }
-    }
-
-    commit() {
-        if (!this._isCommitted) {
-            this._isCommitted = true;
-        } else {
-            throw new Error('event [' + this._eventType + '] for store [' + this._storeId + '] is already committed');
         }
     }
 }

@@ -63,11 +63,11 @@ await app.start();
 
 **`app.start()` lifecycle order:**
 1. Configure root container (`withContainerConfiguration` hooks)
-2. Load all modules (lazy factories resolved in parallel)
+2. Load all modules (lazy factories resolved in parallel; a factory that rejects is logged and that module skipped)
 3. Configure each module's child container (`module.configureContainer`)
 4. Run app-level `withInitialisation` hooks (sequential, fatal on error)
 5. Run `module.initialise()` on all modules (parallel, failures isolated)
-6. Run `module.start()` on all modules (parallel, failures isolated)
+6. Run `module.start()` on the modules whose `initialise()` succeeded (parallel, failures isolated)
 7. Run app-level `withStart` hooks (sequential, fatal on error)
 
 `app.start()` is idempotent — subsequent calls are no-ops. `app.dispose()` disposes all modules in reverse load order (each disposes its child container), then the `EventBus` (and its stores), then the root container. `start()` throws after `dispose()`.
@@ -136,7 +136,7 @@ AppBuilder.create('my-app')
     .build();
 ```
 
-Factories are resolved in parallel during `app.start()`.
+Factories are resolved in parallel during `app.start()`. If a factory rejects (e.g. a code-split chunk fails to load), the error is logged and the app carries on without that module — it isn't in `app.modules`.
 
 ## Public API
 
@@ -152,7 +152,8 @@ export type { Module, ModuleContext, ModuleHook, ModuleViewBinding, ModuleLoadRe
 
 - `AppBuilder.build()` is one-shot — calling `build()` twice throws. Same for `ModuleBuilder.build()`.
 - `app.start()` is idempotent — safe to call multiple times, but only the first call does work.
-- Module `initialise` and `start` failures are isolated (caught and logged) — they do not abort the lifecycle. App-level `withInitialisation` and `withStart` failures are fatal.
+- Module load (lazy factory), `initialise` and `start` failures are isolated (caught and logged) — they do not abort the lifecycle. A module whose `initialise` failed is not started. App-level `withInitialisation` and `withStart` failures are fatal.
+- esp-js-ui's typings reference React's `ComponentType` (for `withView`), so `react` / `@types/react` are optional peer dependencies.
 - The `EventBus` instance is created inside `DefaultApp` — you do not pass one in. Access it via `app.eventBus`; it exists as soon as the app is built, before `start()`.
 - Each module gets its own child container (child of the root container). Modules can see root registrations but root cannot see module registrations. Resolve module services via `moduleContainer` from the `ModuleContext`, **not** `app.container` (that's the root).
 - `app.dispose()` also disposes the `EventBus` and root container — don't keep using either afterwards.

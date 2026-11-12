@@ -122,11 +122,9 @@ npm run test-ci              # vitest run (no watch, CI mode)
 ### The EventBus event dispatch cycle
 
 1. `bus.publishEvent(storeId, eventType, event)` — enqueues event
-2. EventBus drains the queue, dispatching each event through four sequential observation stages:
+2. EventBus drains the queue, dispatching each event through two sequential observation stages:
    - `preview` — observe before mutation; can cancel the event
    - `normal` — primary mutation stage
-   - `committed` — only fires if `eventContext.commit()` was called during `normal`
-   - `final` — fires regardless of commit; observe after all mutation
 3. Effects run, each with a frozen snapshot of the model taken right after its own event. Events an effect publishes synchronously to the same store are processed in a further round
 4. Once the store's queue is empty, one frozen immutable snapshot of the model is pushed to model observers (`bus.getStoreModelObservable(storeId)`)
 
@@ -135,7 +133,7 @@ npm run test-ci              # vitest run (no watch, CI mode)
 - Create a plain object or class instance as the initial state
 - Register with `bus.storeBuilder(storeId, initialState).withEventHandler(...).build()`
 - Event handlers receive an immer `draft` — mutate it directly; the bus produces a new frozen snapshot after all handlers run
-- Preview handlers and pre/post processors are typed `Readonly<TModel>` (they get the live draft at runtime — don't mutate). Effect handlers get a frozen per-event snapshot
+- Pre/post processors get the immer `Draft<TModel>` and may write to it. Preview handlers are typed `Readonly<TModel>` (they get the live draft at runtime — don't mutate). Effect handlers get a frozen per-event snapshot
 - Naming rule: APIs about the registered **store** say "Store" (`storeBuilder`, `removeStore`, `isStoreRegistered`, `storeId`, `StoreAddress`). APIs that return a store's **model** (its state snapshot) say "StoreModel" (`getStoreModel`, `getStoreModelObservable`, `findStoreModel`, `useGetStoreModel`, `useSyncStoreModelWithSelector`, `mapStoreModelToProps`). Their results are models — name variables `model`, never `store`
 - Class instances used as model state must include `[immerable] = true` (from `immer`) for immer to handle them
 

@@ -16,7 +16,7 @@
  */
 // notice_end
 
-import type React from 'react';
+import type {ComponentType} from 'react';
 import type { Container } from 'esp-js-di';
 import type { EventBus } from 'esp-js';
 import {App} from '../app';
@@ -25,7 +25,7 @@ export interface ModuleViewBinding {
     /** The EventBus storeId this view is connected to */
     readonly storeId: string;
     /** The React component to render for this view */
-    readonly viewComponent: React.ComponentType<any>;
+    readonly viewComponent: ComponentType<any>;
     /** A string token identifying the shell region this view belongs to (metadata only) */
     readonly region: string;
 }

@@ -30,17 +30,7 @@ describe('EventContext', () => {
         expect(function() { ec.cancel(); }).toThrow();
     });
 
-    it('throws if committed twice', () => {
-        ec.commit();
-        expect(function() { ec.commit(); }).toThrow();
-    });
-
-    it('should set isCommitted on commit', function() {
-        ec.commit();
-        expect(ec.isCommitted).toEqual(true);
-    });
-
-    it('should set isCancelled on commit', function() {
+    it('should set isCanceled on cancel', function() {
         ec.cancel();
         expect(ec.isCanceled).toEqual(true);
     });

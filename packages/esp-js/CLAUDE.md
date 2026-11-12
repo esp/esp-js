@@ -34,9 +34,8 @@ src/
   eventBus/
     eventBus.ts             # EventBus class — the central event bus
     storeRecord.ts          # Internal per-store state: event queue, streams, processors
-    observationStage.ts     # ObservationStage enum: preview | normal | committed | final | all
-    eventProcessors.ts      # PreEventProcessor, PostEventProcessor interfaces
-    eventContext.ts         # EventContext — passed to handlers; exposes commit(), cancel(), entityKey
+    observationStage.ts     # ObservationStage enum: preview | normal
+    eventContext.ts         # EventContext — passed to handlers; exposes cancel(), entityKey, currentStage
     envelopes.ts            # EventEnvelope<TEvent, TModel>, ModelEnvelope types
     storeAddress.ts         # StoreAddress / DefaultStoreAddress for targeted event dispatch
     devtools/               # Redux DevTools integration (auto-detected)
@@ -74,15 +73,14 @@ bus.isOnDispatchLoopFor(storeId)                  // check if currently executin
 
 ### ObservationStage
 
-Events pass through up to four stages in order:
+Events pass through two stages in order, then effects run after the dispatch round:
 
 | Stage | When |
 |-------|------|
 | `preview` | Before mutation; call `eventContext.cancel()` to suppress |
 | `normal` | Primary mutation stage — handler receives immer draft |
-| `committed` | Only fires if `eventContext.commit()` was called during `normal` |
-| `final` | Always fires after `normal` (and `committed` if it ran) |
-| `all` | Fires at every stage |
+
+v8's `committed`/`final`/`all` stages and `eventContext.commit()` were removed in v9 (nothing could observe them).
 
 ### StoreBuilder (preferred pattern)
 
@@ -102,8 +100,8 @@ bus.storeBuilder<CounterState>('counter', { count: 0 })
         // runs after the dispatch round; model is a frozen snapshot taken right after THIS event — publish side effects here
         publish('LogChange', { count: model.count });
     })
-    .withPreEventProcessor(model => { /* before each dispatch cycle */ })
-    .withPostEventProcessor((model, eventsProcessed) => { /* after each dispatch cycle */ })
+    .withPreEventProcessor(draft => { /* before each dispatch cycle; may write to the draft */ })
+    .withPostEventProcessor((draft, eventsProcessed) => { /* after each dispatch cycle, e.g. recompute derived state */ })
     .build();
 ```
 
@@ -115,6 +113,8 @@ bus.storeBuilder<CounterState>('counter', { count: 0 })
 | `withPreviewHandler` | `(model: Readonly<TModel>, event, ctx) => void` | Observe/cancel before mutation (live draft at runtime — don't mutate) |
 | `withEffect` | `(model: Readonly<TModel>, event, ctx, publish) => void` | Side effects after mutation; frozen snapshot from right after this event; can publish new events |
 | `withEventSubscription` | `(publish) => Disposable` | Subscribe to external streams on store startup |
+| `withPreEventProcessor` | `(draft: Draft<TModel>) => void` | Before each dispatch round; may write to the draft |
+| `withPostEventProcessor` | `(draft: Draft<TModel>, eventsProcessed) => void` | After each dispatch round; may write to the draft (e.g. derived state) |
 
 **Class instances as model state** must include `[immerable] = true` from `immer`:
 
@@ -130,10 +130,6 @@ bus.storeBuilder<MyState>('my-id', new MyState())
     .withEventHandler('Update', (draft, event: string) => { draft.value = event; })
     .build();
 ```
-
-### EventProcessors
-
-Lower-level lifecycle hooks — prefer `withPreEventProcessor`/`withPostEventProcessor` on `StoreBuilder` for new code. The interfaces remain available for advanced/internal use.
 
 ### Subscribable\<T\>
 
@@ -163,7 +159,6 @@ All exports flow through `src/index.ts`:
 - `EventHandler`, `PreviewHandler`, `EffectHandler`, `SubscriptionFactory`, `PreEventProcessorFn`, `PostEventProcessorFn`, `StoreConfig`
 - `Subscribable`
 - `ObservationStage`, `EventContext`, `EventEnvelope`, `StoreAddress`, `DefaultStoreAddress`
-- `EventProcessors`, `PreEventProcessor`, `PostEventProcessor`
 - `DisposableBase`, `CompositeDisposable`, `Disposable`
 - `Logger`, `Level`, `LoggingConfig`
 - `Guard`, `utils`
@@ -171,7 +166,7 @@ All exports flow through `src/index.ts`:
 
 **Not exported (internal):** `Observable`, `Subject`, `EventBusObservable`, `EventBusSubject` — the `reactive/` module is internal. Do not import from it directly.
 
-**Removed in v9:** `ModelBase`, `SingleModelEventBus`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `bus.runAction()`, `bus.observeEventsOn()`, `bus.getEventObservable()`. `removeModel` → `removeStore`, `isModelRegistered` → `isStoreRegistered`, `isModelDispatchStatus` → `isStoreDispatchStatus`. `bus.addModel()` is now private — use `bus.storeBuilder()` instead. `ModelBuilder` renamed to `StoreBuilder`; `ModelAddress`/`DefaultModelAddress` renamed to `StoreAddress`/`DefaultStoreAddress`.
+**Removed in v9:** `ModelBase`, `SingleModelEventBus`, `@observeEvent`, `@observeEventEnvelope`, `Health`/`HealthIndicator`, `bus.runAction()`, `bus.observeEventsOn()`, `bus.getEventObservable()`. `removeModel` → `removeStore`, `isModelRegistered` → `isStoreRegistered`, `isModelDispatchStatus` → `isStoreDispatchStatus`. `bus.addModel()` is now private — use `bus.storeBuilder()` instead. `ModelBuilder` renamed to `StoreBuilder`; `ModelAddress`/`DefaultModelAddress` renamed to `StoreAddress`/`DefaultStoreAddress`. The `committed`/`final`/`all` observation stages, `eventContext.commit()`/`isCommitted`, and the `EventProcessors`/`PreEventProcessor`/`PostEventProcessor` interfaces are removed.
 
 ## Testing Approach
 
@@ -209,6 +204,9 @@ bus.dispose();
 
 ## Gotchas
 
+- Pre/post event processors receive the immer draft (`Draft<TModel>`) and may write to it, e.g. a post-processor recomputing derived state. Preview handlers also get the live draft but are typed `Readonly<TModel>` — don't mutate in them
+- The circular-dispatch limit (10,000) counts events dispatched in one drain of the queues, so a handler or effect that keeps publishing to its own store halts the bus with "Circular event dispatch detected" instead of hanging
+- If a handler throws, the bus halts and `getStoreModel()` keeps returning the last good frozen model (the failed round's changes are discarded)
 - `bus.publishEvent()` from inside an event handler or effect is allowed: the event is queued and processed after the current one. It throws only inside an `executeEvent()` handler
 - `bus.getStoreModelObservable()` returns `Subscribable<T>` — do NOT use `Observable.create` or import from the `reactive/` module (it is internal and not part of the public API)
 - Class instances used as model state **must** have `[immerable] = true` from `immer`, otherwise `produce` throws at runtime

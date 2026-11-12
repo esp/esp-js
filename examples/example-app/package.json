@@ -16,6 +16,7 @@
     "esp-js-di": "*",
     "esp-js-react": "*",
     "esp-js-ui": "*",
+    "immer": "^10.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -16,21 +16,21 @@
 
 export class Container {
     createChildContainer(): Container;
-    register(name: String, proto: any):RegistrationModifier;
-    registerInstance<T>(name: String, instance: T, isExternallyOwned?): void;
-    registerFactory<T>(name: String, factory:(context: Container, ...additionalDependencies: any[]) => T): RegistrationModifier;
-    resolve<T>(name: String, ...additionalDependencies: any[]): T;
+    register(name: string, proto: any):RegistrationModifier;
+    registerInstance<T>(name: string, instance: T, isExternallyOwned?: boolean): void;
+    registerFactory<T>(name: string, factory:(context: Container, ...additionalDependencies: any[]) => T): RegistrationModifier;
+    resolve<T>(name: string, ...additionalDependencies: any[]): T;
     /**
      * Resolves several items at once into an object keyed by name, e.g. `const {bus, svc} = container.resolveMany('bus', 'svc')`.
      * Pass a ResolveManySpec to provide additional dependencies for an item.
      */
     resolveMany<T extends object = Record<string, any>>(...specs: Array<string | ResolveManySpec>): T;
-    resolveGroup<T>(groupName: String,  ...additionalDependencies: any[]): Array<T>;
+    resolveGroup<T>(groupName: string,  ...additionalDependencies: any[]): Array<T>;
     isRegistered(name: string, options?: IsRegisteredQueryOptions) : boolean;
     isGroupRegistered(groupName: string, options?: IsRegisteredQueryOptions) : boolean;
-    addResolver<T>(name:String, resolver:Resolver<T>);
-    on<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void);
-    off<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void);
+    addResolver<T>(name:string, resolver:Resolver<T>): void;
+    on<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void): void;
+    off<T extends object = object>(eventType: ContainerEventType, eventHandler: (notification: ContainerNotification<T>) => void): void;
     dispose():void;
     readonly isDisposed: boolean;
 }
@@ -49,19 +49,20 @@ export class RegistrationModifier {
     transient():RegistrationModifier;
     singleton():RegistrationModifier;
     singletonPerContainer():RegistrationModifier;
-    inGroup(groupName:String):RegistrationModifier;
+    inGroup(groupName:string):RegistrationModifier;
 }
 
 /**
  * An optional param which can modify how an 'isRegistered' or 'isGroupRegistered' search is performed.
  *
- * If omitted defaults to { searchContainerChain: true }
+ * If omitted defaults to { searchParentContainers: true }
  */
 export interface IsRegisteredQueryOptions {
     /**
-     * If true (default) will search in the current container, and along it's chain up to the root container.
+     * If true or omitted (default) will search in the current container, and along its chain up to the root container.
+     * If false only the current container is searched.
      */
-    searchParentContainers: boolean;
+    searchParentContainers?: boolean;
 }
 
 /**
@@ -135,6 +136,13 @@ export class EspDiConsts {
     static readonly owningContainer : string;
 }
 
+/**
+ * Internal: tracks the chain of names being resolved to detect circular dependencies.
+ */
+export class ResolverContext {
+    beginResolve(key: string): { endResolve(): void };
+}
+
 export class ResolverNames {
     static readonly delegate : string;
     static readonly factory : string;
@@ -164,3 +172,12 @@ export interface ContainerNotification<T extends object = object> {
     instance: T;
     eventType: ContainerEventType;
 }
+
+declare const _default: {
+    Container: typeof Container;
+    RegistrationModifier: typeof RegistrationModifier;
+    ResolverContext: typeof ResolverContext;
+    EspDiConsts: typeof EspDiConsts;
+    ResolverNames: typeof ResolverNames;
+};
+export default _default;

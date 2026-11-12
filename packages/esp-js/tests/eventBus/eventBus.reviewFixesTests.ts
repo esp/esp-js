@@ -80,6 +80,67 @@ describe('EventBus', () => {
         });
     });
 
+    describe('dispatch loop limits and halting', () => {
+
+        it('a handler that publishes to its own store forever is halted by the dispatch limit, not hung', () => {
+            let handled = 0;
+            _bus.storeBuilder<Counter>('c', {n: 0})
+                .withEventHandler('Ping', () => {
+                    handled++;
+                    _bus.publishEvent('c', 'Ping', {});
+                })
+                .build();
+            expect(() => _bus.publishEvent('c', 'Ping', {})).toThrow(/Circular event dispatch detected/);
+            expect(handled).toBeLessThan(10001);
+        });
+
+        it('a handler that publishes a bounded chain to its own store is not affected by the limit', () => {
+            _bus.storeBuilder<Counter>('c', {n: 0})
+                .withEventHandler('Inc', draft => {
+                    draft.n++;
+                    if (draft.n < 100) {
+                        _bus.publishEvent('c', 'Inc', {});
+                    }
+                })
+                .build();
+            _bus.publishEvent('c', 'Inc', {});
+            expect(_bus.getStoreModel<Counter>('c').n).toEqual(100);
+        });
+
+        it('after a handler throws, getStoreModel returns the last good (frozen) model, not a revoked draft', () => {
+            _bus.storeBuilder<Counter>('c', {n: 0})
+                .withEventHandler('Inc', draft => { draft.n++; })
+                .withEventHandler('Boom', draft => {
+                    draft.n = 99;
+                    throw new Error('boom');
+                })
+                .build();
+            _bus.publishEvent('c', 'Inc', {});
+            expect(() => _bus.publishEvent('c', 'Boom', {})).toThrow('boom');
+            const model = _bus.getStoreModel<Counter>('c');
+            expect(model.n).toEqual(1);
+            expect(Object.isFrozen(model)).toBe(true);
+            expect(_bus.findStoreModel((m: any) => m.n === 1)).toBe(model);
+        });
+    });
+
+    describe('event processors', () => {
+
+        it('pre and post event processors can write to the draft', () => {
+            type Totals = { items: number[], total: number, rounds: number };
+            _bus.storeBuilder<Totals>('t', {items: [], total: 0, rounds: 0})
+                .withPreEventProcessor(draft => { draft.rounds++; })
+                .withEventHandler('Add', (draft, e: number) => { draft.items.push(e); })
+                .withPostEventProcessor(draft => { draft.total = draft.items.reduce((a, b) => a + b, 0); })
+                .build();
+            _bus.publishEvent('t', 'Add', 2);
+            _bus.publishEvent('t', 'Add', 3);
+            const model = _bus.getStoreModel<Totals>('t');
+            expect(model.total).toEqual(5);
+            expect(model.rounds).toEqual(2);
+        });
+    });
+
     describe('broadcastEvent', () => {
 
         it('does not throw when a store is observed before it is registered', () => {

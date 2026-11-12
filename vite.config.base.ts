@@ -91,6 +91,7 @@ export function createBaseConfig(
                         entryFileNames: `${fileName}.js`,
                         name: bundleName,
                         globals: buildGlobals(external),
+                        plugins: [replaceNodeEnvPlugin('development')],
                     },
                     // Minified UMD — terser applied per-output
                     {
@@ -98,7 +99,7 @@ export function createBaseConfig(
                         entryFileNames: `${fileName}.min.js`,
                         name: bundleName,
                         globals: buildGlobals(external),
-                        plugins: [terserPlugin()],
+                        plugins: [replaceNodeEnvPlugin('production'), terserPlugin()],
                     },
                     // ESM — tree-shakeable for bundlers. The .mjs extension lets Node load it as ESM
                     // (the packages are not "type": "module", so a .js file would be treated as CommonJS).
@@ -119,9 +120,32 @@ export function createBaseConfig(
 function buildGlobals(externals: string[]): Record<string, string> {
     const globals: Record<string, string> = {};
     for (const name of externals) {
-        globals[name] = toCamelCase(name);
+        globals[name] = KNOWN_GLOBALS[name] ?? toCamelCase(name);
     }
     return globals;
+}
+
+/**
+ * Packages whose UMD global isn't the camelCased package name.
+ */
+const KNOWN_GLOBALS: Record<string, string> = {
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+};
+
+/**
+ * Replaces process.env.NODE_ENV in a UMD output.
+ * Bundled dependencies (e.g. immer, use-sync-external-store) reference it, and a UMD bundle
+ * loaded by a plain <script> tag has no `process` global. The ESM output keeps the reference
+ * so consumers' bundlers can still pick the dev or prod code path.
+ */
+function replaceNodeEnvPlugin(nodeEnv: 'development' | 'production') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const replace = require('@rollup/plugin-replace');
+    return replace({
+        preventAssignment: true,
+        values: {'process.env.NODE_ENV': JSON.stringify(nodeEnv)},
+    });
 }
 
 function toCamelCase(str: string): string {

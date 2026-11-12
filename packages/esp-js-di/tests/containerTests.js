@@ -689,6 +689,11 @@ describe('Container', () =>  {
                     let isRegistered = childContainer.isRegistered('a', { searchParentContainers: false });
                     expect(isRegistered).toBe(false);
                 });
+
+                it('Should return true when options omit searchParentContainers', () => {
+                    let isRegistered = childContainer.isRegistered('a', {});
+                    expect(isRegistered).toBe(true);
+                });
             });
 
             describe('when item is registered in child', () => {
@@ -752,6 +757,11 @@ describe('Container', () =>  {
                 it('Should return false when searchParentContainers is false', () => {
                     let isGroupRegistered = childContainer.isGroupRegistered('group-1', { searchParentContainers: false });
                     expect(isGroupRegistered).toBe(false);
+                });
+
+                it('Should return true when options omit searchParentContainers', () => {
+                    let isGroupRegistered = childContainer.isGroupRegistered('group-1', {});
+                    expect(isGroupRegistered).toBe(true);
                 });
             });
 

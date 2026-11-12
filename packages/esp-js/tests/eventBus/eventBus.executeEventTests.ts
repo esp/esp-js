@@ -135,7 +135,7 @@ describe('EventBus', () => {
             expect(testPassed).toEqual(true);
         });
 
-        it('should execute the event against preview, normal, and final stages', () => {
+        it('should execute the event against preview handlers, event handlers and effects', () => {
             let previewReceived = false, normalReceived = false, finalReceived = false;
             const bus2 = new esp.EventBus();
             bus2.storeBuilder('modelId1', {})
@@ -145,12 +145,10 @@ describe('EventBus', () => {
                 .withPreviewHandler('ExecutedEvent', () => {
                     previewReceived = true;
                 })
-                .withEventHandler('ExecutedEvent', (draft, event, ctx) => {
+                .withEventHandler('ExecutedEvent', () => {
                     normalReceived = true;
-                    ctx.commit();
                 })
                 .withEffect('ExecutedEvent', () => {
-                    // effect runs at final stage (after committed if applicable)
                     finalReceived = true;
                 })
                 .build();

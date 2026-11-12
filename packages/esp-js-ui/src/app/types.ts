@@ -34,17 +34,17 @@ export interface App {
      */
     readonly eventBus: EventBus;
     /**
-     * All loaded modules. Empty until start() has loaded them.
+     * All loaded modules. Empty until start() has loaded them. A lazy module whose factory failed isn't included.
      */
     readonly modules: ReadonlyArray<Module>;
     /**
      * Runs the full application lifecycle:
      * 1. Configures the root container (withContainerConfiguration hooks)
-     * 2. Loads all modules (resolves lazy factories in parallel)
+     * 2. Loads all modules (resolves lazy factories in parallel; a failed factory is logged and that module skipped)
      * 3. Configures each module's child container
      * 4. Runs app-level withInitialisation hooks (sequential, fatal)
      * 5. Runs module.initialise() on all modules (parallel, failures isolated)
-     * 6. Runs module.start() on all modules (parallel, failures isolated)
+     * 6. Runs module.start() on the modules whose initialise() succeeded (parallel, failures isolated)
      * 7. Runs app-level withStart hooks (sequential, fatal)
      *
      * Idempotent — subsequent calls are no-ops.

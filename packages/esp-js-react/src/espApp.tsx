@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import type { App } from 'esp-js-ui';
 import { EspEventBusContextProvider } from './espEventBusContextProvider';
 import { EspModulesContext } from './espModulesContext';

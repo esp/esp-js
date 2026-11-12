@@ -343,41 +343,51 @@ export class EventBus extends DisposableBase {
                 // Wrap the entire pre-processing → event dispatch → post-processing cycle in a
                 // single immer produce so the model is a mutable draft throughout. Effects are
                 // collected during dispatch and run against the resulting frozen model afterwards.
-                const newModel = produce(storeRecord.currentModel, (draft: any) => {
-                    storeRecord.currentModel = draft;
+                // If anything throws, produce revokes the draft, so restore the last frozen model
+                // to keep getStoreModel() readable after the bus halts.
+                const baseModel = storeRecord.currentModel;
+                let newModel;
+                try {
+                    newModel = produce(baseModel, (draft: any) => {
+                        storeRecord.currentModel = draft;
 
-                    this._state.moveToPreProcessing(storeRecord.storeId, storeRecord);
-                    this._diagnosticMonitor.preProcessingModel();
-                    storeRecord.preEventProcessor(draft);
+                        this._state.moveToPreProcessing(storeRecord.storeId, storeRecord);
+                        this._diagnosticMonitor.preProcessingModel();
+                        storeRecord.preEventProcessor(draft);
 
-                    if (!storeRecord.wasRemoved) {
-                        this._state.moveToEventDispatch();
-                        this._diagnosticMonitor.dispatchingEvents();
-                        while (hasEvents) {
-                            this._state.eventsProcessed.push(eventRecord.eventType);
-                            this._dispatchEventToEventProcessors(
-                                storeRecord,
-                                eventRecord.entityKey,
-                                eventRecord.event,
-                                eventRecord.eventType
-                            );
-                            if (storeRecord.wasRemoved) {
-                                break;
-                            }
-                            storeRecord.hasReceivedEvent = true;
-                            hasEvents = storeRecord.eventQueue.length > 0;
-                            if (hasEvents) {
-                                eventRecord = storeRecord.eventQueue.shift();
-                            }
-                        } // keep looping until any events from the dispatch to processors stage are processed
-                        this._diagnosticMonitor.finishDispatchingEvent();
                         if (!storeRecord.wasRemoved) {
-                            this._diagnosticMonitor.postProcessingModel();
-                            this._state.moveToPostProcessing();
-                            storeRecord.postEventProcessor(draft, this._state.eventsProcessed);
+                            this._state.moveToEventDispatch();
+                            this._diagnosticMonitor.dispatchingEvents();
+                            while (hasEvents) {
+                                this._state.incrementDispatchCount();
+                                this._state.eventsProcessed.push(eventRecord.eventType);
+                                this._dispatchEventToEventProcessors(
+                                    storeRecord,
+                                    eventRecord.entityKey,
+                                    eventRecord.event,
+                                    eventRecord.eventType
+                                );
+                                if (storeRecord.wasRemoved) {
+                                    break;
+                                }
+                                storeRecord.hasReceivedEvent = true;
+                                hasEvents = storeRecord.eventQueue.length > 0;
+                                if (hasEvents) {
+                                    eventRecord = storeRecord.eventQueue.shift();
+                                }
+                            } // keep looping until any events from the dispatch to processors stage are processed
+                            this._diagnosticMonitor.finishDispatchingEvent();
+                            if (!storeRecord.wasRemoved) {
+                                this._diagnosticMonitor.postProcessingModel();
+                                this._state.moveToPostProcessing();
+                                storeRecord.postEventProcessor(draft, this._state.eventsProcessed);
+                            }
                         }
-                    }
-                });
+                    });
+                } catch (err) {
+                    storeRecord.currentModel = baseModel;
+                    throw err;
+                }
 
                 // Model is now frozen — restore it from the produce result
                 storeRecord.currentModel = newModel as any;
@@ -429,9 +439,6 @@ export class EventBus extends DisposableBase {
             previewHandlers.forEach(h => h(storeRecord.currentModel, event, eventContext));
         }
         this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.preview);
-        if (eventContext.isCommitted) {
-            throw new Error('You can\'t commit an event at the preview stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
-        }
 
         if (!eventContext.isCanceled) {
             // --- normal stage: mutate the outer produce draft directly ---
@@ -444,25 +451,6 @@ export class EventBus extends DisposableBase {
             this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.normal);
             if (eventContext.isCanceled) {
                 throw new Error('You can\'t cancel an event at the normal stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
-            }
-
-            let wasCommittedAtNormalStage = eventContext.isCommitted;
-            if (wasCommittedAtNormalStage) {
-                eventContext.updateCurrentState(ObservationStage.committed);
-                this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.committed);
-                if (eventContext.isCanceled) {
-                    throw new Error('You can\'t cancel an event at the committed stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
-                }
-            }
-
-            // --- final stage ---
-            eventContext.updateCurrentState(ObservationStage.final);
-            this._dispatchEvent(storeRecord, entityKey, event, eventType, eventContext, ObservationStage.final);
-            if (eventContext.isCanceled) {
-                throw new Error('You can\'t cancel an event at the final stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
-            }
-            if (!wasCommittedAtNormalStage && eventContext.isCommitted) {
-                throw new Error('You can\'t commit an event at the final stage. Event: [' + eventContext.eventType + '], StoreId: [' + storeRecord.storeId + ']');
             }
 
             // --- collect effects to run after produce completes with the frozen model ---
@@ -479,7 +467,6 @@ export class EventBus extends DisposableBase {
 
     private _dispatchEvent(storeRecord: StoreRecord, entityKey: string, event: any, eventType: string, context: EventContext, stage: ObservationStage) {
         this._diagnosticMonitor.dispatchingEvent(eventType, stage);
-        storeRecord.eventDispatchProcessor(storeRecord.model, eventType, event, stage);
         this._dispatchSubject.onNext({
             event: event,
             eventType: eventType,
@@ -490,7 +477,6 @@ export class EventBus extends DisposableBase {
             observationStage: stage,
             dispatchType: DispatchType.Event
         });
-        storeRecord.eventDispatchedProcessor(storeRecord.model, eventType, event, stage);
     }
 
     private _dispatchModelUpdates() {

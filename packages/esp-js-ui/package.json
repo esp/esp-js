@@ -1,6 +1,6 @@
 {
     "name": "esp-js-ui",
-    "version": "9.0.0-beta.1",
+    "version": "9.0.0-beta.3",
     "description": "Module loading and bootstrapping for ESP applications",
     "keywords": [
         "esp",
@@ -43,8 +43,8 @@
         "directory": "packages/esp-js-ui"
     },
     "peerDependencies": {
-        "esp-js": "^9.0.0-beta.1",
-        "esp-js-di": "^9.0.0-beta.1",
+        "esp-js": "^9.0.0-beta.3",
+        "esp-js-di": "^9.0.0-beta.3",
         "@types/react": "^19.0.0",
         "react": "^19.0.0"
     },

@@ -44,6 +44,9 @@ interface InternalEventStreamsRegistration {
     streams: EventStreamsRegistration;
 }
 
+// Monotonic counter giving each store queue a first-queued order, so stores are drained FIFO.
+let nextEventQueueDirtySequence = 0;
+
 export class StoreRecord<TModel = any> {
     private readonly _storeId: string;
     private readonly _modelObservationStream: AutoConnectedObservable<ModelEnvelope<any>>;
@@ -52,7 +55,7 @@ export class StoreRecord<TModel = any> {
     private _hasReceivedEvent: boolean;
     private _wasRemoved: boolean;
     private _eventStreams: Map<string, InternalEventStreamsRegistration>;
-    private _eventQueueDirtyEpochMs: number;
+    private _eventQueueDirtySequence: number;
 
     public eventHandlers: Map<string, EventHandler<TModel, any>[]>;
     public previewHandlers: Map<string, PreviewHandler<TModel, any>[]>;
@@ -75,7 +78,7 @@ export class StoreRecord<TModel = any> {
         this._wasRemoved = false;
         this._eventStreams = new Map();
         this._modelObservationStream = modelObservationStream;
-        this._eventQueueDirtyEpochMs = null;
+        this._eventQueueDirtySequence = null;
         this._currentModel = initialModel;
 
         this.eventHandlers = storeConfig.eventHandlers;
@@ -111,8 +114,8 @@ export class StoreRecord<TModel = any> {
         return this._eventQueue;
     }
 
-    public get eventQueueDirtyEpochMs() {
-        return this._eventQueueDirtyEpochMs;
+    public get eventQueueDirtySequence() {
+        return this._eventQueueDirtySequence;
     }
 
     public get hasReceivedEvent() {
@@ -175,15 +178,15 @@ export class StoreRecord<TModel = any> {
         if (!this._eventStreams.has(eventType)) {
             return false;
         }
-        if (!this._eventQueueDirtyEpochMs) {
-            this._eventQueueDirtyEpochMs = Date.now();
+        if (this._eventQueueDirtySequence === null) {
+            this._eventQueueDirtySequence = ++nextEventQueueDirtySequence;
         }
         this.eventQueue.push({entityKey, eventType: eventType, event: event});
         return true;
     }
 
     public eventQueuePurged() {
-        this._eventQueueDirtyEpochMs = null;
+        this._eventQueueDirtySequence = null;
     }
 
     public get modelObservationStream(): Observable<any> {

@@ -212,7 +212,7 @@ bus.dispose();
 - Class instances used as model state **must** have `[immerable] = true` from `immer`, otherwise `produce` throws at runtime
 - Maps and Sets in models work: `eventBus.ts` calls immer's `enableMapSet()` once at module load. immer is bundled into esp-js, so the app can't do this from its own immer copy
 - `StoreRecord` maintains an event queue per store — events published during another store's dispatch are queued and processed after the current store finishes
-- `broadcastEvent` dispatches to all registered stores; stores not observing the event simply ignore it (stores observed via `getStoreModelObservable` but not yet registered are skipped)
+- `broadcastEvent` dispatches to all registered stores; stores not observing the event simply ignore it (stores observed via `getStoreModelObservable` but not yet registered are skipped). It queues the event on every store before processing any, so an event published or broadcast from an earlier store's effect lands behind the broadcast on later stores. Stores with queued events are drained in first-queued order (a sequence number, not a timestamp)
 - `publishEvent` to a store with no handler for that event type drops the event and logs a warning
 - Effects run after the dispatch round, each with a frozen snapshot from right after its own event (like polimer's `@eventTransformFor`). Events an effect publishes synchronously to its own store are processed in a further round before the single model update
 - `bus.dispose()` disposes every store, including `withEventSubscription` subscriptions

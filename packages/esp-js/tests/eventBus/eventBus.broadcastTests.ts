@@ -74,5 +74,44 @@ describe('EventBus', () => {
             expect(model1ReceivedEvents).toEqual(['modelId1', 'modelId1']);
             expect(model2ReceivedEvents).toEqual(['modelId2', 'modelId2']);
         });
+
+        it('delivers the broadcast to every store before an event broadcast from an earlier store\'s effect', () => {
+            const storeBReceived: string[] = [];
+            _bus.storeBuilder('storeA', {})
+                .withEventHandler('pushed', () => {})
+                .withEffect('pushed', () => { _bus.broadcastEvent('followOn', {}); })
+                .build();
+            _bus.storeBuilder('storeB', {})
+                .withEventHandler('pushed', () => { storeBReceived.push('pushed'); })
+                .withEventHandler('followOn', () => { storeBReceived.push('followOn'); })
+                .build();
+            _bus.broadcastEvent('pushed', {});
+            expect(storeBReceived).toEqual(['pushed', 'followOn']);
+        });
+
+        it('delivers the broadcast to every store before an event published from an earlier store\'s effect', () => {
+            const storeBReceived: string[] = [];
+            _bus.storeBuilder('storeA', {})
+                .withEventHandler('pushed', () => {})
+                .withEffect('pushed', () => { _bus.publishEvent('storeB', 'followOn', {}); })
+                .build();
+            _bus.storeBuilder('storeB', {})
+                .withEventHandler('pushed', () => { storeBReceived.push('pushed'); })
+                .withEventHandler('followOn', () => { storeBReceived.push('followOn'); })
+                .build();
+            _bus.broadcastEvent('pushed', {});
+            expect(storeBReceived).toEqual(['pushed', 'followOn']);
+        });
+
+        it('processes stores in registration order', () => {
+            const order: string[] = [];
+            ['storeA', 'storeB', 'storeC'].forEach(storeId => {
+                _bus.storeBuilder(storeId, {})
+                    .withEventHandler('X', (draft, event, ctx) => { order.push(ctx.storeId); })
+                    .build();
+            });
+            _bus.broadcastEvent('X', {});
+            expect(order).toEqual(['storeA', 'storeB', 'storeC']);
+        });
     });
 });

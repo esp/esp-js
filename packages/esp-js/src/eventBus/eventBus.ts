@@ -211,14 +211,16 @@ export class EventBus extends DisposableBase {
         Guard.isString(eventType, 'The eventType argument should be a string');
         Guard.isDefined(event, 'The event argument should be defined');
         this._diagnosticMonitor.broadcastEvent(eventType);
-        for (let [key, value] of this._stores) {
-            // Skip placeholder records, created when something observes a store before it is registered.
-            if (!value.hasModel) {
-                continue;
-            }
-            this._tryEnqueueEvent(new DefaultStoreAddress(value.storeId), eventType, event, true);
-        }
         try {
+            // Queue the event on every store before processing any of them, so events published by
+            // an earlier store's effects land behind the broadcast on later stores.
+            for (let [key, value] of this._stores) {
+                // Skip placeholder records, created when something observes a store before it is registered.
+                if (!value.hasModel) {
+                    continue;
+                }
+                this._enqueueEvent(new DefaultStoreAddress(value.storeId), eventType, event, true);
+            }
             this._purgeEventQueues();
         } catch (err) {
             this._halt(err);
@@ -308,27 +310,36 @@ export class EventBus extends DisposableBase {
         return storeRecord;
     }
 
-    private _tryEnqueueEvent(storeAddress: StoreAddress, eventType: string, event: any, isBroadcast: boolean = false) {
+    private _tryEnqueueEvent(storeAddress: StoreAddress, eventType: string, event: any) {
         // we allow for lazy model registration, you can observe a model but then register it later,
         // this means at this point when publishing an event we need to ensure the actual model is there.
         if (!this._stores.has(storeAddress.storeId) || !this._stores.get(storeAddress.storeId).hasModel) {
             throw new Error('Can not publish event of type [' + eventType + '] as store with id [' + storeAddress.storeId + '] not registered');
-        } else {
-            try {
-                if (this._stores.has(storeAddress.storeId)) {
-                    let storeRecord = this._getOrCreateStoreRecord(storeAddress.storeId);
-                    if (storeRecord.tryEnqueueEvent(storeAddress.entityKey, eventType, event)) {
-                        this._diagnosticMonitor.eventEnqueued(storeAddress.storeId, storeAddress.entityKey, eventType, event);
-                        this._purgeEventQueues();
-                    } else if (!isBroadcast) {
-                        // Most stores ignore most broadcasts, so only warn for targeted publishes (likely a typo or missing handler).
-                        _log.warn(`Event [${eventType}] published to store [${storeAddress.storeId}] was dropped: the store has no handlers for this event type`);
-                    }
-                }
-            } catch (err) {
-                this._halt(err);
-            }
         }
+        try {
+            if (this._enqueueEvent(storeAddress, eventType, event, false)) {
+                this._purgeEventQueues();
+            }
+        } catch (err) {
+            this._halt(err);
+        }
+    }
+
+    /**
+     * Queues the event on the store without processing it. Returns true if the store observes the event type and it was queued.
+     * The store must be registered (hasModel).
+     */
+    private _enqueueEvent(storeAddress: StoreAddress, eventType: string, event: any, isBroadcast: boolean): boolean {
+        let storeRecord = this._stores.get(storeAddress.storeId);
+        if (storeRecord.tryEnqueueEvent(storeAddress.entityKey, eventType, event)) {
+            this._diagnosticMonitor.eventEnqueued(storeAddress.storeId, storeAddress.entityKey, eventType, event);
+            return true;
+        }
+        if (!isBroadcast) {
+            // Most stores ignore most broadcasts, so only warn for targeted publishes (likely a typo or missing handler).
+            _log.warn(`Event [${eventType}] published to store [${storeAddress.storeId}] was dropped: the store has no handlers for this event type`);
+        }
+        return false;
     }
 
     private _purgeEventQueues() {
@@ -504,12 +515,11 @@ export class EventBus extends DisposableBase {
      * @private
      */
     private _getNextStoreRecordWithQueuedEvents(): StoreRecord {
+        // Pick the store whose queue became non-empty first (strict FIFO across stores).
         let candidate: StoreRecord = null;
-        let dirtyEpochMs: number = Date.now();
         for (let [key, value] of this._stores) {
-            if (value.eventQueue.length > 0 && value.eventQueueDirtyEpochMs <= dirtyEpochMs) {
+            if (value.eventQueue.length > 0 && (candidate === null || value.eventQueueDirtySequence < candidate.eventQueueDirtySequence)) {
                 candidate = value;
-                dirtyEpochMs = value.eventQueueDirtyEpochMs;
             }
         }
         return candidate;
